@@ -47,16 +47,13 @@
         .filter-bar { display: flex; gap: 15px; align-items: flex-end; padding: 20px; background: var(--content-bg); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); margin-bottom: 20px; flex-wrap: wrap; }
         .filter-group { display: flex; flex-direction: column; }
         .filter-group label { font-weight: 500; font-size: 0.9rem; margin-bottom: 5px; }
-        .filter-group input, .filter-group select { padding: 10px 12px; font-size: 0.9rem; border: 1px solid var(--border-color); border-radius: 6px; transition: all 0.2s;}
-        .filter-group input.filter-active, .filter-group select.filter-active { border-color: var(--sidebar-accent); box-shadow: 0 0 0 3px #ddd6fe; }
-        .date-filter-container { display: flex; align-items: center; gap: 5px; background-color: #f8fafc; border: 1px solid var(--border-color); padding: 5px; border-radius: 6px; }
-        .date-mode-btn { padding: 8px 12px; border: none; background-color: transparent; font-weight: 500; cursor: pointer; border-radius: 4px; font-size: 0.9rem; }
+        .filter-group input, .filter-group select { height: 44px; padding: 10px 12px; font-size: 0.9rem; border: 1px solid var(--border-color); border-radius: 6px; transition: all 0.2s;}
+        .date-filter-container { display: flex; align-items: center; gap: 5px; height: 44px; background-color: #f8fafc; border: 1px solid var(--border-color); padding: 5px; border-radius: 6px; }
+        .date-mode-btn { padding: 8px 12px; border: none; background-color: transparent; font-weight: 500; cursor: pointer; border-radius: 4px; font-size: 0.9rem; height: 100%;}
         .date-mode-btn.active { background-color: var(--text-secondary); color: white; }
         #dateInputsContainer { display: flex; align-items: center; gap: 5px; }
-        #dateInputsContainer input { padding: 8px; text-align: center; }
-        .date-nav-btn { background: none; border: 1px solid var(--border-color); width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .date-nav-btn:hover { background-color: #f1f5f9; }
-        .apply-btn { padding: 8px 15px; background-color: var(--sidebar-accent); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;}
+        #dateInputsContainer input { padding: 8px; text-align: center; height: 32px; border: 1px solid var(--border-color); border-radius: 4px; }
+        .apply-btn { height: 100%; padding: 0 15px; background-color: var(--sidebar-accent); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;}
         .apply-btn:hover { filter: brightness(1.1); }
         .filter-summary { margin-top: -10px; margin-bottom: 15px; padding-left: 5px; color: var(--text-primary); font-weight: 500; font-size: 1rem;}
         .filter-summary strong { color: var(--sidebar-accent); margin-right: 5px; }
@@ -119,7 +116,9 @@
                     <div class="page-header">
                         <h2 class="page-title">전체 지원자 목록</h2>
                         <div class="header-actions">
-                            <button class="secondary-btn reset-btn" onclick="resetFilters()"><i class="fas fa-undo"></i> 필터 초기화</button>
+                            <button class="secondary-btn reset-btn" onclick="resetFilters()">
+                                <i class="fas fa-undo"></i> 필터 초기화
+                            </button>
                             <div class="column-toggle-container">
                                 <button class="secondary-btn" onclick="toggleColumnDropdown()"><i class="fas fa-columns"></i> 컬럼 설정</button>
                                 <div class="column-toggle-dropdown" id="columnToggleDropdown"></div>
@@ -136,7 +135,7 @@
                             <label for="positionFilter">모집분야</label>
                             <select id="positionFilter" onchange="applyFilters()"><option value="all">전체</option></select>
                         </div>
-                        <div class="filter-group">
+                         <div class="filter-group">
                             <label>조회 기간</label>
                             <div class="date-filter-container">
                                 <div id="dateModeToggle">
@@ -216,7 +215,7 @@
                 const result = await response.json();
                 if (result.status !== 'success') throw new Error(result.message);
 
-                currentHeaders = result.data[0] || [];
+                currentHeaders = (result.data[0] || []).map(header => header.trim());
                 allApplicantData = result.data.slice(1).filter(row => row.some(cell => cell !== ''));
                 
                 const gubunIndex = currentHeaders.indexOf('구분');
@@ -230,8 +229,8 @@
                 generateVisibleColumns(currentHeaders);
                 setupColumnToggles();
                 populateDropdownFilters();
-                updateDateFilterUI(); // Set default date UI
-                applyFilters(); 
+                updateDateFilterUI();
+                applyFilters();
             } catch (error) {
                 console.error("데이터 불러오기 실패:", error);
                 tableContainer.innerHTML = `<p style="text-align:center; padding: 40px; color: var(--danger-color);">데이터 로딩 중 오류 발생: ${error.message}</p>`;
@@ -252,18 +251,14 @@
                 });
 
                 if (!isFormValid) { alert('필수 항목을 모두 입력해주세요.'); return; }
-
                 saveBtn.disabled = true;
                 saveBtn.textContent = '저장 중...';
-
                 await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
                     body: JSON.stringify({ action: 'create', data: applicantData })
                 });
-                
                 closeModal();
                 location.reload();
-
             } catch (error) {
                 console.error("데이터 저장 실패:", error);
                 alert("데이터 저장 중 오류 발생: " + error.message);
@@ -274,7 +269,7 @@
         }
 
         function applyFilters() {
-            document.querySelectorAll('.filter-bar select').forEach(input => {
+            document.querySelectorAll('.filter-bar select, #dateInputsContainer input').forEach(input => {
                 input.classList.toggle('filter-active', input.value && input.value !== 'all');
             });
 
@@ -501,11 +496,10 @@
                 input.value = Number(input.value) + direction;
             } else {
                 let currentDate = new Date(input.value);
-                if (activeDateMode === 'month') {
+                if(activeDateMode === 'month') { // Add buffer day to avoid month skipping issues
+                    currentDate = new Date(input.value + '-02');
                     currentDate.setMonth(currentDate.getMonth() + direction);
-                    const year = currentDate.getFullYear();
-                    const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
-                    input.value = `${year}-${month}`;
+                    input.value = currentDate.toISOString().slice(0, 7);
                 } else if (activeDateMode === 'day') {
                     currentDate.setDate(currentDate.getDate() + direction);
                     input.value = currentDate.toISOString().slice(0, 10);
