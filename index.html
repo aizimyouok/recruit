@@ -44,16 +44,21 @@
         .secondary-btn { background-color: #f1f5f9; color: var(--text-secondary); border: 1px solid var(--border-color); }
         .secondary-btn.reset-btn { background-color: var(--accent-orange); color: white; }
         .secondary-btn:hover { background-color: #e2e8f0; }
-        .filter-bar { display: flex; flex-direction: column; gap: 15px; padding: 20px; background: var(--content-bg); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); margin-bottom: 20px; }
-        .filter-row { display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; }
+        .filter-bar { display: flex; gap: 15px; align-items: flex-end; padding: 20px; background: var(--content-bg); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); margin-bottom: 20px; flex-wrap: wrap; }
         .filter-group { display: flex; flex-direction: column; }
         .filter-group label { font-weight: 500; font-size: 0.9rem; margin-bottom: 5px; }
         .filter-group input, .filter-group select { padding: 10px 12px; font-size: 0.9rem; border: 1px solid var(--border-color); border-radius: 6px; transition: all 0.2s;}
         .filter-group input.filter-active, .filter-group select.filter-active { border-color: var(--sidebar-accent); box-shadow: 0 0 0 3px #ddd6fe; }
-        .filter-tabs { display: flex; gap: 5px; border-bottom: 2px solid var(--border-color); width: 100%;}
-        .filter-tab-btn { padding: 10px 15px; border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; font-size: 1rem; font-weight: 500; color: var(--text-secondary); margin-bottom: -2px; }
-        .filter-tab-btn.active { color: var(--sidebar-accent); border-bottom-color: var(--sidebar-accent); }
-        .filter-summary { margin-top: 15px; color: var(--text-primary); font-weight: 500; font-size: 1rem;}
+        .date-filter-container { display: flex; align-items: center; gap: 5px; background-color: #f8fafc; border: 1px solid var(--border-color); padding: 5px; border-radius: 6px; }
+        .date-mode-btn { padding: 8px 12px; border: none; background-color: transparent; font-weight: 500; cursor: pointer; border-radius: 4px; font-size: 0.9rem; }
+        .date-mode-btn.active { background-color: var(--text-secondary); color: white; }
+        #dateInputsContainer { display: flex; align-items: center; gap: 5px; }
+        #dateInputsContainer input { padding: 8px; text-align: center; }
+        .date-nav-btn { background: none; border: 1px solid var(--border-color); width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .date-nav-btn:hover { background-color: #f1f5f9; }
+        .apply-btn { padding: 8px 15px; background-color: var(--sidebar-accent); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;}
+        .apply-btn:hover { filter: brightness(1.1); }
+        .filter-summary { margin-top: -10px; margin-bottom: 15px; padding-left: 5px; color: var(--text-primary); font-weight: 500; font-size: 1rem;}
         .filter-summary strong { color: var(--sidebar-accent); margin-right: 5px; }
         .table-container { background-color: var(--content-bg); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); overflow-x: auto; }
         .data-table { width: 100%; border-collapse: collapse; }
@@ -123,26 +128,29 @@
                         </div>
                     </div>
                     <div class="filter-bar">
-                        <div class="filter-row">
-                             <div class="filter-group">
-                                <label for="routeFilter">지원루트</label>
-                                <select id="routeFilter" onchange="applyFilters()"><option value="all">전체</option></select>
-                            </div>
-                            <div class="filter-group">
-                                <label for="positionFilter">모집분야</label>
-                                <select id="positionFilter" onchange="applyFilters()"><option value="all">전체</option></select>
+                        <div class="filter-group">
+                            <label for="routeFilter">지원루트</label>
+                            <select id="routeFilter" onchange="applyFilters()"><option value="all">전체</option></select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="positionFilter">모집분야</label>
+                            <select id="positionFilter" onchange="applyFilters()"><option value="all">전체</option></select>
+                        </div>
+                        <div class="filter-group">
+                            <label>조회 기간</label>
+                            <div class="date-filter-container">
+                                <div id="dateModeToggle">
+                                    <button class="date-mode-btn" data-mode="year">연</button>
+                                    <button class="date-mode-btn" data-mode="month">월</button>
+                                    <button class="date-mode-btn" data-mode="day">일</button>
+                                    <button class="date-mode-btn" data-mode="range">기간</button>
+                                </div>
+                                <div id="dateInputsContainer" style="display:flex; align-items:center; gap: 5px;"></div>
+                                <button class="apply-btn" onclick="applyFilters()">조회</button>
                             </div>
                         </div>
-                        <div class="filter-tabs" id="dateFilterTabs">
-                             <button class="filter-tab-btn" data-type="month">월별</button>
-                             <button class="filter-tab-btn" data-type="year">연도별</button>
-                             <button class="filter-tab-btn" data-type="day">특정일</button>
-                             <button class="filter-tab-btn" data-type="range">기간설정</button>
-                             <button class="filter-tab-btn" data-type="all">전체기간</button>
-                        </div>
-                        <div class="filter-row" id="dateInputsContainer"></div>
-                        <div class="filter-summary" id="filterSummary"></div>
                     </div>
+                    <div class="filter-summary" id="filterSummary"></div>
                     <div class="table-container">
                         <table class="data-table"></table>
                     </div>
@@ -173,6 +181,7 @@
         let activeDetailRowId = null;
         let currentSortColumn = '지원일';
         let currentSortDirection = 'desc';
+        let activeDateMode = 'month';
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchData();
@@ -221,7 +230,8 @@
                 generateVisibleColumns(currentHeaders);
                 setupColumnToggles();
                 populateDropdownFilters();
-                handleDateFilterChange('month', true); // 초기 로딩 시 '월별' 탭 활성화 및 필터 적용
+                updateDateFilterUI(); // Set default date UI
+                applyFilters(); 
             } catch (error) {
                 console.error("데이터 불러오기 실패:", error);
                 tableContainer.innerHTML = `<p style="text-align:center; padding: 40px; color: var(--danger-color);">데이터 로딩 중 오류 발생: ${error.message}</p>`;
@@ -242,14 +252,18 @@
                 });
 
                 if (!isFormValid) { alert('필수 항목을 모두 입력해주세요.'); return; }
+
                 saveBtn.disabled = true;
                 saveBtn.textContent = '저장 중...';
+
                 await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
                     body: JSON.stringify({ action: 'create', data: applicantData })
                 });
+                
                 closeModal();
                 location.reload();
+
             } catch (error) {
                 console.error("데이터 저장 실패:", error);
                 alert("데이터 저장 중 오류 발생: " + error.message);
@@ -260,7 +274,7 @@
         }
 
         function applyFilters() {
-            document.querySelectorAll('.filter-bar select, #dateInputsContainer input').forEach(input => {
+            document.querySelectorAll('.filter-bar select').forEach(input => {
                 input.classList.toggle('filter-active', input.value && input.value !== 'all');
             });
 
@@ -268,24 +282,21 @@
             const routeFilter = document.getElementById('routeFilter').value;
             const positionFilter = document.getElementById('positionFilter').value;
             const applyDateIndex = currentHeaders.indexOf('지원일');
-            
+
             if (routeFilter !== 'all' && routeIndex !== -1) filteredData = filteredData.filter(row => row[routeIndex] === routeFilter);
             if (positionFilter !== 'all' && positionIndex !== -1) filteredData = filteredData.filter(row => row[positionIndex] === positionFilter);
-
+            
             if (applyDateIndex !== -1) {
-                const activeTab = document.querySelector('#dateFilterTabs .filter-tab-btn.active');
-                const dateFilterType = activeTab ? activeTab.dataset.type : 'all';
-
-                if (dateFilterType === 'year') {
-                    const year = document.getElementById('yearInput').value;
+                if (activeDateMode === 'year') {
+                    const year = document.getElementById('dateInput').value;
                     if(year) filteredData = filteredData.filter(row => row[applyDateIndex] && new Date(row[applyDateIndex]).getFullYear() == year);
-                } else if (dateFilterType === 'month') {
-                    const month = document.getElementById('monthInput').value;
+                } else if (activeDateMode === 'month') {
+                    const month = document.getElementById('dateInput').value;
                     if(month) filteredData = filteredData.filter(row => row[applyDateIndex] && row[applyDateIndex].slice(0, 7) === month);
-                } else if (dateFilterType === 'day') {
-                    const day = document.getElementById('dayInput').value;
+                } else if (activeDateMode === 'day') {
+                    const day = document.getElementById('dateInput').value;
                     if(day) filteredData = filteredData.filter(row => row[applyDateIndex] && row[applyDateIndex].slice(0, 10) === day);
-                } else if (dateFilterType === 'range') {
+                } else if (activeDateMode === 'range') {
                     const startDate = document.getElementById('startDateInput').value;
                     const endDate = document.getElementById('endDateInput').value;
                     if (startDate && endDate) {
@@ -311,17 +322,13 @@
                 const sortIndex = currentHeaders.indexOf(currentSortColumn);
                 if (sortIndex !== -1) {
                     data.sort((a, b) => {
-                        let valA = a[sortIndex];
-                        let valB = b[sortIndex];
+                        let valA = a[sortIndex]; let valB = b[sortIndex];
                         if (currentSortColumn === '지원일') {
-                            valA = new Date(valA || '1970-01-01');
-                            valB = new Date(valB || '1970-01-01');
+                            valA = new Date(valA || '1970-01-01'); valB = new Date(valB || '1970-01-01');
                         } else if (['나이', '구분'].includes(currentSortColumn)) {
-                            valA = Number(valA) || 0;
-                            valB = Number(valB) || 0;
+                            valA = Number(valA) || 0; valB = Number(valB) || 0;
                         } else {
-                            valA = String(valA || '').toLowerCase();
-                            valB = String(valB || '').toLowerCase();
+                            valA = String(valA || '').toLowerCase(); valB = String(valB || '').toLowerCase();
                         }
                         if (valA < valB) return currentSortDirection === 'asc' ? -1 : 1;
                         if (valA > valB) return currentSortDirection === 'asc' ? 1 : -1;
@@ -334,7 +341,8 @@
 
         function resetFilters() {
             document.querySelectorAll('.filter-bar select').forEach(select => select.value = 'all');
-            handleDateFilterChange('month', true);
+            activeDateMode = 'month';
+            updateDateFilterUI();
             applyFilters();
         }
         
@@ -433,14 +441,11 @@
         function toggleDetails(rowId, rowData) {
             const detailRow = document.getElementById(`detail-${rowId}`);
             if (!detailRow) return;
-
             if (activeDetailRowId && activeDetailRowId !== rowId) {
                 const prevDetailRow = document.getElementById(`detail-${activeDetailRowId}`);
                 if (prevDetailRow) prevDetailRow.classList.remove('show');
             }
-            
             detailRow.classList.toggle('show');
-            
             if (detailRow.classList.contains('show')) {
                 const detailContent = detailRow.querySelector('.detail-content');
                 let detailHtml = '<table class="detail-table">';
@@ -457,133 +462,63 @@
             }
         }
         
-        function toggleColumnDropdown() {
-            const dropdown = document.getElementById('columnToggleDropdown');
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-        }
-
-        function handleColumnToggle(event, columnName) {
-            visibleColumns[columnName] = event.target.checked;
-            applyFilters();
-        }
-
-        function setupColumnToggles() {
-            const container = document.getElementById('columnToggleDropdown');
-            container.innerHTML = '';
-            Object.keys(visibleColumns).forEach(columnName => {
-                const item = document.createElement('div');
-                item.className = 'column-toggle-item';
-                item.innerHTML = `<input type="checkbox" id="col-${columnName}" onchange="handleColumnToggle(event, '${columnName}')" ${visibleColumns[columnName] ? 'checked' : ''}><label for="col-${columnName}">${columnName}</label>`;
-                container.appendChild(item);
-            });
-        }
-        
-        function generateVisibleColumns(headers) {
-            visibleColumns = {};
-            headers.forEach(header => {
-                if (header) visibleColumns[header] = !DEFAULT_HIDDEN_COLUMNS.includes(header);
-            });
-        }
-
-        function buildModalForm() {
-            const form = document.getElementById('applicantForm');
-            form.innerHTML = '';
-            currentHeaders.forEach(header => {
-                if (!header) return;
-                const id = `modal-form-${header}`;
-                const formGroup = document.createElement('div');
-                formGroup.className = 'form-group';
-                let inputHtml;
-                const required = (header === '이름' || header === '지원일');
-
-                if (header === '구분') {
-                    inputHtml = `<input type="text" id="${id}" value="${nextSequenceNumber}">`;
-                } else if (header === '모집분야') {
-                    inputHtml = `<select id="${id}"><option value="영업">영업</option><option value="강사">강사</option></select>`;
-                } else if (header === '지원루트') {
-                    const routes = ['사람인', '잡코리아', '인크루트', 'Instagram', 'Threads', '배우공고'];
-                    const options = routes.map(r => `<option value="${r}">${r}</option>`).join('');
-                    inputHtml = `<select id="${id}"><option value=""></option>${options}</select>`;
-                } else if (header === '연락처') {
-                    inputHtml = `<input type="tel" id="${id}" placeholder="010-0000-0000" oninput="formatPhoneNumber(this)">`;
-                } else if (header === '지원일') {
-                    inputHtml = `<input type="date" id="${id}" ${required ? 'required' : ''}>`;
-                } else if (header === '성별') {
-                    inputHtml = `<select id="${id}"><option value=""></option><option value="남">남</option><option value="여">여</option></select>`;
-                } else if (header === '비고') {
-                    inputHtml = `<textarea id="${id}" rows="3"></textarea>`;
-                } else {
-                    inputHtml = `<input type="text" id="${id}" ${required ? 'required' : ''}>`;
-                }
-                
-                formGroup.innerHTML = `<label for="${id}">${header}${required ? ' *' : ''}</label>${inputHtml}`;
-                if (header === '비고' || header === '구분') formGroup.classList.add('full-width');
-                form.appendChild(formGroup);
-            });
-        }
-
-        function formatPhoneNumber(input) {
-            let value = input.value.replace(/\D/g, '');
-            if (value.length > 11) value = value.slice(0, 11);
-            if (value.length > 7) {
-                input.value = `${value.slice(0, 3)}-${value.slice(3, 7)}-${value.slice(7)}`;
-            } else if (value.length > 3) {
-                input.value = `${value.slice(0, 3)}-${value.slice(3)}`;
-            } else {
-                input.value = value;
-            }
-        }
-        
         function setupDateFilterListeners() {
-            const tabsContainer = document.getElementById('dateFilterTabs');
-            tabsContainer.addEventListener('click', (event) => {
-                if (event.target.tagName === 'BUTTON') {
-                    handleDateFilterChange(event.target.dataset.type);
+            document.getElementById('dateModeToggle').addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    activeDateMode = e.target.dataset.mode;
+                    updateDateFilterUI();
                 }
             });
         }
         
-        function handleDateFilterChange(type = 'month', isInitial = false) {
-            document.querySelectorAll('#dateFilterTabs .filter-tab-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.type === type);
+        function updateDateFilterUI() {
+            document.querySelectorAll('.date-mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === activeDateMode);
             });
-
             const container = document.getElementById('dateInputsContainer');
-            container.innerHTML = '';
             let html = '';
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const day = now.getDate().toString().padStart(2, '0');
             
-            if (type === 'year') {
-                html = `<div class="filter-group"><input type="number" id="yearInput" placeholder="YYYY"></div>`;
-            } else if (type === 'month') {
-                html = `<div class="filter-group"><input type="month" id="monthInput"></div>`;
-            } else if (type === 'day') {
-                html = `<div class="filter-group"><input type="date" id="dayInput"></div>`;
-            } else if (type === 'range') {
-                html = `<div class="filter-group"><input type="date" id="startDateInput"></div> <span style="align-self: center; margin: 0 5px;">-</span> <div class="filter-group"><input type="date" id="endDateInput"></div>`;
+            if (activeDateMode === 'year') {
+                html = `<input type="number" id="dateInput" value="${year}">`;
+            } else if (activeDateMode === 'month') {
+                html = `<button class="date-nav-btn" onclick="navigateDate(-1)">&lt;</button><input type="month" id="dateInput" value="${year}-${month}"><button class="date-nav-btn" onclick="navigateDate(1)">&gt;</button>`;
+            } else if (activeDateMode === 'day') {
+                html = `<button class="date-nav-btn" onclick="navigateDate(-1)">&lt;</button><input type="date" id="dateInput" value="${year}-${month}-${day}"><button class="date-nav-btn" onclick="navigateDate(1)">&gt;</button>`;
+            } else if (activeDateMode === 'range') {
+                html = `<input type="date" id="startDateInput"><span style="margin: 0 5px;">-</span><input type="date" id="endDateInput">`;
             }
             container.innerHTML = html;
-            
-            container.querySelectorAll('input').forEach(input => input.addEventListener('change', applyFilters));
-            
-            if (isInitial && type === 'month') {
-                const now = new Date();
-                const year = now.getFullYear();
-                const month = (now.getMonth() + 1).toString().padStart(2, '0');
-                if(document.getElementById('monthInput')) {
-                    document.getElementById('monthInput').value = `${year}-${month}`;
-                }
-            } else if (type === 'year') {
-                 if(document.getElementById('yearInput')) {
-                   document.getElementById('yearInput').value = new Date().getFullYear();
-                }
-            }
+        }
 
-            if (type === 'all' || isInitial) {
-                // Do nothing to apply filters yet, let fetchData handle initial load
+        function navigateDate(direction) {
+            const input = document.getElementById('dateInput');
+            if (!input) return;
+            if (activeDateMode === 'year') {
+                input.value = Number(input.value) + direction;
             } else {
-                applyFilters();
+                let currentDate = new Date(input.value);
+                if (activeDateMode === 'month') {
+                    currentDate.setMonth(currentDate.getMonth() + direction);
+                    const year = currentDate.getFullYear();
+                    const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+                    input.value = `${year}-${month}`;
+                } else if (activeDateMode === 'day') {
+                    currentDate.setDate(currentDate.getDate() + direction);
+                    input.value = currentDate.toISOString().slice(0, 10);
+                }
             }
         }
+        
+        function toggleColumnDropdown() { /* ... */ }
+        function handleColumnToggle(event, columnName) { /* ... */ }
+        function setupColumnToggles() { /* ... */ }
+        function generateVisibleColumns(headers) { /* ... */ }
+        function buildModalForm() { /* ... */ }
+        function formatPhoneNumber(input) { /* ... */ }
     </script>
 </body>
 </html>
