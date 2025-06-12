@@ -43,8 +43,6 @@
         .primary-btn:hover { filter: brightness(1.1); }
         .secondary-btn { background-color: #f1f5f9; color: var(--text-secondary); border: 1px solid var(--border-color); }
         .secondary-btn:hover { background-color: #e2e8f0; }
-        .icon-btn { width: 38px; height: 38px; font-size: 1rem; padding: 0; justify-content: center; border-radius: 50%; background-color: var(--danger-color); color: white; border: none; cursor: pointer; transition: all 0.2s; }
-        .icon-btn:hover { filter: brightness(1.1); }
         .filter-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; align-items: end; padding: 20px; background: var(--content-bg); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); margin-bottom: 20px; }
         .filter-group { display: flex; flex-direction: column; }
         .filter-group label { font-weight: 500; font-size: 0.9rem; margin-bottom: 5px; }
@@ -56,14 +54,19 @@
         .data-table { width: 100%; border-collapse: collapse; }
         .data-table th, .data-table td { padding: 15px; border-bottom: 1px solid var(--border-color); text-align: left; white-space: nowrap; font-size: 0.95rem; }
         .data-table thead th { background-color: #f8fafc; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; font-size: 0.8rem; position: sticky; top: 0; z-index: 1;}
+        .data-table th.sortable-header { cursor: pointer; user-select: none; }
+        .data-table th.sortable-header:hover { background-color: #f1f5f9; }
+        .data-table .sort-icon { margin-left: 8px; color: #cbd5e1; transition: color 0.2s; }
+        .data-table .sort-icon.active { color: var(--sidebar-accent); }
         .data-table tbody tr:not(.detail-row) { cursor: pointer; }
         .data-table tbody tr:not(.detail-row):hover { background-color: #f1f5f9; }
         .data-table .detail-row { display: none; }
         .data-table .detail-row.show { display: table-row; background-color: #fafbff; }
-        .detail-content { padding: 20px; }
-        .detail-table { width: auto; border-spacing: 15px 8px; border-collapse: separate; }
-        .detail-table td { padding: 5px; border: none; white-space: normal; }
-        .detail-table strong { color: var(--text-secondary); display: inline-block; width: 80px; }
+        .detail-content { padding: 20px; box-shadow: inset 0 4px 6px -1px rgba(0,0,0,0.05);}
+        .detail-table { width: 100%; border-spacing: 0; border-collapse: collapse; }
+        .detail-table td { padding: 10px; border-bottom: 1px solid var(--border-color); white-space: normal; }
+        .detail-table tr:last-child td { border-bottom: none; }
+        .detail-table strong { color: var(--text-secondary); display: inline-block; width: 100px; font-weight: 500;}
         .column-toggle-container { position: relative; }
         .column-toggle-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; background-color: var(--content-bg); border: 1px solid var(--border-color); border-radius: var(--border-radius); box-shadow: var(--shadow-md); padding: 15px; width: 200px; z-index: 100; }
         .column-toggle-item { display: flex; align-items: center; margin-bottom: 10px; }
@@ -104,6 +107,7 @@
                     <div class="page-header">
                         <h2 class="page-title">전체 지원자 목록</h2>
                         <div class="header-actions">
+                            <button class="secondary-btn" onclick="resetFilters()"><i class="fas fa-undo"></i> 필터 초기화</button>
                             <div class="column-toggle-container">
                                 <button class="secondary-btn" onclick="toggleColumnDropdown()"><i class="fas fa-columns"></i> 컬럼 설정</button>
                                 <div class="column-toggle-dropdown" id="columnToggleDropdown"></div>
@@ -136,10 +140,6 @@
                                 <input type="date" id="endDateInput" onchange="applyFilters()">
                             </div>
                         </div>
-                         <div class="filter-group">
-                            <label>&nbsp;</label>
-                            <button class="icon-btn" onclick="resetFilters()" title="필터 초기화"><i class="fas fa-undo"></i></button>
-                        </div>
                     </div>
                     <div class="filter-summary" id="filterSummary"></div>
                     <div class="table-container">
@@ -170,6 +170,8 @@
         let visibleColumns = {};
         let nextSequenceNumber = 1;
         let activeDetailRowId = null;
+        let currentSortColumn = '지원일';
+        let currentSortDirection = 'desc';
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchData();
@@ -217,8 +219,8 @@
                 generateVisibleColumns(currentHeaders);
                 setupColumnToggles();
                 populateDropdownFilters();
-                resetFilters(false); // 초기 필터 상태 설정
-                applyFilters(); // 초기 데이터 표시
+                resetFilters(false);
+                applyFilters();
             } catch (error) {
                 console.error("데이터 불러오기 실패:", error);
                 tableContainer.innerHTML = `<p style="text-align:center; padding: 40px; color: var(--danger-color);">데이터 로딩 중 오류 발생: ${error.message}</p>`;
@@ -262,8 +264,7 @@
         }
 
         function applyFilters() {
-            const filterInputs = document.querySelectorAll('.filter-bar input, .filter-bar select');
-            filterInputs.forEach(input => {
+            document.querySelectorAll('.filter-bar input, .filter-bar select').forEach(input => {
                 if((input.type === 'date' && input.value) || (input.type !== 'date' && input.value && input.value !== 'all')) {
                     input.classList.add('filter-active');
                 } else {
@@ -288,11 +289,11 @@
 
             if (applyDateIndex !== -1) {
                 let dateFiltered = false;
-                if (year) {
+                if (year && !month && !startDate) {
                     filteredData = filteredData.filter(row => row[applyDateIndex] && new Date(row[applyDateIndex]).getFullYear() == year);
                     dateFiltered = true;
                 }
-                if (month) {
+                if (month && !year && !startDate) {
                     filteredData = filteredData.filter(row => row[applyDateIndex] && row[applyDateIndex].slice(0, 7) === month);
                     dateFiltered = true;
                 }
@@ -307,11 +308,35 @@
                     });
                     dateFiltered = true;
                 }
-                // 페이지 첫 로드 시, 아무 날짜 필터도 활성화되지 않았다면 현재 월로 필터링
-                if (!year && !month && !startDate && !endDate) {
+                if (!dateFiltered) {
                     const now = new Date();
                     const currentMonth = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
                     filteredData = filteredData.filter(row => row[applyDateIndex] && row[applyDateIndex].slice(0, 7) === currentMonth);
+                }
+            }
+            
+            if (currentSortColumn && currentSortDirection) {
+                const sortIndex = currentHeaders.indexOf(currentSortColumn);
+                if (sortIndex !== -1) {
+                    filteredData.sort((a, b) => {
+                        let valA = a[sortIndex];
+                        let valB = b[sortIndex];
+                        
+                        if (currentSortColumn === '지원일') {
+                            valA = new Date(valA || '1970-01-01');
+                            valB = new Date(valB || '1970-01-01');
+                        } else if (currentSortColumn === '나이' || currentSortColumn === '구분') {
+                            valA = Number(valA) || 0;
+                            valB = Number(valB) || 0;
+                        } else {
+                            valA = String(valA || '').toLowerCase();
+                            valB = String(valB || '').toLowerCase();
+                        }
+                        
+                        if (valA < valB) return currentSortDirection === 'asc' ? -1 : 1;
+                        if (valA > valB) return currentSortDirection === 'asc' ? 1 : -1;
+                        return 0;
+                    });
                 }
             }
             
@@ -321,19 +346,14 @@
 
         function resetFilters(runApplyFilters = true) {
             document.querySelectorAll('.filter-bar input, .filter-bar select').forEach(input => {
-                if(input.tagName === 'SELECT') input.value = 'all';
-                else input.value = '';
+                if(input.tagName === 'SELECT') input.value = 'all'; else input.value = '';
             });
             const now = new Date();
             const year = now.getFullYear();
             const month = (now.getMonth() + 1).toString().padStart(2, '0');
-            document.getElementById('yearInput').value = year;
+            document.getElementById('yearInput').value = '';
             document.getElementById('monthInput').value = `${year}-${month}`;
-            
-            // On initial load, we don't re-apply filters, fetchData will do it.
-            if (runApplyFilters) {
-                applyFilters();
-            }
+            if (runApplyFilters) applyFilters();
         }
         
         function updateSummary(filteredCount) {
@@ -343,7 +363,6 @@
         function populateDropdownFilters() {
             const routeIndex = currentHeaders.indexOf('지원루트');
             const positionIndex = currentHeaders.indexOf('모집분야');
-
             if (routeIndex !== -1) {
                 const routes = [...new Set(allApplicantData.map(row => row[routeIndex]).filter(Boolean))];
                 const routeFilter = document.getElementById('routeFilter');
@@ -358,6 +377,17 @@
             }
         }
         
+        function sortTable(columnName) {
+            if (currentSortColumn === columnName) {
+                currentSortDirection = currentSortDirection === 'asc' ? 'desc' : (currentSortDirection === 'desc' ? '' : 'asc');
+                if (currentSortDirection === '') currentSortColumn = '';
+            } else {
+                currentSortColumn = columnName;
+                currentSortDirection = 'asc';
+            }
+            applyFilters();
+        }
+        
         function renderTable(dataToRender) {
             const tableContainer = document.querySelector('.table-container');
             tableContainer.innerHTML = '';
@@ -369,7 +399,13 @@
             currentHeaders.forEach(header => {
                 if (visibleColumns[header]) {
                     const th = document.createElement('th');
-                    th.textContent = header;
+                    th.className = 'sortable-header';
+                    th.onclick = () => sortTable(header);
+                    let sortIcon = 'fa-sort';
+                    if (currentSortColumn === header && currentSortDirection) {
+                        sortIcon = currentSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
+                    }
+                    th.innerHTML = `${header} <i class="fas ${sortIcon} sort-icon ${currentSortColumn === header ? 'active' : ''}"></i>`;
                     headerRow.appendChild(th);
                 }
             });
@@ -387,7 +423,11 @@
                     const rowId = `row-${index}`;
                     const row = tbody.insertRow();
                     row.id = rowId;
-                    row.onclick = () => toggleDetails(rowId, rowData);
+                    row.onclick = (event) => {
+                        if (event.target.tagName !== 'A') { // 링크 클릭이 아닐 때만 상세 보기 토글
+                            toggleDetails(rowId, rowData);
+                        }
+                    };
 
                     rowData.forEach((cellData, cellIndex) => {
                         const headerName = currentHeaders[cellIndex];
@@ -396,7 +436,7 @@
                             if (headerName === '구분') {
                                 cell.textContent = index + 1;
                             } else if (headerName === '연락처' && cellData) {
-                                cell.innerHTML = `<a href="tel:${cellData.replace(/\D/g, '')}" style="text-decoration:none; color: var(--text-primary);">${cellData}</a>`;
+                                cell.innerHTML = `<a href="tel:${cellData.replace(/\D/g, '')}" style="text-decoration:none; color: var(--sidebar-accent); font-weight: 500;">${cellData}</a>`;
                             } else {
                                 cell.textContent = (headerName === '지원일' && cellData) ? new Date(cellData).toLocaleDateString() : (cellData || '');
                             }
@@ -428,10 +468,9 @@
             if (detailRow.classList.contains('show')) {
                 const detailContent = detailRow.querySelector('.detail-content');
                 let detailHtml = '<table class="detail-table">';
-                DEFAULT_HIDDEN_COLUMNS.forEach(header => {
-                    const headerIndex = currentHeaders.indexOf(header);
-                    if (headerIndex !== -1) {
-                         detailHtml += `<tr><td><strong>${header}:</strong></td><td>${rowData[headerIndex] || '-'}</td></tr>`;
+                currentHeaders.forEach((header, index) => {
+                    if (DEFAULT_HIDDEN_COLUMNS.includes(header)) {
+                         detailHtml += `<tr><td><strong>${header}:</strong></td><td>${rowData[index] || '-'}</td></tr>`;
                     }
                 });
                 detailHtml += '</table>';
