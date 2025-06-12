@@ -67,11 +67,25 @@
         .column-toggle-item input { margin-right: 10px; width: 16px; height: 16px; }
         .column-toggle-item label { cursor: pointer; font-size: 0.95rem; }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
-        .modal-content { background-color: var(--content-bg); padding: 30px; border-radius: var(--border-radius); box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 600px; }
+        
+        /* 모달 창 디자인 수정 */
+        .modal-content {
+            background-color: var(--content-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 900px; /* 창의 최대 너비를 넓힘 */
+        }
+        .modal-body form {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr; /* 한 줄에 3개의 항목이 나오도록 변경 */
+            gap: 20px;
+        }
+
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .modal-title { font-size: 1.5rem; }
         .close-btn { font-size: 1.8rem; color: var(--text-secondary); cursor: pointer; background: none; border: none; }
-        .modal-body form { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .form-group { display: flex; flex-direction: column; }
         .form-group label { margin-bottom: 8px; font-weight: 500; font-size: 0.9rem; }
         .form-group input, .form-group select, .form-group textarea { padding: 10px; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 6px; }
@@ -162,7 +176,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('yearInput').value = new Date().getFullYear();
             fetchData();
-            // Close dropdown if clicked outside
             document.addEventListener('click', function(event) {
                 const dropdownContainer = document.querySelector('.column-toggle-container');
                 if (dropdownContainer && !dropdownContainer.contains(event.target)) {
@@ -209,6 +222,45 @@
             }
         }
         
+        async function saveNewApplicant() {
+            const saveBtn = document.querySelector('.modal-footer .primary-btn');
+            try {
+                const applicantData = {};
+                let isFormValid = true;
+                currentHeaders.forEach(header => {
+                    const input = document.getElementById(`modal-form-${header}`);
+                    if (input) {
+                        applicantData[header] = input.value;
+                        if (input.hasAttribute('required') && !input.value) {
+                            isFormValid = false;
+                        }
+                    }
+                });
+
+                if (!isFormValid) {
+                    alert('필수 항목(이름, 지원일 등)을 모두 입력해주세요.'); return;
+                }
+
+                saveBtn.disabled = true;
+                saveBtn.textContent = '저장 중...';
+
+                await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'create', data: applicantData })
+                });
+                
+                closeModal();
+                await fetchApplicants();
+
+            } catch (error) {
+                console.error("데이터 저장 실패:", error);
+                alert("데이터 저장 중 오류 발생: " + error.message);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '저장하기';
+            }
+        }
+
         function applyFilters() {
             let filteredData = [...allApplicantData];
             const dateFilterType = document.getElementById('dateFilterType').value;
@@ -227,7 +279,7 @@
                     if (startDate && endDate) {
                         const start = new Date(startDate);
                         const end = new Date(endDate);
-                        end.setHours(23, 59, 59, 999); // Include the entire end day
+                        end.setHours(23, 59, 59, 999);
                         filteredData = filteredData.filter(row => {
                             if(!row[applyDateIndex]) return false;
                             const applyDate = new Date(row[applyDateIndex]);
@@ -323,7 +375,6 @@
                 const formGroup = document.createElement('div');
                 formGroup.className = 'form-group';
                 let inputHtml;
-
                 const required = (header === '이름' || header === '지원일');
                 
                 if (header === '지원일') inputHtml = `<input type="date" id="${id}" ${required ? 'required' : ''}>`;
@@ -335,45 +386,6 @@
                 if (header === '비고') formGroup.classList.add('full-width');
                 form.appendChild(formGroup);
             });
-        }
-
-        async function saveNewApplicant() {
-            const saveBtn = document.querySelector('.modal-footer .primary-btn');
-            try {
-                const applicantData = {};
-                let isFormValid = true;
-                currentHeaders.forEach(header => {
-                    const input = document.getElementById(`modal-form-${header}`);
-                    if (input) {
-                        applicantData[header] = input.value;
-                        if (input.hasAttribute('required') && !input.value) {
-                            isFormValid = false;
-                        }
-                    }
-                });
-
-                if (!isFormValid) {
-                    alert('필수 항목(이름, 지원일 등)을 모두 입력해주세요.'); return;
-                }
-
-                saveBtn.disabled = true;
-                saveBtn.textContent = '저장 중...';
-
-                await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'create', data: applicantData })
-                });
-                
-                closeModal();
-                await fetchApplicants();
-
-            } catch (error) {
-                console.error("데이터 저장 실패:", error);
-                alert("데이터 저장 중 오류 발생: " + error.message);
-            } finally {
-                saveBtn.disabled = false;
-                saveBtn.textContent = '저장하기';
-            }
         }
     </script>
 </body>
