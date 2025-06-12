@@ -11,95 +11,236 @@
             --sidebar-bg: #4a5568; --sidebar-header-bg: #2d3748; --sidebar-text: #e2e8f0;
             --sidebar-accent: #818cf8; --main-bg: #f8fafc; --content-bg: #ffffff;
             --text-primary: #334155; --text-secondary: #64748b; --border-color: #e2e8f0;
-            --accent-orange: #fb923c;
+            --accent-orange: #fb923c; --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
             --border-radius: 8px;
         }
+
+        [data-theme="dark"] {
+            --sidebar-bg: #1e293b; --sidebar-header-bg: #0f172a; --sidebar-text: #f1f5f9;
+            --sidebar-accent: #a78bfa; --main-bg: #0f172a; --content-bg: #1e293b;
+            --text-primary: #f1f5f9; --text-secondary: #94a3b8; --border-color: #334155;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Noto Sans KR', sans-serif; background: var(--main-bg); color: var(--text-primary); }
+        body { font-family: 'Noto Sans KR', sans-serif; background: var(--main-bg); color: var(--text-primary); transition: all 0.3s ease; }
+        
         .app-container { display: flex; min-height: 100vh; }
-        .sidebar { width: 260px; background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; position: fixed; height: 100%; }
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; position: fixed; height: 100%; transition: all 0.3s ease; z-index: 1000; overflow-y: auto; }
         .sidebar-header { padding: 25px 20px; background: var(--sidebar-header-bg); }
         .sidebar-title { font-size: 1.5rem; font-weight: 700; }
         .sidebar-subtitle { font-size: 0.85rem; color: #a0aec0; }
         .nav-menu { padding: 15px 0; }
-        .nav-item { display: flex; align-items: center; padding: 14px 20px; color: var(--sidebar-text); text-decoration: none; transition: background-color 0.2s; border-left: 4px solid transparent; cursor: pointer; background: none; border: none; width: 100%; text-align: left; font-size: 1rem; }
-        .nav-item:hover { background: #718096; }
+        .nav-item { display: flex; align-items: center; padding: 14px 20px; color: var(--sidebar-text); text-decoration: none; transition: all 0.2s ease; border-left: 4px solid transparent; cursor: pointer; background: none; border: none; width: 100%; text-align: left; font-size: 1rem; }
+        .nav-item:hover { background: #718096; transform: translateX(2px); }
         .nav-item.active { background: #718096; border-left-color: var(--sidebar-accent); font-weight: 500;}
         .nav-item .icon { margin-right: 15px; width: 20px; text-align: center; }
-        .main-content { flex: 1; margin-left: 260px; display: flex; flex-direction: column; }
+        
+        .main-content { flex: 1; margin-left: 260px; display: flex; flex-direction: column; transition: margin-left 0.3s ease; }
         .main-header { background: var(--content-bg); padding: 18px 30px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
         .main-title { font-size: 1.7rem; font-weight: 700; }
+        .theme-toggle { background: none; border: 2px solid var(--border-color); color: var(--text-primary); padding: 8px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; }
+        .theme-toggle:hover { background: var(--sidebar-accent); color: white; border-color: var(--sidebar-accent); }
+        
         .content-area { padding: 30px; }
         .page { display: none; }
-        .page.active { display: block; animation: fadeIn 0.5s; }
+        .page.active { display: block; animation: fadeIn 0.5s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* 사이드바 위젯 */
+        .sidebar-widgets { padding: 20px 15px; margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-widget { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 6px; margin-bottom: 15px; }
+        .sidebar-widget:last-child { margin-bottom: 0; }
+        .sidebar-widget-title { font-size: 0.75rem; font-weight: 500; color: #a0aec0; text-transform: uppercase; margin-bottom: 8px; }
+        .sidebar-widget-value { font-size: 1.5rem; font-weight: 700; color: var(--sidebar-text); }
+        .sidebar-widget-subtitle { font-size: 0.7rem; color: #a0aec0; margin-top: 4px; }
+        
+        /* 📅 면접 일정 테이블 */
+        /* 📅 면접 일정 카드 */
+        .interview-schedule-card { background: var(--content-bg); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); padding: 25px; margin-bottom: 30px; border-left: 4px solid var(--warning); }
+        .interview-schedule-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .interview-schedule-title { font-size: 1.2rem; font-weight: 600; color: var(--text-primary); }
+        .interview-schedule-icon { font-size: 1.5rem; color: var(--warning); }
+        .no-interviews { text-align: center; color: var(--text-secondary); font-style: italic; padding: 20px 0; }
+        
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
         .page-title { font-size: 1.8rem; font-weight: 500; }
-        .header-actions { display: flex; gap: 10px; }
-        .primary-btn, .secondary-btn { padding: 10px 20px; font-size: 0.95rem; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+        .header-actions { display: flex; gap: 10px; align-items: center; }
+        
+        /* 🗂️ 뷰 토글 */
+        .view-toggle { display: flex; background: var(--content-bg); border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; }
+        .view-btn { padding: 8px 12px; background: none; border: none; cursor: pointer; transition: all 0.2s ease; color: var(--text-secondary); }
+        .view-btn.active { background: var(--sidebar-accent); color: white; }
+        .view-btn:hover:not(.active) { background: var(--border-color); }
+        
+        .primary-btn, .secondary-btn { padding: 10px 20px; font-size: 0.95rem; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; }
         .primary-btn { background-color: var(--sidebar-accent); color: white; }
-        .primary-btn:hover { filter: brightness(1.1); }
-        .secondary-btn { background-color: #f1f5f9; color: var(--text-secondary); border: 1px solid var(--border-color); }
+        .primary-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .secondary-btn { background-color: var(--content-bg); color: var(--text-secondary); border: 1px solid var(--border-color); }
         .secondary-btn.reset-btn { background-color: var(--accent-orange); color: white; }
-        .secondary-btn:hover { background-color: #e2e8f0; }
+        .secondary-btn:hover { background-color: var(--border-color); transform: translateY(-1px); }
+        
+        /* 🔍 검색 필터 */
         .filter-bar { display: flex; gap: 15px; align-items: flex-end; padding: 20px; background: var(--content-bg); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); margin-bottom: 20px; flex-wrap: wrap; }
         .filter-group { display: flex; flex-direction: column; }
         .filter-group label { font-weight: 500; font-size: 0.9rem; margin-bottom: 5px; }
-        .filter-group input, .filter-group select { height: 44px; padding: 10px 12px; font-size: 0.9rem; border: 1px solid var(--border-color); border-radius: 6px; transition: all 0.2s;}
-        .date-filter-container { display: flex; align-items: center; gap: 5px; height: 44px; background-color: #f8fafc; border: 1px solid var(--border-color); padding: 5px; border-radius: 6px; }
-        .date-mode-btn { padding: 8px 12px; border: none; background-color: transparent; font-weight: 500; cursor: pointer; border-radius: 4px; font-size: 0.9rem; height: 100%;}
+        .filter-group input, .filter-group select { height: 44px; padding: 10px 12px; font-size: 0.9rem; border: 1px solid var(--border-color); border-radius: 6px; transition: all 0.2s ease; background: var(--content-bg); color: var(--text-primary); }
+        .filter-group input:focus, .filter-group select:focus { border-color: var(--sidebar-accent); outline: none; box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.1); }
+        .search-input { min-width: 200px; }
+        .search-input input { padding-left: 40px; }
+        .search-input .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); pointer-events: none; }
+        .search-input { position: relative; }
+        
+        .date-filter-container { display: flex; align-items: center; gap: 5px; height: 44px; background-color: var(--content-bg); border: 1px solid var(--border-color); padding: 5px; border-radius: 6px; }
+        .date-mode-btn { padding: 8px 12px; border: none; background-color: transparent; font-weight: 500; cursor: pointer; border-radius: 4px; font-size: 0.9rem; height: 100%; transition: all 0.2s ease; }
         .date-mode-btn.active { background-color: var(--text-secondary); color: white; }
-        .date-nav-btn { padding: 4px 8px; border: none; background-color: var(--sidebar-accent); color: white; border-radius: 3px; cursor: pointer; font-weight: bold; }
+        .date-nav-btn { padding: 4px 8px; border: none; background-color: var(--sidebar-accent); color: white; border-radius: 3px; cursor: pointer; font-weight: bold; transition: all 0.2s ease; }
         .date-nav-btn:hover { filter: brightness(1.1); }
         #dateInputsContainer { display: flex; align-items: center; gap: 5px; }
-        #dateInputsContainer input { padding: 8px; text-align: center; height: 32px; border: 1px solid var(--border-color); border-radius: 4px; }
-        .apply-btn { height: 100%; padding: 0 15px; background-color: var(--sidebar-accent); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500;}
+        #dateInputsContainer input { padding: 8px; text-align: center; height: 32px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--content-bg); color: var(--text-primary); }
+        .apply-btn { height: 100%; padding: 0 15px; background-color: var(--sidebar-accent); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; transition: all 0.2s ease; }
         .apply-btn:hover { filter: brightness(1.1); }
+        
         .filter-summary { margin-top: -10px; margin-bottom: 15px; padding-left: 5px; color: var(--text-primary); font-weight: 500; font-size: 1rem;}
         .filter-summary strong { color: var(--sidebar-accent); margin-right: 5px; }
-        .table-container { background-color: var(--content-bg); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); overflow-x: auto; }
+        
+        /* 테이블 & 카드뷰 */
+        .content-container { background-color: var(--content-bg); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); overflow: hidden; }
+        .table-container { overflow-x: auto; }
         .data-table { width: 100%; border-collapse: collapse; }
         .data-table th, .data-table td { padding: 15px; border-bottom: 1px solid var(--border-color); text-align: center; white-space: nowrap; font-size: 0.95rem; }
-        .data-table thead th { background-color: #f8fafc; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; font-size: 0.8rem; position: sticky; top: 0; z-index: 1;}
-        .data-table th.sortable-header { cursor: pointer; user-select: none; }
-        .data-table th.sortable-header:hover { background-color: #f1f5f9; }
+        .data-table thead th { background-color: var(--main-bg); font-weight: 700; color: var(--text-secondary); text-transform: uppercase; font-size: 0.8rem; position: sticky; top: 0; z-index: 1;}
+        .data-table th.sortable-header { cursor: pointer; user-select: none; transition: background-color 0.2s ease; }
+        .data-table th.sortable-header:hover { background-color: var(--border-color); }
         .data-table .sort-icon { margin-left: 8px; color: #cbd5e1; transition: color 0.2s; }
         .data-table .sort-icon.active { color: var(--sidebar-accent); }
-        .data-table tbody tr:not(.detail-row) { cursor: pointer; }
-        .data-table tbody tr:not(.detail-row):hover { background-color: #f1f5f9; }
+        .data-table tbody tr:not(.detail-row) { cursor: pointer; transition: background-color 0.2s ease; }
+        .data-table tbody tr:not(.detail-row):hover { background-color: var(--main-bg); }
         .data-table td a { color: var(--sidebar-accent); font-weight: 500; text-decoration: none; }
         .data-table td a:hover { text-decoration: underline; }
+        
+        /* 🎨 상태별 색상 코딩 */
+        .status-합격, .status-입과, .status-출근 { background-color: var(--success) !important; color: white !important; }
+        .status-불합격, .status-거절, .status-미참석 { background-color: var(--danger) !important; color: white !important; }
+        .status-보류, .status-면접확정, .status-대기 { background-color: var(--warning) !important; color: white !important; }
+        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 500; }
+        
+        /* 🗂️ 카드뷰 */
+        .cards-container { display: none; padding: 20px; }
+        .cards-container.active { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .applicant-card { background: var(--content-bg); border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 20px; transition: all 0.2s ease; cursor: pointer; }
+        .applicant-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .card-name { font-size: 1.2rem; font-weight: 600; }
+        .card-sequence { background: var(--sidebar-accent); color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; }
+        .card-info { margin-bottom: 10px; }
+        .card-label { font-weight: 500; color: var(--text-secondary); margin-right: 8px; }
+        .card-footer { border-top: 1px solid var(--border-color); padding-top: 15px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center; }
+        
         .data-table .detail-row { display: none; }
-        .data-table .detail-row.show { display: table-row; background-color: #fafbff; }
+        .data-table .detail-row.show { display: table-row; background-color: var(--main-bg); }
         .detail-content { padding: 20px; box-shadow: inset 0 4px 6px -1px rgba(0,0,0,0.05);}
         .detail-table { width: 100%; border-spacing: 0; border-collapse: collapse; }
         .detail-table td { padding: 10px; border-bottom: 1px solid var(--border-color); white-space: normal; text-align: left;}
         .detail-table tr:last-child td { border-bottom: none; }
         .detail-table strong { color: var(--text-secondary); display: inline-block; width: 100px; font-weight: 500;}
+        
         .column-toggle-container { position: relative; }
         .column-toggle-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; background-color: var(--content-bg); border: 1px solid var(--border-color); border-radius: var(--border-radius); box-shadow: var(--shadow-md); padding: 15px; width: 200px; z-index: 100; }
         .column-toggle-item { display: flex; align-items: center; margin-bottom: 10px; }
         .column-toggle-item:last-child { margin-bottom: 0; }
         .column-toggle-item input { margin-right: 10px; width: 16px; height: 16px; }
         .column-toggle-item label { cursor: pointer; font-size: 0.95rem; }
+        
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
-        .modal-content { background-color: var(--content-bg); padding: 30px; border-radius: var(--border-radius); box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 900px; }
+        .modal-content { background-color: var(--content-bg); padding: 30px; border-radius: var(--border-radius); box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 900px; animation: modalSlideIn 0.3s ease; }
+        @keyframes modalSlideIn { from { opacity: 0; transform: scale(0.9) translateY(-20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         .modal-body form { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .modal-title { font-size: 1.5rem; }
-        .close-btn { font-size: 1.8rem; color: var(--text-secondary); cursor: pointer; background: none; border: none; }
+        .close-btn { font-size: 1.8rem; color: var(--text-secondary); cursor: pointer; background: none; border: none; transition: color 0.2s ease; }
+        .close-btn:hover { color: var(--danger); }
         .form-group { display: flex; flex-direction: column; }
         .form-group label { margin-bottom: 8px; font-weight: 500; font-size: 0.9rem; }
-        .form-group input, .form-group select, .form-group textarea { padding: 10px; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 6px; }
+        .form-group input, .form-group select, .form-group textarea { padding: 10px; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--content-bg); color: var(--text-primary); transition: border-color 0.2s ease; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--sidebar-accent); outline: none; box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.1); }
         .form-group.full-width { grid-column: 1 / -1; }
         .modal-footer { text-align: right; margin-top: 30px; }
+        
+        /* ⌨️ 키보드 단축키 힌트 */
+        .keyboard-hint { position: fixed; bottom: 20px; right: 20px; background: var(--content-bg); border: 1px solid var(--border-color); border-radius: var(--border-radius); padding: 10px 15px; font-size: 0.8rem; color: var(--text-secondary); opacity: 0; transition: opacity 0.3s ease; z-index: 1000; }
+        .keyboard-hint.show { opacity: 1; }
+        
+        /* 📅 면접 일정 테이블 */
+        .interview-schedule-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .interview-schedule-table th, .interview-schedule-table td { 
+            padding: 8px; 
+            border-bottom: 1px solid var(--border-color); 
+            text-align: left; 
+            font-size: 0.85rem; 
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 0;
+        }
+        .interview-schedule-table th { 
+            background-color: var(--main-bg); 
+            font-weight: 600; 
+            color: var(--text-secondary); 
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+        .interview-schedule-table td { color: var(--text-primary); }
+        .interview-name-cell { font-weight: 500; max-width: 80px; }
+        .interview-route-cell { max-width: 70px; }
+        .interview-recruiter-cell { max-width: 60px; }
+        .interview-position-cell { max-width: 60px; }
+        .interview-interviewer-cell { max-width: 60px; }
+        .interview-date-cell { color: var(--warning); font-weight: 500; max-width: 90px; }
+        .interview-time-cell { color: var(--text-secondary); max-width: 60px; }
+        
+        /* 📱 개선된 반응형 디자인 */
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .page-header { flex-direction: column; align-items: stretch; gap: 15px; }
+            .header-actions { justify-content: center; flex-wrap: wrap; }
+            .filter-bar { flex-direction: column; }
+            .filter-group { width: 100%; }
+            .interview-schedule-table { font-size: 0.8rem; }
+            .interview-schedule-table th, .interview-schedule-table td { padding: 6px; }
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; }
+            .mobile-overlay.show { display: block; }
+            .mobile-menu-btn { display: block; background: none; border: none; color: var(--text-primary); font-size: 1.5rem; cursor: pointer; }
+            .cards-container.active { grid-template-columns: 1fr; }
+            .modal-content { width: 95%; padding: 20px; }
+            .modal-body form { grid-template-columns: 1fr; }
+            .sidebar-widgets { padding: 15px 10px; }
+            .sidebar-widget { padding: 12px; margin-bottom: 10px; }
+            .sidebar-widget-value { font-size: 1.2rem; }
+            .interview-schedule-card { margin-bottom: 20px; padding: 20px; }
+            .interview-schedule-table { display: block; overflow-x: auto; white-space: nowrap; }
+        }
+        
+        @media (min-width: 1025px) {
+            .mobile-menu-btn { display: none; }
+        }
+        
+        /* 로딩 애니메이션 */
+        .loading-spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
+    <div class="mobile-overlay" onclick="toggleMobileMenu()"></div>
+    
     <div class="app-container">
-        <nav class="sidebar">
+        <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-title">채용 대시보드</div>
                 <div class="sidebar-subtitle">Hiring Status</div>
@@ -108,27 +249,87 @@
                 <button class="nav-item active" onclick="switchPage('dashboard')"><i class="fas fa-users icon"></i> 현황</button>
                 <button class="nav-item" onclick="switchPage('stats')"><i class="fas fa-chart-pie icon"></i> 통계</button>
             </div>
+            
+            <!-- 사이드바 위젯 -->
+            <div class="sidebar-widgets">
+                <div class="sidebar-widget">
+                    <div class="sidebar-widget-title">전체 지원자</div>
+                    <div class="sidebar-widget-value" id="sidebarTotalApplicants">0</div>
+                </div>
+                <div class="sidebar-widget">
+                    <div class="sidebar-widget-title">이번 달</div>
+                    <div class="sidebar-widget-value" id="sidebarMonthlyApplicants">0</div>
+                </div>
+                <div class="sidebar-widget">
+                    <div class="sidebar-widget-title">면접 대기</div>
+                    <div class="sidebar-widget-value" id="sidebarInterviewPending">0</div>
+                </div>
+                <div class="sidebar-widget">
+                    <div class="sidebar-widget-title">합격률</div>
+                    <div class="sidebar-widget-value" id="sidebarSuccessRate">0%</div>
+                </div>
+            </div>
         </nav>
+        
         <main class="main-content">
             <header class="main-header">
-                <h1 class="main-title" id="pageTitle">지원자 현황</h1>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="main-title" id="pageTitle">지원자 현황</h1>
+                </div>
+                <button class="theme-toggle" onclick="toggleTheme()" title="다크모드 토글 (Ctrl+D)">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
             </header>
+            
             <div class="content-area">
                 <div id="dashboard" class="page active">
+                    <!-- 📅 임박한 면접 일정 카드 -->
+                    <div class="interview-schedule-card">
+                        <div class="interview-schedule-header">
+                            <span class="interview-schedule-title">임박한 면접 일정</span>
+                            <i class="fas fa-calendar-check interview-schedule-icon"></i>
+                        </div>
+                        <div id="interviewScheduleList">
+                            <div class="no-interviews">예정된 면접이 없습니다.</div>
+                        </div>
+                    </div>
+                    
                     <div class="page-header">
                         <h2 class="page-title">전체 지원자 목록</h2>
                         <div class="header-actions">
-                            <button class="secondary-btn reset-btn" onclick="resetFilters()">
+                            <div class="view-toggle">
+                                <button class="view-btn active" onclick="switchView('table')" title="테이블 뷰 (Ctrl+1)">
+                                    <i class="fas fa-table"></i>
+                                </button>
+                                <button class="view-btn" onclick="switchView('cards')" title="카드 뷰 (Ctrl+2)">
+                                    <i class="fas fa-th-large"></i>
+                                </button>
+                            </div>
+                            <button class="secondary-btn reset-btn" onclick="resetFilters()" title="필터 초기화 (Ctrl+R)">
                                 <i class="fas fa-undo"></i> 필터 초기화
                             </button>
                             <div class="column-toggle-container">
                                 <button class="secondary-btn" onclick="toggleColumnDropdown()"><i class="fas fa-columns"></i> 컬럼 설정</button>
                                 <div class="column-toggle-dropdown" id="columnToggleDropdown"></div>
                             </div>
-                            <button class="primary-btn" onclick="openModal()"><i class="fas fa-plus"></i> 신규 지원자 등록</button>
+                            <button class="primary-btn" onclick="openModal()" title="신규 지원자 등록 (Ctrl+N)">
+                                <i class="fas fa-plus"></i> 신규 지원자 등록
+                            </button>
                         </div>
                     </div>
+                    
                     <div class="filter-bar">
+                        <!-- 🔍 통합 검색 -->
+                        <div class="filter-group search-input">
+                            <label for="globalSearch">통합 검색</label>
+                            <div style="position: relative;">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" id="globalSearch" placeholder="이름, 연락처, 메모 등 검색..." onkeyup="handleSearch()" />
+                            </div>
+                        </div>
                         <div class="filter-group">
                             <label for="routeFilter">지원루트</label>
                             <select id="routeFilter" onchange="applyFilters()"><option value="all">전체</option></select>
@@ -141,21 +342,29 @@
                             <label>조회 기간</label>
                             <div class="date-filter-container">
                                 <div id="dateModeToggle">
+                                    <button class="date-mode-btn" data-mode="all">전체</button>
                                     <button class="date-mode-btn" data-mode="year">연</button>
                                     <button class="date-mode-btn" data-mode="month">월</button>
                                     <button class="date-mode-btn" data-mode="day">일</button>
                                     <button class="date-mode-btn" data-mode="range">기간</button>
                                 </div>
-                                <div id="dateInputsContainer" style="display:flex; align-items:center; gap: 5px;"></div>
-                                <button class="apply-btn" onclick="applyFilters()">조회</button>
+                                <div id="dateInputsContainer"></div>
                             </div>
                         </div>
                     </div>
+                    
                     <div class="filter-summary" id="filterSummary"></div>
-                    <div class="table-container">
-                        <table class="data-table"></table>
+                    
+                    <div class="content-container">
+                        <div class="table-container" id="tableView">
+                            <table class="data-table"></table>
+                        </div>
+                        <div class="cards-container" id="cardsView">
+                            <!-- 카드들이 여기에 동적으로 생성됩니다 -->
+                        </div>
                     </div>
                 </div>
+                
                 <div id="stats" class="page">
                     <div class="page-header"><h2 class="page-title">채용 통계 분석</h2></div>
                     <p>이곳에 통계 차트가 표시될 예정입니다.</p>
@@ -163,37 +372,151 @@
             </div>
         </main>
     </div>
+    
     <div id="applicantModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header"><h3 class="modal-title">신규 지원자 등록</h3><button class="close-btn" onclick="closeModal()">&times;</button></div>
+            <div class="modal-header">
+                <h3 class="modal-title">신규 지원자 등록</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
             <div class="modal-body"><form id="applicantForm"></form></div>
-            <div class="modal-footer"><button class="primary-btn" onclick="saveNewApplicant()">저장하기</button></div>
+            <div class="modal-footer">
+                <button class="primary-btn" onclick="saveNewApplicant()">저장하기</button>
+            </div>
         </div>
+    </div>
+    
+    <!-- ⌨️ 키보드 단축키 힌트 -->
+    <div class="keyboard-hint" id="keyboardHint">
+        <strong>단축키:</strong> Ctrl+N 신규등록 | Ctrl+R 필터초기화 | Ctrl+D 다크모드 | Ctrl+1/2 뷰전환
     </div>
 
     <script>
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6vE_HEErU0BDqUOhusa2plkrApRJeb5v2q6KeCTMtV8oo74dbGB3XOrIpavnaZb2q/exec';
 
         let allApplicantData = [];
+        let filteredData = [];
         let currentHeaders = [];
-        const DEFAULT_HIDDEN_COLUMNS = ['비고', '부재', '거절', '보류', '면접확정', '미참석', '불합격/보류', '입과/출근'];
+        const DEFAULT_HIDDEN_COLUMNS = ['비고', '부재', '거절', '보류', '면접확정', '면접 날짜', '면접 시간', '미참석', '불합격/보류', '입과/출근', '입과일', '지점배치'];
         let visibleColumns = {};
         let nextSequenceNumber = 1;
         let activeDetailRowId = null;
         let currentSortColumn = '지원일';
         let currentSortDirection = 'desc';
         let activeDateMode = 'month';
+        let currentView = 'table';
+        let searchTerm = '';
 
         document.addEventListener('DOMContentLoaded', () => {
+            initializeTheme();
             fetchData();
             setupDateFilterListeners();
+            setupKeyboardShortcuts();
+            setupEventListeners();
+        });
+
+        // 🌙 다크모드 초기화
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            const icon = document.getElementById('themeIcon');
+            icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        // 📱 모바일 메뉴
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.mobile-overlay');
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('show');
+        }
+
+        // ⌨️ 키보드 단축키
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey) {
+                    switch(e.key.toLowerCase()) {
+                        case 'n': e.preventDefault(); openModal(); break;
+                        case 'r': e.preventDefault(); resetFilters(); break;
+                        case 'd': e.preventDefault(); toggleTheme(); break;
+                        case '1': e.preventDefault(); switchView('table'); break;
+                        case '2': e.preventDefault(); switchView('cards'); break;
+                        case '/': e.preventDefault(); document.getElementById('globalSearch').focus(); break;
+                    }
+                }
+                if (e.key === 'Escape') {
+                    closeModal();
+                    toggleMobileMenu();
+                }
+            });
+
+            // 키보드 힌트 표시
+            let hintTimeout;
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey) {
+                    const hint = document.getElementById('keyboardHint');
+                    hint.classList.add('show');
+                    clearTimeout(hintTimeout);
+                    hintTimeout = setTimeout(() => hint.classList.remove('show'), 3000);
+                }
+            });
+        }
+
+        function setupEventListeners() {
             document.addEventListener('click', function(event) {
                 const dropdownContainer = document.querySelector('.column-toggle-container');
                 if (dropdownContainer && !dropdownContainer.contains(event.target)) {
                     document.getElementById('columnToggleDropdown').style.display = 'none';
                 }
+                
+                // 모바일에서 사이드바 외부 클릭 시 닫기
+                if (window.innerWidth <= 768) {
+                    const sidebar = document.getElementById('sidebar');
+                    if (!sidebar.contains(event.target) && !event.target.closest('.mobile-menu-btn')) {
+                        sidebar.classList.remove('mobile-open');
+                        document.querySelector('.mobile-overlay').classList.remove('show');
+                    }
+                }
             });
-        });
+        }
+
+        // 🗂️ 뷰 전환
+        function switchView(viewType) {
+            currentView = viewType;
+            const tableView = document.getElementById('tableView');
+            const cardsView = document.getElementById('cardsView');
+            const viewBtns = document.querySelectorAll('.view-btn');
+            
+            viewBtns.forEach(btn => btn.classList.remove('active'));
+            event.target.closest('.view-btn').classList.add('active');
+            
+            if (viewType === 'table') {
+                tableView.style.display = 'block';
+                cardsView.classList.remove('active');
+            } else {
+                tableView.style.display = 'none';
+                cardsView.classList.add('active');
+                renderCards(filteredData);
+            }
+        }
+
+        // 🔍 통합 검색
+        function handleSearch() {
+            searchTerm = String(document.getElementById('globalSearch').value || '').toLowerCase();
+            applyFilters();
+        }
 
         function switchPage(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -202,6 +525,11 @@
             document.querySelector(`.nav-item[onclick="switchPage('${pageId}')"]`).classList.add('active');
             const titles = { dashboard: '지원자 현황', stats: '통계 분석' };
             document.getElementById('pageTitle').textContent = titles[pageId];
+            
+            // 모바일에서 페이지 전환 시 사이드바 닫기
+            if (window.innerWidth <= 768) {
+                toggleMobileMenu();
+            }
         }
 
         const modal = document.getElementById('applicantModal');
@@ -211,7 +539,7 @@
 
         async function fetchData() {
             const tableContainer = document.querySelector('.table-container');
-            tableContainer.innerHTML = `<p style="text-align:center; padding: 40px;">데이터를 불러오는 중...</p>`;
+            tableContainer.innerHTML = `<p style="text-align:center; padding: 40px;"><i class="loading-spinner"></i> 데이터를 불러오는 중...</p>`;
             try {
                 const response = await fetch(`${APPS_SCRIPT_URL}?action=read`);
                 const result = await response.json();
@@ -220,16 +548,23 @@
                 
                 if (result.status !== 'success') throw new Error(result.message);
 
-                // 헤더 공백 제거
-                currentHeaders = (result.data[0] || []).map(h => String(h).trim());
-                console.log('Headers:', currentHeaders); // 디버깅용
+                // 안전한 헤더 처리
+                currentHeaders = (result.data[0] || []).map(h => {
+                    return String(h || '').trim();
+                });
                 
-                allApplicantData = result.data.slice(1).filter(row => row.some(cell => cell !== ''));
-                console.log('Data rows:', allApplicantData.length); // 디버깅용
+                // 안전한 데이터 처리
+                allApplicantData = result.data.slice(1)
+                    .filter(row => row && Array.isArray(row) && row.some(cell => cell != null && String(cell).trim() !== ''))
+                    .map(row => row.map(cell => cell == null ? '' : String(cell)));
+                
+                console.log('Headers:', currentHeaders);
+                console.log('Data rows:', allApplicantData.length);
                 
                 const gubunIndex = currentHeaders.indexOf('구분');
                 if (gubunIndex !== -1 && allApplicantData.length > 0) {
-                    const lastGubun = parseInt(allApplicantData[allApplicantData.length - 1][gubunIndex], 10);
+                    const lastRow = allApplicantData[allApplicantData.length - 1];
+                    const lastGubun = parseInt(lastRow[gubunIndex] || '0', 10);
                     nextSequenceNumber = isNaN(lastGubun) ? allApplicantData.length + 1 : lastGubun + 1;
                 } else {
                     nextSequenceNumber = allApplicantData.length + 1;
@@ -238,78 +573,324 @@
                 generateVisibleColumns(currentHeaders);
                 setupColumnToggles();
                 populateDropdownFilters();
+                updateSidebarWidgets();
+                updateInterviewSchedule();
                 resetFilters(true);
 
             } catch (error) {
                 console.error("데이터 불러오기 실패:", error);
-                tableContainer.innerHTML = `<p style="text-align:center; padding: 40px; color: red;">데이터 로딩 중 오류 발생: ${error.message}</p>`;
+                tableContainer.innerHTML = `<p style="text-align:center; padding: 40px; color: var(--danger);">데이터 로딩 중 오류 발생: ${error.message}</p>`;
             }
+        }
+
+        // 📊 사이드바 위젯 업데이트 (안전한 처리)
+        function updateSidebarWidgets() {
+            const total = allApplicantData.length;
+            const currentMonth = new Date().getMonth() + 1;
+            const currentYear = new Date().getFullYear();
+            const applyDateIndex = currentHeaders.indexOf('지원일');
+            
+            // 이번 달 지원자 (안전한 날짜 처리)
+            const monthlyCount = allApplicantData.filter(row => {
+                try {
+                    const dateValue = row[applyDateIndex];
+                    if (!dateValue) return false;
+                    const date = new Date(dateValue);
+                    return date.getMonth() + 1 === currentMonth && date.getFullYear() === currentYear;
+                } catch (e) {
+                    return false;
+                }
+            }).length;
+            
+            // 면접 대기 (상태가 비어있거나 대기 상태인 것들)
+            const statusColumns = ['부재', '거절', '보류', '면접확정', '미참석', '불합격/보류', '입과/출근'];
+            const pendingCount = allApplicantData.filter(row => {
+                return statusColumns.every(status => {
+                    const index = currentHeaders.indexOf(status);
+                    if (index === -1) return true;
+                    const value = String(row[index] || '').trim();
+                    return value === '';
+                });
+            }).length;
+            
+            // 합격률 계산 (안전한 처리)
+            const successStatuses = ['입과', '출근'];
+            const successCount = allApplicantData.filter(row => {
+                return successStatuses.some(status => {
+                    const index = currentHeaders.indexOf(status);
+                    if (index === -1) return false;
+                    const value = String(row[index] || '').trim();
+                    return value !== '';
+                });
+            }).length;
+            
+            const successRate = total > 0 ? Math.round((successCount / total) * 100) : 0;
+            
+            // 사이드바 위젯 업데이트
+            document.getElementById('sidebarTotalApplicants').textContent = total;
+            document.getElementById('sidebarMonthlyApplicants').textContent = monthlyCount;
+            document.getElementById('sidebarInterviewPending').textContent = pendingCount;
+            document.getElementById('sidebarSuccessRate').textContent = successRate + '%';
+        }
+        
+        // 📅 임박한 면접 일정 업데이트 (테이블 형식)
+        function updateInterviewSchedule() {
+            // 면접 날짜 컬럼명 유연하게 찾기
+            let interviewDateIndex = currentHeaders.indexOf('면접 날짜');
+            if (interviewDateIndex === -1) {
+                interviewDateIndex = currentHeaders.indexOf('면접 날자');
+            }
+            
+            const interviewTimeIndex = currentHeaders.indexOf('면접 시간');
+            const nameIndex = currentHeaders.indexOf('이름');
+            const positionIndex = currentHeaders.indexOf('모집분야');
+            const routeIndex = currentHeaders.indexOf('지원루트');
+            const recruiterIndex = currentHeaders.indexOf('증원자');
+            const interviewerIndex = currentHeaders.indexOf('면접자');
+            
+            if (interviewDateIndex === -1) {
+                document.getElementById('interviewScheduleList').innerHTML = '<div class="no-interviews">면접 날짜 컬럼을 찾을 수 없습니다.</div>';
+                return;
+            }
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // 오늘 시작 시간으로 설정
+            const oneWeekLater = new Date(today.getTime() + (7 * 24 * 60 * 60 * 1000));
+            
+            // 7일 이내 면접 일정 필터링
+            const upcomingInterviews = allApplicantData
+                .filter(row => {
+                    const interviewDate = row[interviewDateIndex];
+                    if (!interviewDate) return false;
+                    
+                    try {
+                        const date = new Date(interviewDate);
+                        return date >= today && date <= oneWeekLater;
+                    } catch (e) {
+                        return false;
+                    }
+                })
+                .sort((a, b) => {
+                    try {
+                        return new Date(a[interviewDateIndex]) - new Date(b[interviewDateIndex]);
+                    } catch (e) {
+                        return 0;
+                    }
+                })
+                .slice(0, 8); // 최대 8개까지 표시
+            
+            const scheduleContainer = document.getElementById('interviewScheduleList');
+            
+            if (upcomingInterviews.length === 0) {
+                scheduleContainer.innerHTML = '<div class="no-interviews">7일 이내 예정된 면접이 없습니다.</div>';
+                return;
+            }
+            
+            // 테이블 형식으로 구성
+            let tableHtml = `
+                <table class="interview-schedule-table">
+                    <thead>
+                        <tr>
+                            <th>이름</th>
+                            <th>지원루트</th>
+                            <th>증원자</th>
+                            <th>모집분야</th>
+                            <th>면접자</th>
+                            <th>면접날짜</th>
+                            <th>면접시간</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            upcomingInterviews.forEach(row => {
+                const name = String(row[nameIndex] || '이름없음');
+                const route = String(row[routeIndex] || '-');
+                const recruiter = String(row[recruiterIndex] || '-');
+                const position = String(row[positionIndex] || '-');
+                const interviewer = String(row[interviewerIndex] || '-');
+                const interviewTime = String(row[interviewTimeIndex] || '-');
+                const interviewDate = row[interviewDateIndex];
+                
+                let dateDisplay = '';
+                
+                try {
+                    const date = new Date(interviewDate);
+                    const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+                    const weekday = weekdays[date.getDay()];
+                    
+                    // D-day 계산
+                    const diffTime = date.getTime() - today.getTime();
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    let dayDiff = '';
+                    if (diffDays === 0) {
+                        dayDiff = 'D-Day ';
+                    } else if (diffDays === 1) {
+                        dayDiff = 'D-1 ';
+                    } else {
+                        dayDiff = `D-${diffDays} `;
+                    }
+                    
+                    dateDisplay = dayDiff + `${date.getMonth() + 1}/${date.getDate()}(${weekday})`;
+                } catch (e) {
+                    dateDisplay = '날짜 오류';
+                }
+                
+                tableHtml += `
+                    <tr>
+                        <td class="interview-name-cell" title="${name}">${name}</td>
+                        <td class="interview-route-cell" title="${route}">${route}</td>
+                        <td class="interview-recruiter-cell" title="${recruiter}">${recruiter}</td>
+                        <td class="interview-position-cell" title="${position}">${position}</td>
+                        <td class="interview-interviewer-cell" title="${interviewer}">${interviewer}</td>
+                        <td class="interview-date-cell" title="${dateDisplay}">${dateDisplay}</td>
+                        <td class="interview-time-cell" title="${interviewTime}">${interviewTime}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHtml += `
+                    </tbody>
+                </table>
+            `;
+            
+            scheduleContainer.innerHTML = tableHtml;
         }
         
         async function saveNewApplicant() {
             const saveBtn = document.querySelector('.modal-footer .primary-btn');
+            const originalText = saveBtn.innerHTML;
             try {
                 const applicantData = {};
                 let isFormValid = true;
+                
+                // 폼 데이터 수집
                 currentHeaders.forEach(header => {
                     const input = document.getElementById(`modal-form-${header}`);
+                    const customInput = document.getElementById(`modal-form-${header}-custom`);
+                    
                     if (input) {
-                        applicantData[header] = input.value;
-                        if (input.hasAttribute('required') && !input.value) { isFormValid = false; }
+                        // 직접입력 필드가 있고 표시되고 있다면 해당 값 사용
+                        if (customInput && customInput.style.display !== 'none') {
+                            applicantData[header] = customInput.value;
+                            if (customInput.hasAttribute('required') && !customInput.value) {
+                                isFormValid = false;
+                            }
+                        } else {
+                            applicantData[header] = input.value;
+                            if (input.hasAttribute('required') && !input.value) {
+                                isFormValid = false;
+                            }
+                        }
                     }
                 });
 
-                if (!isFormValid) { alert('필수 항목을 모두 입력해주세요.'); return; }
+                // 자동 설정 필드들
+                if (currentHeaders.includes('구분')) {
+                    applicantData['구분'] = nextSequenceNumber.toString();
+                }
+                if (currentHeaders.includes('지원일')) {
+                    applicantData['지원일'] = new Date().toISOString().split('T')[0]; // YYYY-MM-DD 형식
+                }
+
+                if (!isFormValid) { 
+                    alert('필수 항목을 모두 입력해주세요.'); 
+                    return; 
+                }
+                
                 saveBtn.disabled = true;
-                saveBtn.textContent = '저장 중...';
-                await fetch(APPS_SCRIPT_URL, {
+                saveBtn.innerHTML = '<i class="loading-spinner"></i> 저장 중...';
+                
+                const response = await fetch(APPS_SCRIPT_URL, {
                     method: 'POST',
                     body: JSON.stringify({ action: 'create', data: applicantData })
                 });
+                
+                const result = await response.json();
+                if (result.status !== 'success') {
+                    throw new Error(result.message || '저장에 실패했습니다.');
+                }
+                
                 closeModal();
-                location.reload();
+                // 성공 시 데이터 새로고침
+                fetchData();
+                
             } catch (error) {
                 console.error("데이터 저장 실패:", error);
                 alert("데이터 저장 중 오류 발생: " + error.message);
             } finally {
                 saveBtn.disabled = false;
-                saveBtn.textContent = '저장하기';
+                saveBtn.innerHTML = originalText;
             }
         }
 
         function applyFilters() {
-            console.log('Applying filters...'); // 디버깅용
-            
-            document.querySelectorAll('.filter-bar select, #dateInputsContainer input').forEach(input => {
-                input.classList.toggle('filter-active', input.value && input.value !== 'all');
-            });
-
-            let filteredData = [...allApplicantData];
+            let data = [...allApplicantData];
             const routeFilter = document.getElementById('routeFilter').value;
             const positionFilter = document.getElementById('positionFilter').value;
             const applyDateIndex = currentHeaders.indexOf('지원일');
-            
-            // 수정: 변수를 함수 내에서 다시 정의
             const routeIndex = currentHeaders.indexOf('지원루트');
             const positionIndex = currentHeaders.indexOf('모집분야');
 
+            // 🔍 통합 검색 필터링 (안전한 처리)
+            if (searchTerm) {
+                data = data.filter(row => {
+                    return row.some(cell => {
+                        const cellValue = String(cell || '').toLowerCase();
+                        return cellValue.includes(searchTerm);
+                    });
+                });
+            }
+
+            // 안전한 필터링
             if (routeFilter !== 'all' && routeIndex !== -1) {
-                filteredData = filteredData.filter(row => row[routeIndex] === routeFilter);
+                data = data.filter(row => String(row[routeIndex] || '') === routeFilter);
             }
             if (positionFilter !== 'all' && positionIndex !== -1) {
-                filteredData = filteredData.filter(row => row[positionIndex] === positionFilter);
+                data = data.filter(row => String(row[positionIndex] || '') === positionFilter);
             }
             
-            if (applyDateIndex !== -1) {
+            // 날짜 필터링 (안전한 처리)
+            if (applyDateIndex !== -1 && activeDateMode !== 'all') {
                 if (activeDateMode === 'year') {
                     const year = document.getElementById('dateInput')?.value;
-                    if(year) filteredData = filteredData.filter(row => row[applyDateIndex] && new Date(row[applyDateIndex]).getFullYear() == year);
+                    if(year) {
+                        data = data.filter(row => {
+                            const dateValue = row[applyDateIndex];
+                            if (!dateValue) return false;
+                            try {
+                                return new Date(dateValue).getFullYear() == year;
+                            } catch (e) {
+                                return false;
+                            }
+                        });
+                    }
                 } else if (activeDateMode === 'month') {
                     const month = document.getElementById('dateInput')?.value;
-                    if(month) filteredData = filteredData.filter(row => row[applyDateIndex] && row[applyDateIndex].slice(0, 7) === month);
+                    if(month) {
+                        data = data.filter(row => {
+                            const dateValue = row[applyDateIndex];
+                            if (!dateValue) return false;
+                            try {
+                                return String(dateValue).slice(0, 7) === month;
+                            } catch (e) {
+                                return false;
+                            }
+                        });
+                    }
                 } else if (activeDateMode === 'day') {
                     const day = document.getElementById('dateInput')?.value;
-                    if(day) filteredData = filteredData.filter(row => row[applyDateIndex] && row[applyDateIndex].slice(0, 10) === day);
+                    if(day) {
+                        data = data.filter(row => {
+                            const dateValue = row[applyDateIndex];
+                            if (!dateValue) return false;
+                            try {
+                                return String(dateValue).slice(0, 10) === day;
+                            } catch (e) {
+                                return false;
+                            }
+                        });
+                    }
                 } else if (activeDateMode === 'range') {
                     const startDate = document.getElementById('startDateInput')?.value;
                     const endDate = document.getElementById('endDateInput')?.value;
@@ -317,20 +898,28 @@
                         const start = new Date(startDate);
                         const end = new Date(endDate);
                         end.setHours(23, 59, 59, 999);
-                        filteredData = filteredData.filter(row => {
-                            if(!row[applyDateIndex]) return false;
-                            const applyDate = new Date(row[applyDateIndex]);
-                            return applyDate >= start && applyDate <= end;
+                        data = data.filter(row => {
+                            const dateValue = row[applyDateIndex];
+                            if(!dateValue) return false;
+                            try {
+                                const applyDate = new Date(dateValue);
+                                return applyDate >= start && applyDate <= end;
+                            } catch (e) {
+                                return false;
+                            }
                         });
                     }
                 }
             }
             
-            console.log('Filtered data length:', filteredData.length); // 디버깅용
-            
-            sortData(filteredData);
+            filteredData = sortData(data);
             updateSummary(filteredData.length);
-            renderTable(filteredData);
+            
+            if (currentView === 'table') {
+                renderTable(filteredData);
+            } else {
+                renderCards(filteredData);
+            }
         }
 
         function sortData(data) {
@@ -338,14 +927,25 @@
                 const sortIndex = currentHeaders.indexOf(currentSortColumn);
                 if (sortIndex !== -1) {
                     data.sort((a, b) => {
-                        let valA = a[sortIndex]; let valB = b[sortIndex];
+                        let valA = a[sortIndex]; 
+                        let valB = b[sortIndex];
+                        
                         if (currentSortColumn === '지원일') {
-                            valA = new Date(valA || '1970-01-01'); valB = new Date(valB || '1970-01-01');
+                            try {
+                                valA = new Date(valA || '1970-01-01'); 
+                                valB = new Date(valB || '1970-01-01');
+                            } catch (e) {
+                                valA = new Date('1970-01-01');
+                                valB = new Date('1970-01-01');
+                            }
                         } else if (['나이', '구분'].includes(currentSortColumn)) {
-                            valA = Number(valA) || 0; valB = Number(valB) || 0;
+                            valA = Number(valA) || 0; 
+                            valB = Number(valB) || 0;
                         } else {
-                            valA = String(valA || '').toLowerCase(); valB = String(valB || '').toLowerCase();
+                            valA = String(valA || '').toLowerCase(); 
+                            valB = String(valB || '').toLowerCase();
                         }
+                        
                         if (valA < valB) return currentSortDirection === 'asc' ? -1 : 1;
                         if (valA > valB) return currentSortDirection === 'asc' ? 1 : -1;
                         return 0;
@@ -357,6 +957,8 @@
 
         function resetFilters(runApplyFilters = true) {
             document.querySelectorAll('.filter-bar select').forEach(select => select.value = 'all');
+            document.getElementById('globalSearch').value = '';
+            searchTerm = '';
             
             updateDateFilterUI(); 
             
@@ -374,7 +976,8 @@
         }
         
         function updateSummary(filteredCount) {
-            document.getElementById('filterSummary').innerHTML = `<strong>지원자:</strong> ${filteredCount}명`;
+            const searchText = searchTerm ? ` (검색: "${searchTerm}")` : '';
+            document.getElementById('filterSummary').innerHTML = `<strong>지원자:</strong> ${filteredCount}명${searchText}`;
         }
 
         function populateDropdownFilters() {
@@ -382,16 +985,27 @@
             const positionIndex = currentHeaders.indexOf('모집분야');
             
             if (routeIndex !== -1) {
-                const routes = [...new Set(allApplicantData.map(row => row[routeIndex]).filter(Boolean))];
+                const routes = [...new Set(allApplicantData
+                    .map(row => String(row[routeIndex] || '').trim())
+                    .filter(route => route !== '')
+                )];
                 const routeFilter = document.getElementById('routeFilter');
                 routeFilter.innerHTML = '<option value="all">전체</option>';
-                routes.sort().forEach(route => routeFilter.innerHTML += `<option value="${route}">${route}</option>`);
+                routes.sort().forEach(route => {
+                    routeFilter.innerHTML += `<option value="${route}">${route}</option>`;
+                });
             }
+            
             if (positionIndex !== -1) {
-                const positions = [...new Set(allApplicantData.map(row => row[positionIndex]).filter(Boolean))];
+                const positions = [...new Set(allApplicantData
+                    .map(row => String(row[positionIndex] || '').trim())
+                    .filter(position => position !== '')
+                )];
                 const positionFilter = document.getElementById('positionFilter');
                 positionFilter.innerHTML = '<option value="all">전체</option>';
-                positions.sort().forEach(pos => positionFilter.innerHTML += `<option value="${pos}">${pos}</option>`);
+                positions.sort().forEach(pos => {
+                    positionFilter.innerHTML += `<option value="${pos}">${pos}</option>`;
+                });
             }
         }
         
@@ -405,6 +1019,32 @@
             }
             applyFilters();
         }
+
+        // 🎨 상태별 색상 적용 (안전한 처리)
+        function getStatusClass(header, value) {
+            if (!value) return '';
+            const valueStr = String(value).trim();
+            if (valueStr === '') return '';
+            
+            const statusMap = {
+                '합격': 'status-합격',
+                '입과': 'status-입과', 
+                '출근': 'status-출근',
+                '불합격': 'status-불합격',
+                '거절': 'status-거절',
+                '미참석': 'status-미참석',
+                '보류': 'status-보류',
+                '면접확정': 'status-면접확정',
+                '대기': 'status-대기'
+            };
+            
+            for (const [status, className] of Object.entries(statusMap)) {
+                if (valueStr.includes(status)) {
+                    return className;
+                }
+            }
+            return '';
+        }
         
         function renderTable(dataToRender) {
             console.log('Rendering table with data:', dataToRender.length, 'rows'); // 디버깅용
@@ -412,9 +1052,12 @@
             
             const tableContainer = document.querySelector('.table-container');
             tableContainer.innerHTML = '';
+            
+            // 새로운 테이블 요소 생성
             const table = document.createElement('table');
             table.className = 'data-table';
             
+            // 헤더 생성
             const thead = table.createTHead();
             const headerRow = thead.insertRow();
             currentHeaders.forEach(header => {
@@ -431,6 +1074,7 @@
                 }
             });
 
+            // 바디 생성
             const tbody = table.createTBody();
             if (dataToRender.length === 0) {
                 const row = tbody.insertRow();
@@ -451,12 +1095,30 @@
                             const cell = row.insertCell();
                             const cellData = rowData[cellIndex];
                             
-                            if (header === '구분') {
+                            // 🎨 상태별 색상 적용
+                            const statusClass = getStatusClass(header, cellData);
+                            if (statusClass) {
+                                const safeData = String(cellData || '');
+                                cell.innerHTML = `<span class="status-badge ${statusClass}">${safeData}</span>`;
+                            } else if (header === '구분') {
                                 cell.textContent = index + 1;
                             } else if (header === '연락처' && cellData) {
-                                cell.innerHTML = `<a href="tel:${cellData.replace(/\D/g, '')}">${cellData}</a>`;
+                                const phoneStr = String(cellData);
+                                cell.innerHTML = `<a href="tel:${phoneStr.replace(/\D/g, '')}">${phoneStr}</a>`;
                             } else {
-                                cell.textContent = (header === '지원일' && cellData) ? new Date(cellData).toLocaleDateString() : (cellData || '');
+                                if ((header === '지원일' || header === '면접 날자' || header === '면접 날짜' || header === '입과일') && cellData) {
+                                    try {
+                                        const date = new Date(cellData);
+                                        const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+                                        const weekday = weekdays[date.getDay()];
+                                        const formattedDate = date.toLocaleDateString('ko-KR') + '(' + weekday + ')';
+                                        cell.textContent = formattedDate;
+                                    } catch (e) {
+                                        cell.textContent = String(cellData || '');
+                                    }
+                                } else {
+                                    cell.textContent = String(cellData || '');
+                                }
                             }
                         }
                     });
@@ -469,7 +1131,73 @@
                     detailCell.innerHTML = `<div class="detail-content"></div>`;
                 });
             }
+            
+            // 테이블을 컨테이너에 추가
             tableContainer.appendChild(table);
+        }
+
+        // 🗂️ 카드뷰 렌더링 (안전한 처리)
+        function renderCards(dataToRender) {
+            const cardsContainer = document.getElementById('cardsView');
+            cardsContainer.innerHTML = '';
+            
+            if (dataToRender.length === 0) {
+                cardsContainer.innerHTML = '<p style="text-align:center; padding: 40px; grid-column: 1/-1;">표시할 데이터가 없습니다.</p>';
+                return;
+            }
+            
+            dataToRender.forEach((rowData, index) => {
+                const card = document.createElement('div');
+                card.className = 'applicant-card';
+                card.onclick = () => openCardDetail(rowData);
+                
+                const nameIndex = currentHeaders.indexOf('이름');
+                const phoneIndex = currentHeaders.indexOf('연락처');
+                const routeIndex = currentHeaders.indexOf('지원루트');
+                const positionIndex = currentHeaders.indexOf('모집분야');
+                const dateIndex = currentHeaders.indexOf('지원일');
+                
+                const name = String(rowData[nameIndex] || '미입력');
+                const phone = String(rowData[phoneIndex] || '');
+                const route = String(rowData[routeIndex] || '');
+                const position = String(rowData[positionIndex] || '');
+                
+                let date = '';
+                try {
+                    const dateValue = rowData[dateIndex];
+                    if (dateValue) {
+                        const dateObj = new Date(dateValue);
+                        const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+                        const weekday = weekdays[dateObj.getDay()];
+                        date = dateObj.toLocaleDateString('ko-KR') + '(' + weekday + ')';
+                    }
+                } catch (e) {
+                    date = '';
+                }
+                
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-name">${name}</div>
+                        <div class="card-sequence">#${index + 1}</div>
+                    </div>
+                    <div class="card-info">
+                        <div><span class="card-label">연락처:</span> ${phone || '-'}</div>
+                        <div><span class="card-label">지원루트:</span> ${route || '-'}</div>
+                        <div><span class="card-label">모집분야:</span> ${position || '-'}</div>
+                    </div>
+                    <div class="card-footer">
+                        <span>지원일: ${date || '-'}</span>
+                        ${phone ? `<a href="tel:${phone.replace(/\D/g, '')}" onclick="event.stopPropagation()"><i class="fas fa-phone"></i></a>` : ''}
+                    </div>
+                `;
+                
+                cardsContainer.appendChild(card);
+            });
+        }
+
+        function openCardDetail(rowData) {
+            // 카드 상세보기 기능 (모달 등으로 구현 가능)
+            console.log('Card detail:', rowData);
         }
 
         function toggleDetails(rowId, rowData) {
@@ -485,7 +1213,21 @@
                 let detailHtml = '<table class="detail-table">';
                 currentHeaders.forEach((header, index) => {
                     if (DEFAULT_HIDDEN_COLUMNS.includes(header)) {
-                         detailHtml += `<tr><td><strong>${header}:</strong></td><td>${rowData[index] || '-'}</td></tr>`;
+                        let cellData = String(rowData[index] || '-');
+                        
+                        // 날짜 필드들 포맷팅 (면접 날짜, 면접 날자, 지원일, 입과일)
+                        if ((header === '면접 날짜' || header === '면접 날자' || header === '지원일' || header === '입과일') && rowData[index] && rowData[index] !== '-') {
+                            try {
+                                const date = new Date(rowData[index]);
+                                const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+                                const weekday = weekdays[date.getDay()];
+                                cellData = date.toLocaleDateString('ko-KR') + '(' + weekday + ')';
+                            } catch (e) {
+                                cellData = String(rowData[index] || '-');
+                            }
+                        }
+                        
+                        detailHtml += `<tr><td><strong>${header}:</strong></td><td>${cellData}</td></tr>`;
                     }
                 });
                 detailHtml += '</table>';
@@ -516,16 +1258,22 @@
             const month = (now.getMonth() + 1).toString().padStart(2, '0');
             const day = now.getDate().toString().padStart(2, '0');
             
-            if (activeDateMode === 'year') {
-                html = `<input type="number" id="dateInput" value="${year}">`;
+            if (activeDateMode === 'all') {
+                // 전체 모드일 때는 입력 필드 없음
+                html = `<span style="color: var(--text-secondary); font-size: 0.9rem;">모든 데이터 표시</span>`;
+            } else if (activeDateMode === 'year') {
+                html = `<input type="number" id="dateInput" value="${year}" onchange="applyFilters()">`;
             } else if (activeDateMode === 'month') {
-                html = `<button class="date-nav-btn" onclick="navigateDate(-1)">&lt;</button><input type="month" id="dateInput" value="${year}-${month}"><button class="date-nav-btn" onclick="navigateDate(1)">&gt;</button>`;
+                html = `<button class="date-nav-btn" onclick="navigateDate(-1)">&lt;</button><input type="month" id="dateInput" value="${year}-${month}" onchange="applyFilters()"><button class="date-nav-btn" onclick="navigateDate(1)">&gt;</button>`;
             } else if (activeDateMode === 'day') {
-                html = `<button class="date-nav-btn" onclick="navigateDate(-1)">&lt;</button><input type="date" id="dateInput" value="${year}-${month}-${day}"><button class="date-nav-btn" onclick="navigateDate(1)">&gt;</button>`;
+                html = `<button class="date-nav-btn" onclick="navigateDate(-1)">&lt;</button><input type="date" id="dateInput" value="${year}-${month}-${day}" onchange="applyFilters()"><button class="date-nav-btn" onclick="navigateDate(1)">&gt;</button>`;
             } else if (activeDateMode === 'range') {
-                html = `<input type="date" id="startDateInput"><span style="margin: 0 5px;">-</span><input type="date" id="endDateInput">`;
+                html = `<input type="date" id="startDateInput" onchange="applyFilters()"><span style="margin: 0 5px;">-</span><input type="date" id="endDateInput" onchange="applyFilters()">`;
             }
             container.innerHTML = html;
+            
+            // 자동으로 필터 적용
+            setTimeout(() => applyFilters(), 100);
         }
 
         function navigateDate(direction) {
@@ -544,6 +1292,8 @@
                     input.value = currentDate.toISOString().slice(0, 10);
                 }
             }
+            // 1. 날짜 변경 후 자동으로 필터 적용
+            applyFilters();
         }
         
         function toggleColumnDropdown() {
@@ -576,7 +1326,6 @@
             headers.forEach(header => {
                 visibleColumns[header] = !DEFAULT_HIDDEN_COLUMNS.includes(header);
             });
-            console.log('Generated visible columns:', visibleColumns); // 디버깅용
         }
         
         function buildModalForm() {
@@ -585,36 +1334,107 @@
             
             const requiredFields = ['이름', '연락처', '지원루트', '모집분야'];
             
+            // 드롭다운 옵션 정의
+            const dropdownOptions = {
+                '지원루트': ['사람인', '잡코리아', '인크루트', '아웃바운드', '배우공고', '당근', 'Instagram', 'Threads', '직접입력'],
+                '모집분야': ['영업', '강사', '상조', '직접입력'],
+                '성별': ['남자', '여자'],
+                '증원자': ['회사', '이성진', '김영빈', '최혜진', '직접입력'],
+                '1차 컨택 결과': ['부재1회', '부재2회', '보류', '거절', '파기', '면접확정'],
+                '면접자': ['이성진', '김영빈', '최혜진', '직접입력'],
+                '면접결과': ['미참석', '불합격', '보류', '합격']
+            };
+            
+            // 날짜 입력 필드들
+            const dateFields = ['면접 날짜', '면접 날자', '입과일'];
+            const timeFields = ['면접 시간'];
+            
             currentHeaders.forEach(header => {
-                if (header !== '구분' && header !== '지원일') {
-                    const formGroup = document.createElement('div');
-                    formGroup.className = 'form-group';
-                    
-                    if (header === '비고') {
-                        formGroup.className += ' full-width';
-                    }
-                    
-                    const isRequired = requiredFields.includes(header);
-                    formGroup.innerHTML = `
-                        <label for="modal-form-${header}">${header}${isRequired ? ' *' : ''}</label>
-                        ${header === '비고' ? 
-                            `<textarea id="modal-form-${header}" rows="3" ${isRequired ? 'required' : ''}></textarea>` :
-                            `<input type="text" id="modal-form-${header}" ${isRequired ? 'required' : ''}>`
-                        }
-                    `;
-                    form.appendChild(formGroup);
+                // 지원일은 자동으로 설정되므로 제외
+                if (header === '지원일') return;
+                
+                const formGroup = document.createElement('div');
+                formGroup.className = 'form-group';
+                
+                if (header === '비고') {
+                    formGroup.className += ' full-width';
                 }
+                
+                const isRequired = requiredFields.includes(header);
+                let inputHtml = '';
+                
+                if (header === '구분') {
+                    // 구분 필드 - 자동 번호 표시 (읽기 전용)
+                    inputHtml = `<input type="text" id="modal-form-${header}" value="${nextSequenceNumber}" readonly style="background-color: #f1f5f9;">`;
+                } else if (header === '연락처') {
+                    // 연락처 - 자동 하이폰 추가
+                    inputHtml = `<input type="tel" id="modal-form-${header}" placeholder="010-0000-0000" oninput="formatPhoneNumber(this)" ${isRequired ? 'required' : ''}>`;
+                } else if (dateFields.includes(header)) {
+                    // 날짜 선택 필드
+                    inputHtml = `<input type="date" id="modal-form-${header}" ${isRequired ? 'required' : ''}>`;
+                } else if (timeFields.includes(header)) {
+                    // 시간 선택 필드
+                    inputHtml = `<input type="time" id="modal-form-${header}" ${isRequired ? 'required' : ''}>`;
+                } else if (dropdownOptions[header]) {
+                    // 드롭다운 필드들
+                    const hasDirectInput = ['지원루트', '모집분야', '증원자', '면접자'].includes(header);
+                    inputHtml = `
+                        <select id="modal-form-${header}" onchange="${hasDirectInput ? `handleDropdownChange(this, '${header}')` : ''}" ${isRequired ? 'required' : ''}>
+                            <option value="">선택해주세요</option>
+                            ${dropdownOptions[header].map(option => `<option value="${option}">${option}</option>`).join('')}
+                        </select>
+                        ${hasDirectInput ? `<input type="text" id="modal-form-${header}-custom" placeholder="직접 입력하세요" style="display:none; margin-top:5px;" ${isRequired ? 'required' : ''}>` : ''}
+                    `;
+                } else if (header === '비고') {
+                    inputHtml = `<textarea id="modal-form-${header}" rows="3" placeholder="추가 메모사항을 입력하세요" ${isRequired ? 'required' : ''}></textarea>`;
+                } else {
+                    inputHtml = `<input type="text" id="modal-form-${header}" ${isRequired ? 'required' : ''}>`;
+                }
+                
+                formGroup.innerHTML = `
+                    <label for="modal-form-${header}">${header}${isRequired ? ' *' : ''}</label>
+                    ${inputHtml}
+                `;
+                form.appendChild(formGroup);
             });
         }
         
+        // 드롭다운 변경 처리 함수
+        function handleDropdownChange(selectElement, fieldName) {
+            const customInput = document.getElementById(`modal-form-${fieldName}-custom`);
+            const isDirectInput = selectElement.value === '직접입력';
+            
+            if (isDirectInput) {
+                selectElement.style.display = 'none';
+                customInput.style.display = 'block';
+                customInput.focus();
+                // required 속성 이동
+                selectElement.removeAttribute('required');
+                customInput.setAttribute('required', '');
+            } else {
+                selectElement.style.display = 'block';
+                customInput.style.display = 'none';
+                customInput.removeAttribute('required');
+                if (document.querySelector(`label[for="modal-form-${fieldName}"]`).textContent.includes('*')) {
+                    selectElement.setAttribute('required', '');
+                }
+            }
+        }
+        
+        // 2. 개선된 전화번호 포맷팅
         function formatPhoneNumber(input) {
-            let value = input.value.replace(/\D/g, '');
+            let value = input.value.replace(/\D/g, ''); // 숫자만 추출
+            
             if (value.length <= 3) {
                 input.value = value;
             } else if (value.length <= 7) {
                 input.value = value.slice(0, 3) + '-' + value.slice(3);
+            } else if (value.length <= 11) {
+                input.value = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7);
             } else {
-                input.value = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7, 11);
+                // 11자리 초과시 자동으로 자름
+                value = value.slice(0, 11);
+                input.value = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7);
             }
         }
     </script>
