@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>채용 현황 대시보드</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* 파스텔톤 색상 테마 */
+        :root {
+            --sidebar-bg: #4a5568; /* 차콜 */
+            --sidebar-header-bg: #2d3748; /* 다크 차콜 */
+            --sidebar-text: #e2e8f0;
+            --sidebar-accent: #a3bffa; /* 파스텔 블루 */
+            --main-bg: #f7fafc; /* 매우 밝은 회색 */
+            --content-bg: #ffffff;
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --border-color: #e2e8f0;
+            --success-color: #68d391; /* 파스텔 그린 */
+            --danger-color: #f56565; /* 파스텔 레드 */
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --border-radius: 8px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Noto Sans KR', sans-serif; background: var(--main-bg); color: var(--text-primary); }
+        .app-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; position: fixed; height: 100%; }
+        .sidebar-header { padding: 25px 20px; background: var(--sidebar-header-bg); }
+        .sidebar-title { font-size: 1.5rem; font-weight: 700; }
+        .sidebar-subtitle { font-size: 0.85rem; color: #a0aec0; }
+        .nav-menu { padding: 15px 0; }
+        .nav-item { display: flex; align-items: center; padding: 14px 20px; color: var(--sidebar-text); text-decoration: none; transition: background-color 0.2s; border-left: 4px solid transparent; cursor: pointer; background: none; border: none; width: 100%; text-align: left; font-size: 1rem; }
+        .nav-item:hover { background: #718096; }
+        .nav-item.active { background: #718096; border-left-color: var(--sidebar-accent); font-weight: 500;}
+        .nav-item .icon { margin-right: 15px; width: 20px; text-align: center; }
+        .main-content { flex: 1; margin-left: 260px; display: flex; flex-direction: column; }
+        .main-header { background: var(--content-bg); padding: 18px 30px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .main-title { font-size: 1.7rem; font-weight: 700; }
+        .content-area { padding: 30px; }
+        .page { display: none; }
+        .page.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .page-title { font-size: 1.8rem; font-weight: 500; }
+        .header-actions { display: flex; gap: 10px; }
+        .primary-btn, .secondary-btn { padding: 10px 20px; font-size: 0.95rem; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+        .primary-btn { background-color: var(--sidebar-accent); color: var(--sidebar-header-bg); }
+        .primary-btn:hover { filter: brightness(1.1); }
+        .secondary-btn { background-color: #f0f2f5; color: var(--text-secondary); border: 1px solid var(--border-color); }
+        .secondary-btn:hover { background-color: #e2e8f0; }
+        .filter-bar { display: flex; gap: 15px; align-items: center; padding: 15px; background: var(--content-bg); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); margin-bottom: 20px; flex-wrap: wrap; }
+        .filter-group { display: flex; align-items: center; gap: 8px; }
+        .filter-group label { font-weight: 500; font-size: 0.9rem; }
+        .filter-group input, .filter-group select { padding: 8px 12px; font-size: 0.9rem; border: 1px solid var(--border-color); border-radius: 6px; }
+        .table-container { background-color: var(--content-bg); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); overflow-x: auto; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 15px; border-bottom: 1px solid var(--border-color); text-align: left; white-space: nowrap; font-size: 0.95rem; }
+        .data-table thead th { background-color: #f7fafc; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; font-size: 0.8rem;}
+        .data-table tbody tr:hover { background-color: #edf2f7; }
+        .column-toggle-container { position: relative; }
+        .column-toggle-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; background-color: var(--content-bg); border: 1px solid var(--border-color); border-radius: var(--border-radius); box-shadow: var(--shadow-md); padding: 15px; width: 200px; z-index: 100; }
+        .column-toggle-item { display: flex; align-items: center; margin-bottom: 10px; }
+        .column-toggle-item:last-child { margin-bottom: 0; }
+        .column-toggle-item input { margin-right: 10px; width: 16px; height: 16px; }
+        .column-toggle-item label { cursor: pointer; font-size: 0.95rem; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
+        .modal-content { background-color: var(--content-bg); padding: 30px; border-radius: var(--border-radius); box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 600px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-title { font-size: 1.5rem; }
+        .close-btn { font-size: 1.8rem; color: var(--text-secondary); cursor: pointer; background: none; border: none; }
+        .modal-body form { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { margin-bottom: 8px; font-weight: 500; font-size: 0.9rem; }
+        .form-group input, .form-group select, .form-group textarea { padding: 10px; font-size: 1rem; border: 1px solid var(--border-color); border-radius: 6px; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        .modal-footer { text-align: right; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">채용 대시보드</div>
+                <div class="sidebar-subtitle">Hiring Status</div>
+            </div>
+            <div class="nav-menu">
+                <button class="nav-item active" onclick="switchPage('dashboard')"><i class="fas fa-users icon"></i> 현황</button>
+                <button class="nav-item" onclick="switchPage('stats')"><i class="fas fa-chart-pie icon"></i> 통계</button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <header class="main-header">
+                <h1 class="main-title" id="pageTitle">지원자 현황</h1>
+            </header>
+            <div class="content-area">
+                <div id="dashboard" class="page active">
+                    <div class="page-header">
+                        <h2 class="page-title">전체 지원자 목록</h2>
+                        <div class="header-actions">
+                            <div class="column-toggle-container">
+                                <button class="secondary-btn" onclick="toggleColumnDropdown()"><i class="fas fa-columns"></i> 컬럼 설정</button>
+                                <div class="column-toggle-dropdown" id="columnToggleDropdown"></div>
+                            </div>
+                            <button class="primary-btn" onclick="openModal()"><i class="fas fa-plus"></i> 신규 지원자 등록</button>
+                        </div>
+                    </div>
+                    <div class="filter-bar">
+                        <div class="filter-group">
+                            <label for="dateFilterType">지원일 필터:</label>
+                            <select id="dateFilterType" onchange="handleDateFilterChange()">
+                                <option value="all">전체 기간</option>
+                                <option value="year">연도별</option>
+                                <option value="month">월별</option>
+                                <option value="range">기간 설정</option>
+                            </select>
+                        </div>
+                        <div class="filter-group" id="yearFilterGroup" style="display:none;">
+                            <label for="yearInput">연도:</label>
+                            <input type="number" id="yearInput" placeholder="YYYY" oninput="applyFilters()">
+                        </div>
+                        <div class="filter-group" id="monthFilterGroup" style="display:none;">
+                            <label for="monthInput">연/월:</label>
+                            <input type="month" id="monthInput" onchange="applyFilters()">
+                        </div>
+                        <div class="filter-group" id="rangeFilterGroup" style="display:none;">
+                            <label>시작일:</label><input type="date" id="startDateInput" onchange="applyFilters()">
+                            <label>종료일:</label><input type="date" id="endDateInput" onchange="applyFilters()">
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table"></table>
+                    </div>
+                </div>
+                <div id="stats" class="page">
+                    <div class="page-header"><h2 class="page-title">채용 통계 분석</h2></div>
+                    <p>이곳에 통계 차트가 표시될 예정입니다.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="applicantModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 class="modal-title">신규 지원자 등록</h3><button class="close-btn" onclick="closeModal()">&times;</button></div>
+            <div class="modal-body"><form id="applicantForm"></form></div>
+            <div class="modal-footer"><button class="primary-btn" onclick="saveNewApplicant()">저장하기</button></div>
+        </div>
+    </div>
+
+    <script>
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6vE_HEErU0BDqUOhusa2plkrApRJeb5v2q6KeCTMtV8oo74dbGB3XOrIpavnaZb2q/exec';
+
+        let allApplicantData = [];
+        let currentHeaders = [];
+        const DEFAULT_HIDDEN_COLUMNS = ['나이', '성별', '비고'];
+        let visibleColumns = {};
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('yearInput').value = new Date().getFullYear();
+            fetchData();
+            // Close dropdown if clicked outside
+            document.addEventListener('click', function(event) {
+                const dropdownContainer = document.querySelector('.column-toggle-container');
+                if (dropdownContainer && !dropdownContainer.contains(event.target)) {
+                    document.getElementById('columnToggleDropdown').style.display = 'none';
+                }
+            });
+        });
+
+        function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.nav-item[onclick="switchPage('${pageId}')"]`).classList.add('active');
+            const titles = { dashboard: '지원자 현황', stats: '통계 분석' };
+            document.getElementById('pageTitle').textContent = titles[pageId];
+        }
+
+        const modal = document.getElementById('applicantModal');
+        function openModal() { buildModalForm(); modal.style.display = 'flex'; }
+        function closeModal() { modal.style.display = 'none'; document.getElementById('applicantForm').reset(); }
+        window.onclick = function(event) { if (event.target == modal) closeModal(); }
+
+        async function fetchData() {
+            const tableContainer = document.querySelector('.table-container');
+            if (!APPS_SCRIPT_URL) {
+                tableContainer.innerHTML = `<p style="text-align:center; padding: 40px;">APPS_SCRIPT_URL을 설정해주세요.</p>`;
+                return;
+            }
+            tableContainer.innerHTML = `<p style="text-align:center; padding: 40px;">데이터를 불러오는 중...</p>`;
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=read`);
+                const result = await response.json();
+                if (result.status !== 'success') throw new Error(result.message);
+
+                currentHeaders = result.data[0] || [];
+                allApplicantData = result.data.slice(1).filter(row => row.some(cell => cell !== ''));
+                
+                generateVisibleColumns(currentHeaders);
+                setupColumnToggles();
+                applyFilters();
+            } catch (error) {
+                console.error("데이터 불러오기 실패:", error);
+                tableContainer.innerHTML = `<p style="text-align:center; padding: 40px; color: var(--danger-color);">데이터 로딩 중 오류 발생: ${error.message}</p>`;
+            }
+        }
+        
+        function applyFilters() {
+            let filteredData = [...allApplicantData];
+            const dateFilterType = document.getElementById('dateFilterType').value;
+            const applyDateIndex = currentHeaders.indexOf('지원일');
+
+            if (applyDateIndex !== -1) {
+                if (dateFilterType === 'year') {
+                    const year = document.getElementById('yearInput').value;
+                    if (year) filteredData = filteredData.filter(row => row[applyDateIndex] && new Date(row[applyDateIndex]).getFullYear() == year);
+                } else if (dateFilterType === 'month') {
+                    const month = document.getElementById('monthInput').value;
+                    if (month) filteredData = filteredData.filter(row => row[applyDateIndex] && row[applyDateIndex].slice(0, 7) === month);
+                } else if (dateFilterType === 'range') {
+                    const startDate = document.getElementById('startDateInput').value;
+                    const endDate = document.getElementById('endDateInput').value;
+                    if (startDate && endDate) {
+                        const start = new Date(startDate);
+                        const end = new Date(endDate);
+                        end.setHours(23, 59, 59, 999); // Include the entire end day
+                        filteredData = filteredData.filter(row => {
+                            if(!row[applyDateIndex]) return false;
+                            const applyDate = new Date(row[applyDateIndex]);
+                            return applyDate >= start && applyDate <= end;
+                        });
+                    }
+                }
+            }
+            renderTable(filteredData);
+        }
+
+        function renderTable(dataToRender) {
+            const tableContainer = document.querySelector('.table-container');
+            tableContainer.innerHTML = '';
+            const table = document.createElement('table');
+            table.className = 'data-table';
+            
+            const thead = table.createTHead();
+            const headerRow = thead.insertRow();
+            currentHeaders.forEach(header => {
+                if (visibleColumns[header]) {
+                    const th = document.createElement('th');
+                    th.textContent = header;
+                    headerRow.appendChild(th);
+                }
+            });
+
+            const tbody = table.createTBody();
+            if (dataToRender.length === 0) {
+                const row = tbody.insertRow();
+                const cell = row.insertCell();
+                cell.colSpan = Object.values(visibleColumns).filter(Boolean).length || 1;
+                cell.textContent = '표시할 데이터가 없습니다.';
+                cell.style.textAlign = 'center';
+                cell.style.padding = '40px';
+            } else {
+                dataToRender.forEach(rowData => {
+                    const row = tbody.insertRow();
+                    rowData.forEach((cellData, index) => {
+                        const headerName = currentHeaders[index];
+                        if (visibleColumns[headerName]) {
+                            const cell = row.insertCell();
+                            cell.textContent = (headerName === '지원일' && cellData) ? new Date(cellData).toLocaleDateString() : (cellData || '');
+                        }
+                    });
+                });
+            }
+            tableContainer.appendChild(table);
+        }
+        
+        function handleDateFilterChange() {
+            const filterType = document.getElementById('dateFilterType').value;
+            document.getElementById('yearFilterGroup').style.display = filterType === 'year' ? 'flex' : 'none';
+            document.getElementById('monthFilterGroup').style.display = filterType === 'month' ? 'flex' : 'none';
+            document.getElementById('rangeFilterGroup').style.display = filterType === 'range' ? 'flex' : 'none';
+            if (filterType === 'all') applyFilters();
+        }
+
+        function toggleColumnDropdown() {
+            const dropdown = document.getElementById('columnToggleDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function handleColumnToggle(event, columnName) {
+            visibleColumns[columnName] = event.target.checked;
+            applyFilters();
+        }
+
+        function setupColumnToggles() {
+            const container = document.getElementById('columnToggleDropdown');
+            container.innerHTML = '';
+            Object.keys(visibleColumns).forEach(columnName => {
+                const item = document.createElement('div');
+                item.className = 'column-toggle-item';
+                item.innerHTML = `<input type="checkbox" id="col-${columnName}" onchange="handleColumnToggle(event, '${columnName}')" ${visibleColumns[columnName] ? 'checked' : ''}><label for="col-${columnName}">${columnName}</label>`;
+                container.appendChild(item);
+            });
+        }
+        
+        function generateVisibleColumns(headers) {
+            visibleColumns = {};
+            headers.forEach(header => {
+                if (header) visibleColumns[header] = !DEFAULT_HIDDEN_COLUMNS.includes(header);
+            });
+        }
+
+        function buildModalForm() {
+            const form = document.getElementById('applicantForm');
+            form.innerHTML = '';
+            currentHeaders.forEach(header => {
+                if (!header) return;
+                const id = `modal-form-${header}`;
+                const formGroup = document.createElement('div');
+                formGroup.className = 'form-group';
+                let inputHtml;
+
+                const required = (header === '이름' || header === '지원일');
+                
+                if (header === '지원일') inputHtml = `<input type="date" id="${id}" ${required ? 'required' : ''}>`;
+                else if (header === '성별') inputHtml = `<select id="${id}"><option value=""></option><option value="남">남</option><option value="여">여</option></select>`;
+                else if (header === '비고') inputHtml = `<textarea id="${id}" rows="3"></textarea>`;
+                else inputHtml = `<input type="text" id="${id}" ${required ? 'required' : ''}>`;
+                
+                formGroup.innerHTML = `<label for="${id}">${header}${required ? ' *' : ''}</label>${inputHtml}`;
+                if (header === '비고') formGroup.classList.add('full-width');
+                form.appendChild(formGroup);
+            });
+        }
+
+        async function saveNewApplicant() {
+            const saveBtn = document.querySelector('.modal-footer .primary-btn');
+            try {
+                const applicantData = {};
+                let isFormValid = true;
+                currentHeaders.forEach(header => {
+                    const input = document.getElementById(`modal-form-${header}`);
+                    if (input) {
+                        applicantData[header] = input.value;
+                        if (input.hasAttribute('required') && !input.value) {
+                            isFormValid = false;
+                        }
+                    }
+                });
+
+                if (!isFormValid) {
+                    alert('필수 항목(이름, 지원일 등)을 모두 입력해주세요.'); return;
+                }
+
+                saveBtn.disabled = true;
+                saveBtn.textContent = '저장 중...';
+
+                await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'create', data: applicantData })
+                });
+                
+                closeModal();
+                await fetchApplicants();
+
+            } catch (error) {
+                console.error("데이터 저장 실패:", error);
+                alert("데이터 저장 중 오류 발생: " + error.message);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '저장하기';
+            }
+        }
+    </script>
+</body>
+</html>
