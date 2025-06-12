@@ -42,15 +42,16 @@
         .primary-btn:hover { filter: brightness(1.1); }
         .secondary-btn { background-color: #f0f2f5; color: var(--text-secondary); border: 1px solid var(--border-color); }
         .secondary-btn:hover { background-color: #e2e8f0; }
-        .filter-bar { display: flex; gap: 20px; align-items: center; padding: 15px; background: var(--content-bg); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); margin-bottom: 20px; flex-wrap: wrap; }
-        .filter-group { display: flex; align-items: center; gap: 8px; }
-        .filter-group label { font-weight: 500; font-size: 0.9rem; }
-        .filter-group input, .filter-group select { padding: 8px 12px; font-size: 0.9rem; border: 1px solid var(--border-color); border-radius: 6px; }
-        .filter-group-radio label { margin-right: 15px; cursor: pointer; }
+        .filter-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end; padding: 20px; background: var(--content-bg); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); margin-bottom: 20px; }
+        .filter-group { display: flex; flex-direction: column; }
+        .filter-group label { font-weight: 500; font-size: 0.9rem; margin-bottom: 5px; }
+        .filter-group input, .filter-group select { padding: 8px 12px; font-size: 0.9rem; border: 1px solid var(--border-color); border-radius: 6px; width: 100%; }
+        .filter-summary { margin: -10px 0 15px 5px; color: var(--text-secondary); font-weight: 500; }
         .table-container { background-color: var(--content-bg); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); overflow-x: auto; }
         .data-table { width: 100%; border-collapse: collapse; }
         .data-table th, .data-table td { padding: 15px; border-bottom: 1px solid var(--border-color); text-align: left; white-space: nowrap; font-size: 0.95rem; }
-        .data-table thead th { background-color: #f7fafc; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; font-size: 0.8rem;}
+        .data-table thead th { background-color: #f7fafc; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; font-size: 0.8rem; position: sticky; top: 0; z-index: 1;}
+        .data-table thead input { width: 100%; padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9rem;}
         .data-table tbody tr:hover { background-color: #edf2f7; }
         .column-toggle-container { position: relative; }
         .column-toggle-dropdown { display: none; position: absolute; top: 100%; right: 0; margin-top: 5px; background-color: var(--content-bg); border: 1px solid var(--border-color); border-radius: var(--border-radius); box-shadow: var(--shadow-md); padding: 15px; width: 200px; z-index: 100; }
@@ -83,7 +84,6 @@
                 <button class="nav-item" onclick="switchPage('stats')"><i class="fas fa-chart-pie icon"></i> 통계</button>
             </div>
         </nav>
-
         <main class="main-content">
             <header class="main-header">
                 <h1 class="main-title" id="pageTitle">지원자 현황</h1>
@@ -101,24 +101,36 @@
                         </div>
                     </div>
                     <div class="filter-bar">
-                        <div class="filter-group filter-group-radio" onchange="applyFilters()">
-                            <label><input type="radio" name="dateFilter" value="all" checked> 전체</label>
-                            <label><input type="radio" name="dateFilter" value="year"> 연도</label>
-                            <label><input type="radio" name="dateFilter" value="month"> 월</label>
-                            <label><input type="radio" name="dateFilter" value="range"> 기간</label>
+                        <div class="filter-group">
+                            <label for="routeFilter">지원루트</label>
+                            <select id="routeFilter" onchange="applyFilters()"><option value="all">전체</option></select>
                         </div>
                         <div class="filter-group">
-                            <input type="number" id="yearInput" placeholder="YYYY" oninput="document.querySelector('input[name=dateFilter][value=year]').checked = true; applyFilters();">
+                            <label for="positionFilter">모집분야</label>
+                            <select id="positionFilter" onchange="applyFilters()"><option value="all">전체</option></select>
                         </div>
                         <div class="filter-group">
-                            <input type="month" id="monthInput" onchange="document.querySelector('input[name=dateFilter][value=month]').checked = true; applyFilters();">
+                            <label for="yearInput">연도</label>
+                            <input type="number" id="yearInput" placeholder="YYYY" oninput="applyFilters()">
                         </div>
                         <div class="filter-group">
-                            <input type="date" id="startDateInput" onchange="document.querySelector('input[name=dateFilter][value=range]').checked = true; applyFilters();">
-                            <span style="margin: 0 5px;">-</span>
-                            <input type="date" id="endDateInput" onchange="document.querySelector('input[name=dateFilter][value=range]').checked = true; applyFilters();">
+                            <label for="monthInput">월</label>
+                            <input type="month" id="monthInput" onchange="applyFilters()">
+                        </div>
+                        <div class="filter-group">
+                            <label for="startDateInput">기간</label>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <input type="date" id="startDateInput" onchange="applyFilters()">
+                                <span>-</span>
+                                <input type="date" id="endDateInput" onchange="applyFilters()">
+                            </div>
+                        </div>
+                         <div class="filter-group">
+                            <label>&nbsp;</label>
+                            <button class="secondary-btn" onclick="resetFilters()">필터 초기화</button>
                         </div>
                     </div>
+                    <div class="filter-summary" id="filterSummary"></div>
                     <div class="table-container">
                         <table class="data-table"></table>
                     </div>
@@ -130,7 +142,6 @@
             </div>
         </main>
     </div>
-
     <div id="applicantModal" class="modal">
         <div class="modal-content">
             <div class="modal-header"><h3 class="modal-title">신규 지원자 등록</h3><button class="close-btn" onclick="closeModal()">&times;</button></div>
@@ -141,16 +152,13 @@
 
     <script>
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6vE_HEErU0BDqUOhusa2plkrApRJeb5v2q6KeCTMtV8oo74dbGB3XOrIpavnaZb2q/exec';
-
         let allApplicantData = [];
         let currentHeaders = [];
-        // '구분'을 다시 표시하기 위해 기본 숨김 목록에서 제거
-        const DEFAULT_HIDDEN_COLUMNS = ['나이', '성별', '비고'];
+        const DEFAULT_HIDDEN_COLUMNS = ['부재','거절','보류','면접확정','미참석','불합격/보류','입과/출근'];
         let visibleColumns = {};
-        let nextSequenceNumber = 1; // 다음에 생성될 번호를 저장할 변수
+        let nextSequenceNumber = 1;
 
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('yearInput').value = new Date().getFullYear();
             fetchData();
             document.addEventListener('click', function(event) {
                 const dropdownContainer = document.querySelector('.column-toggle-container');
@@ -175,74 +183,37 @@
         window.onclick = function(event) { if (event.target == modal) closeModal(); }
 
         async function fetchData() {
-    const tableContainer = document.querySelector('.table-container');
-    if (!APPS_SCRIPT_URL) {
-        tableContainer.innerHTML = `<p style="text-align:center; padding: 40px;">APPS_SCRIPT_URL을 설정해주세요.</p>`;
-        return;
-    }
-    tableContainer.innerHTML = `<p style="text-align:center; padding: 40px;">데이터를 불러오는 중...</p>`;
-    try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=read`);
-        const result = await response.json();
-        if (result.status !== 'success') throw new Error(result.message);
+            const tableContainer = document.querySelector('.table-container');
+            if (!APPS_SCRIPT_URL) {
+                tableContainer.innerHTML = `<p style="text-align:center; padding: 40px;">APPS_SCRIPT_URL을 설정해주세요.</p>`;
+                return;
+            }
+            tableContainer.innerHTML = `<p style="text-align:center; padding: 40px;">데이터를 불러오는 중...</p>`;
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=read`);
+                const result = await response.json();
+                if (result.status !== 'success') throw new Error(result.message);
 
-        currentHeaders = result.data[0] || [];
-        allApplicantData = result.data.slice(1).filter(row => row.some(cell => cell !== ''));
-        
-        // ★★★ 마지막 '구분' 번호를 찾아 다음 번호 계산 (추가된 로직) ★★★
-        const gubunIndex = currentHeaders.indexOf('구분');
-        if (gubunIndex !== -1 && allApplicantData.length > 0) {
-            // 마지막 행의 '구분' 값을 숫자로 변환
-            const lastGubun = parseInt(allApplicantData[allApplicantData.length - 1][gubunIndex], 10);
-            // 숫자가 맞으면 +1, 아니면 전체 길이 + 1
-            nextSequenceNumber = isNaN(lastGubun) ? allApplicantData.length + 1 : lastGubun + 1;
-        } else {
-            // 데이터가 없으면 1부터 시작
-            nextSequenceNumber = 1;
+                currentHeaders = result.data[0] || [];
+                allApplicantData = result.data.slice(1).filter(row => row.some(cell => cell !== ''));
+                
+                const gubunIndex = currentHeaders.indexOf('구분');
+                if (gubunIndex !== -1 && allApplicantData.length > 0) {
+                    const lastGubun = parseInt(allApplicantData[allApplicantData.length - 1][gubunIndex], 10);
+                    nextSequenceNumber = isNaN(lastGubun) ? allApplicantData.length + 1 : lastGubun + 1;
+                } else {
+                    nextSequenceNumber = allApplicantData.length + 1;
+                }
+                
+                generateVisibleColumns(currentHeaders);
+                setupColumnToggles();
+                populateDropdownFilters();
+                applyFilters();
+            } catch (error) {
+                console.error("데이터 불러오기 실패:", error);
+                tableContainer.innerHTML = `<p style="text-align:center; padding: 40px; color: var(--danger-color);">데이터 로딩 중 오류 발생: ${error.message}</p>`;
+            }
         }
-        
-        generateVisibleColumns(currentHeaders);
-        setupColumnToggles();
-        applyFilters();
-    } catch (error) {
-        console.error("데이터 불러오기 실패:", error);
-        tableContainer.innerHTML = `<p style="text-align:center; padding: 40px; color: var(--danger-color);">데이터 로딩 중 오류 발생: ${error.message}</p>`;
-    }
-}async function fetchData() {
-    const tableContainer = document.querySelector('.table-container');
-    if (!APPS_SCRIPT_URL) {
-        tableContainer.innerHTML = `<p style="text-align:center; padding: 40px;">APPS_SCRIPT_URL을 설정해주세요.</p>`;
-        return;
-    }
-    tableContainer.innerHTML = `<p style="text-align:center; padding: 40px;">데이터를 불러오는 중...</p>`;
-    try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?action=read`);
-        const result = await response.json();
-        if (result.status !== 'success') throw new Error(result.message);
-
-        currentHeaders = result.data[0] || [];
-        allApplicantData = result.data.slice(1).filter(row => row.some(cell => cell !== ''));
-        
-        // ★★★ 마지막 '구분' 번호를 찾아 다음 번호 계산 (추가된 로직) ★★★
-        const gubunIndex = currentHeaders.indexOf('구분');
-        if (gubunIndex !== -1 && allApplicantData.length > 0) {
-            // 마지막 행의 '구분' 값을 숫자로 변환
-            const lastGubun = parseInt(allApplicantData[allApplicantData.length - 1][gubunIndex], 10);
-            // 숫자가 맞으면 +1, 아니면 전체 길이 + 1
-            nextSequenceNumber = isNaN(lastGubun) ? allApplicantData.length + 1 : lastGubun + 1;
-        } else {
-            // 데이터가 없으면 1부터 시작
-            nextSequenceNumber = 1;
-        }
-        
-        generateVisibleColumns(currentHeaders);
-        setupColumnToggles();
-        applyFilters();
-    } catch (error) {
-        console.error("데이터 불러오기 실패:", error);
-        tableContainer.innerHTML = `<p style="text-align:center; padding: 40px; color: var(--danger-color);">데이터 로딩 중 오류 발생: ${error.message}</p>`;
-    }
-}
         
         async function saveNewApplicant() {
             const saveBtn = document.querySelector('.modal-footer .primary-btn');
@@ -250,7 +221,7 @@
                 const applicantData = {};
                 let isFormValid = true;
                 currentHeaders.forEach(header => {
-                    if (header === '구분') return; // '구분'은 보내지 않음
+                    if (header === '구분') return;
                     const input = document.getElementById(`modal-form-${header}`);
                     if (input) {
                         applicantData[header] = input.value;
@@ -273,7 +244,6 @@
                 });
                 
                 closeModal();
-                // 저장 후 페이지 전체 새로고침으로 변경
                 location.reload();
 
             } catch (error) {
@@ -287,34 +257,84 @@
 
         function applyFilters() {
             let filteredData = [...allApplicantData];
-            const dateFilterType = document.querySelector('input[name="dateFilter"]:checked').value;
+            const headerFilters = document.querySelectorAll('.header-filter-input');
+            headerFilters.forEach(input => {
+                const headerName = input.dataset.header;
+                const filterValue = input.value.toLowerCase().trim();
+                const headerIndex = currentHeaders.indexOf(headerName);
+                if (filterValue && headerIndex !== -1) {
+                    filteredData = filteredData.filter(row => 
+                        String(row[headerIndex] || '').toLowerCase().includes(filterValue)
+                    );
+                }
+            });
+
+            const routeFilter = document.getElementById('routeFilter').value;
+            const positionFilter = document.getElementById('positionFilter').value;
+            const routeIndex = currentHeaders.indexOf('지원루트');
+            const positionIndex = currentHeaders.indexOf('모집분야');
+
+            if (routeFilter !== 'all' && routeIndex !== -1) {
+                filteredData = filteredData.filter(row => row[routeIndex] === routeFilter);
+            }
+            if (positionFilter !== 'all' && positionIndex !== -1) {
+                filteredData = filteredData.filter(row => row[positionIndex] === positionFilter);
+            }
+
+            const year = document.getElementById('yearInput').value;
+            const month = document.getElementById('monthInput').value;
+            const startDate = document.getElementById('startDateInput').value;
+            const endDate = document.getElementById('endDateInput').value;
             const applyDateIndex = currentHeaders.indexOf('지원일');
 
             if (applyDateIndex !== -1) {
-                if (dateFilterType === 'year') {
-                    const year = document.getElementById('yearInput').value;
-                    if (year) filteredData = filteredData.filter(row => row[applyDateIndex] && new Date(row[applyDateIndex]).getFullYear() == year);
-                } else if (dateFilterType === 'month') {
-                    const month = document.getElementById('monthInput').value;
-                    if (month) filteredData = filteredData.filter(row => row[applyDateIndex] && row[applyDateIndex].slice(0, 7) === month);
-                } else if (dateFilterType === 'range') {
-                    const startDate = document.getElementById('startDateInput').value;
-                    const endDate = document.getElementById('endDateInput').value;
-                    if (startDate && endDate) {
-                        const start = new Date(startDate);
-                        const end = new Date(endDate);
-                        end.setHours(23, 59, 59, 999);
-                        filteredData = filteredData.filter(row => {
-                            if(!row[applyDateIndex]) return false;
-                            const applyDate = new Date(row[applyDateIndex]);
-                            return applyDate >= start && applyDate <= end;
-                        });
-                    }
+                if (year) {
+                    filteredData = filteredData.filter(row => row[applyDateIndex] && new Date(row[applyDateIndex]).getFullYear() == year);
+                } else if (month) {
+                    filteredData = filteredData.filter(row => row[applyDateIndex] && row[applyDateIndex].slice(0, 7) === month);
+                } else if (startDate && endDate) {
+                    const start = new Date(startDate);
+                    const end = new Date(endDate);
+                    end.setHours(23, 59, 59, 999);
+                    filteredData = filteredData.filter(row => {
+                        if(!row[applyDateIndex]) return false;
+                        const applyDate = new Date(row[applyDateIndex]);
+                        return applyDate >= start && applyDate <= end;
+                    });
                 }
             }
+            
+            document.getElementById('filterSummary').textContent = `총 ${allApplicantData.length}명 중 ${filteredData.length}명의 지원자`;
             renderTable(filteredData);
         }
 
+        function resetFilters() {
+            document.querySelectorAll('.filter-bar input, .filter-bar select').forEach(input => {
+                if(input.tagName === 'SELECT') input.value = 'all';
+                else input.value = '';
+            });
+            document.querySelectorAll('.header-filter-input').forEach(input => input.value = '');
+            applyFilters();
+        }
+
+        function populateDropdownFilters() {
+            const routeIndex = currentHeaders.indexOf('지원루트');
+            const positionIndex = currentHeaders.indexOf('모집분야');
+
+            if (routeIndex !== -1) {
+                const routes = [...new Set(allApplicantData.map(row => row[routeIndex]).filter(Boolean))];
+                const routeFilter = document.getElementById('routeFilter');
+                routeFilter.innerHTML = '<option value="all">전체</option>';
+                routes.sort().forEach(route => routeFilter.innerHTML += `<option value="${route}">${route}</option>`);
+            }
+            if (positionIndex !== -1) {
+                const positions = [...new Set(allApplicantData.map(row => row[positionIndex]).filter(Boolean))];
+                const positionFilter = document.getElementById('positionFilter');
+                positionFilter.innerHTML = '<option value="all">전체</option>';
+                positions.sort().forEach(pos => positionFilter.innerHTML += `<option value="${pos}">${pos}</option>`);
+            }
+        }
+        
         function renderTable(dataToRender) {
             const tableContainer = document.querySelector('.table-container');
             tableContainer.innerHTML = '';
@@ -328,6 +348,15 @@
                     const th = document.createElement('th');
                     th.textContent = header;
                     headerRow.appendChild(th);
+                }
+            });
+            const filterRow = thead.insertRow();
+            currentHeaders.forEach(header => {
+                if (visibleColumns[header]) {
+                    const th = document.createElement('th');
+                    th.style.padding = '5px';
+                    th.innerHTML = `<input type="text" class="header-filter-input" data-header="${header}" placeholder="${header} 검색..." oninput="applyFilters()">`;
+                    filterRow.appendChild(th);
                 }
             });
 
@@ -353,7 +382,7 @@
             }
             tableContainer.appendChild(table);
         }
-        
+
         function toggleColumnDropdown() {
             const dropdown = document.getElementById('columnToggleDropdown');
             dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
@@ -383,50 +412,49 @@
         }
 
         function buildModalForm() {
-    const form = document.getElementById('applicantForm');
-    form.innerHTML = '';
-    currentHeaders.forEach(header => {
-        if (!header) return;
-        const id = `modal-form-${header}`;
-        const formGroup = document.createElement('div');
-        formGroup.className = 'form-group';
-        let inputHtml;
-        const required = (header === '이름' || header === '지원일');
-        
-        // ★★★ '구분' 필드 처리 로직 추가 ★★★
-        if (header === '구분') {
-            inputHtml = `<input type="text" id="${id}" value="${nextSequenceNumber}" disabled>`; // disabled 속성으로 수정 불가
-        } else if (header === '모집분야') {
-            inputHtml = `<select id="${id}"><option value="영업">영업</option><option value="강사">강사</option></select>`;
-        } else if (header === '지원루트') {
-            const routes = ['사람인', '잡코리아', '인크루트', 'Instagram', 'Threads', '배우공고'];
-            const options = routes.map(r => `<option value="${r}">${r}</option>`).join('');
-            inputHtml = `<select id="${id}"><option value=""></option>${options}</select>`;
-        } else if (header === '연락처') {
-            inputHtml = `<input type="tel" id="${id}" placeholder="010-0000-0000" oninput="formatPhoneNumber(this)">`;
-        } else if (header === '지원일') {
-            inputHtml = `<input type="date" id="${id}" ${required ? 'required' : ''}>`;
-        } else if (header === '성별') {
-            inputHtml = `<select id="${id}"><option value=""></option><option value="남">남</option><option value="여">여</option></select>`;
-        } else if (header === '비고') {
-            inputHtml = `<textarea id="${id}" rows="3"></textarea>`;
-        } else {
-            inputHtml = `<input type="text" id="${id}" ${required ? 'required' : ''}>`;
+            const form = document.getElementById('applicantForm');
+            form.innerHTML = '';
+            currentHeaders.forEach(header => {
+                if (!header) return;
+                const id = `modal-form-${header}`;
+                const formGroup = document.createElement('div');
+                formGroup.className = 'form-group';
+                let inputHtml;
+                const required = (header === '이름' || header === '지원일');
+
+                if (header === '구분') {
+                    inputHtml = `<input type="text" id="${id}" value="${nextSequenceNumber}" disabled>`;
+                } else if (header === '모집분야') {
+                    inputHtml = `<select id="${id}"><option value="영업">영업</option><option value="강사">강사</option></select>`;
+                } else if (header === '지원루트') {
+                    const routes = ['사람인', '잡코리아', '인크루트', 'Instagram', 'Threads', '배우공고'];
+                    const options = routes.map(r => `<option value="${r}">${r}</option>`).join('');
+                    inputHtml = `<select id="${id}"><option value=""></option>${options}</select>`;
+                } else if (header === '연락처') {
+                    inputHtml = `<input type="tel" id="${id}" placeholder="010-0000-0000" oninput="formatPhoneNumber(this)">`;
+                } else if (header === '지원일') {
+                    inputHtml = `<input type="date" id="${id}" ${required ? 'required' : ''}>`;
+                } else if (header === '성별') {
+                    inputHtml = `<select id="${id}"><option value=""></option><option value="남">남</option><option value="여">여</option></select>`;
+                } else if (header === '비고') {
+                    inputHtml = `<textarea id="${id}" rows="3"></textarea>`;
+                } else {
+                    inputHtml = `<input type="text" id="${id}" ${required ? 'required' : ''}>`;
+                }
+                
+                formGroup.innerHTML = `<label for="${id}">${header}${required ? ' *' : ''}</label>${inputHtml}`;
+                if (header === '비고') formGroup.classList.add('full-width');
+                form.appendChild(formGroup);
+            });
         }
-        
-        formGroup.innerHTML = `<label for="${id}">${header}${required ? ' *' : ''}</label>${inputHtml}`;
-        if (header === '비고') formGroup.classList.add('full-width');
-        form.appendChild(formGroup);
-    });
-}
 
         function formatPhoneNumber(input) {
             let value = input.value.replace(/\D/g, '');
             if (value.length > 11) value = value.slice(0, 11);
-            if (value.length > 3 && value.length <= 7) {
-                input.value = `${value.slice(0, 3)}-${value.slice(3)}`;
-            } else if (value.length > 7) {
+            if (value.length > 7) {
                 input.value = `${value.slice(0, 3)}-${value.slice(3, 7)}-${value.slice(7)}`;
+            } else if (value.length > 3) {
+                input.value = `${value.slice(0, 3)}-${value.slice(3)}`;
             } else {
                 input.value = value;
             }
