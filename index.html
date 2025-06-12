@@ -37,24 +37,21 @@
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
         .page-title { font-size: 1.8rem; font-weight: 500; }
         .header-actions { display: flex; gap: 10px; }
-        .primary-btn, .secondary-btn, .reset-btn { padding: 10px 20px; font-size: 0.95rem; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+        .primary-btn, .secondary-btn { padding: 10px 20px; font-size: 0.95rem; font-weight: 700; border: none; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
         .primary-btn { background-color: var(--sidebar-accent); color: var(--sidebar-header-bg); }
         .primary-btn:hover { filter: brightness(1.1); }
         .secondary-btn { background-color: #f0f2f5; color: var(--text-secondary); border: 1px solid var(--border-color); }
         .secondary-btn:hover { background-color: #e2e8f0; }
-        .reset-btn { padding: 8px 15px; background-color: var(--danger-color); color: white;}
+        .reset-btn { padding: 10px 15px; background-color: var(--danger-color); color: white; width: auto; /* 버튼 크기 자동 조절 */ }
         .reset-btn:hover { filter: brightness(1.1); }
-        .filter-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; align-items: end; padding: 20px; background: var(--content-bg); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); margin-bottom: 20px; }
+        .filter-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; align-items: end; padding: 20px; background: var(--content-bg); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); margin-bottom: 20px; }
         .filter-group { display: flex; flex-direction: column; }
         .filter-group label { font-weight: 500; font-size: 0.9rem; margin-bottom: 5px; }
         .filter-group input, .filter-group select { padding: 8px 12px; font-size: 0.9rem; border: 1px solid var(--border-color); border-radius: 6px; width: 100%; }
-        
-        /* 필터 결과 요약 카드 */
         .summary-card { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; background: var(--content-bg); border-left: 5px solid var(--sidebar-accent); padding: 20px; border-radius: var(--border-radius); box-shadow: var(--shadow-sm); margin-bottom: 20px; }
         .summary-item { text-align: center; }
         .summary-item .value { font-size: 2rem; font-weight: 700; color: var(--sidebar-accent); }
         .summary-item .label { font-size: 0.9rem; color: var(--text-secondary); margin-top: 5px; }
-
         .table-container { background-color: var(--content-bg); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); overflow-x: auto; }
         .data-table { width: 100%; border-collapse: collapse; }
         .data-table th, .data-table td { padding: 15px; border-bottom: 1px solid var(--border-color); text-align: left; white-space: nowrap; font-size: 0.95rem; }
@@ -167,7 +164,7 @@
         let nextSequenceNumber = 1;
 
         document.addEventListener('DOMContentLoaded', () => {
-            resetFilters(false); // 페이지 로드 시 필터 초기화 (기본값 설정)
+            resetFilters(false);
             fetchData();
             document.addEventListener('click', function(event) {
                 const dropdownContainer = document.querySelector('.column-toggle-container');
@@ -276,11 +273,16 @@
                 filteredData = filteredData.filter(row => row[positionIndex] === positionFilter);
             }
             if (applyDateIndex !== -1) {
-                 if (year && !month && !startDate) {
+                let dateFiltered = false;
+                if (year) {
                     filteredData = filteredData.filter(row => row[applyDateIndex] && new Date(row[applyDateIndex]).getFullYear() == year);
-                } else if (month && !startDate) {
+                    dateFiltered = true;
+                }
+                if (month) {
                     filteredData = filteredData.filter(row => row[applyDateIndex] && row[applyDateIndex].slice(0, 7) === month);
-                } else if (startDate && endDate) {
+                    dateFiltered = true;
+                }
+                if (startDate && endDate) {
                     const start = new Date(startDate);
                     const end = new Date(endDate);
                     end.setHours(23, 59, 59, 999);
@@ -289,6 +291,13 @@
                         const applyDate = new Date(row[applyDateIndex]);
                         return applyDate >= start && applyDate <= end;
                     });
+                    dateFiltered = true;
+                }
+                // 기본값: 아무 날짜 필터도 활성화되지 않았다면 현재 월로 필터링
+                if (!dateFiltered) {
+                    const now = new Date();
+                    const currentMonth = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+                    filteredData = filteredData.filter(row => row[applyDateIndex] && row[applyDateIndex].slice(0, 7) === currentMonth);
                 }
             }
             updateSummaryCard(filteredData);
@@ -303,6 +312,7 @@
             const now = new Date();
             const year = now.getFullYear();
             const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            document.getElementById('yearInput').value = year;
             document.getElementById('monthInput').value = `${year}-${month}`;
             if (runApplyFilters) {
                 applyFilters();
@@ -370,8 +380,6 @@
             } else {
                 dataToRender.forEach((rowData, index) => {
                     const row = tbody.insertRow();
-                    const gubunIndex = currentHeaders.indexOf('구분');
-
                     rowData.forEach((cellData, cellIndex) => {
                         const headerName = currentHeaders[cellIndex];
                         if (visibleColumns[headerName]) {
@@ -388,12 +396,82 @@
             tableContainer.appendChild(table);
         }
 
-        function toggleColumnDropdown() { /* ... */ }
-        function handleColumnToggle(event, columnName) { /* ... */ }
-        function setupColumnToggles() { /* ... */ }
-        function generateVisibleColumns(headers) { /* ... */ }
-        function buildModalForm() { /* ... */ }
-        function formatPhoneNumber(input) { /* ... */ }
+        function toggleColumnDropdown() {
+            const dropdown = document.getElementById('columnToggleDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function handleColumnToggle(event, columnName) {
+            visibleColumns[columnName] = event.target.checked;
+            applyFilters();
+        }
+
+        function setupColumnToggles() {
+            const container = document.getElementById('columnToggleDropdown');
+            container.innerHTML = '';
+            Object.keys(visibleColumns).forEach(columnName => {
+                const item = document.createElement('div');
+                item.className = 'column-toggle-item';
+                item.innerHTML = `<input type="checkbox" id="col-${columnName}" onchange="handleColumnToggle(event, '${columnName}')" ${visibleColumns[columnName] ? 'checked' : ''}><label for="col-${columnName}">${columnName}</label>`;
+                container.appendChild(item);
+            });
+        }
+        
+        function generateVisibleColumns(headers) {
+            visibleColumns = {};
+            headers.forEach(header => {
+                if (header) visibleColumns[header] = !DEFAULT_HIDDEN_COLUMNS.includes(header);
+            });
+        }
+
+        function buildModalForm() {
+            const form = document.getElementById('applicantForm');
+            form.innerHTML = '';
+            currentHeaders.forEach(header => {
+                if (!header) return;
+                const id = `modal-form-${header}`;
+                const formGroup = document.createElement('div');
+                formGroup.className = 'form-group';
+                let inputHtml;
+                const required = (header === '이름' || header === '지원일');
+
+                if (header === '구분') {
+                    inputHtml = `<input type="text" id="${id}" value="${nextSequenceNumber}" disabled>`;
+                } else if (header === '모집분야') {
+                    inputHtml = `<select id="${id}"><option value="영업">영업</option><option value="강사">강사</option></select>`;
+                } else if (header === '지원루트') {
+                    const routes = ['사람인', '잡코리아', '인크루트', 'Instagram', 'Threads', '배우공고'];
+                    const options = routes.map(r => `<option value="${r}">${r}</option>`).join('');
+                    inputHtml = `<select id="${id}"><option value=""></option>${options}</select>`;
+                } else if (header === '연락처') {
+                    inputHtml = `<input type="tel" id="${id}" placeholder="010-0000-0000" oninput="formatPhoneNumber(this)">`;
+                } else if (header === '지원일') {
+                    inputHtml = `<input type="date" id="${id}" ${required ? 'required' : ''}>`;
+                } else if (header === '성별') {
+                    inputHtml = `<select id="${id}"><option value=""></option><option value="남">남</option><option value="여">여</option></select>`;
+                } else if (header === '비고') {
+                    inputHtml = `<textarea id="${id}" rows="3"></textarea>`;
+                } else {
+                    inputHtml = `<input type="text" id="${id}" ${required ? 'required' : ''}>`;
+                }
+                
+                formGroup.innerHTML = `<label for="${id}">${header}${required ? ' *' : ''}</label>${inputHtml}`;
+                if (header === '비고' || header === '구분') formGroup.classList.add('full-width');
+                form.appendChild(formGroup);
+            });
+        }
+
+        function formatPhoneNumber(input) {
+            let value = input.value.replace(/\D/g, '');
+            if (value.length > 11) value = value.slice(0, 11);
+            if (value.length > 7) {
+                input.value = `${value.slice(0, 3)}-${value.slice(3, 7)}-${value.slice(7)}`;
+            } else if (value.length > 3) {
+                input.value = `${value.slice(0, 3)}-${value.slice(3)}`;
+            } else {
+                input.value = value;
+            }
+        }
     </script>
 </body>
 </html>
