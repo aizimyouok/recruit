@@ -263,49 +263,81 @@
         }
 
         function applyFilters() {
-            document.querySelectorAll('.filter-bar select, #dateInputsContainer input').forEach(input => {
-                input.classList.toggle('filter-active', input.value && input.value !== 'all');
-            });
+    // 필터 입력 값에 따라 스타일 동적 적용
+    document.querySelectorAll('.filter-bar input, .filter-bar select').forEach(input => {
+        const isActive = (input.type === 'date' && input.value) || (input.type !== 'date' && input.value && input.value !== 'all');
+        input.classList.toggle('filter-active', isActive);
+    });
 
-            let filteredData = [...allApplicantData];
-            const routeFilter = document.getElementById('routeFilter').value;
-            const positionFilter = document.getElementById('positionFilter').value;
-            const applyDateIndex = currentHeaders.indexOf('지원일');
+    let filteredData = [...allApplicantData];
+    
+    // 드롭다운 및 날짜 필터링 로직 (기존과 동일)
+    const routeFilter = document.getElementById('routeFilter').value;
+    const positionFilter = document.getElementById('positionFilter').value;
+    const dateFilterType = document.getElementById('dateFilterType').value;
 
-            if (routeFilter !== 'all' && routeIndex !== -1) filteredData = filteredData.filter(row => row[routeIndex] === routeFilter);
-            if (positionFilter !== 'all' && positionIndex !== -1) filteredData = filteredData.filter(row => row[positionIndex] === positionFilter);
+    const routeIndex = currentHeaders.indexOf('지원루트');
+    const positionIndex = currentHeaders.indexOf('모집분야');
+    const applyDateIndex = currentHeaders.indexOf('지원일');
 
-            if (applyDateIndex !== -1) {
-                const dateFilterType = document.getElementById('dateFilterType').value;
-                if (dateFilterType === 'year') {
-                    const year = document.getElementById('yearInput').value;
-                    if(year) filteredData = filteredData.filter(row => row[applyDateIndex] && new Date(row[applyDateIndex]).getFullYear() == year);
-                } else if (dateFilterType === 'month') {
-                    const month = document.getElementById('monthInput').value;
-                    if(month) filteredData = filteredData.filter(row => row[applyDateIndex] && row[applyDateIndex].slice(0, 7) === month);
-                } else if (dateFilterType === 'day') {
-                    const day = document.getElementById('dayInput').value;
-                    if(day) filteredData = filteredData.filter(row => row[applyDateIndex] && row[applyDateIndex].slice(0, 10) === day);
-                } else if (dateFilterType === 'range') {
-                    const startDate = document.getElementById('startDateInput').value;
-                    const endDate = document.getElementById('endDateInput').value;
-                    if (startDate && endDate) {
-                        const start = new Date(startDate);
-                        const end = new Date(endDate);
-                        end.setHours(23, 59, 59, 999);
-                        filteredData = filteredData.filter(row => {
-                            if(!row[applyDateIndex]) return false;
-                            const applyDate = new Date(row[applyDateIndex]);
-                            return applyDate >= start && applyDate <= end;
-                        });
-                    }
-                }
+    if (routeFilter !== 'all' && routeIndex !== -1) filteredData = filteredData.filter(row => row[routeIndex] === routeFilter);
+    if (positionFilter !== 'all' && positionIndex !== -1) filteredData = filteredData.filter(row => row[positionIndex] === positionFilter);
+
+    if (applyDateIndex !== -1) {
+        if (dateFilterType === 'year') {
+            const year = document.getElementById('yearInput').value;
+            if(year) filteredData = filteredData.filter(row => row[applyDateIndex] && new Date(row[applyDateIndex]).getFullYear() == year);
+        } else if (dateFilterType === 'month') {
+            const month = document.getElementById('monthInput').value;
+            if(month) filteredData = filteredData.filter(row => row[applyDateIndex] && row[applyDateIndex].slice(0, 7) === month);
+        } else if (dateFilterType === 'day') {
+            const day = document.getElementById('dayInput').value;
+            if(day) filteredData = filteredData.filter(row => row[applyDateIndex] && row[applyDateIndex].slice(0, 10) === day);
+        } else if (dateFilterType === 'range') {
+            const startDate = document.getElementById('startDateInput').value;
+            const endDate = document.getElementById('endDateInput').value;
+            if (startDate && endDate) {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+                filteredData = filteredData.filter(row => {
+                    if(!row[applyDateIndex]) return false;
+                    const applyDate = new Date(row[applyDateIndex]);
+                    return applyDate >= start && applyDate <= end;
+                });
             }
-            
-            sortData(filteredData);
-            updateSummary(filteredData.length);
-            renderTable(filteredData);
         }
+    }
+    
+    // ▼▼▼ 정렬 로직을 이 함수 안으로 다시 옮겼습니다 ▼▼▼
+    if (currentSortColumn && currentSortDirection) {
+        const sortIndex = currentHeaders.indexOf(currentSortColumn);
+        if (sortIndex !== -1) {
+            filteredData.sort((a, b) => {
+                let valA = a[sortIndex];
+                let valB = b[sortIndex];
+                
+                if (currentSortColumn === '지원일') {
+                    valA = new Date(valA || '1970-01-01');
+                    valB = new Date(valB || '1970-01-01');
+                } else if (currentSortColumn === '나이' || currentSortColumn === '구분') {
+                    valA = Number(valA) || 0;
+                    valB = Number(valB) || 0;
+                } else {
+                    valA = String(valA || '').toLowerCase();
+                    valB = String(valB || '').toLowerCase();
+                }
+                
+                if (valA < valB) return currentSortDirection === 'asc' ? -1 : 1;
+                if (valA > valB) return currentSortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+    }
+    
+    updateSummary(filteredData.length);
+    renderTable(filteredData);
+}
 
         function resetFilters() {
             document.querySelectorAll('.filter-bar select').forEach(select => select.value = 'all');
