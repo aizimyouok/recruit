@@ -208,34 +208,36 @@
         window.onclick = function(event) { if (event.target == modal) closeModal(); }
 
         async function fetchData() {
-            const tableContainer = document.querySelector('.table-container');
-            tableContainer.innerHTML = `<p style="text-align:center; padding: 40px;">데이터를 불러오는 중...</p>`;
-            try {
-                const response = await fetch(`${APPS_SCRIPT_URL}?action=read`);
-                const result = await response.json();
-                if (result.status !== 'success') throw new Error(result.message);
+    const tableContainer = document.querySelector('.table-container');
+    tableContainer.innerHTML = `<p style="text-align:center; padding: 40px;">데이터를 불러오는 중...</p>`;
+    try {
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=read`);
+        const result = await response.json();
+        if (result.status !== 'success') throw new Error(result.message);
 
-                currentHeaders = (result.data[0] || []).map(header => header.trim());
-                allApplicantData = result.data.slice(1).filter(row => row.some(cell => cell !== ''));
-                
-                const gubunIndex = currentHeaders.indexOf('구분');
-                if (gubunIndex !== -1 && allApplicantData.length > 0) {
-                    const lastGubun = parseInt(allApplicantData[allApplicantData.length - 1][gubunIndex], 10);
-                    nextSequenceNumber = isNaN(lastGubun) ? allApplicantData.length + 1 : lastGubun + 1;
-                } else {
-                    nextSequenceNumber = allApplicantData.length + 1;
-                }
-                
-                generateVisibleColumns(currentHeaders);
-                setupColumnToggles();
-                populateDropdownFilters();
-                updateDateFilterUI();
-                applyFilters();
-            } catch (error) {
-                console.error("데이터 불러오기 실패:", error);
-                tableContainer.innerHTML = `<p style="text-align:center; padding: 40px; color: var(--danger-color);">데이터 로딩 중 오류 발생: ${error.message}</p>`;
-            }
+        // ★★★ 바로 이 부분입니다! .map(h => h.trim()) 코드를 추가하여 헤더 공백을 제거합니다.
+        currentHeaders = (result.data[0] || []).map(h => h.trim());
+        
+        allApplicantData = result.data.slice(1).filter(row => row.some(cell => cell !== ''));
+        
+        const gubunIndex = currentHeaders.indexOf('구분');
+        if (gubunIndex !== -1 && allApplicantData.length > 0) {
+            const lastGubun = parseInt(allApplicantData[allApplicantData.length - 1][gubunIndex], 10);
+            nextSequenceNumber = isNaN(lastGubun) ? allApplicantData.length + 1 : lastGubun + 1;
+        } else {
+            nextSequenceNumber = allApplicantData.length + 1;
         }
+        
+        generateVisibleColumns(currentHeaders);
+        setupColumnToggles();
+        populateDropdownFilters();
+        resetFilters(true); // true로 변경하여 초기 로딩 시 필터 적용
+
+    } catch (error) {
+        console.error("데이터 불러오기 실패:", error);
+        tableContainer.innerHTML = `<p style="text-align:center; padding: 40px; color: var(--danger-color);">데이터 로딩 중 오류 발생: ${error.message}</p>`;
+    }
+}
         
         async function saveNewApplicant() {
             const saveBtn = document.querySelector('.modal-footer .primary-btn');
@@ -334,12 +336,24 @@
             return data;
         }
 
-        function resetFilters() {
-            document.querySelectorAll('.filter-bar select').forEach(select => select.value = 'all');
-            activeDateMode = 'month';
-            updateDateFilterUI();
-            applyFilters();
-        }
+        function resetFilters(runApplyFilters = true) {
+    document.querySelectorAll('.filter-bar select').forEach(select => select.value = 'all');
+    
+    // UI를 먼저 그리고 값을 설정
+    updateDateFilterUI('month'); 
+    
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const monthInput = document.getElementById('dateInput');
+    if(monthInput) {
+        monthInput.value = `${year}-${month}`;
+    }
+
+    if (runApplyFilters) {
+        applyFilters();
+    }
+}
         
         function updateSummary(filteredCount) {
             document.getElementById('filterSummary').innerHTML = `<strong>지원자:</strong> ${filteredCount}명`;
