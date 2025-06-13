@@ -585,6 +585,7 @@
         let activeDateMode = 'all';
         let currentView = 'table';
         let searchTerm = '';
+        let currentEditingData = null; // 현재 편집 중인 데이터 추적
 
         document.addEventListener('DOMContentLoaded', () => {
             initializeTheme();
@@ -722,6 +723,7 @@
         function closeModal() { 
             modal.style.display = 'none'; 
             document.getElementById('applicantForm').innerHTML = ''; // 폼 내용 비우기
+            currentEditingData = null; // 편집 데이터 초기화
         }
         window.onclick = function(event) { if (event.target == modal) closeModal(); }
 
@@ -1022,8 +1024,8 @@
                 
                 tableHtml += `
                     <tr onclick="showInterviewDetails('${row[nameIndex] || ''}', '${row[routeIndex] || ''}')" style="cursor: pointer;">
-        <td class="interview-name-cell" title="${row[nameIndex] || ''}">${row[nameIndex] || '-'}</td>
-        <td class="interview-route-cell" title="${row[routeIndex] || ''}">${row[routeIndex] || '-'}</td>
+                        <td class="interview-name-cell" title="${row[nameIndex] || ''}">${row[nameIndex] || '-'}</td>
+                        <td class="interview-route-cell" title="${row[routeIndex] || ''}">${row[routeIndex] || '-'}</td>
                         <td class="interview-recruiter-cell" title="${row[recruiterIndex] || ''}">${row[recruiterIndex] || '-'}</td>
                         <td class="interview-position-cell" title="${row[positionIndex] || ''}">${row[positionIndex] || '-'}</td>
                         <td class="interview-interviewer-cell" title="${row[interviewerIndex] || ''}">${row[interviewerIndex] || '-'}</td>
@@ -1400,8 +1402,16 @@
             // 읽기 전용 모드로 폼 빌드 및 데이터 채우기
             buildModalForm(rowData, true); 
             
-            // 닫기 버튼만 표시
-            document.querySelector('#applicantModal .modal-footer').innerHTML = `<button class="secondary-btn" onclick="closeModal()">닫기</button>`;
+            // 닫기 및 수정 버튼 표시
+            document.querySelector('#applicantModal .modal-footer').innerHTML = `
+                <button class="secondary-btn" onclick="closeModal()">닫기</button>
+                <button class="primary-btn" onclick="openEditModal()" style="margin-left: 10px;">
+                    <i class="fas fa-edit"></i> 수정
+                </button>
+            `;
+            
+            // 현재 데이터 저장 (수정용)
+            currentEditingData = [...rowData];
             
             modal.style.display = 'flex';
         }
@@ -1599,22 +1609,114 @@
             }
         }
 
+        // 임박한 면접 일정 클릭 시 상세 정보 표시
         function showInterviewDetails(name, route) {
-    // 전체 데이터에서 해당 지원자 찾기
-    const nameIndex = currentHeaders.indexOf('이름');
-    const routeIndex = currentHeaders.indexOf('지원루트');
-    
-    const targetRow = allApplicantData.find(row => {
-        const nameMatch = String(row[nameIndex] || '') === name;
-        const routeMatch = String(row[routeIndex] || '') === route;
-        return nameMatch && routeMatch;
-    });
-    
-    if (targetRow) {
-        // 기존 상세 정보 모달 열기 (읽기 전용)
-        openCardDetail(targetRow);
-    }
-}
+            // 전체 데이터에서 해당 지원자 찾기
+            const nameIndex = currentHeaders.indexOf('이름');
+            const routeIndex = currentHeaders.indexOf('지원루트');
+            
+            const targetRow = allApplicantData.find(row => {
+                const nameMatch = String(row[nameIndex] || '') === name;
+                const routeMatch = String(row[routeIndex] || '') === route;
+                return nameMatch && routeMatch;
+            });
+            
+            if (targetRow) {
+                // 기존 상세 정보 모달 열기 (읽기 전용)
+                openCardDetail(targetRow);
+            }
+        }
+
+        // 수정 모달 열기
+        function openEditModal() {
+            if (!currentEditingData) {
+                alert('편집할 데이터가 없습니다.');
+                return;
+            }
+
+            document.querySelector('#applicantModal .modal-title').textContent = '지원자 정보 수정';
+            
+            // 편집 가능한 모드로 폼 빌드 및 데이터 채우기
+            buildModalForm(currentEditingData, false); 
+            
+            // 저장 및 취소 버튼 표시
+            document.querySelector('#applicantModal .modal-footer').innerHTML = `
+                <button class="secondary-btn" onclick="closeModal()">취소</button>
+                <button class="primary-btn" onclick="saveEditedApplicant()" style="margin-left: 10px;">
+                    <i class="fas fa-save"></i> 저장
+                </button>
+            `;
+        }
+
+        // 수정된 지원자 정보 저장
+        async function saveEditedApplicant() {
+            const saveBtn = document.querySelector('#applicantModal .modal-footer .primary-btn');
+            const originalText = saveBtn.innerHTML;
+            
+            try {
+                const updatedData = {};
+                let isFormValid = true;
+                
+                // 폼에서 수정된 데이터 수집
+                currentHeaders.forEach(header => {
+                    const input = document.getElementById(`modal-form-${header}`);
+                    const customInput = document.getElementById(`modal-form-${header}-custom`);
+                    if (input) {
+                        let value = (customInput && customInput.style.display !== 'none') ? customInput.value : input.value;
+                        updatedData[header] = value;
+                        
+                        // 필수 필드 검증
+                        const requiredFields = ['이름', '연락처', '지원루트', '모집분야'];
+                        if (requiredFields.includes(header) && !value) {
+                            isFormValid = false;
+                        }
+                    }
+                });
+
+                if (!isFormValid) { 
+                    alert('필수 항목을 모두 입력해주세요.'); 
+                    return; 
+                }
+
+                // '면접 시간' 값을 서버로 보내기 전, 앞에 작은따옴표(')를 붙여 텍스트로 강제
+                const timeHeader = '면접 시간';
+                if (updatedData[timeHeader]) {
+                    updatedData[timeHeader] = "'" + updatedData[timeHeader];
+                }
+
+                // 구분값으로 업데이트할 행 식별
+                const gubunIndex = currentHeaders.indexOf('구분');
+                const gubunValue = currentEditingData[gubunIndex];
+                
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="loading-spinner"></i> 저장 중...';
+                
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST', 
+                    body: JSON.stringify({ 
+                        action: 'update', 
+                        gubun: gubunValue,
+                        data: updatedData 
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.status !== 'success') {
+                    throw new Error(result.message || '수정에 실패했습니다.');
+                }
+                
+                alert('정보가 성공적으로 수정되었습니다.');
+                closeModal();
+                fetchData(); // 데이터 새로고침
+                
+            } catch (error) {
+                console.error("데이터 수정 실패:", error);
+                alert("데이터 수정 중 오류 발생: " + error.message);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalText;
+            }
+        }
     </script>
 </body>
 </html>
