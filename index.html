@@ -628,30 +628,10 @@
         
         // 1번 요청: 면접 시간 포맷팅 헬퍼 함수
         function formatInterviewTime(timeValue) {
-            if (!timeValue || timeValue === '-') return '-';
-            try {
-                let timeStr = String(timeValue);
-                let date;
-                // '14:30' 같은 형식일 때 'Invalid Date' 방지를 위해 임시 날짜와 결합
-                if (timeStr.match(/^\d{2}:\d{2}$/)) {
-                    date = new Date(`1970-01-01T${timeStr}`);
-                } else {
-                    date = new Date(timeStr);
-                }
-                
-                if (isNaN(date.getTime())) { // 유효하지 않은 날짜면 원본 반환
-                    return timeStr;
-                }
-                
-                return date.toLocaleTimeString('ko-KR', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false
-                });
-            } catch (e) {
-                return String(timeValue); // 오류 발생 시 원본 값 반환
-            }
-        }
+    // Apps Script에서 이제 "15:30"과 같은 텍스트를 그대로 가져오므로,
+    // 별도의 변환 없이 받은 값을 그대로 반환합니다.
+    return timeValue || '-';
+}
 
 
         // 📊 사이드바 위젯 업데이트
