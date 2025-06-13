@@ -1021,7 +1021,7 @@
                 } catch (e) { dateDisplay = '날짜 오류'; }
                 
                 tableHtml += `
-                    <tr onclick="showInterviewDetails('${row[nameIndex] || ''}', '${row[routeIndex] || ''}', '${row[applyDateIndex] || ''}')" style="cursor: pointer;">
+                    <tr onclick="showInterviewDetails('${row[nameIndex] || ''}', '${row[routeIndex] || ''}')" style="cursor: pointer;">
         <td class="interview-name-cell" title="${row[nameIndex] || ''}">${row[nameIndex] || '-'}</td>
         <td class="interview-route-cell" title="${row[routeIndex] || ''}">${row[routeIndex] || '-'}</td>
                         <td class="interview-recruiter-cell" title="${row[recruiterIndex] || ''}">${row[recruiterIndex] || '-'}</td>
@@ -1599,11 +1599,14 @@
             }
         }
 
-        function showInterviewDetails(name, route, applyDate) {
+        function showInterviewDetails(name, route) {
     // 전체 데이터에서 해당 지원자 찾기
+    const nameIndex = currentHeaders.indexOf('이름');
+    const routeIndex = currentHeaders.indexOf('지원루트');
+    
     const targetRow = allApplicantData.find(row => {
-        const nameMatch = String(row[currentHeaders.indexOf('이름')] || '') === name;
-        const routeMatch = String(row[currentHeaders.indexOf('지원루트')] || '') === route;
+        const nameMatch = String(row[nameIndex] || '') === name;
+        const routeMatch = String(row[routeIndex] || '') === route;
         return nameMatch && routeMatch;
     });
     
