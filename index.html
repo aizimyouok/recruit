@@ -628,9 +628,33 @@
         
         // 1번 요청: 면접 시간 포맷팅 헬퍼 함수
         function formatInterviewTime(timeValue) {
-    // Apps Script에서 이제 "15:30"과 같은 텍스트를 그대로 가져오므로,
-    // 별도의 변환 없이 받은 값을 그대로 반환합니다.
-    return timeValue || '-';
+    // 값이 없거나 '-' 이면 그대로 반환
+    if (!timeValue || timeValue.trim() === '-') {
+        return '-';
+    }
+
+    try {
+        // '1899-12-30T22:11:00.000Z' 같은 문자열에서 Date 객체 생성
+        const date = new Date(timeValue);
+
+        // 만약 유효하지 않은 날짜 객체라면(예: "15:30" 같은 일반 텍스트),
+        // 원본 값을 그대로 반환합니다.
+        if (isNaN(date.getTime())) {
+            return String(timeValue);
+        }
+
+        // Date 객체에서 시간 부분만 'HH:mm' (24시간) 형식으로 추출합니다.
+        // 브라우저가 UTC 시간을 자동으로 사용자 지역 시간으로 변환해줍니다.
+        return date.toLocaleTimeString('ko-KR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
+
+    } catch (e) {
+        // 그 외의 에러가 발생하면 원본 값을 안전하게 반환
+        return String(timeValue);
+    }
 }
 
 
