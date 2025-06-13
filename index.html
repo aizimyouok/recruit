@@ -56,9 +56,8 @@
         .sidebar-widget-value { font-size: 1.5rem; font-weight: 700; color: var(--sidebar-text); }
         .sidebar-widget-subtitle { font-size: 0.7rem; color: #a0aec0; margin-top: 4px; }
         
-        /* 📅 면접 일정 테이블 */
         /* 📅 면접 일정 카드 */
-        .interview-schedule-card { background: var(--content-bg); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); padding: 25px; margin-bottom: 30px; border-left: 4px solid var(--warning); }
+        .interview-schedule-card { background: var(--content-bg); border-radius: var(--border-radius); box-shadow: var(--shadow-sm); padding: 25px; margin-bottom: 30px; border-left: 4px solid var(--warning); overflow: hidden; }
         .interview-schedule-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .interview-schedule-title { font-size: 1.2rem; font-weight: 600; color: var(--text-primary); }
         .interview-schedule-icon { font-size: 1.5rem; color: var(--warning); }
@@ -120,7 +119,7 @@
         .data-table td a { color: var(--sidebar-accent); font-weight: 500; text-decoration: none; }
         .data-table td a:hover { text-decoration: underline; }
         
-        /* 🎨 상태별 색상 코딩 */
+        /* 🎨 상태별 색상 코딩 - 3번 요청: '불합격'은 danger 색상으로 표시됩니다 */
         .status-합격, .status-입과, .status-출근 { background-color: var(--success) !important; color: white !important; }
         .status-불합격, .status-거절, .status-미참석 { background-color: var(--danger) !important; color: white !important; }
         .status-보류, .status-면접확정, .status-대기 { background-color: var(--warning) !important; color: white !important; }
@@ -185,47 +184,7 @@
             max-width: 0;
         }
         
-        // 드롭다운 변경 처리 함수
-        function handleDropdownChange(selectElement, fieldName) {
-            const customInput = document.getElementById(`modal-form-${fieldName}-custom`);
-            const isDirectInput = selectElement.value === '직접입력';
-            
-            if (isDirectInput) {
-                selectElement.style.display = 'none';
-                customInput.style.display = 'block';
-                customInput.focus();
-                // required 속성 이동
-                selectElement.removeAttribute('required');
-                customInput.setAttribute('required', '');
-            } else {
-                selectElement.style.display = 'block';
-                customInput.style.display = 'none';
-                customInput.removeAttribute('required');
-                if (document.querySelector(`label[for="modal-form-${fieldName}"]`).textContent.includes('*')) {
-                    selectElement.setAttribute('required', '');
-                }
-            }
-        }
-        
-        // 2. 개선된 전화번호 포맷팅
-        function formatPhoneNumber(input) {
-            let value = input.value.replace(/\D/g, ''); // 숫자만 추출
-            
-            if (value.length <= 3) {
-                input.value = value;
-            } else if (value.length <= 7) {
-                input.value = value.slice(0, 3) + '-' + value.slice(3);
-            } else if (value.length <= 11) {
-                input.value = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7);
-            } else {
-                // 11자리 초과시 자동으로 자름
-                value = value.slice(0, 11);
-                input.value = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7);
-            }
-        }
-    </script>
-</body>
-</html>.interview-schedule-table th { 
+        .interview-schedule-table th { 
             background-color: var(--main-bg); 
             font-weight: 600; 
             color: var(--text-secondary); 
@@ -273,18 +232,34 @@
         .urgent-card-2 { border: 2px solid #fbbf24 !important; background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(245, 158, 11, 0.02)) !important; }
         .interview-time-cell { color: var(--text-secondary); max-width: 60px; }
         
-        /* 📱 개선된 반응형 디자인 */
+        /* 📱 개선된 반응형 디자인 - 2번 요청: 1024px 반응형 수정 */
         @media (max-width: 1024px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.mobile-open { transform: translateX(0); }
-            .main-content { margin-left: 0; }
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.mobile-open { transform: translateX(0); }
+    .main-content { margin-left: 0; }
             .page-header { flex-direction: column; align-items: stretch; gap: 15px; }
             .header-actions { justify-content: center; flex-wrap: wrap; }
             .filter-bar { flex-direction: column; }
             .filter-group { width: 100%; }
             .interview-schedule-table { font-size: 0.8rem; }
             .interview-schedule-table th, .interview-schedule-table td { padding: 6px; }
-        }
+
+            /* =============================================================== */
+/* 화면 축소 시 상단 테이블 깨짐 현상 최종 수정 코드                 */
+/* =============================================================== */
+
+/* 1. 테이블을 감싸는 컨테이너에 스크롤을 적용합니다. */
+#interviewScheduleList {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* 모바일용 부드러운 스크롤 */
+}
+
+/* 2. 테이블 셀의 너비가 0으로 축소되는 것을 방지합니다. (가장 핵심적인 수정) */
+#interviewScheduleList .interview-schedule-table th,
+#interviewScheduleList .interview-schedule-table td {
+    max-width: initial; /* 문제의 원인이었던 max-width: 0 스타일을 초기화합니다. */
+}
         
         @media (max-width: 768px) {
             .mobile-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; }
@@ -323,7 +298,6 @@
                 <button class="nav-item" onclick="switchPage('stats')"><i class="fas fa-chart-pie icon"></i> 통계</button>
             </div>
             
-            <!-- 사이드바 위젯 -->
             <div class="sidebar-widgets">
                 <div class="sidebar-widget">
                     <div class="sidebar-widget-title">전체 지원자</div>
@@ -359,7 +333,6 @@
             
             <div class="content-area">
                 <div id="dashboard" class="page active">
-                    <!-- 📅 임박한 면접 일정 카드 -->
                     <div class="interview-schedule-card">
                         <div class="interview-schedule-header">
                             <span class="interview-schedule-title">임박한 면접 일정</span>
@@ -388,14 +361,13 @@
                                 <button class="secondary-btn" onclick="toggleColumnDropdown()"><i class="fas fa-columns"></i> 컬럼 설정</button>
                                 <div class="column-toggle-dropdown" id="columnToggleDropdown"></div>
                             </div>
-                            <button class="primary-btn" onclick="openModal()" title="신규 지원자 등록 (Ctrl+N)">
+                             <button class="primary-btn" onclick="openNewApplicantModal()" title="신규 지원자 등록 (Ctrl+N)">
                                 <i class="fas fa-plus"></i> 신규 지원자 등록
                             </button>
                         </div>
                     </div>
                     
                     <div class="filter-bar">
-                        <!-- 🔍 통합 검색 -->
                         <div class="filter-group search-input">
                             <label for="globalSearch">통합 검색</label>
                             <div style="position: relative;">
@@ -433,8 +405,7 @@
                             <table class="data-table"></table>
                         </div>
                         <div class="cards-container" id="cardsView">
-                            <!-- 카드들이 여기에 동적으로 생성됩니다 -->
-                        </div>
+                            </div>
                     </div>
                 </div>
                 
@@ -454,12 +425,10 @@
             </div>
             <div class="modal-body"><form id="applicantForm"></form></div>
             <div class="modal-footer">
-                <button class="primary-btn" onclick="saveNewApplicant()">저장하기</button>
-            </div>
+                </div>
         </div>
     </div>
     
-    <!-- ⌨️ 키보드 단축키 힌트 -->
     <div class="keyboard-hint" id="keyboardHint">
         <strong>단축키:</strong> Ctrl+N 신규등록 | Ctrl+R 필터초기화 | Ctrl+D 다크모드 | Ctrl+1/2 뷰전환
     </div>
@@ -470,7 +439,10 @@
         let allApplicantData = [];
         let filteredData = [];
         let currentHeaders = [];
-        const DEFAULT_HIDDEN_COLUMNS = ['비고', '부재', '거절', '보류', '면접확정', '면접 날짜', '면접 시간', '미참석', '불합격/보류', '입과/출근', '입과일', '지점배치'];
+        
+        // 5번 요청: '면접리뷰'를 기본 숨김 컬럼에 추가
+        const DEFAULT_HIDDEN_COLUMNS = ['비고', '부재', '거절', '보류', '면접확정', '면접 날짜', '면접 시간', '미참석', '불합격/보류', '입과/출근', '입과일', '지점배치', '면접리뷰'];
+        
         let visibleColumns = {};
         let nextSequenceNumber = 1;
         let activeDetailRowId = null;
@@ -521,7 +493,7 @@
             document.addEventListener('keydown', (e) => {
                 if (e.ctrlKey) {
                     switch(e.key.toLowerCase()) {
-                        case 'n': e.preventDefault(); openModal(); break;
+                        case 'n': e.preventDefault(); openNewApplicantModal(); break; // 4번 요청: 함수 호출 변경
                         case 'r': e.preventDefault(); resetFilters(); break;
                         case 'd': e.preventDefault(); toggleTheme(); break;
                         case '1': e.preventDefault(); switchView('table'); break;
@@ -531,11 +503,12 @@
                 }
                 if (e.key === 'Escape') {
                     closeModal();
-                    toggleMobileMenu();
+                    if(document.getElementById('sidebar').classList.contains('mobile-open')){
+                        toggleMobileMenu();
+                    }
                 }
             });
 
-            // 키보드 힌트 표시
             let hintTimeout;
             document.addEventListener('keydown', (e) => {
                 if (e.ctrlKey) {
@@ -554,12 +527,10 @@
                     document.getElementById('columnToggleDropdown').style.display = 'none';
                 }
                 
-                // 모바일에서 사이드바 외부 클릭 시 닫기
                 if (window.innerWidth <= 768) {
                     const sidebar = document.getElementById('sidebar');
-                    if (!sidebar.contains(event.target) && !event.target.closest('.mobile-menu-btn')) {
-                        sidebar.classList.remove('mobile-open');
-                        document.querySelector('.mobile-overlay').classList.remove('show');
+                    if (sidebar.classList.contains('mobile-open') && !sidebar.contains(event.target) && !event.target.closest('.mobile-menu-btn')) {
+                         toggleMobileMenu();
                     }
                 }
             });
@@ -573,7 +544,7 @@
             const viewBtns = document.querySelectorAll('.view-btn');
             
             viewBtns.forEach(btn => btn.classList.remove('active'));
-            event.target.closest('.view-btn').classList.add('active');
+            document.querySelector(`.view-btn[onclick="switchView('${viewType}')"]`).classList.add('active');
             
             if (viewType === 'table') {
                 tableView.style.display = 'block';
@@ -599,15 +570,24 @@
             const titles = { dashboard: '지원자 현황', stats: '통계 분석' };
             document.getElementById('pageTitle').textContent = titles[pageId];
             
-            // 모바일에서 페이지 전환 시 사이드바 닫기
-            if (window.innerWidth <= 768) {
+            if (window.innerWidth <= 768 && document.getElementById('sidebar').classList.contains('mobile-open')) {
                 toggleMobileMenu();
             }
         }
 
         const modal = document.getElementById('applicantModal');
-        function openModal() { buildModalForm(); modal.style.display = 'flex'; }
-        function closeModal() { modal.style.display = 'none'; document.getElementById('applicantForm').reset(); }
+        // 4번 요청: 신규 등록 모달 열기 함수
+        function openNewApplicantModal() {
+            document.querySelector('#applicantModal .modal-title').textContent = '신규 지원자 등록';
+            buildModalForm(); // 데이터 없이 폼 빌드
+            document.querySelector('#applicantModal .modal-footer').innerHTML = `<button class="primary-btn" onclick="saveNewApplicant()">저장하기</button>`;
+            modal.style.display = 'flex'; 
+        }
+
+        function closeModal() { 
+            modal.style.display = 'none'; 
+            document.getElementById('applicantForm').innerHTML = ''; // 폼 내용 비우기
+        }
         window.onclick = function(event) { if (event.target == modal) closeModal(); }
 
         async function fetchData() {
@@ -617,22 +597,12 @@
                 const response = await fetch(`${APPS_SCRIPT_URL}?action=read`);
                 const result = await response.json();
                 
-                console.log('API Response:', result); // 디버깅용
-                
                 if (result.status !== 'success') throw new Error(result.message);
 
-                // 안전한 헤더 처리
-                currentHeaders = (result.data[0] || []).map(h => {
-                    return String(h || '').trim();
-                });
-                
-                // 안전한 데이터 처리
+                currentHeaders = (result.data[0] || []).map(h => String(h || '').trim());
                 allApplicantData = result.data.slice(1)
                     .filter(row => row && Array.isArray(row) && row.some(cell => cell != null && String(cell).trim() !== ''))
                     .map(row => row.map(cell => cell == null ? '' : String(cell)));
-                
-                console.log('Headers:', currentHeaders);
-                console.log('Data rows:', allApplicantData.length);
                 
                 const gubunIndex = currentHeaders.indexOf('구분');
                 if (gubunIndex !== -1 && allApplicantData.length > 0) {
@@ -655,64 +625,79 @@
                 tableContainer.innerHTML = `<p style="text-align:center; padding: 40px; color: var(--danger);">데이터 로딩 중 오류 발생: ${error.message}</p>`;
             }
         }
+        
+        // 1번 요청: 면접 시간 포맷팅 헬퍼 함수
+        function formatInterviewTime(timeValue) {
+            if (!timeValue || timeValue === '-') return '-';
+            try {
+                let timeStr = String(timeValue);
+                let date;
+                // '14:30' 같은 형식일 때 'Invalid Date' 방지를 위해 임시 날짜와 결합
+                if (timeStr.match(/^\d{2}:\d{2}$/)) {
+                    date = new Date(`1970-01-01T${timeStr}`);
+                } else {
+                    date = new Date(timeStr);
+                }
+                
+                if (isNaN(date.getTime())) { // 유효하지 않은 날짜면 원본 반환
+                    return timeStr;
+                }
+                
+                return date.toLocaleTimeString('ko-KR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+            } catch (e) {
+                return String(timeValue); // 오류 발생 시 원본 값 반환
+            }
+        }
 
-        // 📊 사이드바 위젯 업데이트 (안전한 처리)
+
+        // 📊 사이드바 위젯 업데이트
         function updateSidebarWidgets() {
             const total = allApplicantData.length;
             const currentMonth = new Date().getMonth() + 1;
             const currentYear = new Date().getFullYear();
             const applyDateIndex = currentHeaders.indexOf('지원일');
             
-            // 이번 달 지원자 (안전한 날짜 처리)
             const monthlyCount = allApplicantData.filter(row => {
                 try {
                     const dateValue = row[applyDateIndex];
                     if (!dateValue) return false;
                     const date = new Date(dateValue);
                     return date.getMonth() + 1 === currentMonth && date.getFullYear() === currentYear;
-                } catch (e) {
-                    return false;
-                }
+                } catch (e) { return false; }
             }).length;
             
-            // 면접 대기 (상태가 비어있거나 대기 상태인 것들)
             const statusColumns = ['부재', '거절', '보류', '면접확정', '미참석', '불합격/보류', '입과/출근'];
             const pendingCount = allApplicantData.filter(row => {
                 return statusColumns.every(status => {
                     const index = currentHeaders.indexOf(status);
-                    if (index === -1) return true;
-                    const value = String(row[index] || '').trim();
-                    return value === '';
+                    return index === -1 || String(row[index] || '').trim() === '';
                 });
             }).length;
             
-            // 합격률 계산 (안전한 처리)
             const successStatuses = ['입과', '출근'];
             const successCount = allApplicantData.filter(row => {
                 return successStatuses.some(status => {
                     const index = currentHeaders.indexOf(status);
-                    if (index === -1) return false;
-                    const value = String(row[index] || '').trim();
-                    return value !== '';
+                    return index !== -1 && String(row[index] || '').trim() !== '';
                 });
             }).length;
             
             const successRate = total > 0 ? Math.round((successCount / total) * 100) : 0;
             
-            // 사이드바 위젯 업데이트
             document.getElementById('sidebarTotalApplicants').textContent = total;
             document.getElementById('sidebarMonthlyApplicants').textContent = monthlyCount;
             document.getElementById('sidebarInterviewPending').textContent = pendingCount;
             document.getElementById('sidebarSuccessRate').textContent = successRate + '%';
         }
         
-        // 📅 임박한 면접 일정 업데이트 (3일 이내, 개선된 표시)
+        // 📅 임박한 면접 일정 업데이트
         function updateInterviewSchedule() {
-            // 면접 날짜 컬럼명 유연하게 찾기
             let interviewDateIndex = currentHeaders.indexOf('면접 날짜');
-            if (interviewDateIndex === -1) {
-                interviewDateIndex = currentHeaders.indexOf('면접 날자');
-            }
+            if (interviewDateIndex === -1) interviewDateIndex = currentHeaders.indexOf('면접 날자');
             
             const interviewTimeIndex = currentHeaders.indexOf('면접 시간');
             const nameIndex = currentHeaders.indexOf('이름');
@@ -727,30 +712,20 @@
             }
             
             const today = new Date();
-            today.setHours(0, 0, 0, 0); // 오늘 시작 시간으로 설정
-            const threeDaysLater = new Date(today.getTime() + (3 * 24 * 60 * 60 * 1000)); // 3일 이내로 변경
+            today.setHours(0, 0, 0, 0);
+            const threeDaysLater = new Date(today.getTime() + (3 * 24 * 60 * 60 * 1000));
             
-            // 3일 이내 면접 일정 필터링
             const upcomingInterviews = allApplicantData
                 .filter(row => {
                     const interviewDate = row[interviewDateIndex];
                     if (!interviewDate) return false;
-                    
                     try {
                         const date = new Date(interviewDate);
                         return date >= today && date <= threeDaysLater;
-                    } catch (e) {
-                        return false;
-                    }
+                    } catch (e) { return false; }
                 })
-                .sort((a, b) => {
-                    try {
-                        return new Date(a[interviewDateIndex]) - new Date(b[interviewDateIndex]);
-                    } catch (e) {
-                        return 0;
-                    }
-                })
-                .slice(0, 8); // 최대 8개까지 표시
+                .sort((a, b) => new Date(a[interviewDateIndex]) - new Date(b[interviewDateIndex]))
+                .slice(0, 7); // 1번 요청: 최대 7개까지 표시
             
             const scheduleContainer = document.getElementById('interviewScheduleList');
             
@@ -759,192 +734,103 @@
                 return;
             }
             
-            // 테이블 형식으로 구성
             let tableHtml = `
                 <table class="interview-schedule-table">
                     <thead>
                         <tr>
-                            <th>이름</th>
-                            <th>지원루트</th>
-                            <th>증원자</th>
-                            <th>모집분야</th>
-                            <th>면접자</th>
-                            <th>면접날짜</th>
-                            <th>면접시간</th>
+                            <th>이름</th><th>지원루트</th><th>증원자</th><th>모집분야</th><th>면접자</th><th>면접날짜</th><th>면접시간</th>
                         </tr>
                     </thead>
                     <tbody>
             `;
             
             upcomingInterviews.forEach(row => {
-                const name = String(row[nameIndex] || '이름없음');
-                const route = String(row[routeIndex] || '-');
-                const recruiter = String(row[recruiterIndex] || '-');
-                const position = String(row[positionIndex] || '-');
-                const interviewer = String(row[interviewerIndex] || '-');
-                const interviewTime = String(row[interviewTimeIndex] || '-');
                 const interviewDate = row[interviewDateIndex];
-                
                 let dateDisplay = '';
-                let formattedTime = '-';
                 
-                // 24시간 형식으로 시간 표시
-                if (interviewTime && interviewTime !== '-') {
-                    try {
-                        // 다양한 시간 형식 처리
-                        let timeStr = interviewTime.toString();
-                        if (timeStr.includes('T')) {
-                            // ISO 형식인 경우
-                            const timeObj = new Date(timeStr);
-                            formattedTime = timeObj.toLocaleTimeString('ko-KR', { 
-                                hour12: false, 
-                                hour: '2-digit', 
-                                minute: '2-digit' 
-                            });
-                        } else if (timeStr.includes(':')) {
-                            // 이미 HH:MM 형식인 경우
-                            formattedTime = timeStr;
-                        } else if (timeStr.includes('시')) {
-                            // 한국어 형식인 경우
-                            formattedTime = timeStr.replace('시', ':').replace('분', '');
-                            if (!formattedTime.includes(':')) {
-                                formattedTime += ':00';
-                            }
-                        } else {
-                            formattedTime = timeStr;
-                        }
-                    } catch (e) {
-                        formattedTime = interviewTime;
-                    }
-                }
-                
+                // 1번 요청: 시간 포맷팅 함수 사용
+                const formattedTime = formatInterviewTime(row[interviewTimeIndex]);
+
                 try {
                     const date = new Date(interviewDate);
-                    date.setHours(0, 0, 0, 0); // 면접 날짜 시간을 0으로 설정
+                    date.setHours(0, 0, 0, 0);
                     const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
                     const weekday = weekdays[date.getDay()];
                     
-                    // D-day 계산 (수정된 계산식)
                     const diffTime = date.getTime() - today.getTime();
-                    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)); // 올바른 계산식
-                    let dayDiff = '';
+                    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                    let dayDiff = `D-${diffDays}`;
                     let ddayClass = '';
-                    
-                    if (diffDays === 0) {
-                        dayDiff = 'D-Day';
-                        ddayClass = 'today';
-                    } else if (diffDays === 1) {
-                        dayDiff = 'D-1';
-                    } else if (diffDays === 2) {
-                        dayDiff = 'D-2';
-                    } else if (diffDays === 3) {
-                        dayDiff = 'D-3';
-                    }
+                    if (diffDays === 0) { dayDiff = 'D-Day'; ddayClass = 'today'; }
                     
                     const dateText = `${date.getMonth() + 1}/${date.getDate()}(${weekday})`;
                     dateDisplay = `<span class="interview-dday ${ddayClass}">${dayDiff}</span><span class="interview-date-text">${dateText}</span>`;
-                } catch (e) {
-                    dateDisplay = '날짜 오류';
-                }
+                } catch (e) { dateDisplay = '날짜 오류'; }
                 
                 tableHtml += `
                     <tr>
-                        <td class="interview-name-cell" title="${name}">${name}</td>
-                        <td class="interview-route-cell" title="${route}">${route}</td>
-                        <td class="interview-recruiter-cell" title="${recruiter}">${recruiter}</td>
-                        <td class="interview-position-cell" title="${position}">${position}</td>
-                        <td class="interview-interviewer-cell" title="${interviewer}">${interviewer}</td>
+                        <td class="interview-name-cell" title="${row[nameIndex] || ''}">${row[nameIndex] || '-'}</td>
+                        <td class="interview-route-cell" title="${row[routeIndex] || ''}">${row[routeIndex] || '-'}</td>
+                        <td class="interview-recruiter-cell" title="${row[recruiterIndex] || ''}">${row[recruiterIndex] || '-'}</td>
+                        <td class="interview-position-cell" title="${row[positionIndex] || ''}">${row[positionIndex] || '-'}</td>
+                        <td class="interview-interviewer-cell" title="${row[interviewerIndex] || ''}">${row[interviewerIndex] || '-'}</td>
                         <td class="interview-date-cell" title="${dateDisplay.replace(/<[^>]*>/g, '')}">${dateDisplay}</td>
                         <td class="interview-time-cell" title="${formattedTime}">${formattedTime}</td>
                     </tr>
                 `;
             });
             
-            tableHtml += `
-                    </tbody>
-                </table>
-            `;
-            
+            tableHtml += `</tbody></table>`;
             scheduleContainer.innerHTML = tableHtml;
         }
         
-        // 📅 면접 임박도 계산 함수
         function getInterviewUrgency(interviewDate) {
             if (!interviewDate) return -1;
-            
             try {
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const date = new Date(interviewDate);
-                date.setHours(0, 0, 0, 0); // 면접 날짜도 시간을 0으로 설정
+                const today = new Date(); today.setHours(0, 0, 0, 0);
+                const date = new Date(interviewDate); date.setHours(0, 0, 0, 0);
                 const diffTime = date.getTime() - today.getTime();
-                const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24)); // 1000이 중복되어 있던 오류 수정
-                
-                if (diffDays === 0) return 0; // D-Day (가장 긴급)
-                if (diffDays === 1) return 1; // D-1
-                if (diffDays === 2) return 2; // D-2
-                return -1; // 3일 이후 또는 과거
-            } catch (e) {
+                const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                if (diffDays >= 0 && diffDays <= 2) return diffDays;
                 return -1;
-            }
+            } catch (e) { return -1; }
         }
         
         async function saveNewApplicant() {
-            const saveBtn = document.querySelector('.modal-footer .primary-btn');
+            const saveBtn = document.querySelector('#applicantModal .modal-footer .primary-btn');
             const originalText = saveBtn.innerHTML;
             try {
                 const applicantData = {};
                 let isFormValid = true;
                 
-                // 폼 데이터 수집
                 currentHeaders.forEach(header => {
                     const input = document.getElementById(`modal-form-${header}`);
                     const customInput = document.getElementById(`modal-form-${header}-custom`);
-                    
                     if (input) {
-                        // 직접입력 필드가 있고 표시되고 있다면 해당 값 사용
-                        if (customInput && customInput.style.display !== 'none') {
-                            applicantData[header] = customInput.value;
-                            if (customInput.hasAttribute('required') && !customInput.value) {
-                                isFormValid = false;
-                            }
-                        } else {
-                            applicantData[header] = input.value;
-                            if (input.hasAttribute('required') && !input.value) {
-                                isFormValid = false;
-                            }
+                        let value = (customInput && customInput.style.display !== 'none') ? customInput.value : input.value;
+                        applicantData[header] = value;
+                        if ((input.hasAttribute('required') || (customInput && customInput.hasAttribute('required'))) && !value) {
+                            isFormValid = false;
                         }
                     }
                 });
 
-                // 자동 설정 필드들
-                if (currentHeaders.includes('구분')) {
-                    applicantData['구분'] = nextSequenceNumber.toString();
-                }
-                if (currentHeaders.includes('지원일')) {
-                    applicantData['지원일'] = new Date().toISOString().split('T')[0]; // YYYY-MM-DD 형식
-                }
+                if (currentHeaders.includes('구분')) applicantData['구분'] = nextSequenceNumber.toString();
+                if (currentHeaders.includes('지원일')) applicantData['지원일'] = new Date().toISOString().split('T')[0];
 
-                if (!isFormValid) { 
-                    alert('필수 항목을 모두 입력해주세요.'); 
-                    return; 
-                }
+                if (!isFormValid) { alert('필수 항목을 모두 입력해주세요.'); return; }
                 
                 saveBtn.disabled = true;
                 saveBtn.innerHTML = '<i class="loading-spinner"></i> 저장 중...';
                 
                 const response = await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'create', data: applicantData })
+                    method: 'POST', body: JSON.stringify({ action: 'create', data: applicantData })
                 });
                 
                 const result = await response.json();
-                if (result.status !== 'success') {
-                    throw new Error(result.message || '저장에 실패했습니다.');
-                }
+                if (result.status !== 'success') throw new Error(result.message || '저장에 실패했습니다.');
                 
                 closeModal();
-                // 성공 시 데이터 새로고침
                 fetchData();
                 
             } catch (error) {
@@ -964,84 +850,38 @@
             const routeIndex = currentHeaders.indexOf('지원루트');
             const positionIndex = currentHeaders.indexOf('모집분야');
 
-            // 🔍 통합 검색 필터링 (안전한 처리)
             if (searchTerm) {
-                data = data.filter(row => {
-                    return row.some(cell => {
-                        const cellValue = String(cell || '').toLowerCase();
-                        return cellValue.includes(searchTerm);
-                    });
-                });
+                data = data.filter(row => row.some(cell => String(cell || '').toLowerCase().includes(searchTerm)));
             }
 
-            // 안전한 필터링
-            if (routeFilter !== 'all' && routeIndex !== -1) {
-                data = data.filter(row => String(row[routeIndex] || '') === routeFilter);
-            }
-            if (positionFilter !== 'all' && positionIndex !== -1) {
-                data = data.filter(row => String(row[positionIndex] || '') === positionFilter);
-            }
+            if (routeFilter !== 'all' && routeIndex !== -1) data = data.filter(row => String(row[routeIndex] || '') === routeFilter);
+            if (positionFilter !== 'all' && positionIndex !== -1) data = data.filter(row => String(row[positionIndex] || '') === positionFilter);
             
-            // 날짜 필터링 (안전한 처리)
             if (applyDateIndex !== -1 && activeDateMode !== 'all') {
-                if (activeDateMode === 'year') {
-                    const year = document.getElementById('dateInput')?.value;
-                    if(year) {
-                        data = data.filter(row => {
-                            const dateValue = row[applyDateIndex];
-                            if (!dateValue) return false;
-                            try {
-                                return new Date(dateValue).getFullYear() == year;
-                            } catch (e) {
-                                return false;
-                            }
-                        });
-                    }
-                } else if (activeDateMode === 'month') {
-                    const month = document.getElementById('dateInput')?.value;
-                    if(month) {
-                        data = data.filter(row => {
-                            const dateValue = row[applyDateIndex];
-                            if (!dateValue) return false;
-                            try {
-                                return String(dateValue).slice(0, 7) === month;
-                            } catch (e) {
-                                return false;
-                            }
-                        });
-                    }
-                } else if (activeDateMode === 'day') {
-                    const day = document.getElementById('dateInput')?.value;
-                    if(day) {
-                        data = data.filter(row => {
-                            const dateValue = row[applyDateIndex];
-                            if (!dateValue) return false;
-                            try {
-                                return String(dateValue).slice(0, 10) === day;
-                            } catch (e) {
-                                return false;
-                            }
-                        });
-                    }
-                } else if (activeDateMode === 'range') {
-                    const startDate = document.getElementById('startDateInput')?.value;
-                    const endDate = document.getElementById('endDateInput')?.value;
-                    if (startDate && endDate) {
-                        const start = new Date(startDate);
-                        const end = new Date(endDate);
-                        end.setHours(23, 59, 59, 999);
-                        data = data.filter(row => {
-                            const dateValue = row[applyDateIndex];
-                            if(!dateValue) return false;
-                            try {
-                                const applyDate = new Date(dateValue);
+                try {
+                    if (activeDateMode === 'year') {
+                        const year = document.getElementById('dateInput')?.value;
+                        if(year) data = data.filter(row => row[applyDateIndex] && new Date(row[applyDateIndex]).getFullYear() == year);
+                    } else if (activeDateMode === 'month') {
+                        const month = document.getElementById('dateInput')?.value;
+                        if(month) data = data.filter(row => String(row[applyDateIndex] || '').slice(0, 7) === month);
+                    } else if (activeDateMode === 'day') {
+                        const day = document.getElementById('dateInput')?.value;
+                        if(day) data = data.filter(row => String(row[applyDateIndex] || '').slice(0, 10) === day);
+                    } else if (activeDateMode === 'range') {
+                        const startDate = document.getElementById('startDateInput')?.value;
+                        const endDate = document.getElementById('endDateInput')?.value;
+                        if (startDate && endDate) {
+                            const start = new Date(startDate);
+                            const end = new Date(endDate); end.setHours(23, 59, 59, 999);
+                            data = data.filter(row => {
+                                if(!row[applyDateIndex]) return false;
+                                const applyDate = new Date(row[applyDateIndex]);
                                 return applyDate >= start && applyDate <= end;
-                            } catch (e) {
-                                return false;
-                            }
-                        });
+                            });
+                        }
                     }
-                }
+                } catch(e) { console.error("날짜 필터링 오류", e); }
             }
             
             filteredData = sortData(data);
@@ -1062,20 +902,12 @@
                         let valA = a[sortIndex]; 
                         let valB = b[sortIndex];
                         
-                        if (currentSortColumn === '지원일') {
-                            try {
-                                valA = new Date(valA || '1970-01-01'); 
-                                valB = new Date(valB || '1970-01-01');
-                            } catch (e) {
-                                valA = new Date('1970-01-01');
-                                valB = new Date('1970-01-01');
-                            }
+                        if (currentSortColumn === '지원일' || currentSortColumn.includes('날짜') || currentSortColumn.includes('날자') || currentSortColumn.includes('입과일')) {
+                            valA = new Date(valA || '1970-01-01'); valB = new Date(valB || '1970-01-01');
                         } else if (['나이', '구분'].includes(currentSortColumn)) {
-                            valA = Number(valA) || 0; 
-                            valB = Number(valB) || 0;
+                            valA = Number(valA) || 0; valB = Number(valB) || 0;
                         } else {
-                            valA = String(valA || '').toLowerCase(); 
-                            valB = String(valB || '').toLowerCase();
+                            valA = String(valA || '').toLowerCase(); valB = String(valB || '').toLowerCase();
                         }
                         
                         if (valA < valB) return currentSortDirection === 'asc' ? -1 : 1;
@@ -1091,14 +923,9 @@
             document.querySelectorAll('.filter-bar select').forEach(select => select.value = 'all');
             document.getElementById('globalSearch').value = '';
             searchTerm = '';
-            
-            // 전체 모드로 초기화
             activeDateMode = 'all';
             updateDateFilterUI(); 
-
-            if (runApplyFilters) {
-                applyFilters();
-            }
+            if (runApplyFilters) applyFilters();
         }
         
         function updateSummary(filteredCount) {
@@ -1111,27 +938,17 @@
             const positionIndex = currentHeaders.indexOf('모집분야');
             
             if (routeIndex !== -1) {
-                const routes = [...new Set(allApplicantData
-                    .map(row => String(row[routeIndex] || '').trim())
-                    .filter(route => route !== '')
-                )];
+                const routes = [...new Set(allApplicantData.map(row => String(row[routeIndex] || '').trim()).filter(Boolean))];
                 const routeFilter = document.getElementById('routeFilter');
                 routeFilter.innerHTML = '<option value="all">전체</option>';
-                routes.sort().forEach(route => {
-                    routeFilter.innerHTML += `<option value="${route}">${route}</option>`;
-                });
+                routes.sort().forEach(route => routeFilter.innerHTML += `<option value="${route}">${route}</option>`);
             }
             
             if (positionIndex !== -1) {
-                const positions = [...new Set(allApplicantData
-                    .map(row => String(row[positionIndex] || '').trim())
-                    .filter(position => position !== '')
-                )];
+                const positions = [...new Set(allApplicantData.map(row => String(row[positionIndex] || '').trim()).filter(Boolean))];
                 const positionFilter = document.getElementById('positionFilter');
                 positionFilter.innerHTML = '<option value="all">전체</option>';
-                positions.sort().forEach(pos => {
-                    positionFilter.innerHTML += `<option value="${pos}">${pos}</option>`;
-                });
+                positions.sort().forEach(pos => positionFilter.innerHTML += `<option value="${pos}">${pos}</option>`);
             }
         }
         
@@ -1146,44 +963,30 @@
             applyFilters();
         }
 
-        // 🎨 상태별 색상 적용 (안전한 처리)
+        // 3번 요청: '불합격'을 포함한 다양한 상태에 대해 CSS 클래스를 반환하는 함수
         function getStatusClass(header, value) {
             if (!value) return '';
             const valueStr = String(value).trim();
             if (valueStr === '') return '';
             
             const statusMap = {
-                '합격': 'status-합격',
-                '입과': 'status-입과', 
-                '출근': 'status-출근',
-                '불합격': 'status-불합격',
-                '거절': 'status-거절',
-                '미참석': 'status-미참석',
-                '보류': 'status-보류',
-                '면접확정': 'status-면접확정',
-                '대기': 'status-대기'
+                '합격': 'status-합격', '입과': 'status-입과', '출근': 'status-출근',
+                '불합격': 'status-불합격', '거절': 'status-거절', '미참석': 'status-미참석',
+                '보류': 'status-보류', '면접확정': 'status-면접확정', '대기': 'status-대기'
             };
             
             for (const [status, className] of Object.entries(statusMap)) {
-                if (valueStr.includes(status)) {
-                    return className;
-                }
+                if (valueStr.includes(status)) return className;
             }
             return '';
         }
         
         function renderTable(dataToRender) {
-            console.log('Rendering table with data:', dataToRender.length, 'rows'); // 디버깅용
-            console.log('Visible columns:', visibleColumns); // 디버깅용
-            
             const tableContainer = document.querySelector('.table-container');
             tableContainer.innerHTML = '';
-            
-            // 새로운 테이블 요소 생성
             const table = document.createElement('table');
             table.className = 'data-table';
             
-            // 헤더 생성
             const thead = table.createTHead();
             const headerRow = thead.insertRow();
             currentHeaders.forEach(header => {
@@ -1200,21 +1003,16 @@
                 }
             });
 
-            // 바디 생성
             const tbody = table.createTBody();
             if (dataToRender.length === 0) {
                 const row = tbody.insertRow();
                 const cell = row.insertCell();
                 cell.colSpan = Object.values(visibleColumns).filter(Boolean).length || 1;
                 cell.textContent = '표시할 데이터가 없습니다.';
-                cell.style.textAlign = 'center';
-                cell.style.padding = '40px';
+                cell.style.textAlign = 'center'; cell.style.padding = '40px';
             } else {
-                // 면접 날짜 인덱스 찾기
                 let interviewDateIndex = currentHeaders.indexOf('면접 날짜');
-                if (interviewDateIndex === -1) {
-                    interviewDateIndex = currentHeaders.indexOf('면접 날자');
-                }
+                if (interviewDateIndex === -1) interviewDateIndex = currentHeaders.indexOf('면접 날자');
                 
                 dataToRender.forEach((rowData, index) => {
                     const rowId = `row-${index}`;
@@ -1222,12 +1020,9 @@
                     row.id = rowId;
                     row.onclick = (event) => { if (event.target.tagName !== 'A') toggleDetails(rowId, rowData); };
                     
-                    // 면접 임박도에 따른 색상 적용
                     if (interviewDateIndex !== -1) {
                         const urgency = getInterviewUrgency(rowData[interviewDateIndex]);
-                        if (urgency >= 0) {
-                            row.classList.add(`urgent-interview-${urgency}`);
-                        }
+                        if (urgency >= 0) row.classList.add(`urgent-interview-${urgency}`);
                     }
                     
                     currentHeaders.forEach((header, cellIndex) => {
@@ -1235,54 +1030,21 @@
                             const cell = row.insertCell();
                             const cellData = rowData[cellIndex];
                             
-                            // 🎨 상태별 색상 적용
                             const statusClass = getStatusClass(header, cellData);
                             if (statusClass) {
-                                const safeData = String(cellData || '');
-                                cell.innerHTML = `<span class="status-badge ${statusClass}">${safeData}</span>`;
-                            } else if (header === '구분') {
-                                cell.textContent = index + 1;
+                                cell.innerHTML = `<span class="status-badge ${statusClass}">${String(cellData || '')}</span>`;
                             } else if (header === '연락처' && cellData) {
-                                const phoneStr = String(cellData);
-                                cell.innerHTML = `<a href="tel:${phoneStr.replace(/\D/g, '')}">${phoneStr}</a>`;
+                                cell.innerHTML = `<a href="tel:${String(cellData).replace(/\D/g, '')}">${cellData}</a>`;
                             } else if (header === '면접 시간' && cellData) {
-                                // 24시간 형식으로 시간 표시
-                                let formattedTime = String(cellData);
+                                // 1번 요청: 시간 포맷팅 함수 사용
+                                cell.textContent = formatInterviewTime(cellData);
+                            } else if ((header.includes('날짜') || header.includes('날자') || header.includes('지원일') || header.includes('입과일')) && cellData) {
                                 try {
-                                    let timeStr = cellData.toString();
-                                    if (timeStr.includes('T')) {
-                                        // ISO 형식인 경우
-                                        const timeObj = new Date(timeStr);
-                                        formattedTime = timeObj.toLocaleTimeString('ko-KR', { 
-                                            hour12: false, 
-                                            hour: '2-digit', 
-                                            minute: '2-digit' 
-                                        });
-                                    } else if (timeStr.includes('시')) {
-                                        // 한국어 형식인 경우
-                                        formattedTime = timeStr.replace('시', ':').replace('분', '');
-                                        if (!formattedTime.includes(':')) {
-                                            formattedTime += ':00';
-                                        }
-                                    }
-                                } catch (e) {
-                                    formattedTime = String(cellData);
-                                }
-                                cell.textContent = formattedTime;
+                                    const date = new Date(cellData);
+                                    cell.textContent = date.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' });
+                                } catch (e) { cell.textContent = String(cellData || ''); }
                             } else {
-                                if ((header === '지원일' || header === '면접 날자' || header === '면접 날짜' || header === '입과일') && cellData) {
-                                    try {
-                                        const date = new Date(cellData);
-                                        const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
-                                        const weekday = weekdays[date.getDay()];
-                                        const formattedDate = date.toLocaleDateString('ko-KR') + '(' + weekday + ')';
-                                        cell.textContent = formattedDate;
-                                    } catch (e) {
-                                        cell.textContent = String(cellData || '');
-                                    }
-                                } else {
-                                    cell.textContent = String(cellData || '');
-                                }
+                                cell.textContent = String(cellData || '');
                             }
                         }
                     });
@@ -1296,11 +1058,10 @@
                 });
             }
             
-            // 테이블을 컨테이너에 추가
             tableContainer.appendChild(table);
         }
 
-        // 🗂️ 카드뷰 렌더링 (안전한 처리 + 면접 임박도 색상)
+        // 🗂️ 카드뷰 렌더링
         function renderCards(dataToRender) {
             const cardsContainer = document.getElementById('cardsView');
             cardsContainer.innerHTML = '';
@@ -1310,138 +1071,81 @@
                 return;
             }
             
-            // 면접 날짜 인덱스 찾기
             let interviewDateIndex = currentHeaders.indexOf('면접 날짜');
-            if (interviewDateIndex === -1) {
-                interviewDateIndex = currentHeaders.indexOf('면접 날자');
-            }
+            if (interviewDateIndex === -1) interviewDateIndex = currentHeaders.indexOf('면접 날자');
             
             dataToRender.forEach((rowData, index) => {
                 const card = document.createElement('div');
                 card.className = 'applicant-card';
+                // 4번 요청: 카드 클릭 시 상세 정보 팝업 호출
                 card.onclick = () => openCardDetail(rowData);
                 
-                // 면접 임박도에 따른 색상 적용
                 if (interviewDateIndex !== -1) {
                     const urgency = getInterviewUrgency(rowData[interviewDateIndex]);
-                    if (urgency >= 0) {
-                        card.classList.add(`urgent-card-${urgency}`);
-                    }
+                    if (urgency >= 0) card.classList.add(`urgent-card-${urgency}`);
                 }
                 
-                const nameIndex = currentHeaders.indexOf('이름');
-                const phoneIndex = currentHeaders.indexOf('연락처');
-                const routeIndex = currentHeaders.indexOf('지원루트');
-                const positionIndex = currentHeaders.indexOf('모집분야');
-                const dateIndex = currentHeaders.indexOf('지원일');
-                
-                const name = String(rowData[nameIndex] || '미입력');
-                const phone = String(rowData[phoneIndex] || '');
-                const route = String(rowData[routeIndex] || '');
-                const position = String(rowData[positionIndex] || '');
-                
-                let date = '';
-                try {
-                    const dateValue = rowData[dateIndex];
-                    if (dateValue) {
-                        const dateObj = new Date(dateValue);
-                        const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
-                        const weekday = weekdays[dateObj.getDay()];
-                        date = dateObj.toLocaleDateString('ko-KR') + '(' + weekday + ')';
-                    }
-                } catch (e) {
-                    date = '';
-                }
-                
-                // 면접 임박 정보 표시
-                let urgencyBadge = '';
-                if (interviewDateIndex !== -1) {
-                    const urgency = getInterviewUrgency(rowData[interviewDateIndex]);
-                    if (urgency === 0) {
-                        urgencyBadge = '<span style="background: var(--danger); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700;">D-Day 면접</span>';
-                    } else if (urgency === 1) {
-                        urgencyBadge = '<span style="background: var(--warning); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700;">D-1 면접</span>';
-                    } else if (urgency === 2) {
-                        urgencyBadge = '<span style="background: #fbbf24; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700;">D-2 면접</span>';
-                    }
-                }
-                
+                const getVal = (header) => String(rowData[currentHeaders.indexOf(header)] || '-');
+                const name = getVal('이름'), phone = getVal('연락처'), route = getVal('지원루트'), position = getVal('모집분야');
+                let date = getVal('지원일');
+                if(date !== '-') try { date = new Date(date).toLocaleDateString('ko-KR'); } catch(e){}
+
                 card.innerHTML = `
                     <div class="card-header">
                         <div class="card-name">${name}</div>
                         <div class="card-sequence">#${index + 1}</div>
                     </div>
-                    ${urgencyBadge ? `<div style="margin-bottom: 10px;">${urgencyBadge}</div>` : ''}
                     <div class="card-info">
-                        <div><span class="card-label">연락처:</span> ${phone || '-'}</div>
-                        <div><span class="card-label">지원루트:</span> ${route || '-'}</div>
-                        <div><span class="card-label">모집분야:</span> ${position || '-'}</div>
+                        <div><span class="card-label">연락처:</span> ${phone}</div>
+                        <div><span class="card-label">지원루트:</span> ${route}</div>
+                        <div><span class="card-label">모집분야:</span> ${position}</div>
                     </div>
                     <div class="card-footer">
-                        <span>지원일: ${date || '-'}</span>
-                        ${phone ? `<a href="tel:${phone.replace(/\D/g, '')}" onclick="event.stopPropagation()"><i class="fas fa-phone"></i></a>` : ''}
-                    </div>
-                `;
-                
+                        <span>지원일: ${date}</span>
+                        ${phone !== '-' ? `<a href="tel:${phone.replace(/\D/g, '')}" onclick="event.stopPropagation()"><i class="fas fa-phone"></i></a>` : ''}
+                    </div>`;
                 cardsContainer.appendChild(card);
             });
         }
 
+        // 4번 요청: 카드 클릭 시 상세 정보 모달을 여는 함수
         function openCardDetail(rowData) {
-            // 카드 상세보기 기능 (모달 등으로 구현 가능)
-            console.log('Card detail:', rowData);
+            document.querySelector('#applicantModal .modal-title').textContent = '지원자 상세 정보';
+            
+            // 읽기 전용 모드로 폼 빌드 및 데이터 채우기
+            buildModalForm(rowData, true); 
+            
+            // 닫기 버튼만 표시
+            document.querySelector('#applicantModal .modal-footer').innerHTML = `<button class="secondary-btn" onclick="closeModal()">닫기</button>`;
+            
+            modal.style.display = 'flex';
         }
 
         function toggleDetails(rowId, rowData) {
             const detailRow = document.getElementById(`detail-${rowId}`);
             if (!detailRow) return;
-            if (activeDetailRowId && activeDetailRowId !== rowId) {
-                const prevDetailRow = document.getElementById(`detail-${activeDetailRowId}`);
-                if (prevDetailRow) prevDetailRow.classList.remove('show');
-            }
-            detailRow.classList.toggle('show');
-            if (detailRow.classList.contains('show')) {
+
+            const isOpening = !detailRow.classList.contains('show');
+            
+            // 모든 열린 상세 정보 닫기
+            const allDetailRows = document.querySelectorAll('.detail-row.show');
+            allDetailRows.forEach(row => row.classList.remove('show'));
+            
+            if (isOpening) {
+                detailRow.classList.add('show');
                 const detailContent = detailRow.querySelector('.detail-content');
                 let detailHtml = '<table class="detail-table">';
+                
                 currentHeaders.forEach((header, index) => {
+                    // 기본 숨김 컬럼만 상세 정보에 표시
                     if (DEFAULT_HIDDEN_COLUMNS.includes(header)) {
                         let cellData = String(rowData[index] || '-');
                         
-                        // 날짜 필드들 포맷팅
-                        if ((header === '면접 날짜' || header === '면접 날자' || header === '지원일' || header === '입과일') && rowData[index] && rowData[index] !== '-') {
-                            try {
-                                const date = new Date(rowData[index]);
-                                const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
-                                const weekday = weekdays[date.getDay()];
-                                cellData = date.toLocaleDateString('ko-KR') + '(' + weekday + ')';
-                            } catch (e) {
-                                cellData = String(rowData[index] || '-');
-                            }
-                        }
-                        // 시간 필드 포맷팅 (24시간 형식)
-                        else if (header === '면접 시간' && rowData[index] && rowData[index] !== '-') {
-                            try {
-                                let timeStr = rowData[index].toString();
-                                if (timeStr.includes('T')) {
-                                    // ISO 형식인 경우
-                                    const timeObj = new Date(timeStr);
-                                    cellData = timeObj.toLocaleTimeString('ko-KR', { 
-                                        hour12: false, 
-                                        hour: '2-digit', 
-                                        minute: '2-digit' 
-                                    });
-                                } else if (timeStr.includes('시')) {
-                                    // 한국어 형식인 경우
-                                    cellData = timeStr.replace('시', ':').replace('분', '');
-                                    if (!cellData.includes(':')) {
-                                        cellData += ':00';
-                                    }
-                                } else {
-                                    cellData = timeStr;
-                                }
-                            } catch (e) {
-                                cellData = String(rowData[index] || '-');
-                            }
+                        if (header === '면접 시간') {
+                            // 1번 요청: 시간 포맷팅 함수 사용
+                            cellData = formatInterviewTime(rowData[index]);
+                        } else if ((header.includes('날짜') || header.includes('날자') || header.includes('지원일') || header.includes('입과일')) && rowData[index] && rowData[index] !== '-') {
+                           try { cellData = new Date(rowData[index]).toLocaleDateString('ko-KR'); } catch(e){}
                         }
                         
                         detailHtml += `<tr><td><strong>${header}:</strong></td><td>${cellData}</td></tr>`;
@@ -1449,9 +1153,6 @@
                 });
                 detailHtml += '</table>';
                 detailContent.innerHTML = detailHtml;
-                activeDetailRowId = rowId;
-            } else {
-                activeDetailRowId = null;
             }
         }
         
@@ -1460,14 +1161,13 @@
                 if (e.target.tagName === 'BUTTON') {
                     activeDateMode = e.target.dataset.mode;
                     updateDateFilterUI();
+                    applyFilters();
                 }
             });
         }
         
         function updateDateFilterUI() {
-            document.querySelectorAll('.date-mode-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.mode === activeDateMode);
-            });
+            document.querySelectorAll('.date-mode-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.mode === activeDateMode));
             const container = document.getElementById('dateInputsContainer');
             let html = '';
             const now = new Date();
@@ -1475,41 +1175,24 @@
             const month = (now.getMonth() + 1).toString().padStart(2, '0');
             const day = now.getDate().toString().padStart(2, '0');
             
-            if (activeDateMode === 'all') {
-                // 전체 모드일 때는 입력 필드 없음
-                html = `<span style="color: var(--text-secondary); font-size: 0.9rem;">모든 데이터 표시</span>`;
-            } else if (activeDateMode === 'year') {
-                html = `<input type="number" id="dateInput" value="${year}" onchange="applyFilters()">`;
-            } else if (activeDateMode === 'month') {
-                html = `<button class="date-nav-btn" onclick="navigateDate(-1)">&lt;</button><input type="month" id="dateInput" value="${year}-${month}" onchange="applyFilters()"><button class="date-nav-btn" onclick="navigateDate(1)">&gt;</button>`;
-            } else if (activeDateMode === 'day') {
-                html = `<button class="date-nav-btn" onclick="navigateDate(-1)">&lt;</button><input type="date" id="dateInput" value="${year}-${month}-${day}" onchange="applyFilters()"><button class="date-nav-btn" onclick="navigateDate(1)">&gt;</button>`;
-            } else if (activeDateMode === 'range') {
-                html = `<input type="date" id="startDateInput" onchange="applyFilters()"><span style="margin: 0 5px;">-</span><input type="date" id="endDateInput" onchange="applyFilters()">`;
-            }
+            if (activeDateMode === 'all') { html = `<span style="color: var(--text-secondary); font-size: 0.9rem; padding: 0 10px;">모든 데이터 표시</span>`;
+            } else if (activeDateMode === 'year') { html = `<input type="number" id="dateInput" value="${year}" onchange="applyFilters()">`;
+            } else if (activeDateMode === 'month') { html = `<button class="date-nav-btn" onclick="navigateDate(-1)">&lt;</button><input type="month" id="dateInput" value="${year}-${month}" onchange="applyFilters()"><button class="date-nav-btn" onclick="navigateDate(1)">&gt;</button>`;
+            } else if (activeDateMode === 'day') { html = `<button class="date-nav-btn" onclick="navigateDate(-1)">&lt;</button><input type="date" id="dateInput" value="${year}-${month}-${day}" onchange="applyFilters()"><button class="date-nav-btn" onclick="navigateDate(1)">&gt;</button>`;
+            } else if (activeDateMode === 'range') { html = `<input type="date" id="startDateInput" onchange="applyFilters()"><span style="margin: 0 5px;">-</span><input type="date" id="endDateInput" onchange="applyFilters()">`; }
             container.innerHTML = html;
-            
-            // 자동으로 필터 적용
-            setTimeout(() => applyFilters(), 100);
         }
 
         function navigateDate(direction) {
             const input = document.getElementById('dateInput');
             if (!input) return;
-            if (activeDateMode === 'year') {
-                input.value = Number(input.value) + direction;
+            if (activeDateMode === 'year') { input.value = Number(input.value) + direction;
             } else {
-                let currentDate = new Date(input.value);
-                if(activeDateMode === 'month') {
-                    currentDate = new Date(input.value + '-02');
-                    currentDate.setMonth(currentDate.getMonth() + direction);
-                    input.value = currentDate.toISOString().slice(0, 7);
-                } else if (activeDateMode === 'day') {
-                    currentDate.setDate(currentDate.getDate() + direction);
-                    input.value = currentDate.toISOString().slice(0, 10);
-                }
+                let currentDate = (activeDateMode === 'month') ? new Date(input.value + '-02') : new Date(input.value);
+                if(activeDateMode === 'month') currentDate.setMonth(currentDate.getMonth() + direction);
+                else if (activeDateMode === 'day') currentDate.setDate(currentDate.getDate() + direction);
+                input.value = currentDate.toISOString().slice(0, activeDateMode === 'month' ? 7 : 10);
             }
-            // 1. 날짜 변경 후 자동으로 필터 적용
             applyFilters();
         }
         
@@ -1529,11 +1212,7 @@
             currentHeaders.forEach(header => {
                 const item = document.createElement('div');
                 item.className = 'column-toggle-item';
-                item.innerHTML = `
-                    <input type="checkbox" id="toggle-${header}" ${visibleColumns[header] ? 'checked' : ''} 
-                           onchange="handleColumnToggle(event, '${header}')">
-                    <label for="toggle-${header}">${header}</label>
-                `;
+                item.innerHTML = `<input type="checkbox" id="toggle-${header}" ${visibleColumns[header] ? 'checked' : ''} onchange="handleColumnToggle(event, '${header}')"><label for="toggle-${header}">${header}</label>`;
                 dropdown.appendChild(item);
             });
         }
@@ -1545,112 +1224,95 @@
             });
         }
         
-        function buildModalForm() {
+        // 4번 요청: 폼 빌드 함수에 데이터 채우기 및 읽기 전용 옵션 추가
+        function buildModalForm(data = null, isReadOnly = false) {
             const form = document.getElementById('applicantForm');
             form.innerHTML = '';
             
             const requiredFields = ['이름', '연락처', '지원루트', '모집분야'];
-            
-            // 드롭다운 옵션 정의
             const dropdownOptions = {
                 '지원루트': ['사람인', '잡코리아', '인크루트', '아웃바운드', '배우공고', '당근', 'Instagram', 'Threads', '직접입력'],
-                '모집분야': ['영업', '강사', '상조', '직접입력'],
-                '성별': ['남자', '여자'],
+                '모집분야': ['영업', '강사', '상조', '직접입력'], '성별': ['남자', '여자'],
                 '증원자': ['회사', '이성진', '김영빈', '최혜진', '직접입력'],
                 '1차 컨택 결과': ['부재1회', '부재2회', '보류', '거절', '파기', '면접확정'],
                 '면접자': ['이성진', '김영빈', '최혜진', '직접입력'],
                 '면접결과': ['미참석', '불합격', '보류', '합격']
             };
-            
-            // 날짜 입력 필드들
             const dateFields = ['면접 날짜', '면접 날자', '입과일'];
             const timeFields = ['면접 시간'];
             
-            currentHeaders.forEach(header => {
-                // 지원일은 자동으로 설정되므로 제외
+            currentHeaders.forEach((header, index) => {
                 if (header === '지원일') return;
                 
                 const formGroup = document.createElement('div');
-                formGroup.className = 'form-group';
+                formGroup.className = `form-group ${header === '비고' || header === '면접리뷰' ? 'full-width' : ''}`;
                 
-                if (header === '비고') {
-                    formGroup.className += ' full-width';
-                }
+                const isRequired = requiredFields.includes(header) && !isReadOnly;
+                const value = data ? String(data[index] || '') : (header === '구분' ? nextSequenceNumber : '');
                 
-                const isRequired = requiredFields.includes(header);
                 let inputHtml = '';
                 
-                if (header === '구분') {
-                    // 구분 필드 - 자동 번호 표시 (읽기 전용)
-                    inputHtml = `<input type="text" id="modal-form-${header}" value="${nextSequenceNumber}" readonly style="background-color: #f1f5f9;">`;
-                } else if (header === '연락처') {
-                    // 연락처 - 자동 하이폰 추가
-                    inputHtml = `<input type="tel" id="modal-form-${header}" placeholder="010-0000-0000" oninput="formatPhoneNumber(this)" ${isRequired ? 'required' : ''}>`;
+                if (header === '연락처') {
+                    inputHtml = `<input type="tel" id="modal-form-${header}" value="${value}" oninput="formatPhoneNumber(this)" ${isRequired ? 'required' : ''} ${isReadOnly ? 'disabled' : ''}>`;
                 } else if (dateFields.includes(header)) {
-                    // 날짜 선택 필드
-                    inputHtml = `<input type="date" id="modal-form-${header}" ${isRequired ? 'required' : ''}>`;
+                    inputHtml = `<input type="date" id="modal-form-${header}" value="${value}" ${isRequired ? 'required' : ''} ${isReadOnly ? 'disabled' : ''}>`;
                 } else if (timeFields.includes(header)) {
-                    // 시간 선택 필드 (10분 단위)
-                    inputHtml = `<input type="time" id="modal-form-${header}" step="600" ${isRequired ? 'required' : ''}>`;
+                    inputHtml = `<input type="time" id="modal-form-${header}" value="${value}" step="600" ${isRequired ? 'required' : ''} ${isReadOnly ? 'disabled' : ''}>`;
                 } else if (dropdownOptions[header]) {
-                    // 드롭다운 필드들
-                    const hasDirectInput = ['지원루트', '모집분야', '증원자', '면접자'].includes(header);
-                    inputHtml = `
-                        <select id="modal-form-${header}" onchange="${hasDirectInput ? `handleDropdownChange(this, '${header}')` : ''}" ${isRequired ? 'required' : ''}>
-                            <option value="">선택해주세요</option>
-                            ${dropdownOptions[header].map(option => `<option value="${option}">${option}</option>`).join('')}
-                        </select>
-                        ${hasDirectInput ? `<input type="text" id="modal-form-${header}-custom" placeholder="직접 입력하세요" style="display:none; margin-top:5px;" ${isRequired ? 'required' : ''}>` : ''}
-                    `;
-                } else if (header === '비고') {
-                    inputHtml = `<textarea id="modal-form-${header}" rows="3" placeholder="추가 메모사항을 입력하세요" ${isRequired ? 'required' : ''}></textarea>`;
+                    const options = dropdownOptions[header];
+                    const hasDirectInput = options.includes('직접입력');
+                    let customValue = '';
+                    let selectValue = value;
+                    if(data && hasDirectInput && !options.includes(value)){
+                       selectValue = '직접입력';
+                       customValue = value;
+                    }
+
+                    inputHtml = `<select id="modal-form-${header}" onchange="${hasDirectInput ? `handleDropdownChange(this, '${header}')` : ''}" ${isRequired ? 'required' : ''} ${isReadOnly ? 'disabled' : ''}>
+                                    <option value="">선택해주세요</option>
+                                    ${options.map(option => `<option value="${option}" ${selectValue === option ? 'selected' : ''}>${option}</option>`).join('')}
+                                </select>`;
+                    if(hasDirectInput) {
+                        inputHtml += `<input type="text" id="modal-form-${header}-custom" value="${customValue}" placeholder="직접 입력하세요" style="display:${selectValue === '직접입력' ? 'block' : 'none'}; margin-top:5px;" ${isReadOnly ? 'disabled' : ''}>`;
+                    }
+                } else if (header === '비고' || header === '면접리뷰') {
+                    inputHtml = `<textarea id="modal-form-${header}" rows="3" ${isRequired ? 'required' : ''} ${isReadOnly ? 'disabled' : ''}>${value}</textarea>`;
                 } else {
-                    inputHtml = `<input type="text" id="modal-form-${header}" ${isRequired ? 'required' : ''}>`;
+                    inputHtml = `<input type="text" id="modal-form-${header}" value="${value}" ${isRequired ? 'required' : ''} ${isReadOnly || (header === '구분' && isReadOnly) ? 'disabled' : ''} ${header === '구분' ? 'style="background-color: #f1f5f9;"' : ''}>`;
                 }
                 
-                formGroup.innerHTML = `
-                    <label for="modal-form-${header}">${header}${isRequired ? ' *' : ''}</label>
-                    ${inputHtml}
-                `;
+                formGroup.innerHTML = `<label for="modal-form-${header}">${header}${isRequired ? ' *' : ''}</label>${inputHtml}`;
                 form.appendChild(formGroup);
             });
         }
-// 드롭다운 변경 처리 함수
+
         function handleDropdownChange(selectElement, fieldName) {
             const customInput = document.getElementById(`modal-form-${fieldName}-custom`);
             const isDirectInput = selectElement.value === '직접입력';
             
-            if (isDirectInput) {
-                selectElement.style.display = 'none';
-                customInput.style.display = 'block';
-                customInput.focus();
-                // required 속성 이동
-                selectElement.removeAttribute('required');
-                customInput.setAttribute('required', '');
-            } else {
-                selectElement.style.display = 'block';
-                customInput.style.display = 'none';
-                customInput.removeAttribute('required');
-                if (document.querySelector(`label[for="modal-form-${fieldName}"]`).textContent.includes('*')) {
+            customInput.style.display = isDirectInput ? 'block' : 'none';
+            if(isDirectInput) customInput.focus();
+
+            const isRequired = document.querySelector(`label[for="modal-form-${fieldName}"]`).textContent.includes('*');
+            if(isRequired){
+                if(isDirectInput){
+                    selectElement.removeAttribute('required');
+                    customInput.setAttribute('required', '');
+                } else {
+                    customInput.removeAttribute('required');
                     selectElement.setAttribute('required', '');
                 }
             }
         }
         
-        // 2. 개선된 전화번호 포맷팅
         function formatPhoneNumber(input) {
-            let value = input.value.replace(/\D/g, ''); // 숫자만 추출
-            
-            if (value.length <= 3) {
-                input.value = value;
-            } else if (value.length <= 7) {
-                input.value = value.slice(0, 3) + '-' + value.slice(3);
-            } else if (value.length <= 11) {
-                input.value = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7);
+            let value = input.value.replace(/\D/g, '').slice(0, 11);
+            if (value.length > 7) {
+                input.value = `${value.slice(0, 3)}-${value.slice(3, 7)}-${value.slice(7)}`;
+            } else if (value.length > 3) {
+                input.value = `${value.slice(0, 3)}-${value.slice(3)}`;
             } else {
-                // 11자리 초과시 자동으로 자름
-                value = value.slice(0, 11);
-                input.value = value.slice(0, 3) + '-' + value.slice(3, 7) + '-' + value.slice(7);
+                input.value = value;
             }
         }
     </script>
