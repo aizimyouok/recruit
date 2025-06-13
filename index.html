@@ -1021,9 +1021,9 @@
                 } catch (e) { dateDisplay = '날짜 오류'; }
                 
                 tableHtml += `
-                    <tr>
-                        <td class="interview-name-cell" title="${row[nameIndex] || ''}">${row[nameIndex] || '-'}</td>
-                        <td class="interview-route-cell" title="${row[routeIndex] || ''}">${row[routeIndex] || '-'}</td>
+                    <tr onclick="showInterviewDetails('${row[nameIndex] || ''}', '${row[routeIndex] || ''}', '${row[applyDateIndex] || ''}')" style="cursor: pointer;">
+        <td class="interview-name-cell" title="${row[nameIndex] || ''}">${row[nameIndex] || '-'}</td>
+        <td class="interview-route-cell" title="${row[routeIndex] || ''}">${row[routeIndex] || '-'}</td>
                         <td class="interview-recruiter-cell" title="${row[recruiterIndex] || ''}">${row[recruiterIndex] || '-'}</td>
                         <td class="interview-position-cell" title="${row[positionIndex] || ''}">${row[positionIndex] || '-'}</td>
                         <td class="interview-interviewer-cell" title="${row[interviewerIndex] || ''}">${row[interviewerIndex] || '-'}</td>
@@ -1598,6 +1598,20 @@
                 input.value = value;
             }
         }
+
+        function showInterviewDetails(name, route, applyDate) {
+    // 전체 데이터에서 해당 지원자 찾기
+    const targetRow = allApplicantData.find(row => {
+        const nameMatch = String(row[currentHeaders.indexOf('이름')] || '') === name;
+        const routeMatch = String(row[currentHeaders.indexOf('지원루트')] || '') === route;
+        return nameMatch && routeMatch;
+    });
+    
+    if (targetRow) {
+        // 기존 상세 정보 모달 열기 (읽기 전용)
+        openCardDetail(targetRow);
+    }
+}
     </script>
 </body>
 </html>
