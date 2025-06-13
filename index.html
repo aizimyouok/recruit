@@ -278,6 +278,24 @@
         @media (min-width: 1025px) {
             .mobile-menu-btn { display: none; }
         }
+   
+            /* --- 1. 반응형 모달 창을 위한 CSS 추가 --- */
+
+/* 모달 내용이 길어질 경우 세로 스크롤 생성 */
+.modal-body {
+    max-height: 70vh; /* 모달 내용의 최대 높이를 화면의 70%로 제한 */
+    overflow-y: auto; /* 내용이 높이를 초과하면 세로 스크롤 생성 */
+}
+
+/* 태블릿 등 중간 크기 화면 대응 */
+@media (max-width: 1024px) {
+    .modal-body form {
+        /* 폼을 3열에서 2열로 변경 */
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* 768px 이하 모바일 화면 규칙은 이미 존재하여 1열로 자동 변경됩니다. */
         
         /* 로딩 애니메이션 */
         .loading-spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; }
