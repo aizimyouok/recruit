@@ -819,50 +819,66 @@
         }
         
         async function saveNewApplicant() {
-            const saveBtn = document.querySelector('#applicantModal .modal-footer .primary-btn');
-            const originalText = saveBtn.innerHTML;
-            try {
-                const applicantData = {};
-                let isFormValid = true;
-                
-                currentHeaders.forEach(header => {
-                    const input = document.getElementById(`modal-form-${header}`);
-                    const customInput = document.getElementById(`modal-form-${header}-custom`);
-                    if (input) {
-                        let value = (customInput && customInput.style.display !== 'none') ? customInput.value : input.value;
-                        applicantData[header] = value;
-                        if ((input.hasAttribute('required') || (customInput && customInput.hasAttribute('required'))) && !value) {
-                            isFormValid = false;
-                        }
-                    }
-                });
-
-                if (currentHeaders.includes('구분')) applicantData['구분'] = nextSequenceNumber.toString();
-                if (currentHeaders.includes('지원일')) applicantData['지원일'] = new Date().toISOString().split('T')[0];
-
-                if (!isFormValid) { alert('필수 항목을 모두 입력해주세요.'); return; }
-                
-                saveBtn.disabled = true;
-                saveBtn.innerHTML = '<i class="loading-spinner"></i> 저장 중...';
-                
-                const response = await fetch(APPS_SCRIPT_URL, {
-                    method: 'POST', body: JSON.stringify({ action: 'create', data: applicantData })
-                });
-                
-                const result = await response.json();
-                if (result.status !== 'success') throw new Error(result.message || '저장에 실패했습니다.');
-                
-                closeModal();
-                fetchData();
-                
-            } catch (error) {
-                console.error("데이터 저장 실패:", error);
-                alert("데이터 저장 중 오류 발생: " + error.message);
-            } finally {
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = originalText;
+    const saveBtn = document.querySelector('#applicantModal .modal-footer .primary-btn');
+    const originalText = saveBtn.innerHTML;
+    try {
+        const applicantData = {};
+        let isFormValid = true;
+        
+        // 폼 데이터 수집
+        currentHeaders.forEach(header => {
+            const input = document.getElementById(`modal-form-${header}`);
+            const customInput = document.getElementById(`modal-form-${header}-custom`);
+            if (input) {
+                let value = (customInput && customInput.style.display !== 'none') ? customInput.value : input.value;
+                applicantData[header] = value;
+                if ((input.hasAttribute('required') || (customInput && customInput.hasAttribute('required'))) && !value) {
+                    isFormValid = false;
+                }
             }
+        });
+
+        // 자동 설정 필드들
+        if (currentHeaders.includes('구분')) applicantData['구분'] = nextSequenceNumber.toString();
+        if (currentHeaders.includes('지원일')) applicantData['지원일'] = new Date().toISOString().split('T')[0];
+
+        if (!isFormValid) { 
+            alert('필수 항목을 모두 입력해주세요.'); 
+            return; 
         }
+
+        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+        // '면접 시간' 값을 서버로 보내기 전, 앞에 작은따옴표(')를 붙여 텍스트로 강제합니다.
+        const timeHeader = '면접 시간';
+        if (applicantData[timeHeader]) {
+            applicantData[timeHeader] = "'" + applicantData[timeHeader];
+        }
+        // ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
+        
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="loading-spinner"></i> 저장 중...';
+        
+        const response = await fetch(APPS_SCRIPT_URL, {
+            method: 'POST', 
+            body: JSON.stringify({ action: 'create', data: applicantData })
+        });
+        
+        const result = await response.json();
+        if (result.status !== 'success') {
+            throw new Error(result.message || '저장에 실패했습니다.');
+        }
+        
+        closeModal();
+        fetchData();
+        
+    } catch (error) {
+        console.error("데이터 저장 실패:", error);
+        alert("데이터 저장 중 오류 발생: " + error.message);
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalText;
+    }
+}
 
         function applyFilters() {
             let data = [...allApplicantData];
