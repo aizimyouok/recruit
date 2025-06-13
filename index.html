@@ -1248,66 +1248,66 @@
         
         // 4번 요청: 폼 빌드 함수에 데이터 채우기 및 읽기 전용 옵션 추가
         function buildModalForm(data = null, isReadOnly = false) {
-            const form = document.getElementById('applicantForm');
-            form.innerHTML = '';
-            
-            const requiredFields = ['이름', '연락처', '지원루트', '모집분야'];
-            const dropdownOptions = {
-                '지원루트': ['사람인', '잡코리아', '인크루트', '아웃바운드', '배우공고', '당근', 'Instagram', 'Threads', '직접입력'],
-                '모집분야': ['영업', '강사', '상조', '직접입력'], '성별': ['남자', '여자'],
-                '증원자': ['회사', '이성진', '김영빈', '최혜진', '직접입력'],
-                '1차 컨택 결과': ['부재1회', '부재2회', '보류', '거절', '파기', '면접확정'],
-                '면접자': ['이성진', '김영빈', '최혜진', '직접입력'],
-                '면접결과': ['미참석', '불합격', '보류', '합격']
-            };
-            const dateFields = ['면접 날짜', '면접 날자', '입과일'];
-            const timeFields = ['면접 시간'];
-            
-            currentHeaders.forEach((header, index) => {
-                if (header === '지원일') return;
-                
-                const formGroup = document.createElement('div');
-                formGroup.className = `form-group ${header === '비고' || header === '면접리뷰' ? 'full-width' : ''}`;
-                
-                const isRequired = requiredFields.includes(header) && !isReadOnly;
-                const value = data ? String(data[index] || '') : (header === '구분' ? nextSequenceNumber : '');
-                
-                let inputHtml = '';
-                
-                if (header === '연락처') {
-                    inputHtml = `<input type="tel" id="modal-form-${header}" value="${value}" oninput="formatPhoneNumber(this)" ${isRequired ? 'required' : ''} ${isReadOnly ? 'disabled' : ''}>`;
-                } else if (dateFields.includes(header)) {
-                    inputHtml = `<input type="date" id="modal-form-${header}" value="${value}" ${isRequired ? 'required' : ''} ${isReadOnly ? 'disabled' : ''}>`;
-                } else if (timeFields.includes(header)) {
-    // 2. 면접 시간 입력 필드를 텍스트로 변경
-    inputHtml = `<input type="text" id="modal-form-<span class="math-inline">\{header\}" value\="</span>{value}" placeholder="예: 14시 30분" ${isRequired ? 'required' : ''} ${isReadOnly ? 'disabled' : ''}>`;
-} else if (dropdownOptions[header]) {
-                    const options = dropdownOptions[header];
-                    const hasDirectInput = options.includes('직접입력');
-                    let customValue = '';
-                    let selectValue = value;
-                    if(data && hasDirectInput && !options.includes(value)){
-                       selectValue = '직접입력';
-                       customValue = value;
-                    }
+    const form = document.getElementById('applicantForm');
+    form.innerHTML = '';
+    
+    const requiredFields = ['이름', '연락처', '지원루트', '모집분야'];
+    const dropdownOptions = {
+        '지원루트': ['사람인', '잡코리아', '인크루트', '아웃바운드', '배우공고', '당근', 'Instagram', 'Threads', '직접입력'],
+        '모집분야': ['영업', '강사', '상조', '직접입력'], '성별': ['남자', '여자'],
+        '증원자': ['회사', '이성진', '김영빈', '최혜진', '직접입력'],
+        '1차 컨택 결과': ['부재1회', '부재2회', '보류', '거절', '파기', '면접확정'],
+        '면접자': ['이성진', '김영빈', '최혜진', '직접입력'],
+        '면접결과': ['미참석', '불합격', '보류', '합격']
+    };
+    const dateFields = ['면접 날짜', '면접 날자', '입과일'];
+    const timeFields = ['면접 시간'];
+    
+    currentHeaders.forEach((header, index) => {
+        if (header === '지원일') return;
+        
+        const formGroup = document.createElement('div');
+        formGroup.className = `form-group ${header === '비고' || header === '면접리뷰' ? 'full-width' : ''}`;
+        
+        const isRequired = requiredFields.includes(header) && !isReadOnly;
+        const value = data ? String(data[index] || '') : (header === '구분' ? nextSequenceNumber : '');
+        
+        let inputHtml = '';
+        
+        if (header === '연락처') {
+            inputHtml = `<input type="tel" id="modal-form-${header}" value="${value}" oninput="formatPhoneNumber(this)" ${isRequired ? 'required' : ''} ${isReadOnly ? 'disabled' : ''}>`;
+        } else if (dateFields.includes(header)) {
+            inputHtml = `<input type="date" id="modal-form-${header}" value="${value}" ${isRequired ? 'required' : ''} ${isReadOnly ? 'disabled' : ''}>`;
+        } else if (timeFields.includes(header)) {
+            // ★★★ 수정된 부분: 면접 시간을 텍스트로 입력받도록 변경 ★★★
+            inputHtml = `<input type="text" id="modal-form-${header}" value="${value}" placeholder="예: 14시 30분" ${isRequired ? 'required' : ''} ${isReadOnly ? 'disabled' : ''}>`;
+        } else if (dropdownOptions[header]) {
+            const options = dropdownOptions[header];
+            const hasDirectInput = options.includes('직접입력');
+            let customValue = '';
+            let selectValue = value;
+            if(data && hasDirectInput && !options.includes(value)){
+               selectValue = '직접입력';
+               customValue = value;
+            }
 
-                    inputHtml = `<select id="modal-form-${header}" onchange="${hasDirectInput ? `handleDropdownChange(this, '${header}')` : ''}" ${isRequired ? 'required' : ''} ${isReadOnly ? 'disabled' : ''}>
-                                    <option value="">선택해주세요</option>
-                                    ${options.map(option => `<option value="${option}" ${selectValue === option ? 'selected' : ''}>${option}</option>`).join('')}
-                                </select>`;
-                    if(hasDirectInput) {
-                        inputHtml += `<input type="text" id="modal-form-${header}-custom" value="${customValue}" placeholder="직접 입력하세요" style="display:${selectValue === '직접입력' ? 'block' : 'none'}; margin-top:5px;" ${isReadOnly ? 'disabled' : ''}>`;
-                    }
-                } else if (header === '비고' || header === '면접리뷰') {
-                    inputHtml = `<textarea id="modal-form-${header}" rows="3" ${isRequired ? 'required' : ''} ${isReadOnly ? 'disabled' : ''}>${value}</textarea>`;
-                } else {
-                    inputHtml = `<input type="text" id="modal-form-${header}" value="${value}" ${isRequired ? 'required' : ''} ${isReadOnly || (header === '구분' && isReadOnly) ? 'disabled' : ''} ${header === '구분' ? 'style="background-color: #f1f5f9;"' : ''}>`;
-                }
-                
-                formGroup.innerHTML = `<label for="modal-form-${header}">${header}${isRequired ? ' *' : ''}</label>${inputHtml}`;
-                form.appendChild(formGroup);
-            });
+            inputHtml = `<select id="modal-form-${header}" onchange="${hasDirectInput ? `handleDropdownChange(this, '${header}')` : ''}" ${isRequired ? 'required' : ''} ${isReadOnly ? 'disabled' : ''}>
+                            <option value="">선택해주세요</option>
+                            ${options.map(option => `<option value="${option}" ${selectValue === option ? 'selected' : ''}>${option}</option>`).join('')}
+                        </select>`;
+            if(hasDirectInput) {
+                inputHtml += `<input type="text" id="modal-form-${header}-custom" value="${customValue}" placeholder="직접 입력하세요" style="display:${selectValue === '직접입력' ? 'block' : 'none'}; margin-top:5px;" ${isReadOnly ? 'disabled' : ''}>`;
+            }
+        } else if (header === '비고' || header === '면접리뷰') {
+            inputHtml = `<textarea id="modal-form-${header}" rows="3" ${isRequired ? 'required' : ''} ${isReadOnly ? 'disabled' : ''}>${value}</textarea>`;
+        } else {
+            inputHtml = `<input type="text" id="modal-form-${header}" value="${value}" ${isRequired ? 'required' : ''} ${isReadOnly || (header === '구분' && isReadOnly) ? 'disabled' : ''} ${header === '구분' ? 'style="background-color: #f1f5f9;"' : ''}>`;
         }
+        
+        formGroup.innerHTML = `<label for="modal-form-${header}">${header}${isRequired ? ' *' : ''}</label>${inputHtml}`;
+        form.appendChild(formGroup);
+    });
+}
 
         function handleDropdownChange(selectElement, fieldName) {
             const customInput = document.getElementById(`modal-form-${fieldName}-custom`);
