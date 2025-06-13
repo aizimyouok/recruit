@@ -563,7 +563,7 @@
     </div>
 
     <script>
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6vE_HEErU0BDqUOhusa2plkrApRJeb5v2q6KeCTMtV8oo74dbGB3XOrIpavnaZb2q/exec';
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz5HDigCcSuRI4dYhSKNCcJGb5t70t_D7XG8DAoJSMesdo2DXTEVlqMmyn9BxncU-Fr/exec';
 
         let allApplicantData = [];
         let filteredData = [];
@@ -1541,7 +1541,19 @@
                 formGroup.className = `form-group ${header === '비고' || header === '면접리뷰' ? 'full-width' : ''}`;
                 
                 const isRequired = requiredFields.includes(header) && !isReadOnly;
-                const value = data ? String(data[index] || '') : (header === '구분' ? nextSequenceNumber : '');
+                let value = data ? String(data[index] || '') : (header === '구분' ? nextSequenceNumber : '');
+                
+                // 날짜 필드 값 처리 - ISO 형식을 yyyy-MM-dd로 변환
+                if (dateFields.includes(header) && value && value !== '-') {
+                    try {
+                        const date = new Date(value);
+                        if (!isNaN(date.getTime())) {
+                            value = date.toISOString().split('T')[0]; // yyyy-MM-dd 형식으로 변환
+                        }
+                    } catch (e) {
+                        console.log('날짜 변환 실패:', value);
+                    }
+                }
                 
                 let inputHtml = '';
                 
