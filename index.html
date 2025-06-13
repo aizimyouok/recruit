@@ -1279,8 +1279,9 @@
                 } else if (dateFields.includes(header)) {
                     inputHtml = `<input type="date" id="modal-form-${header}" value="${value}" ${isRequired ? 'required' : ''} ${isReadOnly ? 'disabled' : ''}>`;
                 } else if (timeFields.includes(header)) {
-                    inputHtml = `<input type="time" id="modal-form-${header}" value="${value}" step="600" ${isRequired ? 'required' : ''} ${isReadOnly ? 'disabled' : ''}>`;
-                } else if (dropdownOptions[header]) {
+    // 2. 면접 시간 입력 필드를 텍스트로 변경
+    inputHtml = `<input type="text" id="modal-form-<span class="math-inline">\{header\}" value\="</span>{value}" placeholder="예: 14시 30분" ${isRequired ? 'required' : ''} ${isReadOnly ? 'disabled' : ''}>`;
+} else if (dropdownOptions[header]) {
                     const options = dropdownOptions[header];
                     const hasDirectInput = options.includes('직접입력');
                     let customValue = '';
