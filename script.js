@@ -67,10 +67,12 @@ const App = {
     init: {
         async start() {
             App.theme.initialize();
-            await App.data.fetch();
             App.init.setupEventListeners();
             App.init.setupDateFilterListeners();
-            App.utils.enhanceAccessibility();
+            await App.data.fetch();
+            setTimeout(() => {
+                App.utils.enhanceAccessibility();
+            }, 1000);
         },
 
         setupEventListeners() {
@@ -185,13 +187,6 @@ const App = {
                 item.className = 'column-toggle-item';
                 item.innerHTML = `<input type="checkbox" id="toggle-${header}" ${App.state.ui.visibleColumns[header] ? 'checked' : ''} onchange="App.ui.handleColumnToggle(event, '${header}')"><label for="toggle-${header}">${header}</label>`;
                 dropdown.appendChild(item);
-            });
-        },
-
-        generateVisibleColumns(headers) {
-            App.state.ui.visibleColumns = {};
-            headers.forEach(header => {
-                App.state.ui.visibleColumns[header] = !App.config.DEFAULT_HIDDEN_COLUMNS.includes(header);
             });
         }
     },
@@ -423,6 +418,8 @@ const App = {
     filter: {
         apply() {
             let data = [...App.state.data.all];
+            console.log('필터 적용 시작 - 원본 데이터:', data.length);
+            
             const routeFilter = document.getElementById('routeFilter').value;
             const positionFilter = document.getElementById('positionFilter').value;
             const applyDateIndex = App.state.data.headers.indexOf('지원일');
@@ -446,9 +443,22 @@ const App = {
             }
             
             App.state.data.filtered = App.utils.sortData(data);
+            console.log('필터 적용 완료 - 필터링된 데이터:', App.state.data.filtered.length);
+            
+            // 페이지네이션 관련 업데이트
             App.pagination.updateTotal();
             App.filter.updateSummary();
-            App.render.currentView();
+            
+            // 현재 뷰에 따라 렌더링
+            const pageData = App.pagination.getCurrentPageData();
+            console.log('렌더링할 페이지 데이터:', pageData.length);
+            
+            if (App.state.ui.currentView === 'table') {
+                App.render.table(pageData);
+            } else {
+                App.render.cards(pageData);
+            }
+            
             App.pagination.updateUI();
         },
 
@@ -490,7 +500,10 @@ const App = {
             App.state.ui.activeDateMode = 'all';
             App.state.ui.currentPage = 1;
             App.filter.updateDateFilterUI(); 
-            if (runApplyFilters) App.filter.apply();
+            if (runApplyFilters) {
+                console.log('필터 리셋 중 - 전체 데이터 개수:', App.state.data.all.length);
+                App.filter.apply();
+            }
         },
 
         updateSummary() {
@@ -583,7 +596,12 @@ const App = {
         goToPage(page) {
             if (page >= 1 && page <= App.state.ui.totalPages) {
                 App.state.ui.currentPage = page;
-                App.render.currentView();
+                const pageData = App.pagination.getCurrentPageData();
+                if (App.state.ui.currentView === 'table') {
+                    App.render.table(pageData);
+                } else {
+                    App.render.cards(pageData);
+                }
                 App.pagination.updateUI();
             }
         },
@@ -691,13 +709,16 @@ const App = {
             viewBtns.forEach(btn => btn.classList.remove('active'));
             document.querySelector(`.view-btn[onclick="App.view.switch('${viewType}')"]`).classList.add('active');
             
+            const pageData = App.pagination.getCurrentPageData();
+            
             if (viewType === 'table') {
                 tableView.style.display = 'block';
                 cardsView.classList.remove('active');
+                App.render.table(pageData);
             } else {
                 tableView.style.display = 'none';
                 cardsView.classList.add('active');
-                App.render.cards(App.pagination.getCurrentPageData());
+                App.render.cards(pageData);
             }
         }
     },
@@ -707,20 +728,25 @@ const App = {
     // =========================
     render: {
         currentView() {
+            const pageData = App.pagination.getCurrentPageData();
             if (App.state.ui.currentView === 'table') {
-                App.render.table(App.pagination.getCurrentPageData());
+                App.render.table(pageData);
             } else {
-                App.render.cards(App.pagination.getCurrentPageData());
+                App.render.cards(pageData);
             }
         },
 
         table(dataToRender) {
             const tableContainer = document.querySelector('.table-container');
             
-            if (dataToRender.length === 0 && App.state.data.all.length === 0) {
-                tableContainer.innerHTML = App.ui.createSkeletonTable();
+            // 전체 데이터가 없고 렌더링할 데이터도 없을 때만 스켈레톤 표시
+            if (!dataToRender && App.state.data.all.length === 0) {
+                tableContainer.innerHTML = App.utils.createSkeletonTable();
                 return;
             }
+            
+            // dataToRender가 없으면 빈 배열로 처리
+            const renderData = dataToRender || [];
             
             tableContainer.innerHTML = '';
             const table = document.createElement('table');
@@ -729,7 +755,7 @@ const App = {
             table.setAttribute('aria-label', '지원자 목록 테이블');
             
             App.render.tableHeader(table);
-            App.render.tableBody(table, dataToRender);
+            App.render.tableBody(table, renderData);
             
             tableContainer.appendChild(table);
         },
@@ -768,7 +794,7 @@ const App = {
         tableBody(table, dataToRender) {
             const tbody = table.createTBody();
             
-            if (dataToRender.length === 0) {
+            if (!dataToRender || dataToRender.length === 0) {
                 const row = tbody.insertRow();
                 const cell = row.insertCell();
                 cell.colSpan = Object.values(App.state.ui.visibleColumns).filter(Boolean).length || 1;
@@ -831,7 +857,7 @@ const App = {
             const cardsContainer = document.getElementById('cardsView');
             cardsContainer.innerHTML = '';
             
-            if (dataToRender.length === 0) {
+            if (!dataToRender || dataToRender.length === 0) {
                 cardsContainer.innerHTML = '<p style="text-align:center; padding: 40px; grid-column: 1/-1;">표시할 데이터가 없습니다.</p>';
                 return;
             }
@@ -2383,6 +2409,13 @@ const App = {
                     </table>
                 </div>
             `;
+        },
+
+        generateVisibleColumns(headers) {
+            App.state.ui.visibleColumns = {};
+            headers.forEach(header => {
+                App.state.ui.visibleColumns[header] = !App.config.DEFAULT_HIDDEN_COLUMNS.includes(header);
+            });
         }
     },
 
