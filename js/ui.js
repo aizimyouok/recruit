@@ -245,7 +245,7 @@ export function handleSearch(callback) {
     }
 }
 
-export function resetFilters(callback) {
+export function resetFilters() {
     document.querySelectorAll('.filter-bar select').forEach(select => select.value = 'all');
     document.getElementById('globalSearch').value = '';
     appState.filters.searchTerm = '';
@@ -253,11 +253,6 @@ export function resetFilters(callback) {
     appState.pagination.currentPage = 1;
     appState.sorting = { column: '지원일', direction: 'desc' };
     updateDateFilterUI();
-
-    // 콜백 함수가 있으면 실행 (필터 클릭 시 필요)
-    if (callback) {
-        callback();
-    }
 }
 
 export function populateDropdownFilters() {
