@@ -62,16 +62,18 @@ async function initializeApplication() {
 function applyFiltersAndRender() {
     let data = [...appState.allApplicantData];
     
-    // 키워드 검색
+    // 1. 키워드 검색 필터
     if (appState.filters.searchTerm) {
         data = data.filter(row => row.some(cell => String(cell || '').toLowerCase().includes(appState.filters.searchTerm)));
     }
-    // 드롭다운 필터
+    // 2. 드롭다운 필터
+    const routeFilterValue = document.getElementById('routeFilter').value;
+    const positionFilterValue = document.getElementById('positionFilter').value;
     data = data.filter(row => 
-        (document.getElementById('routeFilter').value === 'all' || String(row[appState.currentHeaders.indexOf('지원루트')] || '') === document.getElementById('routeFilter').value) &&
-        (document.getElementById('positionFilter').value === 'all' || String(row[appState.currentHeaders.indexOf('모집분야')] || '') === document.getElementById('positionFilter').value)
+        (routeFilterValue === 'all' || String(row[appState.currentHeaders.indexOf('지원루트')] || '') === routeFilterValue) &&
+        (positionFilterValue === 'all' || String(row[appState.currentHeaders.indexOf('모집분야')] || '') === positionFilterValue)
     );
-    // 날짜 필터
+    // 3. 날짜 필터
     const dateFilterConfig = {
         mode: appState.ui.activeDateMode,
         start: document.getElementById('startDateInput')?.value,
@@ -80,7 +82,7 @@ function applyFiltersAndRender() {
     };
     data = logic.filterDataByPeriod(data, appState.currentHeaders.indexOf('지원일'), dateFilterConfig);
     
-    // 최종 데이터 상태 업데이트 및 렌더링
+    // 4. 최종 데이터 상태 업데이트 및 렌더링
     appState.filteredData = logic.sortData(data);
     ui.render();
 }
@@ -97,21 +99,35 @@ function setupEventListeners() {
     // 헤더
     document.querySelector('.mobile-menu-btn').addEventListener('click', ui.toggleMobileMenu);
     document.querySelector('.theme-toggle').addEventListener('click', ui.toggleTheme);
+    document.querySelector('.mobile-overlay').addEventListener('click', ui.toggleMobileMenu);
 
     // 네비게이션 메뉴 (이벤트 위임)
     document.querySelector('.nav-menu').addEventListener('click', e => {
         const navItem = e.target.closest('.nav-item');
         if (navItem && navItem.dataset.page) {
             ui.switchPage(navItem.dataset.page);
+            if (navItem.dataset.page === 'stats') {
+                charts.updateStatistics();
+            }
         }
     });
+    
+    // 사이드바
+    document.getElementById('sidebarPeriodFilter').addEventListener('change', ui.handleSidebarPeriodChange);
+    document.getElementById('sidebarDateApplyBtn').addEventListener('click', ui.updateSidebarWidgets);
 
     // 대시보드 컨트롤 버튼
-    document.getElementById('addApplicantBtn').addEventListener('click', () => ui.openNewApplicantModal(appState, config));
+    document.getElementById('addApplicantBtn').addEventListener('click', ui.openNewApplicantModal);
     document.getElementById('resetFiltersBtn').addEventListener('click', () => ui.resetFilters(false, applyFiltersAndRender));
     document.getElementById('columnToggleBtn').addEventListener('click', ui.toggleColumnDropdown);
     document.getElementById('tableViewBtn').addEventListener('click', () => ui.switchView('table'));
     document.getElementById('cardsViewBtn').addEventListener('click', () => ui.switchView('cards'));
+    document.getElementById('columnToggleDropdown').addEventListener('change', e => {
+        if (e.target.type === 'checkbox') {
+            ui.handleColumnToggle(e.target.id.replace('toggle-', ''), e.target.checked);
+        }
+    });
+
 
     // 필터
     document.getElementById('globalSearch').addEventListener('input', ui.handleSearch(applyFiltersAndRender));
@@ -119,19 +135,17 @@ function setupEventListeners() {
     document.getElementById('positionFilter').addEventListener('change', () => { appState.pagination.currentPage = 1; applyFiltersAndRender(); });
 
     // 날짜 필터 (이벤트 위임)
-    const dateModeToggle = document.getElementById('dateModeToggle');
-    dateModeToggle.addEventListener('click', e => {
+    document.getElementById('dateModeToggle').addEventListener('click', e => {
         if (e.target.tagName === 'BUTTON') {
             appState.ui.activeDateMode = e.target.dataset.mode;
             ui.updateDateFilterUI();
             applyFiltersAndRender();
         }
     });
-    const dateInputsContainer = document.getElementById('dateInputsContainer');
-    dateInputsContainer.addEventListener('change', e => {
+    document.getElementById('dateInputsContainer').addEventListener('change', e => {
         if (e.target.tagName === 'INPUT') applyFiltersAndRender();
     });
-    dateInputsContainer.addEventListener('click', e => {
+    document.getElementById('dateInputsContainer').addEventListener('click', e => {
         if (e.target.classList.contains('date-nav-btn')) {
             ui.navigateDate(Number(e.target.dataset.direction));
             applyFiltersAndRender();
@@ -167,18 +181,20 @@ function setupEventListeners() {
 
     // 페이지네이션 (이벤트 위임)
     document.getElementById('paginationContainer').addEventListener('click', e => {
-        const button = e.target.closest('.pagination-btn, .pagination-number');
+        const button = e.target.closest('button');
         if (!button || button.disabled) return;
         
-        const page = button.dataset.page;
-        if (page) {
-            appState.pagination.currentPage = Number(page);
-        } else if (button.id === 'firstPageBtn') appState.pagination.currentPage = 1;
-        else if (button.id === 'prevPageBtn') appState.pagination.currentPage--;
-        else if (button.id === 'nextPageBtn') appState.pagination.currentPage++;
-        else if (button.id === 'lastPageBtn') appState.pagination.currentPage = appState.pagination.totalPages;
+        let newPage = appState.pagination.currentPage;
+        if (button.dataset.page) newPage = Number(button.dataset.page);
+        else if (button.id === 'firstPageBtn') newPage = 1;
+        else if (button.id === 'prevPageBtn') newPage--;
+        else if (button.id === 'nextPageBtn') newPage++;
+        else if (button.id === 'lastPageBtn') newPage = appState.pagination.totalPages;
         
-        ui.render();
+        if (newPage !== appState.pagination.currentPage) {
+            appState.pagination.currentPage = newPage;
+            ui.render();
+        }
     });
 
     // 통계 페이지
@@ -194,24 +210,30 @@ function setupEventListeners() {
 
     // 모달 (이벤트 위임)
     document.getElementById('applicantModal').addEventListener('click', async e => {
-        const target = e.target;
+        const target = e.target.closest('button');
+        if (!target) return;
+
         if (target.matches('.close-btn')) ui.closeModal();
         else if (target.matches('.modal-edit-btn')) ui.openEditModal();
         else if (target.matches('.modal-save-btn')) {
              const action = appState.ui.currentEditingData ? 'update' : 'create';
              const gubun = appState.ui.currentEditingData ? appState.ui.currentEditingData[appState.currentHeaders.indexOf('구분')] : null;
              
-             // 폼 데이터 읽기
              const formData = ui.getFormData();
              if (!formData) return;
+
+             target.innerHTML = '<div class="advanced-loading-spinner" style="width: 20px; height: 20px; margin: 0;"></div>';
+             target.disabled = true;
 
              try {
                 await api.saveApplicant(action, formData, gubun);
                 alert(`정보가 성공적으로 ${action === 'create' ? '등록' : '수정'}되었습니다.`);
                 ui.closeModal();
-                initializeApplication(); // 데이터 새로고침
+                initializeApplication();
              } catch(err) {
                 alert(err.message);
+                target.innerHTML = '저장';
+                target.disabled = false;
              }
         }
         else if (target.matches('.modal-delete-btn')) {
@@ -227,6 +249,13 @@ function setupEventListeners() {
                     alert(err.message);
                 }
             }
+        }
+    });
+
+    // 동적으로 생성된 요소에 대한 이벤트 리스너 (재시도 버튼)
+    document.body.addEventListener('click', e => {
+        if (e.target.id === 'retryFetchBtn') {
+            initializeApplication();
         }
     });
 }
