@@ -245,7 +245,7 @@ export function handleSearch(callback) {
     }
 }
 
-export function resetFilters(isInitialLoad = false, callback) {
+export function resetFilters(callback) {
     document.querySelectorAll('.filter-bar select').forEach(select => select.value = 'all');
     document.getElementById('globalSearch').value = '';
     appState.filters.searchTerm = '';
@@ -253,10 +253,9 @@ export function resetFilters(isInitialLoad = false, callback) {
     appState.pagination.currentPage = 1;
     appState.sorting = { column: '지원일', direction: 'desc' };
     updateDateFilterUI();
-    if (isInitialLoad) {
-        appState.filteredData = sortData(appState.allApplicantData);
-        render();
-    } else {
+
+    // 콜백 함수가 있으면 실행 (필터 클릭 시 필요)
+    if (callback) {
         callback();
     }
 }
