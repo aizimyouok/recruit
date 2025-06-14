@@ -227,7 +227,7 @@ const App = {
                     .map(row => row.map(cell => cell == null ? '' : String(cell)));
                 
                 App.data.updateSequenceNumber();
-                App.ui.generateVisibleColumns(App.state.data.headers);
+                App.utils.generateVisibleColumns(App.state.data.headers);
                 App.ui.setupColumnToggles();
                 App.filter.populateDropdowns();
                 App.sidebar.updateWidgets();
