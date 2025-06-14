@@ -13,7 +13,7 @@ const App = {
         REQUIRED_FIELDS: ['이름', '연락처', '지원루트', '모집분야'],
         DROPDOWN_OPTIONS: {
             '지원루트': ['사람인', '잡코리아', '인크루트', '아웃바운드', '배우공고', '당근', 'Instagram', 'Threads', '직접입력'],
-            '모집분야': ['영업', '강사', '상조', '직접입력'], 
+            '모집분야': ['영업', '강사', '상조', '직접입력'],
             '성별': ['남', '여'],
             '증원자': ['회사', '이성진', '김영빈', '최혜진', '직접입력'],
             '1차 컨택 결과': ['부재1회', '부재2회', '보류', '거절', '파기', '면접확정'],
@@ -24,7 +24,7 @@ const App = {
         TIME_FIELDS: ['면접 시간'],
         CHART_COLORS: {
             primary: '#818cf8',
-            success: '#10b981', 
+            success: '#10b981',
             warning: '#f59e0b',
             danger: '#ef4444',
             orange: '#fb923c'
@@ -81,11 +81,11 @@ const App = {
                 if (dropdownContainer && !dropdownContainer.contains(event.target)) {
                     document.getElementById('columnToggleDropdown').style.display = 'none';
                 }
-                
+
                 if (window.innerWidth <= 768) {
                     const sidebar = document.getElementById('sidebar');
-                    if (sidebar.classList.contains('mobile-open') && 
-                        !sidebar.contains(event.target) && 
+                    if (sidebar.classList.contains('mobile-open') &&
+                        !sidebar.contains(event.target) &&
                         !event.target.closest('.mobile-menu-btn')) {
                         App.ui.toggleMobileMenu();
                     }
@@ -137,10 +137,10 @@ const App = {
             document.getElementById(pageId).classList.add('active');
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             document.querySelector(`.nav-item[onclick="App.navigation.switchPage('${pageId}')"]`).classList.add('active');
-            
+
             const titles = { dashboard: '지원자 현황', stats: '통계 분석' };
             document.getElementById('pageTitle').textContent = titles[pageId];
-            
+
             if (pageId === 'stats') {
                 setTimeout(() => {
                     if (window.Chart && App.state.data.all.length > 0) {
@@ -151,7 +151,7 @@ const App = {
                     }
                 }, 100);
             }
-            
+
             if (window.innerWidth <= 768 && document.getElementById('sidebar').classList.contains('mobile-open')) {
                 App.ui.toggleMobileMenu();
             }
@@ -188,6 +188,64 @@ const App = {
                 item.innerHTML = `<input type="checkbox" id="toggle-${header}" ${App.state.ui.visibleColumns[header] ? 'checked' : ''} onchange="App.ui.handleColumnToggle(event, '${header}')"><label for="toggle-${header}">${header}</label>`;
                 dropdown.appendChild(item);
             });
+        },
+
+        showLoadingState(container) {
+            container.innerHTML = `
+                <div class="smooth-loading-container">
+                    <div class="advanced-loading-spinner"></div>
+                    <div class="loading-text">
+                        데이터를 불러오는 중입니다
+                        <div class="loading-dots">
+                            <div class="loading-dot"></div>
+                            <div class="loading-dot"></div>
+                            <div class="loading-dot"></div>
+                        </div>
+                    </div>
+                    <div class="loading-subtext">잠시만 기다려 주세요...</div>
+                    ${App.utils.createProgressBar(25, '연결중...')}
+                </div>`;
+        },
+
+        updateProgress(container, percentage, text) {
+            setTimeout(() => {
+                const progressFill = container.querySelector('.progress-fill');
+                const progressPercentage = container.querySelector('.progress-percentage');
+                const loadingSubtext = container.querySelector('.loading-subtext');
+
+                if (progressFill && progressPercentage) {
+                    progressFill.style.width = percentage + '%';
+                    progressPercentage.textContent = percentage + '%';
+                }
+
+                if (loadingSubtext && text) {
+                    loadingSubtext.textContent = text;
+                }
+            }, 200);
+        },
+
+        showErrorState(container, error) {
+            const isNetworkError = error.name === 'TypeError' && error.message.includes('fetch');
+            const canRetry = isNetworkError || error.message.includes('서버에 일시적인');
+
+            container.innerHTML = `
+                <div class="error-container">
+                    <i class="fas fa-exclamation-triangle error-icon"></i>
+                    <h3 class="error-title">데이터 로드 실패</h3>
+                    <p class="error-message">
+                        ${isNetworkError ? '🌐 인터넷 연결을 확인해주세요.' : error.message}
+                    </p>
+                    <div class="error-actions">
+                        ${canRetry ? `
+                            <button class="primary-btn" onclick="App.data.fetch()">
+                                <i class="fas fa-sync-alt"></i> 다시 시도
+                            </button>
+                        ` : ''}
+                        <button class="secondary-btn" onclick="location.reload()">
+                            <i class="fas fa-redo"></i> 페이지 새로고침
+                        </button>
+                    </div>
+                </div>`;
         }
     },
 
@@ -197,22 +255,22 @@ const App = {
     data: {
         async fetch() {
             const tableContainer = document.querySelector('.table-container');
-            
+
             try {
                 App.ui.showLoadingState(tableContainer);
-                
+
                 const response = await fetch(`${App.config.APPS_SCRIPT_URL}?action=read`);
-                
+
                 App.ui.updateProgress(tableContainer, 60, '데이터 처리중...');
-                
+
                 if (!response.ok) {
                     throw new Error(App.utils.getErrorMessage(response.status));
                 }
-                
+
                 const result = await response.json();
-                
+
                 App.ui.updateProgress(tableContainer, 85, '최종 처리중...');
-                
+
                 if (result.status !== 'success') {
                     throw new Error(result.message || '데이터 처리 중 오류가 발생했습니다.');
                 }
@@ -225,7 +283,7 @@ const App = {
                 App.state.data.all = result.data.slice(1)
                     .filter(row => row && Array.isArray(row) && row.some(cell => cell != null && String(cell).trim() !== ''))
                     .map(row => row.map(cell => cell == null ? '' : String(cell)));
-                
+
                 App.data.updateSequenceNumber();
                 App.utils.generateVisibleColumns(App.state.data.headers);
                 App.ui.setupColumnToggles();
@@ -233,9 +291,9 @@ const App = {
                 App.sidebar.updateWidgets();
                 App.data.updateInterviewSchedule();
                 App.filter.reset(true);
-                
+
                 App.ui.updateProgress(tableContainer, 100, '완료!');
-                
+
                 setTimeout(() => {
                     App.sidebar.updateWidgets();
                 }, 500);
@@ -260,23 +318,23 @@ const App = {
         updateInterviewSchedule() {
             let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
             if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
-            
+
             const interviewTimeIndex = App.state.data.headers.indexOf('면접 시간');
             const nameIndex = App.state.data.headers.indexOf('이름');
             const positionIndex = App.state.data.headers.indexOf('모집분야');
             const routeIndex = App.state.data.headers.indexOf('지원루트');
             const recruiterIndex = App.state.data.headers.indexOf('증원자');
             const interviewerIndex = App.state.data.headers.indexOf('면접자');
-            
+
             if (interviewDateIndex === -1) {
                 document.getElementById('interviewScheduleList').innerHTML = '<div class="no-interviews">면접 날짜 컬럼을 찾을 수 없습니다.</div>';
                 return;
             }
-            
+
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const threeDaysLater = new Date(today.getTime() + (3 * 24 * 60 * 60 * 1000));
-            
+
             const upcomingInterviews = App.state.data.all
                 .filter(row => {
                     const interviewDate = row[interviewDateIndex];
@@ -288,14 +346,14 @@ const App = {
                 })
                 .sort((a, b) => new Date(a[interviewDateIndex]) - new Date(b[interviewDateIndex]))
                 .slice(0, 7);
-            
+
             const scheduleContainer = document.getElementById('interviewScheduleList');
-            
+
             if (upcomingInterviews.length === 0) {
                 scheduleContainer.innerHTML = '<div class="no-interviews">3일 이내 예정된 면접이 없습니다.</div>';
                 return;
             }
-            
+
             let tableHtml = `
                 <table class="interview-schedule-table">
                     <thead>
@@ -305,11 +363,11 @@ const App = {
                     </thead>
                     <tbody>
             `;
-            
+
             upcomingInterviews.forEach(row => {
                 const interviewDate = row[interviewDateIndex];
                 let dateDisplay = '';
-                
+
                 const formattedTime = App.utils.formatInterviewTime(row[interviewTimeIndex]);
 
                 try {
@@ -317,17 +375,17 @@ const App = {
                     date.setHours(0, 0, 0, 0);
                     const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
                     const weekday = weekdays[date.getDay()];
-                    
+
                     const diffTime = date.getTime() - today.getTime();
                     const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
                     let dayDiff = `D-${diffDays}`;
                     let ddayClass = '';
                     if (diffDays === 0) { dayDiff = 'D-Day'; ddayClass = 'today'; }
-                    
+
                     const dateText = `${date.getMonth() + 1}/${date.getDate()}(${weekday})`;
                     dateDisplay = `<span class="interview-dday ${ddayClass}">${dayDiff}</span><span class="interview-date-text">${dateText}</span>`;
                 } catch (e) { dateDisplay = '날짜 오류'; }
-                
+
                 tableHtml += `
                     <tr onclick="App.data.showInterviewDetails('${row[nameIndex] || ''}', '${row[routeIndex] || ''}')" style="cursor: pointer;">
                         <td class="interview-name-cell" title="${row[nameIndex] || ''}">${row[nameIndex] || '-'}</td>
@@ -340,7 +398,7 @@ const App = {
                     </tr>
                 `;
             });
-            
+
             tableHtml += `</tbody></table>`;
             scheduleContainer.innerHTML = tableHtml;
         },
@@ -348,13 +406,13 @@ const App = {
         showInterviewDetails(name, route) {
             const nameIndex = App.state.data.headers.indexOf('이름');
             const routeIndex = App.state.data.headers.indexOf('지원루트');
-            
+
             const targetRow = App.state.data.all.find(row => {
                 const nameMatch = String(row[nameIndex] || '') === name;
                 const routeMatch = String(row[routeIndex] || '') === route;
                 return nameMatch && routeMatch;
             });
-            
+
             if (targetRow) {
                 App.modal.openDetail(targetRow);
             }
@@ -363,17 +421,17 @@ const App = {
         async save(data, isUpdate = false, gubun = null) {
             const action = isUpdate ? 'update' : 'create';
             const payload = isUpdate ? { action, gubun, data } : { action, data };
-            
+
             const response = await fetch(App.config.APPS_SCRIPT_URL, {
-                method: 'POST', 
+                method: 'POST',
                 body: JSON.stringify(payload)
             });
-            
+
             const result = await response.json();
             if (result.status !== 'success') {
                 throw new Error(result.message || '저장에 실패했습니다.');
             }
-            
+
             return result;
         },
 
@@ -403,7 +461,7 @@ const App = {
             if (App.state.ui.searchTimeout) {
                 clearTimeout(App.state.ui.searchTimeout);
             }
-            
+
             App.state.ui.searchTimeout = setTimeout(() => {
                 App.state.ui.searchTerm = String(document.getElementById('globalSearch').value || '').toLowerCase();
                 App.state.ui.currentPage = 1;
@@ -419,7 +477,7 @@ const App = {
         apply() {
             let data = [...App.state.data.all];
             console.log('필터 적용 시작 - 원본 데이터:', data.length);
-            
+
             const routeFilter = document.getElementById('routeFilter').value;
             const positionFilter = document.getElementById('positionFilter').value;
             const applyDateIndex = App.state.data.headers.indexOf('지원일');
@@ -433,32 +491,32 @@ const App = {
             if (routeFilter !== 'all' && routeIndex !== -1) {
                 data = data.filter(row => String(row[routeIndex] || '') === routeFilter);
             }
-            
+
             if (positionFilter !== 'all' && positionIndex !== -1) {
                 data = data.filter(row => String(row[positionIndex] || '') === positionFilter);
             }
-            
+
             if (applyDateIndex !== -1 && App.state.ui.activeDateMode !== 'all') {
                 data = App.filter.applyDateFilter(data, applyDateIndex);
             }
-            
+
             App.state.data.filtered = App.utils.sortData(data);
             console.log('필터 적용 완료 - 필터링된 데이터:', App.state.data.filtered.length);
-            
+
             // 페이지네이션 관련 업데이트
             App.pagination.updateTotal();
             App.filter.updateSummary();
-            
+
             // 현재 뷰에 따라 렌더링
             const pageData = App.pagination.getCurrentPageData();
             console.log('렌더링할 페이지 데이터:', pageData.length);
-            
+
             if (App.state.ui.currentView === 'table') {
                 App.render.table(pageData);
             } else {
                 App.render.cards(pageData);
             }
-            
+
             App.pagination.updateUI();
         },
 
@@ -478,7 +536,7 @@ const App = {
                     const endDate = document.getElementById('endDateInput')?.value;
                     if (startDate && endDate) {
                         const start = new Date(startDate);
-                        const end = new Date(endDate); 
+                        const end = new Date(endDate);
                         end.setHours(23, 59, 59, 999);
                         return data.filter(row => {
                             if(!row[applyDateIndex]) return false;
@@ -487,8 +545,8 @@ const App = {
                         });
                     }
                 }
-            } catch(e) { 
-                console.error("날짜 필터링 오류", e); 
+            } catch(e) {
+                console.error("날짜 필터링 오류", e);
             }
             return data;
         },
@@ -499,7 +557,7 @@ const App = {
             App.state.ui.searchTerm = '';
             App.state.ui.activeDateMode = 'all';
             App.state.ui.currentPage = 1;
-            App.filter.updateDateFilterUI(); 
+            App.filter.updateDateFilterUI();
             if (runApplyFilters) {
                 console.log('필터 리셋 중 - 전체 데이터 개수:', App.state.data.all.length);
                 App.filter.apply();
@@ -516,14 +574,14 @@ const App = {
         populateDropdowns() {
             const routeIndex = App.state.data.headers.indexOf('지원루트');
             const positionIndex = App.state.data.headers.indexOf('모집분야');
-            
+
             if (routeIndex !== -1) {
                 const routes = [...new Set(App.state.data.all.map(row => String(row[routeIndex] || '').trim()).filter(Boolean))];
                 const routeFilter = document.getElementById('routeFilter');
                 routeFilter.innerHTML = '<option value="all">전체</option>';
                 routes.sort().forEach(route => routeFilter.innerHTML += `<option value="${route}">${route}</option>`);
             }
-            
+
             if (positionIndex !== -1) {
                 const positions = [...new Set(App.state.data.all.map(row => String(row[positionIndex] || '').trim()).filter(Boolean))];
                 const positionFilter = document.getElementById('positionFilter');
@@ -533,26 +591,26 @@ const App = {
         },
 
         updateDateFilterUI() {
-            document.querySelectorAll('.date-mode-btn').forEach(btn => 
+            document.querySelectorAll('.date-mode-btn').forEach(btn =>
                 btn.classList.toggle('active', btn.dataset.mode === App.state.ui.activeDateMode)
             );
-            
+
             const container = document.getElementById('dateInputsContainer');
             let html = '';
             const now = new Date();
             const year = now.getFullYear();
             const month = (now.getMonth() + 1).toString().padStart(2, '0');
             const day = now.getDate().toString().padStart(2, '0');
-            
-            if (App.state.ui.activeDateMode === 'all') { 
+
+            if (App.state.ui.activeDateMode === 'all') {
                 html = `<span style="color: var(--text-secondary); font-size: 0.9rem; padding: 0 10px;">모든 데이터 표시</span>`;
-            } else if (App.state.ui.activeDateMode === 'year') { 
+            } else if (App.state.ui.activeDateMode === 'year') {
                 html = `<input type="number" id="dateInput" value="${year}" onchange="App.filter.apply()">`;
-            } else if (App.state.ui.activeDateMode === 'month') { 
+            } else if (App.state.ui.activeDateMode === 'month') {
                 html = `<button class="date-nav-btn" onclick="App.filter.navigateDate(-1)">&lt;</button><input type="month" id="dateInput" value="${year}-${month}" onchange="App.filter.apply()"><button class="date-nav-btn" onclick="App.filter.navigateDate(1)">&gt;</button>`;
-            } else if (App.state.ui.activeDateMode === 'day') { 
+            } else if (App.state.ui.activeDateMode === 'day') {
                 html = `<button class="date-nav-btn" onclick="App.filter.navigateDate(-1)">&lt;</button><input type="date" id="dateInput" value="${year}-${month}-${day}" onchange="App.filter.apply()"><button class="date-nav-btn" onclick="App.filter.navigateDate(1)">&gt;</button>`;
-            } else if (App.state.ui.activeDateMode === 'range') { 
+            } else if (App.state.ui.activeDateMode === 'range') {
                 html = `<input type="date" id="startDateInput" onchange="App.filter.apply()"><span style="margin: 0 5px;">-</span><input type="date" id="endDateInput" onchange="App.filter.apply()">`;
             }
             container.innerHTML = html;
@@ -561,8 +619,8 @@ const App = {
         navigateDate(direction) {
             const input = document.getElementById('dateInput');
             if (!input) return;
-            
-            if (App.state.ui.activeDateMode === 'year') { 
+
+            if (App.state.ui.activeDateMode === 'year') {
                 input.value = Number(input.value) + direction;
             } else {
                 let currentDate = (App.state.ui.activeDateMode === 'month') ? new Date(input.value + '-02') : new Date(input.value);
@@ -705,12 +763,12 @@ const App = {
             const tableView = document.getElementById('tableView');
             const cardsView = document.getElementById('cardsView');
             const viewBtns = document.querySelectorAll('.view-btn');
-            
+
             viewBtns.forEach(btn => btn.classList.remove('active'));
             document.querySelector(`.view-btn[onclick="App.view.switch('${viewType}')"]`).classList.add('active');
-            
+
             const pageData = App.pagination.getCurrentPageData();
-            
+
             if (viewType === 'table') {
                 tableView.style.display = 'block';
                 cardsView.classList.remove('active');
@@ -738,32 +796,32 @@ const App = {
 
         table(dataToRender) {
             const tableContainer = document.querySelector('.table-container');
-            
+
             // 전체 데이터가 없고 렌더링할 데이터도 없을 때만 스켈레톤 표시
             if (!dataToRender && App.state.data.all.length === 0) {
                 tableContainer.innerHTML = App.utils.createSkeletonTable();
                 return;
             }
-            
+
             // dataToRender가 없으면 빈 배열로 처리
             const renderData = dataToRender || [];
-            
+
             tableContainer.innerHTML = '';
             const table = document.createElement('table');
             table.className = 'data-table';
             table.setAttribute('role', 'table');
             table.setAttribute('aria-label', '지원자 목록 테이블');
-            
+
             App.render.tableHeader(table);
             App.render.tableBody(table, renderData);
-            
+
             tableContainer.appendChild(table);
         },
 
         tableHeader(table) {
             const thead = table.createTHead();
             const headerRow = thead.insertRow();
-            
+
             App.state.data.headers.forEach(header => {
                 if (App.state.ui.visibleColumns[header]) {
                     const th = document.createElement('th');
@@ -772,19 +830,19 @@ const App = {
                     th.setAttribute('tabindex', '0');
                     th.setAttribute('aria-sort', 'none');
                     th.onclick = () => App.table.sort(header);
-                    
+
                     th.addEventListener('keydown', (e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
                             th.click();
                         }
                     });
-                    
+
                     let sortIcon = 'fa-sort';
                     if (App.state.ui.currentSortColumn === header && App.state.ui.currentSortDirection) {
                         sortIcon = App.state.ui.currentSortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
                     }
-                    
+
                     th.innerHTML = `${header} <i class="fas ${sortIcon} sort-icon ${App.state.ui.currentSortColumn === header ? 'active' : ''}"></i>`;
                     headerRow.appendChild(th);
                 }
@@ -793,35 +851,35 @@ const App = {
 
         tableBody(table, dataToRender) {
             const tbody = table.createTBody();
-            
+
             if (!dataToRender || dataToRender.length === 0) {
                 const row = tbody.insertRow();
                 const cell = row.insertCell();
                 cell.colSpan = Object.values(App.state.ui.visibleColumns).filter(Boolean).length || 1;
                 cell.textContent = '표시할 데이터가 없습니다.';
-                cell.style.textAlign = 'center'; 
+                cell.style.textAlign = 'center';
                 cell.style.padding = '40px';
                 return;
             }
-            
+
             let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
             if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
-            
+
             dataToRender.forEach((rowData, index) => {
                 const row = tbody.insertRow();
                 row.id = `row-${index}`;
-                
-                row.onclick = (event) => { 
+
+                row.onclick = (event) => {
                     if (event.target.tagName !== 'A') {
                         App.modal.openDetail(rowData);
-                    } 
+                    }
                 };
-                
+
                 if (interviewDateIndex !== -1) {
                     const urgency = App.utils.getInterviewUrgency(rowData[interviewDateIndex]);
                     if (urgency >= 0) row.classList.add(`urgent-interview-${urgency}`);
                 }
-                
+
                 App.render.tableCells(row, rowData, index);
             });
         },
@@ -831,12 +889,12 @@ const App = {
                 if (App.state.ui.visibleColumns[header]) {
                     const cell = row.insertCell();
                     let cellData = rowData[cellIndex];
-                    
+
                     if (header === '구분') {
                         const displaySequence = (App.state.ui.currentPage - 1) * App.config.ITEMS_PER_PAGE + index + 1;
                         cellData = displaySequence;
                     }
-                    
+
                     const statusClass = App.utils.getStatusClass(header, cellData);
                     if (statusClass) {
                         cell.innerHTML = `<span class="status-badge ${statusClass}">${String(cellData || '')}</span>`;
@@ -856,35 +914,35 @@ const App = {
         cards(dataToRender) {
             const cardsContainer = document.getElementById('cardsView');
             cardsContainer.innerHTML = '';
-            
+
             if (!dataToRender || dataToRender.length === 0) {
                 cardsContainer.innerHTML = '<p style="text-align:center; padding: 40px; grid-column: 1/-1;">표시할 데이터가 없습니다.</p>';
                 return;
             }
-            
+
             let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
             if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
-            
+
             dataToRender.forEach((rowData, index) => {
                 const card = document.createElement('div');
                 card.className = 'applicant-card';
                 card.onclick = () => App.modal.openDetail(rowData);
-                
+
                 if (interviewDateIndex !== -1) {
                     const urgency = App.utils.getInterviewUrgency(rowData[interviewDateIndex]);
                     if (urgency >= 0) card.classList.add(`urgent-card-${urgency}`);
                 }
-                
+
                 const getVal = (header) => String(rowData[App.state.data.headers.indexOf(header)] || '-');
                 const name = getVal('이름');
                 const phone = getVal('연락처');
                 const route = getVal('지원루트');
                 const position = getVal('모집분야');
                 let date = getVal('지원일');
-                
+
                 if(date !== '-') {
-                    try { 
-                        date = new Date(date).toLocaleDateString('ko-KR'); 
+                    try {
+                        date = new Date(date).toLocaleDateString('ko-KR');
                     } catch(e) {}
                 }
 
@@ -916,9 +974,9 @@ const App = {
         sort(columnName) {
             if (App.state.ui.currentSortColumn === columnName) {
                 App.state.ui.currentSortDirection = App.state.ui.currentSortDirection === 'asc' ? 'desc' : '';
-                if (App.state.ui.currentSortDirection === '') { 
-                    App.state.ui.currentSortColumn = '지원일'; 
-                    App.state.ui.currentSortDirection = 'desc'; 
+                if (App.state.ui.currentSortDirection === '') {
+                    App.state.ui.currentSortColumn = '지원일';
+                    App.state.ui.currentSortDirection = 'desc';
                 }
             } else {
                 App.state.ui.currentSortColumn = columnName;
@@ -940,13 +998,13 @@ const App = {
             document.querySelector('#applicantModal .modal-title').textContent = '신규 지원자 등록';
             App.modal.buildForm();
             document.querySelector('#applicantModal .modal-footer').innerHTML = `<button class="primary-btn" onclick="App.modal.saveNew()">저장하기</button>`;
-            App.modal.element.style.display = 'flex'; 
+            App.modal.element.style.display = 'flex';
         },
 
         openDetail(rowData) {
             document.querySelector('#applicantModal .modal-title').textContent = '지원자 상세 정보';
-            App.modal.buildForm(rowData, true); 
-            
+            App.modal.buildForm(rowData, true);
+
             document.querySelector('#applicantModal .modal-footer').innerHTML = `
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
                     <button class="modal-close-btn" onclick="App.modal.close()">
@@ -960,7 +1018,7 @@ const App = {
                     </button>
                 </div>
             `;
-            
+
             App.state.ui.currentEditingData = [...rowData];
             App.modal.element.style.display = 'flex';
         },
@@ -972,8 +1030,8 @@ const App = {
             }
 
             document.querySelector('#applicantModal .modal-title').textContent = '지원자 정보 수정';
-            App.modal.buildForm(App.state.ui.currentEditingData, false); 
-            
+            App.modal.buildForm(App.state.ui.currentEditingData, false);
+
             document.querySelector('#applicantModal .modal-footer').innerHTML = `
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
                     <button class="modal-close-btn" onclick="App.modal.close()">
@@ -986,8 +1044,8 @@ const App = {
             `;
         },
 
-        close() { 
-            App.modal.element.style.display = 'none'; 
+        close() {
+            App.modal.element.style.display = 'none';
             document.getElementById('applicantForm').innerHTML = '';
             App.state.ui.currentEditingData = null;
         },
@@ -995,13 +1053,13 @@ const App = {
         buildForm(data = null, isReadOnly = false) {
             const form = document.getElementById('applicantForm');
             form.innerHTML = '';
-            
+
             App.state.data.headers.forEach((header, index) => {
                 const formGroup = document.createElement('div');
                 formGroup.className = `form-group ${header === '비고' || header === '면접리뷰' ? 'full-width' : ''}`;
-                
+
                 const isRequired = App.config.REQUIRED_FIELDS.includes(header) && !isReadOnly;
-                
+
                 let value = '';
                 if (data) {
                     value = String(data[index] || '');
@@ -1013,7 +1071,7 @@ const App = {
                 if ((App.config.DATE_FIELDS.includes(header) || header === '지원일') && value && value !== '-') {
                     value = App.utils.formatDateForInput(value);
                 }
-                
+
                 const inputHtml = App.modal.createInput(header, value, isRequired, isReadOnly);
                 formGroup.innerHTML = `<label for="modal-form-${header}">${header}${isRequired ? ' *' : ''}</label>${inputHtml}`;
                 form.appendChild(formGroup);
@@ -1043,7 +1101,7 @@ const App = {
             const hasDirectInput = options.includes('직접입력');
             let customValue = '';
             let selectValue = value;
-            
+
             if (hasDirectInput && !options.includes(value) && value) {
                 selectValue = '직접입력';
                 customValue = value;
@@ -1053,18 +1111,18 @@ const App = {
                             <option value="">선택해주세요</option>
                             ${options.map(option => `<option value="${option}" ${selectValue === option ? 'selected' : ''}>${option}</option>`).join('')}
                         </select>`;
-            
+
             if(hasDirectInput) {
                 html += `<input type="text" id="modal-form-${header}-custom" value="${customValue}" placeholder="직접 입력하세요" style="display:${selectValue === '직접입력' ? 'block' : 'none'}; margin-top:5px;" ${isDisabled ? 'disabled' : ''}>`;
             }
-            
+
             return html;
         },
 
         handleDropdownChange(selectElement, fieldName) {
             const customInput = document.getElementById(`modal-form-${fieldName}-custom`);
             const isDirectInput = selectElement.value === '직접입력';
-            
+
             customInput.style.display = isDirectInput ? 'block' : 'none';
             if(isDirectInput) customInput.focus();
 
@@ -1083,13 +1141,13 @@ const App = {
         async saveNew() {
             const saveBtn = document.querySelector('#applicantModal .modal-footer .primary-btn');
             const originalText = saveBtn.innerHTML;
-            
+
             try {
                 const applicantData = App.modal.collectFormData();
-                
+
                 if (!App.modal.validateFormData(applicantData)) {
-                    alert('필수 항목을 모두 입력해주세요.'); 
-                    return; 
+                    alert('필수 항목을 모두 입력해주세요.');
+                    return;
                 }
 
                 if (App.state.data.headers.includes('구분')) {
@@ -1100,15 +1158,15 @@ const App = {
                 }
 
                 App.modal.prepareTimeData(applicantData);
-                
+
                 saveBtn.disabled = true;
                 saveBtn.innerHTML = '<div class="advanced-loading-spinner" style="width: 20px; height: 20px; margin: 0;"></div> 저장 중...';
-                
+
                 await App.data.save(applicantData);
-                
+
                 App.modal.close();
                 App.data.fetch();
-                
+
             } catch (error) {
                 console.error("데이터 저장 실패:", error);
                 alert("데이터 저장 중 오류 발생: " + error.message);
@@ -1121,13 +1179,13 @@ const App = {
         async saveEdit() {
             const saveBtn = document.querySelector('#applicantModal .modal-footer .modal-edit-btn');
             const originalText = saveBtn.innerHTML;
-            
+
             try {
                 const updatedData = App.modal.collectFormData();
-                
+
                 if (!App.modal.validateFormData(updatedData)) {
-                    alert('필수 항목을 모두 입력해주세요.'); 
-                    return; 
+                    alert('필수 항목을 모두 입력해주세요.');
+                    return;
                 }
 
                 App.modal.prepareTimeData(updatedData);
@@ -1137,22 +1195,22 @@ const App = {
                     alert('편집 정보를 찾을 수 없습니다.');
                     return;
                 }
-                
+
                 const gubunValue = App.state.ui.currentEditingData[gubunIndex];
                 if (!gubunValue) {
                     alert('구분값을 찾을 수 없습니다.');
                     return;
                 }
-                
+
                 saveBtn.disabled = true;
                 saveBtn.innerHTML = '<div class="advanced-loading-spinner" style="width: 20px; height: 20px; margin: 0;"></div> 저장 중...';
-                
+
                 await App.data.save(updatedData, true, gubunValue);
-                
+
                 alert('정보가 성공적으로 수정되었습니다.');
                 App.modal.close();
                 App.data.fetch();
-                
+
             } catch (error) {
                 console.error("데이터 수정 실패:", error);
                 alert("데이터 수정 중 오류 발생: " + error.message);
@@ -1170,22 +1228,22 @@ const App = {
 
             const gubunIndex = App.state.data.headers.indexOf('구분');
             const nameIndex = App.state.data.headers.indexOf('이름');
-            
+
             if (gubunIndex === -1) {
                 alert('삭제를 위한 고유 식별자(구분)를 찾을 수 없습니다.');
                 return;
             }
-            
+
             const gubunValue = App.state.ui.currentEditingData[gubunIndex];
             const applicantName = App.state.ui.currentEditingData[nameIndex] || '해당 지원자';
 
             if (!confirm(`정말로 '${applicantName}' 님의 정보를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`)) {
                 return;
             }
-            
+
             const deleteBtn = document.querySelector('.modal-delete-btn');
             const originalText = deleteBtn.innerHTML;
-            
+
             try {
                 deleteBtn.disabled = true;
                 deleteBtn.innerHTML = '<div class="advanced-loading-spinner" style="width: 20px; height: 20px; margin: 0;"></div> 삭제 중...';
@@ -1236,7 +1294,7 @@ const App = {
         handlePeriodChange() {
             const selectedPeriod = document.getElementById('sidebarPeriodFilter').value;
             const customRange = document.getElementById('sidebarCustomDateRange');
-            
+
             if (selectedPeriod === 'custom') {
                 customRange.style.display = 'block';
             } else {
@@ -1248,19 +1306,19 @@ const App = {
         updateWidgets() {
             const selectedPeriod = document.getElementById('sidebarPeriodFilter')?.value || 'all';
             const applyDateIndex = App.state.data.headers.indexOf('지원일');
-            
+
             let filteredApplicants = [...App.state.data.all];
             let periodLabel = '전체 기간';
-            
+
             if (applyDateIndex !== -1 && selectedPeriod !== 'all') {
                 const result = App.sidebar.filterByPeriod(filteredApplicants, selectedPeriod, applyDateIndex);
                 filteredApplicants = result.data;
                 periodLabel = result.label;
             }
-            
+
             const stats = App.sidebar.calculateStats(filteredApplicants);
             App.sidebar.updateUI(stats, periodLabel);
-            
+
             if (document.getElementById('stats').classList.contains('active')) {
                 App.stats.update();
             }
@@ -1270,16 +1328,16 @@ const App = {
             const now = new Date();
             let filteredData = [...data];
             let label = '전체 기간';
-            
+
             if (selectedPeriod === 'custom') {
                 const startDate = document.getElementById('sidebarStartDate')?.value;
                 const endDate = document.getElementById('sidebarEndDate')?.value;
-                
+
                 if (startDate && endDate) {
                     const start = new Date(startDate);
                     const end = new Date(endDate);
                     end.setHours(23, 59, 59, 999);
-                    
+
                     filteredData = data.filter(row => {
                         try {
                             const dateValue = row[applyDateIndex];
@@ -1288,7 +1346,7 @@ const App = {
                             return date >= start && date <= end;
                         } catch (e) { return false; }
                     });
-                    
+
                     label = `${startDate} ~ ${endDate}`;
                 }
             } else {
@@ -1296,7 +1354,7 @@ const App = {
                 filteredData = result.data;
                 label = result.label;
             }
-            
+
             return { data: filteredData, label };
         },
 
@@ -1304,9 +1362,9 @@ const App = {
             const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
             const interviewResultIndex = App.state.data.headers.indexOf('면접결과');
             const joinDateIndex = App.state.data.headers.indexOf('입과일');
-            
+
             const totalCount = filteredApplicants.length;
-            
+
             let interviewPendingCount = 0;
             if (contactResultIndex !== -1) {
                 interviewPendingCount = filteredApplicants.filter(row => {
@@ -1314,37 +1372,37 @@ const App = {
                     return contactResult === '면접확정';
                 }).length;
             }
-            
+
             let successRate = 0;
             if (contactResultIndex !== -1 && interviewResultIndex !== -1) {
                 const interviewConfirmed = filteredApplicants.filter(row => {
                     const contactResult = String(row[contactResultIndex] || '').trim();
                     return contactResult === '면접확정';
                 });
-                
+
                 const passed = interviewConfirmed.filter(row => {
                     const interviewResult = String(row[interviewResultIndex] || '').trim();
                     return interviewResult === '합격';
                 });
-                
+
                 successRate = interviewConfirmed.length > 0 ? Math.round((passed.length / interviewConfirmed.length) * 100) : 0;
             }
-            
+
             let joinRate = 0;
             if (interviewResultIndex !== -1 && joinDateIndex !== -1) {
                 const passedApplicants = filteredApplicants.filter(row => {
                     const interviewResult = String(row[interviewResultIndex] || '').trim();
                     return interviewResult === '합격';
                 });
-                
+
                 const joinedApplicants = passedApplicants.filter(row => {
                     const joinDate = String(row[joinDateIndex] || '').trim();
                     return joinDate !== '' && joinDate !== '-';
                 });
-                
+
                 joinRate = passedApplicants.length > 0 ? Math.round((joinedApplicants.length / passedApplicants.length) * 100) : 0;
             }
-            
+
             return { totalCount, interviewPendingCount, successRate, joinRate };
         },
 
@@ -1364,7 +1422,7 @@ const App = {
         handlePeriodChange() {
             const selectedPeriod = document.getElementById('statsPeriodFilter').value;
             const customRange = document.getElementById('statsCustomDateRange');
-            
+
             if (selectedPeriod === 'custom') {
                 customRange.style.display = 'flex';
             } else {
@@ -1382,10 +1440,10 @@ const App = {
             try {
                 const selectedPeriod = document.getElementById('statsPeriodFilter')?.value || 'all';
                 const applyDateIndex = App.state.data.headers.indexOf('지원일');
-                
+
                 let filteredApplicants = [...App.state.data.all];
                 let periodLabel = '전체 기간';
-                
+
                 if (applyDateIndex !== -1 && selectedPeriod !== 'all') {
                     const result = App.stats.filterByPeriod(filteredApplicants, selectedPeriod, applyDateIndex);
                     filteredApplicants = result.data;
@@ -1394,7 +1452,7 @@ const App = {
 
                 const stats = App.sidebar.calculateStats(filteredApplicants);
                 App.stats.updateStatCards(stats, periodLabel);
-                
+
                 if (window.Chart && Object.keys(App.state.charts.instances).length > 0) {
                     App.charts.updateData(filteredApplicants);
                 }
@@ -1523,7 +1581,7 @@ const App = {
                         responsive: true,
                         maintainAspectRatio: false,
                         scales: {
-                            y: { 
+                            y: {
                                 beginAtZero: true,
                                 ticks: { stepSize: 1 }
                             }
@@ -1543,10 +1601,10 @@ const App = {
                         datasets: [{
                             data: [1],
                             backgroundColor: [
-                                App.config.CHART_COLORS.primary, 
-                                App.config.CHART_COLORS.success, 
-                                App.config.CHART_COLORS.warning, 
-                                App.config.CHART_COLORS.danger, 
+                                App.config.CHART_COLORS.primary,
+                                App.config.CHART_COLORS.success,
+                                App.config.CHART_COLORS.warning,
+                                App.config.CHART_COLORS.danger,
                                 App.config.CHART_COLORS.orange
                             ]
                         }]
@@ -1616,7 +1674,7 @@ const App = {
         updateData(filteredData) {
             const routeIndex = App.state.data.headers.indexOf('지원루트');
             const positionIndex = App.state.data.headers.indexOf('모집분야');
-            
+
             App.charts.updateRouteChart(filteredData, routeIndex);
             App.charts.updatePositionChart(filteredData, positionIndex);
             App.charts.updateRegionChart(filteredData);
@@ -1658,19 +1716,19 @@ const App = {
 
         updateRegionChart(filteredData) {
             const addressIndex = App.state.data.headers.indexOf('지역');
-            
+
             if (addressIndex === -1 || !App.state.charts.instances.region) return;
-            
+
             const regionData = {};
-            
+
             filteredData.forEach(row => {
                 const address = String(row[addressIndex] || '').trim();
                 if (!address || address === '-') return;
-                
+
                 let region = App.utils.extractRegion(address);
                 regionData[region] = (regionData[region] || 0) + 1;
             });
-            
+
             if (Object.keys(regionData).length === 0) {
                 App.state.charts.instances.region.data.labels = ['데이터 없음'];
                 App.state.charts.instances.region.data.datasets[0].data = [1];
@@ -1678,24 +1736,24 @@ const App = {
                 App.state.charts.instances.region.data.labels = Object.keys(regionData);
                 App.state.charts.instances.region.data.datasets[0].data = Object.values(regionData);
             }
-            
+
             App.state.charts.instances.region.update();
         },
 
         updateGenderChart(filteredData) {
             const genderIndex = App.state.data.headers.indexOf('성별');
-            
+
             if (genderIndex === -1 || !App.state.charts.instances.gender) return;
-            
+
             const genderData = {};
-            
+
             filteredData.forEach(row => {
                 const gender = String(row[genderIndex] || '').trim();
                 if (!gender || gender === '-') return;
-                
+
                 genderData[gender] = (genderData[gender] || 0) + 1;
             });
-            
+
             if (Object.keys(genderData).length === 0) {
                 App.state.charts.instances.gender.data.labels = ['데이터 없음'];
                 App.state.charts.instances.gender.data.datasets[0].data = [1];
@@ -1703,15 +1761,15 @@ const App = {
                 App.state.charts.instances.gender.data.labels = Object.keys(genderData);
                 App.state.charts.instances.gender.data.datasets[0].data = Object.values(genderData);
             }
-            
+
             App.state.charts.instances.gender.update();
         },
 
         updateAgeChart(filteredData) {
             const ageIndex = App.state.data.headers.indexOf('나이');
-            
+
             if (ageIndex === -1 || !App.state.charts.instances.age) return;
-            
+
             const ageGroupData = {
                 '20대 이하': 0,
                 '30대': 0,
@@ -1719,21 +1777,21 @@ const App = {
                 '50대': 0,
                 '60대 이상': 0
             };
-            
+
             filteredData.forEach(row => {
                 const ageStr = String(row[ageIndex] || '').trim();
                 if (!ageStr || ageStr === '-') return;
-                
+
                 const age = parseInt(ageStr, 10);
                 if (isNaN(age)) return;
-                
+
                 if (age <= 29) ageGroupData['20대 이하']++;
                 else if (age <= 39) ageGroupData['30대']++;
                 else if (age <= 49) ageGroupData['40대']++;
                 else if (age <= 59) ageGroupData['50대']++;
                 else ageGroupData['60대 이상']++;
             });
-            
+
             App.state.charts.instances.age.data.labels = Object.keys(ageGroupData);
             App.state.charts.instances.age.data.datasets[0].data = Object.values(ageGroupData);
             App.state.charts.instances.age.update();
@@ -1746,11 +1804,11 @@ const App = {
     efficiency: {
         switchTab(tabName) {
             App.state.charts.currentEfficiencyTab = tabName;
-            
+
             document.querySelectorAll('.efficiency-tab-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.tab === tabName);
             });
-            
+
             App.efficiency.update();
         },
 
@@ -1761,7 +1819,7 @@ const App = {
             }
 
             const contentDiv = document.getElementById('efficiencyTabContent');
-            
+
             if (App.state.charts.currentEfficiencyTab === 'route') {
                 App.efficiency.updateRoute(filteredData);
             } else if (App.state.charts.currentEfficiencyTab === 'recruiter') {
@@ -1774,15 +1832,15 @@ const App = {
         updateRoute(filteredData) {
             try {
                 const routeIndex = App.state.data.headers.indexOf('지원루트');
-                
+
                 if (routeIndex === -1) {
                     document.getElementById('efficiencyTabContent').innerHTML = '<p style="text-align: center; padding: 20px; color: var(--text-secondary);">지원루트 데이터를 찾을 수 없습니다.</p>';
                     return;
                 }
-                
+
                 const routeStats = App.efficiency.calculateStats(filteredData, routeIndex);
                 App.efficiency.renderTable(routeStats, '지원루트');
-                
+
             } catch (error) {
                 console.error('지원루트 효율성 분석 업데이트 실패:', error);
                 document.getElementById('efficiencyTabContent').innerHTML = '<p style="text-align: center; padding: 20px; color: var(--danger);">분석 중 오류가 발생했습니다.</p>';
@@ -1792,15 +1850,15 @@ const App = {
         updateRecruiter(filteredData) {
             try {
                 const recruiterIndex = App.state.data.headers.indexOf('증원자');
-                
+
                 if (recruiterIndex === -1) {
                     document.getElementById('efficiencyTabContent').innerHTML = '<p style="text-align: center; padding: 20px; color: var(--text-secondary);">증원자 데이터를 찾을 수 없습니다.</p>';
                     return;
                 }
-                
+
                 const recruiterStats = App.efficiency.calculateStats(filteredData, recruiterIndex);
                 App.efficiency.renderTable(recruiterStats, '증원자');
-                
+
             } catch (error) {
                 console.error('증원자별 효율성 분석 업데이트 실패:', error);
                 document.getElementById('efficiencyTabContent').innerHTML = '<p style="text-align: center; padding: 20px; color: var(--danger);">분석 중 오류가 발생했습니다.</p>';
@@ -1810,15 +1868,15 @@ const App = {
         updateInterviewer(filteredData) {
             try {
                 const interviewerIndex = App.state.data.headers.indexOf('면접자');
-                
+
                 if (interviewerIndex === -1) {
                     document.getElementById('efficiencyTabContent').innerHTML = '<p style="text-align: center; padding: 20px; color: var(--text-secondary);">면접자 데이터를 찾을 수 없습니다.</p>';
                     return;
                 }
-                
+
                 const interviewerStats = App.efficiency.calculateStats(filteredData, interviewerIndex);
                 App.efficiency.renderTable(interviewerStats, '면접자');
-                
+
             } catch (error) {
                 console.error('면접관별 효율성 분석 업데이트 실패:', error);
                 document.getElementById('efficiencyTabContent').innerHTML = '<p style="text-align: center; padding: 20px; color: var(--danger);">분석 중 오류가 발생했습니다.</p>';
@@ -1829,13 +1887,13 @@ const App = {
             const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
             const interviewResultIndex = App.state.data.headers.indexOf('면접결과');
             const joinDateIndex = App.state.data.headers.indexOf('입과일');
-            
+
             const stats = {};
-            
+
             filteredData.forEach(row => {
                 const category = String(row[categoryIndex] || '').trim();
                 if (!category || category === '-') return;
-                
+
                 if (!stats[category]) {
                     stats[category] = {
                         total: 0,
@@ -1845,27 +1903,27 @@ const App = {
                         joined: 0
                     };
                 }
-                
+
                 stats[category].total++;
-                
+
                 if (contactResultIndex !== -1) {
                     const contactResult = String(row[contactResultIndex] || '').trim();
                     if (contactResult !== '' && contactResult !== '-') {
                         stats[category].contacted++;
                     }
-                    
+
                     if (contactResult === '면접확정') {
                         stats[category].interviewConfirmed++;
                     }
                 }
-                
+
                 if (interviewResultIndex !== -1) {
                     const interviewResult = String(row[interviewResultIndex] || '').trim();
                     if (interviewResult === '합격') {
                         stats[category].passed++;
                     }
                 }
-                
+
                 if (joinDateIndex !== -1) {
                     const joinDate = String(row[joinDateIndex] || '').trim();
                     if (joinDate !== '' && joinDate !== '-') {
@@ -1873,7 +1931,7 @@ const App = {
                     }
                 }
             });
-            
+
             return stats;
         },
 
@@ -1883,9 +1941,9 @@ const App = {
                 const passRate = data.interviewConfirmed > 0 ? (data.passed / data.interviewConfirmed) * 100 : 0;
                 const joinRate = data.total > 0 ? (data.joined / data.total) * 100 : 0;
                 const volumeWeight = Math.min(data.total / Math.max(...Object.values(stats).map(s => s.total)), 1) * 100;
-                
+
                 const efficiencyScore = (joinRate * 0.4) + (passRate * 0.3) + (interviewConfirmRate * 0.2) + (volumeWeight * 0.1);
-                
+
                 return {
                     name,
                     ...data,
@@ -1895,7 +1953,7 @@ const App = {
                     efficiencyScore: Math.round(efficiencyScore * 10) / 10
                 };
             }).sort((a, b) => b.efficiencyScore - a.efficiencyScore);
-            
+
             let tableHtml = `
                 <div style="overflow-x: auto;">
                     <table class="efficiency-table" style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
@@ -1914,12 +1972,12 @@ const App = {
                         </thead>
                         <tbody>
             `;
-            
+
             dataArray.forEach((item, index) => {
                 const rankColor = index === 0 ? 'var(--success)' : index === 1 ? 'var(--warning)' : index === 2 ? 'var(--accent-orange)' : 'var(--text-primary)';
                 const rankIcon = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
                 const rankClass = index === 0 ? 'efficiency-rank-1' : index === 1 ? 'efficiency-rank-2' : index === 2 ? 'efficiency-rank-3' : '';
-                
+
                 tableHtml += `
                     <tr class="${rankClass}" style="border-bottom: 1px solid var(--border-color); transition: all 0.2s ease;" onmouseover="this.style.transform='translateX(2px)'" onmouseout="this.style.transform='translateX(0)'">
                         <td style="padding: 12px; font-weight: 600; color: ${rankColor};">${rankIcon} ${item.name}</td>
@@ -1934,7 +1992,7 @@ const App = {
                     </tr>
                 `;
             });
-            
+
             tableHtml += `
                         </tbody>
                     </table>
@@ -1943,7 +2001,7 @@ const App = {
                     <strong>📊 효율성 점수 계산법:</strong> (입과율 × 0.4) + (합격률 × 0.3) + (면접확정률 × 0.2) + (총지원자수 가중치 × 0.1)
                 </div>
             `;
-            
+
             document.getElementById('efficiencyTabContent').innerHTML = tableHtml;
         }
     },
@@ -1954,11 +2012,11 @@ const App = {
     trend: {
         switchTab(period) {
             App.state.charts.currentTrendTab = period;
-            
+
             document.querySelectorAll('.trend-tab-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.period === period);
             });
-            
+
             App.trend.update();
         },
 
@@ -1966,7 +2024,7 @@ const App = {
             if (!applyDateIndex) {
                 applyDateIndex = App.state.data.headers.indexOf('지원일');
             }
-            
+
             if (applyDateIndex === -1 || !App.state.charts.instances.trend) return;
 
             let trendData = {};
@@ -1993,14 +2051,14 @@ const App = {
 
         getAllTrendData(applyDateIndex) {
             const trendData = {};
-            
+
             for (let i = 11; i >= 0; i--) {
                 const date = new Date();
                 date.setMonth(date.getMonth() - i);
                 const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
                 trendData[key] = 0;
             }
-            
+
             App.state.data.all.forEach(row => {
                 if (!row[applyDateIndex]) return;
                 try {
@@ -2011,7 +2069,7 @@ const App = {
                     }
                 } catch (e) {}
             });
-            
+
             const labels = Object.keys(trendData).map(key => {
                 const [year, month] = key.split('-');
                 return `${year}.${month}`;
@@ -2023,12 +2081,12 @@ const App = {
         getYearTrendData(applyDateIndex) {
             const trendData = {};
             const currentYear = new Date().getFullYear();
-            
+
             for (let i = 4; i >= 0; i--) {
                 const year = currentYear - i;
                 trendData[year] = 0;
             }
-            
+
             App.state.data.all.forEach(row => {
                 if (!row[applyDateIndex]) return;
                 try {
@@ -2039,21 +2097,21 @@ const App = {
                     }
                 } catch (e) {}
             });
-            
+
             const labels = Object.keys(trendData).map(year => `${year}년`);
-            
+
             return { data: trendData, labels };
         },
 
         getMonthTrendData(applyDateIndex) {
             const trendData = {};
             const currentYear = new Date().getFullYear();
-            
+
             for (let i = 1; i <= 12; i++) {
                 const key = `${currentYear}-${i.toString().padStart(2, '0')}`;
                 trendData[key] = 0;
             }
-            
+
             App.state.data.all.forEach(row => {
                 if (!row[applyDateIndex]) return;
                 try {
@@ -2066,12 +2124,12 @@ const App = {
                     }
                 } catch (e) {}
             });
-            
+
             const labels = Object.keys(trendData).map(key => {
                 const [year, month] = key.split('-');
                 return `${month}월`;
             });
-            
+
             return { data: trendData, labels };
         }
     },
@@ -2106,13 +2164,13 @@ const App = {
         formatDate(dateValue) {
             try {
                 const date = new Date(dateValue);
-                return date.toLocaleDateString('ko-KR', { 
-                    year: 'numeric', 
-                    month: '2-digit', 
-                    day: '2-digit' 
+                return date.toLocaleDateString('ko-KR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
                 });
-            } catch (e) { 
-                return String(dateValue || ''); 
+            } catch (e) {
+                return String(dateValue || '');
             }
         },
 
@@ -2133,16 +2191,16 @@ const App = {
         getInterviewUrgency(interviewDate) {
             if (!interviewDate) return -1;
             try {
-                const today = new Date(); 
+                const today = new Date();
                 today.setHours(0, 0, 0, 0);
-                const date = new Date(interviewDate); 
+                const date = new Date(interviewDate);
                 date.setHours(0, 0, 0, 0);
                 const diffTime = date.getTime() - today.getTime();
                 const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
                 if (diffDays >= 0 && diffDays <= 2) return diffDays;
                 return -1;
-            } catch (e) { 
-                return -1; 
+            } catch (e) {
+                return -1;
             }
         },
 
@@ -2150,13 +2208,13 @@ const App = {
             if (!value) return '';
             const valueStr = String(value).trim();
             if (valueStr === '') return '';
-            
+
             const statusMap = {
                 '합격': 'status-합격', '입과': 'status-입과', '출근': 'status-출근',
                 '불합격': 'status-불합격', '거절': 'status-거절', '미참석': 'status-미참석',
                 '보류': 'status-보류', '면접확정': 'status-면접확정', '대기': 'status-대기'
             };
-            
+
             for (const [status, className] of Object.entries(statusMap)) {
                 if (valueStr.includes(status)) return className;
             }
@@ -2168,23 +2226,23 @@ const App = {
                 const sortIndex = App.state.data.headers.indexOf(App.state.ui.currentSortColumn);
                 if (sortIndex !== -1) {
                     data.sort((a, b) => {
-                        let valA = a[sortIndex]; 
+                        let valA = a[sortIndex];
                         let valB = b[sortIndex];
-                        
-                        if (App.state.ui.currentSortColumn === '지원일' || 
-                            App.state.ui.currentSortColumn.includes('날짜') || 
-                            App.state.ui.currentSortColumn.includes('날자') || 
+
+                        if (App.state.ui.currentSortColumn === '지원일' ||
+                            App.state.ui.currentSortColumn.includes('날짜') ||
+                            App.state.ui.currentSortColumn.includes('날자') ||
                             App.state.ui.currentSortColumn.includes('입과일')) {
-                            valA = new Date(valA || '1970-01-01'); 
+                            valA = new Date(valA || '1970-01-01');
                             valB = new Date(valB || '1970-01-01');
                         } else if (['나이', '구분'].includes(App.state.ui.currentSortColumn)) {
-                            valA = Number(valA) || 0; 
+                            valA = Number(valA) || 0;
                             valB = Number(valB) || 0;
                         } else {
-                            valA = String(valA || '').toLowerCase(); 
+                            valA = String(valA || '').toLowerCase();
                             valB = String(valB || '').toLowerCase();
                         }
-                        
+
                         if (valA < valB) return App.state.ui.currentSortDirection === 'asc' ? -1 : 1;
                         if (valA > valB) return App.state.ui.currentSortDirection === 'asc' ? 1 : -1;
                         return 0;
@@ -2218,7 +2276,7 @@ const App = {
         filterDataByPeriod(data, selectedPeriod, applyDateIndex, now) {
             let filteredData = [...data];
             let label = '전체 기간';
-            
+
             if (selectedPeriod === 'year') {
                 const currentYear = now.getFullYear();
                 filteredData = data.filter(row => {
@@ -2230,7 +2288,7 @@ const App = {
                     } catch (e) { return false; }
                 });
                 label = `${currentYear}년`;
-                
+
             } else if (selectedPeriod === 'month') {
                 const currentMonth = now.getMonth() + 1;
                 const currentYear = now.getFullYear();
@@ -2243,7 +2301,7 @@ const App = {
                     } catch (e) { return false; }
                 });
                 label = `${currentYear}.${currentMonth.toString().padStart(2, '0')}`;
-                
+
             } else if (selectedPeriod === 'week') {
                 const weekStart = new Date(now);
                 weekStart.setDate(now.getDate() - now.getDay());
@@ -2251,7 +2309,7 @@ const App = {
                 const weekEnd = new Date(weekStart);
                 weekEnd.setDate(weekStart.getDate() + 6);
                 weekEnd.setHours(23, 59, 59, 999);
-                
+
                 filteredData = data.filter(row => {
                     try {
                         const dateValue = row[applyDateIndex];
@@ -2262,26 +2320,26 @@ const App = {
                 });
                 label = '이번 주';
             }
-            
+
             return { data: filteredData, label };
         },
 
         getFilteredDataByPeriod(selectedPeriod) {
             const applyDateIndex = App.state.data.headers.indexOf('지원일');
             let filteredApplicants = [...App.state.data.all];
-            
+
             if (applyDateIndex !== -1 && selectedPeriod !== 'all') {
                 const now = new Date();
-                
+
                 if (selectedPeriod === 'custom') {
                     const startDate = document.getElementById('statsStartDate')?.value;
                     const endDate = document.getElementById('statsEndDate')?.value;
-                    
+
                     if (startDate && endDate) {
                         const start = new Date(startDate);
                         const end = new Date(endDate);
                         end.setHours(23, 59, 59, 999);
-                        
+
                         filteredApplicants = App.state.data.all.filter(row => {
                             try {
                                 const dateValue = row[applyDateIndex];
@@ -2296,7 +2354,7 @@ const App = {
                     filteredApplicants = result.data;
                 }
             }
-            
+
             return filteredApplicants;
         },
 
@@ -2417,69 +2475,6 @@ const App = {
                 App.state.ui.visibleColumns[header] = !App.config.DEFAULT_HIDDEN_COLUMNS.includes(header);
             });
         }
-    },
-
-    // =========================
-    // UI 헬퍼 함수들
-    // =========================
-    ui: {
-        showLoadingState(container) {
-            container.innerHTML = `
-                <div class="smooth-loading-container">
-                    <div class="advanced-loading-spinner"></div>
-                    <div class="loading-text">
-                        데이터를 불러오는 중입니다
-                        <div class="loading-dots">
-                            <div class="loading-dot"></div>
-                            <div class="loading-dot"></div>
-                            <div class="loading-dot"></div>
-                        </div>
-                    </div>
-                    <div class="loading-subtext">잠시만 기다려 주세요...</div>
-                    ${App.utils.createProgressBar(25, '연결중...')}
-                </div>`;
-        },
-
-        updateProgress(container, percentage, text) {
-            setTimeout(() => {
-                const progressFill = container.querySelector('.progress-fill');
-                const progressPercentage = container.querySelector('.progress-percentage');
-                const loadingSubtext = container.querySelector('.loading-subtext');
-                
-                if (progressFill && progressPercentage) {
-                    progressFill.style.width = percentage + '%';
-                    progressPercentage.textContent = percentage + '%';
-                }
-                
-                if (loadingSubtext && text) {
-                    loadingSubtext.textContent = text;
-                }
-            }, 200);
-        },
-
-        showErrorState(container, error) {
-            const isNetworkError = error.name === 'TypeError' && error.message.includes('fetch');
-            const canRetry = isNetworkError || error.message.includes('서버에 일시적인');
-            
-            container.innerHTML = `
-                <div class="error-container">
-                    <i class="fas fa-exclamation-triangle error-icon"></i>
-                    <h3 class="error-title">데이터 로드 실패</h3>
-                    <p class="error-message">
-                        ${isNetworkError ? '🌐 인터넷 연결을 확인해주세요.' : error.message}
-                    </p>
-                    <div class="error-actions">
-                        ${canRetry ? `
-                            <button class="primary-btn" onclick="App.data.fetch()">
-                                <i class="fas fa-sync-alt"></i> 다시 시도
-                            </button>
-                        ` : ''}
-                        <button class="secondary-btn" onclick="location.reload()">
-                            <i class="fas fa-redo"></i> 페이지 새로고침
-                        </button>
-                    </div>
-                </div>`;
-        }
     }
 };
 
@@ -2488,8 +2483,8 @@ const App = {
 // =========================
 
 // 모달 관련
-window.onclick = function(event) { 
-    if (event.target == App.modal.element) App.modal.close(); 
+window.onclick = function(event) {
+    if (event.target == App.modal.element) App.modal.close();
 }
 
 // =========================
