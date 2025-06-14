@@ -24,26 +24,32 @@ async function initializeApplication() {
     ui.showLoadingIndicator(true);
     try {
         const rawData = await api.fetchData();
-        
+
         // 데이터 파싱 및 상태 저장
         appState.currentHeaders = (rawData[0] || []).map(h => String(h || '').trim());
         appState.allApplicantData = rawData.slice(1)
             .filter(row => row && Array.isArray(row) && row.some(cell => cell != null && String(cell).trim() !== ''))
             .map(row => row.map(cell => cell == null ? '' : String(cell)));
-        
+
         const gubunIndex = appState.currentHeaders.indexOf('구분');
         if (gubunIndex !== -1 && appState.allApplicantData.length > 0) {
             const sequenceNumbers = appState.allApplicantData.map(row => parseInt(row[gubunIndex], 10)).filter(num => !isNaN(num));
             appState.nextSequenceNumber = sequenceNumbers.length > 0 ? Math.max(...sequenceNumbers) + 1 : 1;
         }
-        
-        // 초기 UI 설정 및 렌더링
+
+        // 초기 UI 설정
         ui.generateVisibleColumns();
         ui.setupColumnToggles();
         ui.populateDropdownFilters();
         charts.initializeCharts();
-        
-        ui.resetFilters(true); // 데이터 정렬 및 첫 페이지 렌더링
+
+        // 👇 이 부분이 변경되었습니다.
+        // 1. 필터 UI와 상태를 초기화만 합니다.
+        ui.resetFilters(); 
+        // 2. 초기 데이터를 화면에 그리기 위해 렌더링 함수를 명시적으로 호출합니다.
+        applyFiltersAndRender();
+
+        // 사이드바 및 기타 UI 업데이트
         ui.updateSidebarWidgets();
         ui.updateInterviewSchedule();
         charts.updateStatistics();
