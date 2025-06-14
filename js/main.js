@@ -37,19 +37,22 @@ async function initializeApplication() {
             appState.nextSequenceNumber = sequenceNumbers.length > 0 ? Math.max(...sequenceNumbers) + 1 : 1;
         }
 
-        // 초기 UI 설정
+        // 초기 UI 요소 설정
         ui.generateVisibleColumns();
         ui.setupColumnToggles();
         ui.populateDropdownFilters();
         charts.initializeCharts();
+        ui.resetFilters(); // 필터 UI와 관련 상태만 초기화
 
-        // 👇 이 부분이 변경되었습니다.
-        // 1. 필터 UI와 상태를 초기화만 합니다.
-        ui.resetFilters(); 
-        // 2. 초기 데이터를 화면에 그리기 위해 렌더링 함수를 명시적으로 호출합니다.
-        applyFiltersAndRender();
+        // --- ✨ 핵심 변경 사항 ✨ ---
+        // 1. 필터링 함수를 거치지 않고, 전체 데이터를 정렬하여 초기 데이터로 바로 설정합니다.
+        appState.filteredData = logic.sortData(appState.allApplicantData);
 
-        // 사이드바 및 기타 UI 업데이트
+        // 2. 화면을 직접 렌더링합니다.
+        ui.render();
+        // --- ✨ 여기까지 ---
+
+        // 나머지 UI 업데이트
         ui.updateSidebarWidgets();
         ui.updateInterviewSchedule();
         charts.updateStatistics();
