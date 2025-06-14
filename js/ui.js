@@ -385,3 +385,12 @@ function getStatusClass(value) {
     }
     return '';
 }
+/**
+ * 기본 설정에 따라 초기에 보여줄 컬럼과 숨길 컬럼을 결정합니다.
+ */
+export function generateVisibleColumns() {
+    appState.ui.visibleColumns = appState.currentHeaders.reduce((acc, header) => {
+        acc[header] = !config.DEFAULT_HIDDEN_COLUMNS.includes(header);
+        return acc;
+    }, {});
+}
