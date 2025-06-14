@@ -302,7 +302,16 @@ function filterDataByPeriod(data, dateIndex, filterConfig) {
 // ===================================================================================
 // 4. UI 렌더링 및 조작
 // ===================================================================================
-
+/**
+ * 필터링된 데이터에서 현재 페이지에 표시할 데이터를 가져옵니다.
+ */
+function getCurrentPageData() {
+    const { currentPage } = appState.pagination;
+    const { PAGINATION_ITEMS_PER_PAGE } = config;
+    const startIndex = (currentPage - 1) * PAGINATION_ITEMS_PER_PAGE;
+    const endIndex = Math.min(startIndex + PAGINATION_ITEMS_PER_PAGE, appState.filteredData.length);
+    return appState.filteredData.slice(startIndex, endIndex);
+}
 function render() {
     if (appState.ui.currentView === 'table') {
         renderTable(getCurrentPageData());
