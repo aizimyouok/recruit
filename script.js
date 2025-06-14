@@ -1063,9 +1063,15 @@ const App = {
                 let value = '';
                 if (data) {
                     value = String(data[index] || '');
-                } else {
+                } else { // This block is for a new registration (since data is null).
                     if (header === '구분') value = App.state.ui.nextSequenceNumber;
-                    else if (header === '지원일') value = new Date().toISOString().split('T')[0];
+                    else if (header === '지원일') {
+                        const now = new Date();
+                        const year = now.getFullYear();
+                        const month = String(now.getMonth() + 1).padStart(2, '0'); // getMonth()는 0부터 시작하므로 +1
+                        const day = String(now.getDate()).padStart(2, '0');
+                        value = `${year}-${month}-${day}`;
+                    }
                 }
 
                 if ((App.config.DATE_FIELDS.includes(header) || header === '지원일') && value && value !== '-') {
