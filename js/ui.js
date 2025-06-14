@@ -394,3 +394,28 @@ export function generateVisibleColumns() {
         return acc;
     }, {});
 }
+/**
+ * '컬럼 설정' 드롭다운 메뉴의 내용을 현재 컬럼 기준으로 생성합니다.
+ */
+export function setupColumnToggles() {
+    const dropdown = document.getElementById('columnToggleDropdown');
+    if (!dropdown) return;
+    dropdown.innerHTML = '';
+    appState.currentHeaders.forEach(header => {
+        const item = document.createElement('div');
+        item.className = 'column-toggle-item';
+        const isChecked = appState.ui.visibleColumns[header] ? 'checked' : '';
+        // data-column 속성을 추가하여 어떤 컬럼인지 식별
+        item.innerHTML = `<input type="checkbox" id="toggle-${header}" <span class="math-inline">\{isChecked\} data\-column\="</span>{header}"><label for="toggle-<span class="math-inline">\{header\}"\></span>{header}</label>`;
+        dropdown.appendChild(item);
+    });
+}
+/**
+ * 컬럼 보이기/숨기기 토글을 처리합니다.
+ * @param {string} columnName - 변경할 컬럼의 이름
+ * @param {boolean} isChecked - 체크박스의 체크 여부
+ */
+export function handleColumnToggle(columnName, isChecked) {
+    appState.ui.visibleColumns[columnName] = isChecked;
+    render(); // 변경된 컬럼에 맞춰 화면을 다시 그립니다.
+}
