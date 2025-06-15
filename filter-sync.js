@@ -8,7 +8,6 @@
 const FilterSync = {
     /**
      * 동기화 모듈을 초기화하고 모든 필터 UI에 이벤트 리스너를 연결합니다.
-     * 이 함수는 App.init.start()의 마지막에 호출되어야 합니다.
      */
     init() {
         this.attachEventListeners('sidebar');
@@ -20,7 +19,6 @@ const FilterSync = {
 
     /**
      * 지정된 위치(location)의 필터 UI 요소들에 이벤트 리스너를 부착합니다.
-     * @param {string} location - 'sidebar', 'dashboard', 'stats', 'efficiency'
      */
     attachEventListeners(location) {
         let periodEl, customContainer;
@@ -29,14 +27,17 @@ const FilterSync = {
             periodEl = document.getElementById('sidebarPeriodFilter');
             customContainer = document.getElementById('sidebarCustomDateRange');
         } else if (location === 'dashboard') {
-            // 현황 페이지는 UI가 동적으로 생성되므로 상위 컨테이너에 이벤트 위임 사용
             document.getElementById('dateModeToggle').addEventListener('click', (e) => {
-                if (e.target.tagName === 'BUTTON') this.applyAndSync('dashboard');
+                if (e.target.tagName === 'BUTTON') {
+                    // 현황 페이지는 App.state.ui.activeDateMode를 먼저 업데이트해야 함
+                    App.state.ui.activeDateMode = e.target.dataset.mode;
+                    this.applyAndSync('dashboard');
+                }
             });
             document.getElementById('dateInputsContainer').addEventListener('change', (e) => {
                  if (e.target.tagName === 'INPUT') this.applyAndSync('dashboard');
             });
-            return; // 아래 로직은 필요 없으므로 반환
+            return;
         } else {
             periodEl = document.getElementById(`${location}PeriodFilter`);
             customContainer = document.getElementById(`${location}CustomDateRange`);
@@ -46,7 +47,6 @@ const FilterSync = {
             periodEl.addEventListener('change', () => this.applyAndSync(location));
         }
         if (customContainer) {
-            // 커스텀 날짜 범위 내의 모든 input과 button에 리스너 추가
             customContainer.querySelectorAll('input, button').forEach(el => {
                 const eventType = el.tagName === 'BUTTON' ? 'click' : 'change';
                 el.addEventListener(eventType, () => this.applyAndSync(location));
@@ -56,20 +56,28 @@ const FilterSync = {
 
     /**
      * 특정 UI 위치에서 현재 필터 값을 읽어 객체로 반환합니다.
+     * [수정] 'year', 'month', 'week' 등에 대한 실제 날짜 계산 로직 추가
      * @param {string} source - 변경이 발생한 UI의 위치
      * @returns {{period: string, startDate: string, endDate: string}}
      */
     readFiltersFrom(source) {
         let period, startDate = '', endDate = '';
+        const now = new Date();
 
+        // [수정] 필터 초기화('reset') 소스에 대한 처리 추가
+        if (source === 'reset') {
+            return { period: 'all', startDate: '', endDate: '' };
+        }
+        
         if (source === 'dashboard') {
-            period = App.state.ui.activeDateMode; // 현황 페이지는 App 객체 상태를 직접 사용
+            period = App.state.ui.activeDateMode;
             if (period === 'range') {
                 startDate = document.getElementById('startDateInput')?.value || '';
                 endDate = document.getElementById('endDateInput')?.value || '';
             } else if (period !== 'all') {
-                startDate = document.getElementById('dateInput')?.value || '';
-                endDate = startDate; // 연,월,일 모드는 시작/종료일이 같음
+                const dateInput = document.getElementById('dateInput');
+                startDate = dateInput ? dateInput.value : '';
+                endDate = startDate; 
             }
         } else {
             const periodEl = document.getElementById(`${source}PeriodFilter`);
@@ -80,53 +88,70 @@ const FilterSync = {
                 const endEl = document.getElementById(`${source}EndDate`);
                 startDate = startEl ? startEl.value : '';
                 endDate = endEl ? endEl.value : '';
+            } else if (period === 'year') {
+                startDate = `${now.getFullYear()}-01-01`;
+                endDate = `${now.getFullYear()}-12-31`;
+            } else if (period === 'month') {
+                const year = now.getFullYear();
+                const month = now.getMonth();
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                startDate = firstDay.toISOString().split('T')[0];
+                endDate = lastDay.toISOString().split('T')[0];
+            } else if (period === 'week') {
+                const first = now.getDate() - now.getDay();
+                const firstDay = new Date(now.setDate(first));
+                const lastDay = new Date(now.setDate(first + 6));
+                startDate = firstDay.toISOString().split('T')[0];
+                endDate = lastDay.toISOString().split('T')[0];
             }
         }
         return { period, startDate, endDate };
     },
-
+    
     /**
-     * 중앙 상태에 따라 특정 UI의 값을 업데이트합니다. (UI 자동 변경 로직)
-     * @param {string} location - 값을 업데이트할 UI의 위치
+     * 중앙 상태에 따라 특정 UI의 값을 업데이트합니다.
      */
     updateUIFor(location) {
         const centralState = App.state.filters;
+        const periodMap = {
+            'year': 'year', 'month': 'month', 'week': 'week',
+            'custom': 'custom', 'range': 'range',
+            'day': 'day', 'all': 'all'
+        };
+        const mappedPeriod = periodMap[centralState.period] || 'all';
 
         if (location === 'dashboard') {
-            // 현황 페이지는 기존의 UI 업데이트 함수를 그대로 활용
-            if (App.state.ui.activeDateMode !== centralState.period) {
-                App.state.ui.activeDateMode = centralState.period;
-                App.filter.updateDateFilterUI();
-            }
-            // 값 설정
-            const dateInput = document.getElementById('dateInput');
-            const startDateInput = document.getElementById('startDateInput');
-            const endDateInput = document.getElementById('endDateInput');
+            App.state.ui.activeDateMode = mappedPeriod;
+            App.filter.updateDateFilterUI(); // UI 구조를 다시 그림
 
-            if (centralState.period === 'range') {
-                if(startDateInput) startDateInput.value = centralState.startDate;
-                if(endDateInput) endDateInput.value = centralState.endDate;
-            } else if (centralState.period !== 'all') {
-                if(dateInput) dateInput.value = centralState.startDate;
-            }
+            // UI가 다시 그려진 후 값 설정
+            setTimeout(() => {
+                if (centralState.period === 'range') {
+                    const startDateInput = document.getElementById('startDateInput');
+                    const endDateInput = document.getElementById('endDateInput');
+                    if(startDateInput) startDateInput.value = centralState.startDate;
+                    if(endDateInput) endDateInput.value = centralState.endDate;
+                } else if (centralState.period !== 'all') {
+                    const dateInput = document.getElementById('dateInput');
+                    if(dateInput) dateInput.value = centralState.startDate;
+                }
+            }, 0);
 
         } else {
             const periodEl = document.getElementById(`${location}PeriodFilter`);
             const customContainer = document.getElementById(`${location}CustomDateRange`);
             const startEl = document.getElementById(`${location}StartDate`);
             const endEl = document.getElementById(`${location}EndDate`);
+            
+            if (periodEl) periodEl.value = mappedPeriod;
 
-            if (periodEl) periodEl.value = centralState.period;
-
-            // 기간 직접입력(custom) UI 표시 여부 처리
+            const isCustom = mappedPeriod === 'custom';
             if (customContainer) {
-                 customContainer.style.display = centralState.period === 'custom' ? 'block' : 'none';
-                 if (location === 'stats' || location === 'efficiency') {
-                     customContainer.style.display = centralState.period === 'custom' ? 'flex' : 'none';
-                 }
+                 customContainer.style.display = isCustom ? (location === 'sidebar' ? 'block' : 'flex') : 'none';
             }
             
-            if (centralState.period === 'custom') {
+            if (isCustom) {
                 if (startEl) startEl.value = centralState.startDate;
                 if (endEl) endEl.value = centralState.endDate;
             }
@@ -135,7 +160,6 @@ const FilterSync = {
 
     /**
      * 변경이 시작된 UI를 제외한 모든 필터 UI를 중앙 상태에 맞춰 업데이트합니다.
-     * @param {string} sourceToSkip - 업데이트에서 제외할 UI 위치
      */
     updateAllUIs(sourceToSkip) {
         const locations = ['sidebar', 'dashboard', 'stats', 'efficiency'];
@@ -148,33 +172,25 @@ const FilterSync = {
 
     /**
      * 동기화 프로세스의 메인 함수입니다.
-     * @param {string} source - 변경을 시작한 UI 위치
      */
     applyAndSync(source) {
-        // 1. 변경된 UI에서 최신 필터 값을 읽어옵니다.
         const newFilters = this.readFiltersFrom(source);
-
-        // 2. 중앙 필터 상태(App.state.filters)를 업데이트합니다.
         App.state.filters = { ...App.state.filters, ...newFilters };
-        
-        // 3. 변경을 시작한 UI를 제외한 나머지 모든 UI의 값을 동기화합니다. (무한루프 방지)
         this.updateAllUIs(source);
 
-        // 4. 동기화된 중앙 상태를 기준으로 모든 페이지의 콘텐츠를 새로고침합니다.
-        console.log(`🔄 Filter sync triggered from '${source}'. Refreshing all components.`);
+        console.log(`🔄 Filter sync triggered from '${source}'. Refreshing all components.`, App.state.filters);
         
-        // 각 컴포넌트의 업데이트 함수가 존재하는지 확인 후 호출
         if (App.sidebar && typeof App.sidebar.updateWidgets === 'function') {
             App.sidebar.updateWidgets();
         }
         if (App.filter && typeof App.filter.apply === 'function') {
-            App.filter.apply(); // 현황 페이지 업데이트
+            App.filter.apply();
         }
         if (App.stats && typeof App.stats.update === 'function') {
-            App.stats.update(); // 통계 페이지 업데이트
+            App.stats.update();
         }
         if (App.efficiency && typeof App.efficiency.updateAll === 'function') {
-            App.efficiency.updateAll(); // 효율성 페이지 업데이트
+            App.efficiency.updateAll();
         }
     }
 };
