@@ -678,26 +678,88 @@
     };
 
     // =========================
-    // 자동 초기화 (개선된 버전)
+    // 자동 초기화 (강화된 버전)
     // =========================
+    let initAttempts = 0;
+    const maxAttempts = 20; // 최대 10초 대기
+
     function waitForApp() {
-        if (window.App && window.App.init && window.App.state) {
-            console.log('✅ App 객체 발견! 필터 동기화 모듈 초기화 시작...');
-            App.filterSync.init();
-        } else {
-            console.log('⏰ App 객체 대기 중...');
+        initAttempts++;
+        
+        console.log(`🔍 App 객체 체크 시도 ${initAttempts}/${maxAttempts}`);
+        console.log('App 존재:', !!window.App);
+        console.log('App.init 존재:', !!(window.App && window.App.init));
+        console.log('App.state 존재:', !!(window.App && window.App.state));
+        console.log('App.data 존재:', !!(window.App && window.App.data));
+        
+        if (window.App && 
+            window.App.init && 
+            window.App.state && 
+            window.App.data &&
+            typeof window.App.init === 'object') {
+            
+            console.log('✅ App 객체 완전 로드 확인! 필터 동기화 모듈 초기화 시작...');
+            
+            try {
+                App.filterSync.init();
+            } catch (error) {
+                console.error('❌ 필터 동기화 초기화 실패:', error);
+            }
+        } else if (initAttempts < maxAttempts) {
+            console.log(`⏰ App 객체 대기 중... (${initAttempts}/${maxAttempts})`);
             setTimeout(waitForApp, 500);
+        } else {
+            console.error('❌ App 객체 로드 타임아웃. 수동 초기화를 시도해주세요.');
+            console.log('💡 브라우저 콘솔에서 "App.filterSync.init()" 입력하여 수동 초기화 가능');
         }
     }
 
-    // DOM 로드 완료 후 App 객체 대기
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
+    // 여러 방법으로 초기화 시도
+    function attemptInitialization() {
+        console.log('🚀 필터 동기화 모듈 초기화 시도 시작...');
+        
+        // 즉시 체크
+        if (window.App && window.App.init && window.App.state && window.App.data) {
+            console.log('✅ 즉시 초기화 가능!');
+            App.filterSync.init();
+            return;
+        }
+        
+        // DOM 로드 완료 대기
+        if (document.readyState === 'loading') {
+            console.log('📄 DOM 로드 대기 중...');
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('📄 DOM 로드 완료, App 객체 대기 시작...');
+                setTimeout(waitForApp, 100);
+            });
+        } else {
+            console.log('📄 DOM 이미 로드됨, App 객체 대기 시작...');
             setTimeout(waitForApp, 100);
-        });
-    } else {
-        setTimeout(waitForApp, 100);
+        }
+
+        // window.onload로도 시도
+        if (window.addEventListener) {
+            window.addEventListener('load', function() {
+                if (!App.filterSync.isInitialized()) {
+                    console.log('🔄 window.onload에서 재시도...');
+                    setTimeout(waitForApp, 200);
+                }
+            });
+        }
     }
+
+    // 수동 초기화 함수 글로벌 등록
+    window.initFilterSync = function() {
+        console.log('🔧 수동 초기화 호출됨...');
+        if (window.App && window.App.filterSync) {
+            App.filterSync.init();
+        } else {
+            console.error('❌ App.filterSync 객체를 찾을 수 없습니다.');
+        }
+    };
+
+    // 초기화 시작
+    attemptInitialization();
 
     console.log('📦 필터 동기화 모듈이 로드되었습니다.');
 
