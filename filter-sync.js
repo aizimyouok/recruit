@@ -678,19 +678,26 @@
     };
 
     // =========================
-    // 자동 초기화
+    // 자동 초기화 (개선된 버전)
     // =========================
-    document.addEventListener('DOMContentLoaded', function() {
-        // App이 완전히 로드된 후 초기화
-        setTimeout(() => {
-    if (window.App && App.init) {
-        App.filterSync.init();
-    } else {
-        console.log('⏰ App 로드 대기 중...');
-        setTimeout(arguments.callee, 500);
+    function waitForApp() {
+        if (window.App && window.App.init && window.App.state) {
+            console.log('✅ App 객체 발견! 필터 동기화 모듈 초기화 시작...');
+            App.filterSync.init();
+        } else {
+            console.log('⏰ App 객체 대기 중...');
+            setTimeout(waitForApp, 500);
+        }
     }
-}, 1000);
-    });
+
+    // DOM 로드 완료 후 App 객체 대기
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(waitForApp, 100);
+        });
+    } else {
+        setTimeout(waitForApp, 100);
+    }
 
     console.log('📦 필터 동기화 모듈이 로드되었습니다.');
 
