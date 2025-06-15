@@ -40,7 +40,8 @@
                 this.loadSavedFilters();
                 this.setupEventListeners();
                 this.createFilterUI();
-                this.syncAllPages();
+                // 초기화 시, 현재 페이지(대시보드)의 필터를 동기화합니다.
+                this.syncToCurrentPage();
                 this.state.isInitialized = true;
                 
                 console.log('✅ 필터 동기화 모듈 초기화 완료!');
@@ -133,7 +134,7 @@
         },
 
         // =========================
-        // 필터 변경 핸들러들
+        // 필터 변경 핸들러들 (수정됨)
         // =========================
         onSidebarFilterChange() {
             const sidebarPeriodFilter = document.getElementById('sidebarPeriodFilter');
@@ -148,15 +149,15 @@
                 this.state.globalFilters.startDate = startDateInput.value;
                 this.state.globalFilters.endDate = endDateInput.value;
             }
-
-            this.syncToAllPages();
+            // 변경된 부분: 모든 페이지의 필터 UI를 업데이트하고 현재 페이지의 데이터를 다시 로드합니다.
+            this.syncFilterUIsAndRefreshData();
         },
 
         onSearchChange() {
             const globalSearch = document.getElementById('globalSearch');
             if (globalSearch) {
                 this.state.globalFilters.search = globalSearch.value;
-                this.syncToAllPages();
+                this.syncFilterUIsAndRefreshData();
             }
         },
 
@@ -172,158 +173,129 @@
                 this.state.globalFilters.position = positionFilter.value;
             }
 
-            this.syncToAllPages();
+            this.syncFilterUIsAndRefreshData();
         },
 
         // =========================
-        // 페이지 동기화
+        // 페이지 동기화 (개선된 로직)
         // =========================
-        syncAllPages() {
-            this.syncToAllPages();
-        },
+        /**
+         * 모든 페이지의 필터 UI를 동기화하고, 현재 활성화된 페이지의 데이터만 새로고침합니다.
+         */
+        syncFilterUIsAndRefreshData() {
+            const filters = this.state.globalFilters;
 
-        syncToAllPages() {
-            // 현재 활성 페이지 확인
+            // 1. 모든 페이지의 필터 UI 컨트롤을 현재 전역 필터 상태와 일치시킵니다.
+            this.syncToDashboardPage(filters);
+            this.syncToStatsPage(filters);
+            this.syncToEfficiencyPage(filters);
+
+            // 2. 현재 활성화된 페이지를 확인하고 해당 페이지의 데이터만 업데이트합니다.
             const activePage = document.querySelector('.page.active');
             if (!activePage) return;
 
-            const pageId = activePage.id;
-
-            // 각 페이지별 필터 동기화
-            this.syncToPage(pageId);
+            try {
+                switch (activePage.id) {
+                    case 'dashboard':
+                        // App.filter.apply()는 dashboard의 필터링 및 뷰 업데이트를 담당합니다.
+                        if (window.App && App.filter && App.filter.apply) {
+                            App.filter.apply();
+                        }
+                        break;
+                    case 'stats':
+                        if (window.App && App.stats && App.stats.update) {
+                            App.stats.update();
+                        }
+                        break;
+                    case 'efficiency':
+                         if (window.App && App.efficiency && App.efficiency.updateAll) {
+                            App.efficiency.updateAll();
+                        }
+                        break;
+                }
+            } catch(e) {
+                console.error(`${activePage.id} 페이지 데이터 새로고침 중 오류 발생:`, e);
+            }
         },
-
+        
+        /**
+         * 페이지 전환 시 호출되어 새롭게 활성화된 페이지의 UI를 동기화합니다.
+         */
         syncToCurrentPage() {
             const activePage = document.querySelector('.page.active');
             if (!activePage) return;
 
-            const pageId = activePage.id;
-            this.syncToPage(pageId);
-        },
-
-        syncToPage(pageId) {
             const filters = this.state.globalFilters;
 
-            try {
-                if (pageId === 'stats') {
+            switch (activePage.id) {
+                case 'dashboard':
+                    this.syncToDashboardPage(filters);
+                    break;
+                case 'stats':
                     this.syncToStatsPage(filters);
-                } else if (pageId === 'efficiency') {
+                    break;
+                case 'efficiency':
                     this.syncToEfficiencyPage(filters);
+                    break;
+            }
+        },
+        
+        syncToDashboardPage(filters) {
+            // 검색 필터 동기화
+            const globalSearch = document.getElementById('globalSearch');
+            if (globalSearch && globalSearch.value !== filters.search) {
+                globalSearch.value = filters.search;
+            }
+
+            // 드롭다운 필터 동기화
+            const routeFilter = document.getElementById('routeFilter');
+            const positionFilter = document.getElementById('positionFilter');
+
+            if (routeFilter && routeFilter.value !== filters.route) {
+                routeFilter.value = filters.route;
+            }
+
+            if (positionFilter && positionFilter.value !== filters.position) {
+                positionFilter.value = filters.position;
+            }
+
+            // ★★★ 추가된 핵심 로직: 대시보드의 날짜 필터 UI 동기화 ★★★
+            if (App.state && App.state.ui) {
+                // 대시보드는 'custom' 대신 'range'를 사용하므로 변환해줍니다.
+                const dashboardDateMode = filters.period === 'custom' ? 'range' : filters.period;
+                App.state.ui.activeDateMode = dashboardDateMode;
+                
+                // script.js에 정의된 날짜 UI 업데이트 함수를 호출합니다.
+                // 이 함수가 날짜 버튼 활성화 및 기간 입력 필드 생성을 담당합니다.
+                if (App.filter && typeof App.filter.updateDateFilterUI === 'function') {
+                    // 날짜 값을 주입하여 UI가 올바르게 생성되도록 합니다.
+                    if (App.filter.dateValues) {
+                        App.filter.dateValues.start = filters.startDate;
+                        App.filter.dateValues.end = filters.endDate;
+                    }
+                    App.filter.updateDateFilterUI();
                 }
-
-                // 대시보드는 항상 동기화 (메인 필터)
-                this.syncToDashboardPage(filters);
-
-            } catch (error) {
-                console.error(`페이지 ${pageId} 동기화 실패:`, error);
             }
         },
 
-        syncToDashboardPage(filters) {
-    // 검색 필터 동기화
-    const globalSearch = document.getElementById('globalSearch');
-    if (globalSearch && globalSearch.value !== filters.search) {
-        globalSearch.value = filters.search;
-    }
+        syncToStatsPage(filters) {
+            const statsPeriodFilter = document.getElementById('statsPeriodFilter');
+            const statsStartDate = document.getElementById('statsStartDate');
+            const statsEndDate = document.getElementById('statsEndDate');
 
-    // 드롭다운 필터 동기화
-    const routeFilter = document.getElementById('routeFilter');
-    const positionFilter = document.getElementById('positionFilter');
-
-    if (routeFilter && routeFilter.value !== filters.route) {
-        routeFilter.value = filters.route;
-    }
-
-    if (positionFilter && positionFilter.value !== filters.position) {
-        positionFilter.value = filters.position;
-    }
-
-    // ===== 새로 추가: 기간 필터 동기화 =====
-    this.syncMainPageDateFilter(filters);
-
-    // 필터 적용
-    if (window.App && App.filter && App.filter.apply) {
-        App.filter.apply();
-    }
-},
-
-// 새로 추가할 함수
-syncMainPageDateFilter(filters) {
-    try {
-        // 메인 페이지의 날짜 모드 버튼들
-        const dateModeButtons = document.querySelectorAll('#dateModeToggle .date-mode-btn');
-        const dateInputsContainer = document.getElementById('dateInputsContainer');
-
-        if (!dateModeButtons.length || !dateInputsContainer) return;
-
-        // 모든 버튼에서 active 클래스 제거
-        dateModeButtons.forEach(btn => btn.classList.remove('active'));
-
-        // 기간에 따른 버튼 활성화 및 입력 필드 설정
-        if (filters.period === 'all') {
-            const allBtn = document.querySelector('#dateModeToggle .date-mode-btn[data-mode="all"]');
-            if (allBtn) allBtn.classList.add('active');
-            dateInputsContainer.innerHTML = '';
-            
-        } else if (filters.period === 'year') {
-            const yearBtn = document.querySelector('#dateModeToggle .date-mode-btn[data-mode="year"]');
-            if (yearBtn) yearBtn.classList.add('active');
-            
-            const currentYear = new Date().getFullYear();
-            dateInputsContainer.innerHTML = `
-                <button class="date-nav-btn" onclick="App.dateFilter.changeYear(-1)">◀</button>
-                <input type="number" value="${currentYear}" min="2020" max="2030" id="yearInput" 
-                       onchange="App.dateFilter.updateYear()" style="width: 80px;">
-                <button class="date-nav-btn" onclick="App.dateFilter.changeYear(1)">▶</button>
-                <button class="apply-btn" onclick="App.filter.apply()">적용</button>
-            `;
-            
-        } else if (filters.period === 'month') {
-            const monthBtn = document.querySelector('#dateModeToggle .date-mode-btn[data-mode="month"]');
-            if (monthBtn) monthBtn.classList.add('active');
-            
-            const now = new Date();
-            const currentYear = now.getFullYear();
-            const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
-            
-            dateInputsContainer.innerHTML = `
-                <button class="date-nav-btn" onclick="App.dateFilter.changeMonth(-1)">◀</button>
-                <input type="month" value="${currentYear}-${currentMonth}" id="monthInput" 
-                       onchange="App.dateFilter.updateMonth()">
-                <button class="date-nav-btn" onclick="App.dateFilter.changeMonth(1)">▶</button>
-                <button class="apply-btn" onclick="App.filter.apply()">적용</button>
-            `;
-            
-        } else if (filters.period === 'custom' && filters.startDate && filters.endDate) {
-            const rangeBtn = document.querySelector('#dateModeToggle .date-mode-btn[data-mode="range"]');
-            if (rangeBtn) rangeBtn.classList.add('active');
-            
-            dateInputsContainer.innerHTML = `
-                <input type="date" value="${filters.startDate}" id="startDateInput" 
-                       onchange="App.dateFilter.updateRange()">
-                <span>~</span>
-                <input type="date" value="${filters.endDate}" id="endDateInput" 
-                       onchange="App.dateFilter.updateRange()">
-                <button class="apply-btn" onclick="App.filter.apply()">적용</button>
-            `;
-        }
-
-        // App.state.ui.activeDateMode 업데이트
-        if (window.App && App.state && App.state.ui) {
-            if (filters.period === 'custom') {
-                App.state.ui.activeDateMode = 'range';
-            } else {
-                App.state.ui.activeDateMode = filters.period;
-            }
-        }
-
-    } catch (error) {
-        console.error('메인 페이지 날짜 필터 동기화 오류:', error);
-    }
-}
-            // 통계 업데이트
-            if (window.App && App.stats && App.stats.update) {
-                setTimeout(() => App.stats.update(), 100);
+            if (statsPeriodFilter) {
+                if (filters.period === 'custom' && filters.startDate && filters.endDate) {
+                    statsPeriodFilter.value = 'custom';
+                    if (statsStartDate) statsStartDate.value = filters.startDate;
+                    if (statsEndDate) statsEndDate.value = filters.endDate;
+                    
+                    const customRange = document.getElementById('statsCustomDateRange');
+                    if (customRange) customRange.style.display = 'flex';
+                } else {
+                    statsPeriodFilter.value = filters.period;
+                    const customRange = document.getElementById('statsCustomDateRange');
+                    if (customRange) customRange.style.display = 'none';
+                }
             }
         },
 
@@ -346,15 +318,10 @@ syncMainPageDateFilter(filters) {
                     if (customRange) customRange.style.display = 'none';
                 }
             }
-
-            // 효율성 분석 업데이트
-            if (window.App && App.efficiency && App.efficiency.updateAll) {
-                setTimeout(() => App.efficiency.updateAll(), 100);
-            }
         },
 
         // =========================
-        // 필터 저장/불러오기
+        // 필터 저장/불러오기 (이하 코드는 변경 없음)
         // =========================
         openSaveDialog() {
             const filterName = prompt('필터 조합에 이름을 지어주세요:', 
@@ -504,11 +471,11 @@ syncMainPageDateFilter(filters) {
             // 전역 필터 상태 업데이트
             this.state.globalFilters = { ...filter.filters };
 
-            // 사이드바 필터 업데이트
+            // 사이드바 필터 UI 업데이트
             this.applySidebarFilters(filter.filters);
 
-            // 모든 페이지 동기화
-            this.syncToAllPages();
+            // 모든 페이지의 필터 UI를 동기화하고 현재 페이지 데이터를 새로고침
+            this.syncFilterUIsAndRefreshData();
 
             this.closeLoadModal();
             this.showNotification(`✅ "${filter.name}" 필터가 적용되었습니다.`);
@@ -518,27 +485,21 @@ syncMainPageDateFilter(filters) {
             const sidebarPeriodFilter = document.getElementById('sidebarPeriodFilter');
             const sidebarStartDate = document.getElementById('sidebarStartDate');
             const sidebarEndDate = document.getElementById('sidebarEndDate');
-            const globalSearch = document.getElementById('globalSearch');
-            const routeFilter = document.getElementById('routeFilter');
-            const positionFilter = document.getElementById('positionFilter');
 
             if (sidebarPeriodFilter) {
                 sidebarPeriodFilter.value = filters.period;
                 
-                if (filters.period === 'custom') {
-                    const customRange = document.getElementById('sidebarCustomDateRange');
-                    if (customRange) customRange.style.display = 'block';
-                    if (sidebarStartDate) sidebarStartDate.value = filters.startDate;
-                    if (sidebarEndDate) sidebarEndDate.value = filters.endDate;
-                } else {
-                    const customRange = document.getElementById('sidebarCustomDateRange');
-                    if (customRange) customRange.style.display = 'none';
+                const customRange = document.getElementById('sidebarCustomDateRange');
+                if (customRange) {
+                    if (filters.period === 'custom') {
+                        customRange.style.display = 'block';
+                        if (sidebarStartDate) sidebarStartDate.value = filters.startDate;
+                        if (sidebarEndDate) sidebarEndDate.value = filters.endDate;
+                    } else {
+                        customRange.style.display = 'none';
+                    }
                 }
             }
-
-            if (globalSearch) globalSearch.value = filters.search;
-            if (routeFilter) routeFilter.value = filters.route;
-            if (positionFilter) positionFilter.value = filters.position;
 
             // 사이드바 위젯 업데이트
             if (window.App && App.sidebar && App.sidebar.updateWidgets) {
@@ -553,7 +514,6 @@ syncMainPageDateFilter(filters) {
                 this.saveSavedFilters();
                 this.updateFavoriteFiltersList();
                 
-                // 모달이 열려있으면 업데이트
                 const savedFiltersList = document.getElementById('savedFiltersList');
                 if (savedFiltersList) {
                     savedFiltersList.innerHTML = this.renderSavedFiltersList();
@@ -570,7 +530,6 @@ syncMainPageDateFilter(filters) {
                 this.saveSavedFilters();
                 this.updateFavoriteFiltersList();
                 
-                // 모달이 열려있으면 업데이트
                 const savedFiltersList = document.getElementById('savedFiltersList');
                 if (savedFiltersList) {
                     savedFiltersList.innerHTML = this.renderSavedFiltersList();
@@ -614,7 +573,6 @@ syncMainPageDateFilter(filters) {
         // =========================
         resetAllFilters() {
             if (confirm('모든 페이지의 필터를 초기화하시겠습니까?')) {
-                // 전역 필터 상태 초기화
                 this.state.globalFilters = {
                     period: 'all',
                     startDate: '',
@@ -624,11 +582,8 @@ syncMainPageDateFilter(filters) {
                     search: ''
                 };
 
-                // 사이드바 필터 초기화
                 this.applySidebarFilters(this.state.globalFilters);
-
-                // 모든 페이지 동기화
-                this.syncToAllPages();
+                this.syncFilterUIsAndRefreshData();
 
                 this.showNotification('🔄 모든 필터가 초기화되었습니다.');
             }
@@ -666,20 +621,17 @@ syncMainPageDateFilter(filters) {
         },
 
         showNotification(message) {
-            // 기존 알림 제거
             const existingNotification = document.querySelector('.filter-notification');
             if (existingNotification) {
                 existingNotification.remove();
             }
 
-            // 새 알림 생성
             const notification = document.createElement('div');
             notification.className = 'filter-notification';
             notification.textContent = message;
             
             document.body.appendChild(notification);
 
-            // 애니메이션 후 제거
             setTimeout(() => {
                 notification.classList.add('show');
             }, 100);
@@ -726,7 +678,7 @@ syncMainPageDateFilter(filters) {
 
         setFilters(filters) {
             this.state.globalFilters = { ...this.state.globalFilters, ...filters };
-            this.syncToAllPages();
+            this.syncFilterUIsAndRefreshData();
         },
 
         isInitialized() {
@@ -744,10 +696,6 @@ syncMainPageDateFilter(filters) {
         initAttempts++;
         
         console.log(`🔍 App 객체 체크 시도 ${initAttempts}/${maxAttempts}`);
-        console.log('App 존재:', !!window.App);
-        console.log('App.init 존재:', !!(window.App && window.App.init));
-        console.log('App.state 존재:', !!(window.App && window.App.state));
-        console.log('App.data 존재:', !!(window.App && window.App.data));
         
         if (window.App && 
             window.App.init && 
