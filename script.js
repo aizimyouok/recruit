@@ -138,7 +138,11 @@ const App = {
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             document.querySelector(`.nav-item[onclick="App.navigation.switchPage('${pageId}')"]`).classList.add('active');
 
-            const titles = { dashboard: '지원자 현황', stats: '통계 분석' };
+            const titles = { 
+                dashboard: '지원자 현황', 
+                stats: '채용 통계 분석',
+                efficiency: '효율성 분석'
+            };
             document.getElementById('pageTitle').textContent = titles[pageId];
 
             if (pageId === 'stats') {
@@ -146,8 +150,14 @@ const App = {
                     if (window.Chart && App.state.data.all.length > 0) {
                         App.charts.initialize();
                         App.stats.update();
-                        App.efficiency.update();
                         App.trend.update();
+                    }
+                }, 100);
+            } else if (pageId === 'efficiency') {
+                setTimeout(() => {
+                    if (window.Chart && App.state.data.all.length > 0) {
+                        App.charts.initializeEfficiency();
+                        App.efficiency.updateAll();
                     }
                 }, 100);
             }
@@ -1463,7 +1473,6 @@ const App = {
                     App.charts.updateData(filteredApplicants);
                 }
 
-                App.efficiency.update(filteredApplicants);
                 App.trend.update(filteredApplicants, applyDateIndex);
 
             } catch (error) {
@@ -1502,10 +1511,27 @@ const App = {
                 App.charts.createGenderChart();
                 App.charts.createAgeChart();
 
-                console.log('📊 차트 초기화 완료');
+                console.log('📊 기본 차트 초기화 완료');
 
             } catch (error) {
-                console.error('차트 초기화 실패:', error);
+                console.error('기본 차트 초기화 실패:', error);
+            }
+        },
+
+        initializeEfficiency() {
+            if (!window.Chart) {
+                console.error('Chart.js가 로드되지 않았습니다.');
+                return;
+            }
+
+            try {
+                App.charts.createRadarChart();
+                App.charts.createScatterChart();
+
+                console.log('📈 효율성 차트 초기화 완료');
+
+            } catch (error) {
+                console.error('효율성 차트 초기화 실패:', error);
             }
         },
 
@@ -1677,6 +1703,86 @@ const App = {
             }
         },
 
+        createRadarChart() {
+            const radarCtx = document.getElementById('radarChart');
+            if (radarCtx && !App.state.charts.instances.radar) {
+                App.state.charts.instances.radar = new Chart(radarCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['지원자 수', '면접확정률', '합격률', '입과율'],
+                        datasets: [{
+                            label: '데이터 로딩 중...',
+                            data: [1, 1, 1, 1],
+                            borderColor: App.config.CHART_COLORS.primary,
+                            backgroundColor: App.config.CHART_COLORS.primary + '30',
+                            pointBackgroundColor: App.config.CHART_COLORS.primary,
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: App.config.CHART_COLORS.primary
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        elements: {
+                            line: {
+                                borderWidth: 3
+                            }
+                        },
+                        scales: {
+                            r: {
+                                angleLines: {
+                                    display: false
+                                },
+                                suggestedMin: 0,
+                                suggestedMax: 100
+                            }
+                        }
+                    }
+                });
+            }
+        },
+
+        createScatterChart() {
+            const scatterCtx = document.getElementById('scatterChart');
+            if (scatterCtx && !App.state.charts.instances.scatter) {
+                App.state.charts.instances.scatter = new Chart(scatterCtx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: '나이-합격률 관계',
+                            data: [{ x: 25, y: 50 }],
+                            backgroundColor: App.config.CHART_COLORS.orange,
+                            borderColor: App.config.CHART_COLORS.orange,
+                            pointRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                position: 'bottom',
+                                title: {
+                                    display: true,
+                                    text: '나이'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: '합격률 (%)'
+                                },
+                                min: 0,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+        },
+
         updateData(filteredData) {
             const routeIndex = App.state.data.headers.indexOf('지원루트');
             const positionIndex = App.state.data.headers.indexOf('모집분야');
@@ -1686,6 +1792,11 @@ const App = {
             App.charts.updateRegionChart(filteredData);
             App.charts.updateGenderChart(filteredData);
             App.charts.updateAgeChart(filteredData);
+        },
+
+        updateEfficiencyCharts(filteredData) {
+            App.charts.updateRadarChart(filteredData);
+            App.charts.updateScatterChart(filteredData);
         },
 
         updateRouteChart(filteredData, routeIndex) {
@@ -1801,6 +1912,124 @@ const App = {
             App.state.charts.instances.age.data.labels = Object.keys(ageGroupData);
             App.state.charts.instances.age.data.datasets[0].data = Object.values(ageGroupData);
             App.state.charts.instances.age.update();
+        },
+
+        updateRadarChart(filteredData) {
+            if (!App.state.charts.instances.radar) return;
+
+            const routeIndex = App.state.data.headers.indexOf('지원루트');
+            const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
+            const interviewResultIndex = App.state.data.headers.indexOf('면접결과');
+            const joinDateIndex = App.state.data.headers.indexOf('입과일');
+
+            if (routeIndex === -1) return;
+
+            const routes = [...new Set(filteredData.map(row => String(row[routeIndex] || '').trim()).filter(Boolean))];
+            const colors = [
+                App.config.CHART_COLORS.primary,
+                App.config.CHART_COLORS.success,
+                App.config.CHART_COLORS.warning,
+                App.config.CHART_COLORS.danger,
+                App.config.CHART_COLORS.orange
+            ];
+
+            const datasets = routes.slice(0, 5).map((route, index) => {
+                const routeData = filteredData.filter(row => String(row[routeIndex] || '').trim() === route);
+                const totalApplicants = routeData.length;
+
+                // 면접확정률 계산
+                let interviewConfirmRate = 0;
+                if (contactResultIndex !== -1) {
+                    const confirmed = routeData.filter(row => String(row[contactResultIndex] || '').trim() === '면접확정').length;
+                    interviewConfirmRate = totalApplicants > 0 ? (confirmed / totalApplicants) * 100 : 0;
+                }
+
+                // 합격률 계산
+                let passRate = 0;
+                if (interviewResultIndex !== -1 && contactResultIndex !== -1) {
+                    const confirmed = routeData.filter(row => String(row[contactResultIndex] || '').trim() === '면접확정');
+                    const passed = confirmed.filter(row => String(row[interviewResultIndex] || '').trim() === '합격');
+                    passRate = confirmed.length > 0 ? (passed.length / confirmed.length) * 100 : 0;
+                }
+
+                // 입과율 계산
+                let joinRate = 0;
+                if (joinDateIndex !== -1) {
+                    const joined = routeData.filter(row => {
+                        const joinDate = String(row[joinDateIndex] || '').trim();
+                        return joinDate !== '' && joinDate !== '-';
+                    }).length;
+                    joinRate = totalApplicants > 0 ? (joined / totalApplicants) * 100 : 0;
+                }
+
+                // 지원자 수 정규화 (최대값 대비 백분율)
+                const maxApplicants = Math.max(...routes.slice(0, 5).map(r => 
+                    filteredData.filter(row => String(row[routeIndex] || '').trim() === r).length
+                ));
+                const normalizedApplicants = maxApplicants > 0 ? (totalApplicants / maxApplicants) * 100 : 0;
+
+                return {
+                    label: route,
+                    data: [normalizedApplicants, interviewConfirmRate, passRate, joinRate],
+                    borderColor: colors[index],
+                    backgroundColor: colors[index] + '30',
+                    pointBackgroundColor: colors[index],
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: colors[index]
+                };
+            });
+
+            App.state.charts.instances.radar.data.datasets = datasets;
+            App.state.charts.instances.radar.update();
+        },
+
+        updateScatterChart(filteredData) {
+            if (!App.state.charts.instances.scatter) return;
+
+            const ageIndex = App.state.data.headers.indexOf('나이');
+            const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
+            const interviewResultIndex = App.state.data.headers.indexOf('면접결과');
+
+            if (ageIndex === -1 || contactResultIndex === -1 || interviewResultIndex === -1) return;
+
+            // 나이별 합격률 계산
+            const ageGroups = {};
+            
+            filteredData.forEach(row => {
+                const ageStr = String(row[ageIndex] || '').trim();
+                const contactResult = String(row[contactResultIndex] || '').trim();
+                const interviewResult = String(row[interviewResultIndex] || '').trim();
+
+                if (!ageStr || ageStr === '-' || contactResult !== '면접확정') return;
+
+                const age = parseInt(ageStr, 10);
+                if (isNaN(age)) return;
+
+                if (!ageGroups[age]) {
+                    ageGroups[age] = { total: 0, passed: 0 };
+                }
+
+                ageGroups[age].total++;
+                if (interviewResult === '합격') {
+                    ageGroups[age].passed++;
+                }
+            });
+
+            // 산점도 데이터 생성
+            const scatterData = Object.entries(ageGroups)
+                .filter(([age, data]) => data.total >= 2) // 최소 2명 이상의 데이터가 있는 경우만
+                .map(([age, data]) => ({
+                    x: parseInt(age),
+                    y: Math.round((data.passed / data.total) * 100)
+                }));
+
+            if (scatterData.length === 0) {
+                scatterData.push({ x: 25, y: 0 }, { x: 35, y: 0 }, { x: 45, y: 0 });
+            }
+
+            App.state.charts.instances.scatter.data.datasets[0].data = scatterData;
+            App.state.charts.instances.scatter.update();
         }
     },
 
@@ -1808,6 +2037,61 @@ const App = {
     // 효율성 분석 관련
     // =========================
     efficiency: {
+        handlePeriodChange() {
+            const selectedPeriod = document.getElementById('efficiencyPeriodFilter').value;
+            const customRange = document.getElementById('efficiencyCustomDateRange');
+
+            if (selectedPeriod === 'custom') {
+                customRange.style.display = 'flex';
+            } else {
+                customRange.style.display = 'none';
+                App.efficiency.updateAll();
+            }
+        },
+
+        updateAll() {
+            const selectedPeriod = document.getElementById('efficiencyPeriodFilter')?.value || 'all';
+            const filteredData = App.efficiency.getFilteredData(selectedPeriod);
+            
+            App.efficiency.update(filteredData);
+            if (App.state.charts.instances.radar || App.state.charts.instances.scatter) {
+                App.charts.updateEfficiencyCharts(filteredData);
+            }
+        },
+
+        getFilteredData(selectedPeriod) {
+            const applyDateIndex = App.state.data.headers.indexOf('지원일');
+            let filteredData = [...App.state.data.all];
+
+            if (applyDateIndex !== -1 && selectedPeriod !== 'all') {
+                if (selectedPeriod === 'custom') {
+                    const startDate = document.getElementById('efficiencyStartDate')?.value;
+                    const endDate = document.getElementById('efficiencyEndDate')?.value;
+
+                    if (startDate && endDate) {
+                        const start = new Date(startDate);
+                        const end = new Date(endDate);
+                        end.setHours(23, 59, 59, 999);
+
+                        filteredData = App.state.data.all.filter(row => {
+                            try {
+                                const dateValue = row[applyDateIndex];
+                                if (!dateValue) return false;
+                                const date = new Date(dateValue);
+                                return date >= start && date <= end;
+                            } catch (e) { return false; }
+                        });
+                    }
+                } else {
+                    const now = new Date();
+                    const result = App.utils.filterDataByPeriod(App.state.data.all, selectedPeriod, applyDateIndex, now);
+                    filteredData = result.data;
+                }
+            }
+
+            return filteredData;
+        },
+
         switchTab(tabName) {
             App.state.charts.currentEfficiencyTab = tabName;
 
@@ -1820,8 +2104,8 @@ const App = {
 
         update(filteredData = null) {
             if (!filteredData) {
-                const selectedPeriod = document.getElementById('statsPeriodFilter')?.value || 'all';
-                filteredData = App.utils.getFilteredDataByPeriod(selectedPeriod);
+                const selectedPeriod = document.getElementById('efficiencyPeriodFilter')?.value || 'all';
+                filteredData = App.efficiency.getFilteredData(selectedPeriod);
             }
 
             const contentDiv = document.getElementById('efficiencyTabContent');
