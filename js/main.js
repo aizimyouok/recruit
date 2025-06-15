@@ -68,6 +68,872 @@ const App = {
     },
 
     // =========================
+    // 사이드바 관련 (추가됨)
+    // =========================
+    sidebar: {
+        handlePeriodChange() {
+            const selectedPeriod = document.getElementById('sidebarPeriodFilter')?.value || 'all';
+            const customRange = document.getElementById('sidebarCustomDateRange');
+
+            if (selectedPeriod === 'custom') {
+                if (customRange) customRange.style.display = 'block';
+            } else {
+                if (customRange) customRange.style.display = 'none';
+                App.sidebar.updateWidgets();
+            }
+        },
+
+        updateWidgets() {
+            const selectedPeriod = document.getElementById('sidebarPeriodFilter')?.value || 'all';
+            const applyDateIndex = App.state.data?.headers?.indexOf('지원일') ?? -1;
+
+            let filteredApplicants = [...(App.state.data?.all || [])];
+            let periodLabel = '전체 기간';
+
+            if (applyDateIndex !== -1 && selectedPeriod !== 'all') {
+                const result = App.sidebar.filterByPeriod(filteredApplicants, selectedPeriod, applyDateIndex);
+                filteredApplicants = result.data;
+                periodLabel = result.label;
+            }
+
+            const stats = App.sidebar.calculateStats(filteredApplicants);
+            App.sidebar.updateUI(stats, periodLabel);
+
+            // 통계 페이지가 활성화되어 있으면 업데이트
+            if (document.getElementById('stats')?.classList.contains('active')) {
+                App.stats.update();
+            }
+        },
+
+        filterByPeriod(data, selectedPeriod, applyDateIndex) {
+            const now = new Date();
+            let filteredData = [...data];
+            let label = '전체 기간';
+
+            if (selectedPeriod === 'custom') {
+                const startDate = document.getElementById('sidebarStartDate')?.value;
+                const endDate = document.getElementById('sidebarEndDate')?.value;
+
+                if (startDate && endDate) {
+                    const start = new Date(startDate);
+                    const end = new Date(endDate);
+                    end.setHours(23, 59, 59, 999);
+
+                    filteredData = data.filter(row => {
+                        try {
+                            const dateValue = row[applyDateIndex];
+                            if (!dateValue) return false;
+                            const date = new Date(dateValue);
+                            return date >= start && date <= end;
+                        } catch (e) { return false; }
+                    });
+
+                    label = `${startDate} ~ ${endDate}`;
+                }
+            } else {
+                const result = App.utils.filterDataByPeriod(data, selectedPeriod, applyDateIndex, now);
+                filteredData = result.data;
+                label = result.label;
+            }
+
+            return { data: filteredData, label };
+        },
+
+        calculateStats(filteredApplicants) {
+            const headers = App.state.data?.headers || [];
+            const contactResultIndex = headers.indexOf('1차 컨택 결과');
+            const interviewResultIndex = headers.indexOf('면접결과');
+            const joinDateIndex = headers.indexOf('입과일');
+
+            const totalCount = filteredApplicants.length;
+
+            let interviewPendingCount = 0;
+            if (contactResultIndex !== -1) {
+                interviewPendingCount = filteredApplicants.filter(row => {
+                    const contactResult = String(row[contactResultIndex] || '').trim();
+                    return contactResult === '면접확정';
+                }).length;
+            }
+
+            let successRate = 0;
+            if (contactResultIndex !== -1 && interviewResultIndex !== -1) {
+                const interviewConfirmed = filteredApplicants.filter(row => {
+                    const contactResult = String(row[contactResultIndex] || '').trim();
+                    return contactResult === '면접확정';
+                });
+
+                const passed = interviewConfirmed.filter(row => {
+                    const interviewResult = String(row[interviewResultIndex] || '').trim();
+                    return interviewResult === '합격';
+                });
+
+                successRate = interviewConfirmed.length > 0 ? Math.round((passed.length / interviewConfirmed.length) * 100) : 0;
+            }
+
+            let joinRate = 0;
+            if (interviewResultIndex !== -1 && joinDateIndex !== -1) {
+                const passedApplicants = filteredApplicants.filter(row => {
+                    const interviewResult = String(row[interviewResultIndex] || '').trim();
+                    return interviewResult === '합격';
+                });
+
+                const joinedApplicants = passedApplicants.filter(row => {
+                    const joinDate = String(row[joinDateIndex] || '').trim();
+                    return joinDate !== '' && joinDate !== '-';
+                });
+
+                joinRate = passedApplicants.length > 0 ? Math.round((joinedApplicants.length / passedApplicants.length) * 100) : 0;
+            }
+
+            return { totalCount, interviewPendingCount, successRate, joinRate };
+        },
+
+        updateUI(stats, periodLabel) {
+            App.utils.updateElement('sidebarTotalApplicants', stats.totalCount);
+            App.utils.updateElement('sidebarPeriodLabel', periodLabel);
+            App.utils.updateElement('sidebarInterviewPending', stats.interviewPendingCount);
+            App.utils.updateElement('sidebarSuccessRate', stats.successRate + '%');
+            App.utils.updateElement('sidebarJoinRate', stats.joinRate + '%');
+        }
+    },
+
+    // =========================
+    // 통계 관련 (추가됨)
+    // =========================
+    stats: {
+        handlePeriodChange() {
+            const selectedPeriod = document.getElementById('statsPeriodFilter')?.value || 'all';
+            const customRange = document.getElementById('statsCustomDateRange');
+
+            if (selectedPeriod === 'custom') {
+                if (customRange) customRange.style.display = 'flex';
+            } else {
+                if (customRange) customRange.style.display = 'none';
+                App.stats.update();
+            }
+        },
+
+        update() {
+            if (!App.state.data?.all || App.state.data.all.length === 0) {
+                console.log('데이터가 없어서 통계 업데이트 불가');
+                return;
+            }
+
+            try {
+                const selectedPeriod = document.getElementById('statsPeriodFilter')?.value || 'all';
+                const applyDateIndex = App.state.data.headers?.indexOf('지원일') ?? -1;
+
+                let filteredApplicants = [...App.state.data.all];
+                let periodLabel = '전체 기간';
+
+                if (applyDateIndex !== -1 && selectedPeriod !== 'all') {
+                    const result = App.stats.filterByPeriod(filteredApplicants, selectedPeriod, applyDateIndex);
+                    filteredApplicants = result.data;
+                    periodLabel = result.label;
+                }
+
+                const stats = App.sidebar.calculateStats(filteredApplicants);
+                App.stats.updateStatCards(stats, periodLabel);
+
+                // 차트 업데이트 (Chart.js가 로드되어 있는 경우에만)
+                if (window.Chart && Object.keys(App.state.charts?.instances || {}).length > 0) {
+                    App.charts.updateData(filteredApplicants);
+                }
+
+                App.efficiency.update(filteredApplicants);
+                App.trend.update(filteredApplicants, applyDateIndex);
+
+            } catch (error) {
+                console.error('❌ 통계 데이터 업데이트 실패:', error);
+            }
+        },
+
+        filterByPeriod(data, selectedPeriod, applyDateIndex) {
+            return App.sidebar.filterByPeriod(data, selectedPeriod, applyDateIndex);
+        },
+
+        updateStatCards(stats, periodLabel) {
+            App.utils.updateElement('totalApplicantsChart', stats.totalCount);
+            App.utils.updateElement('statsTimePeriod', periodLabel);
+            App.utils.updateElement('pendingInterviewChart', stats.interviewPendingCount);
+            App.utils.updateElement('successRateChart', stats.successRate + '%');
+            App.utils.updateElement('joinRateChart', stats.joinRate + '%');
+        }
+    },
+
+    // =========================
+    // 차트 관련 (추가됨)
+    // =========================
+    charts: {
+        initialize() {
+            if (!window.Chart) {
+                console.error('Chart.js가 로드되지 않았습니다.');
+                return;
+            }
+
+            try {
+                App.charts.createRouteChart();
+                App.charts.createPositionChart();
+                App.charts.createTrendChart();
+                App.charts.createRegionChart();
+                App.charts.createGenderChart();
+                App.charts.createAgeChart();
+
+                console.log('📊 차트 초기화 완료');
+
+            } catch (error) {
+                console.error('차트 초기화 실패:', error);
+            }
+        },
+
+        createRouteChart() {
+            const routeCtx = document.getElementById('routeChart');
+            if (routeCtx && !App.state.charts?.instances?.route) {
+                if (!App.state.charts) App.state.charts = { instances: {} };
+                App.state.charts.instances.route = new Chart(routeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['데이터 로딩 중...'],
+                        datasets: [{
+                            data: [1],
+                            backgroundColor: App.config.CHART_COLORS.primary,
+                            borderColor: App.config.CHART_COLORS.primary,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { x: { beginAtZero: true } }
+                    }
+                });
+            }
+        },
+
+        createPositionChart() {
+            const positionCtx = document.getElementById('positionChart');
+            if (positionCtx && !App.state.charts?.instances?.position) {
+                if (!App.state.charts) App.state.charts = { instances: {} };
+                App.state.charts.instances.position = new Chart(positionCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['데이터 로딩 중...'],
+                        datasets: [{
+                            data: [1],
+                            backgroundColor: App.config.CHART_COLORS.success,
+                            borderColor: App.config.CHART_COLORS.success,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { x: { beginAtZero: true } }
+                    }
+                });
+            }
+        },
+
+        createTrendChart() {
+            const trendCtx = document.getElementById('trendChart');
+            if (trendCtx && !App.state.charts?.instances?.trend) {
+                if (!App.state.charts) App.state.charts = { instances: {} };
+                App.state.charts.instances.trend = new Chart(trendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['데이터 로딩 중...'],
+                        datasets: [{
+                            label: '지원자 수',
+                            data: [0],
+                            borderColor: App.config.CHART_COLORS.primary,
+                            backgroundColor: App.config.CHART_COLORS.primary + '20',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                        }
+                    }
+                });
+            }
+        },
+
+        createRegionChart() {
+            const regionCtx = document.getElementById('regionChart');
+            if (regionCtx && !App.state.charts?.instances?.region) {
+                if (!App.state.charts) App.state.charts = { instances: {} };
+                App.state.charts.instances.region = new Chart(regionCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['데이터 로딩 중...'],
+                        datasets: [{
+                            data: [1],
+                            backgroundColor: [
+                                App.config.CHART_COLORS.primary,
+                                App.config.CHART_COLORS.success,
+                                App.config.CHART_COLORS.warning,
+                                App.config.CHART_COLORS.danger,
+                                App.config.CHART_COLORS.orange
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+        },
+
+        createGenderChart() {
+            const genderCtx = document.getElementById('genderChart');
+            if (genderCtx && !App.state.charts?.instances?.gender) {
+                if (!App.state.charts) App.state.charts = { instances: {} };
+                App.state.charts.instances.gender = new Chart(genderCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['데이터 로딩 중...'],
+                        datasets: [{
+                            data: [1],
+                            backgroundColor: [App.config.CHART_COLORS.primary, App.config.CHART_COLORS.warning]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
+        },
+
+        createAgeChart() {
+            const ageCtx = document.getElementById('ageChart');
+            if (ageCtx && !App.state.charts?.instances?.age) {
+                if (!App.state.charts) App.state.charts = { instances: {} };
+                App.state.charts.instances.age = new Chart(ageCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['데이터 로딩 중...'],
+                        datasets: [{
+                            data: [1],
+                            backgroundColor: App.config.CHART_COLORS.success,
+                            borderColor: App.config.CHART_COLORS.success,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+        },
+
+        updateData(filteredData) {
+            const headers = App.state.data?.headers || [];
+            const routeIndex = headers.indexOf('지원루트');
+            const positionIndex = headers.indexOf('모집분야');
+
+            App.charts.updateRouteChart(filteredData, routeIndex);
+            App.charts.updatePositionChart(filteredData, positionIndex);
+            App.charts.updateRegionChart(filteredData);
+            App.charts.updateGenderChart(filteredData);
+            App.charts.updateAgeChart(filteredData);
+        },
+
+        updateRouteChart(filteredData, routeIndex) {
+            if (routeIndex !== -1 && App.state.charts?.instances?.route) {
+                const routeData = {};
+                filteredData.forEach(row => {
+                    const route = String(row[routeIndex] || '').trim();
+                    if (route) {
+                        routeData[route] = (routeData[route] || 0) + 1;
+                    }
+                });
+
+                App.state.charts.instances.route.data.labels = Object.keys(routeData);
+                App.state.charts.instances.route.data.datasets[0].data = Object.values(routeData);
+                App.state.charts.instances.route.update();
+            }
+        },
+
+        updatePositionChart(filteredData, positionIndex) {
+            if (positionIndex !== -1 && App.state.charts?.instances?.position) {
+                const positionData = {};
+                filteredData.forEach(row => {
+                    const position = String(row[positionIndex] || '').trim();
+                    if (position) {
+                        positionData[position] = (positionData[position] || 0) + 1;
+                    }
+                });
+
+                App.state.charts.instances.position.data.labels = Object.keys(positionData);
+                App.state.charts.instances.position.data.datasets[0].data = Object.values(positionData);
+                App.state.charts.instances.position.update();
+            }
+        },
+
+        updateRegionChart(filteredData) {
+            const headers = App.state.data?.headers || [];
+            const addressIndex = headers.indexOf('지역');
+
+            if (addressIndex === -1 || !App.state.charts?.instances?.region) return;
+
+            const regionData = {};
+
+            filteredData.forEach(row => {
+                const address = String(row[addressIndex] || '').trim();
+                if (!address || address === '-') return;
+
+                let region = App.utils.extractRegion(address);
+                regionData[region] = (regionData[region] || 0) + 1;
+            });
+
+            if (Object.keys(regionData).length === 0) {
+                App.state.charts.instances.region.data.labels = ['데이터 없음'];
+                App.state.charts.instances.region.data.datasets[0].data = [1];
+            } else {
+                App.state.charts.instances.region.data.labels = Object.keys(regionData);
+                App.state.charts.instances.region.data.datasets[0].data = Object.values(regionData);
+            }
+
+            App.state.charts.instances.region.update();
+        },
+
+        updateGenderChart(filteredData) {
+            const headers = App.state.data?.headers || [];
+            const genderIndex = headers.indexOf('성별');
+
+            if (genderIndex === -1 || !App.state.charts?.instances?.gender) return;
+
+            const genderData = {};
+
+            filteredData.forEach(row => {
+                const gender = String(row[genderIndex] || '').trim();
+                if (!gender || gender === '-') return;
+
+                genderData[gender] = (genderData[gender] || 0) + 1;
+            });
+
+            if (Object.keys(genderData).length === 0) {
+                App.state.charts.instances.gender.data.labels = ['데이터 없음'];
+                App.state.charts.instances.gender.data.datasets[0].data = [1];
+            } else {
+                App.state.charts.instances.gender.data.labels = Object.keys(genderData);
+                App.state.charts.instances.gender.data.datasets[0].data = Object.values(genderData);
+            }
+
+            App.state.charts.instances.gender.update();
+        },
+
+        updateAgeChart(filteredData) {
+            const headers = App.state.data?.headers || [];
+            const ageIndex = headers.indexOf('나이');
+
+            if (ageIndex === -1 || !App.state.charts?.instances?.age) return;
+
+            const ageGroupData = {
+                '20대 이하': 0,
+                '30대': 0,
+                '40대': 0,
+                '50대': 0,
+                '60대 이상': 0
+            };
+
+            filteredData.forEach(row => {
+                const ageStr = String(row[ageIndex] || '').trim();
+                if (!ageStr || ageStr === '-') return;
+
+                const age = parseInt(ageStr, 10);
+                if (isNaN(age)) return;
+
+                if (age <= 29) ageGroupData['20대 이하']++;
+                else if (age <= 39) ageGroupData['30대']++;
+                else if (age <= 49) ageGroupData['40대']++;
+                else if (age <= 59) ageGroupData['50대']++;
+                else ageGroupData['60대 이상']++;
+            });
+
+            App.state.charts.instances.age.data.labels = Object.keys(ageGroupData);
+            App.state.charts.instances.age.data.datasets[0].data = Object.values(ageGroupData);
+            App.state.charts.instances.age.update();
+        }
+    },
+
+    // =========================
+    // 효율성 분석 관련 (추가됨)
+    // =========================
+    efficiency: {
+        switchTab(tabName) {
+            if (App.state.charts) {
+                App.state.charts.currentEfficiencyTab = tabName;
+            }
+
+            document.querySelectorAll('.efficiency-tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tabName);
+            });
+
+            App.efficiency.update();
+        },
+
+        update(filteredData = null) {
+            if (!filteredData) {
+                const selectedPeriod = document.getElementById('statsPeriodFilter')?.value || 'all';
+                filteredData = App.utils.getFilteredDataByPeriod(selectedPeriod);
+            }
+
+            const currentTab = App.state.charts?.currentEfficiencyTab || 'route';
+
+            if (currentTab === 'route') {
+                App.efficiency.updateRoute(filteredData);
+            } else if (currentTab === 'recruiter') {
+                App.efficiency.updateRecruiter(filteredData);
+            } else if (currentTab === 'interviewer') {
+                App.efficiency.updateInterviewer(filteredData);
+            }
+        },
+
+        updateRoute(filteredData) {
+            try {
+                const headers = App.state.data?.headers || [];
+                const routeIndex = headers.indexOf('지원루트');
+
+                if (routeIndex === -1) {
+                    const contentDiv = document.getElementById('efficiencyTabContent');
+                    if (contentDiv) {
+                        contentDiv.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--text-secondary);">지원루트 데이터를 찾을 수 없습니다.</p>';
+                    }
+                    return;
+                }
+
+                const routeStats = App.efficiency.calculateStats(filteredData, routeIndex);
+                App.efficiency.renderTable(routeStats, '지원루트');
+
+            } catch (error) {
+                console.error('지원루트 효율성 분석 업데이트 실패:', error);
+                const contentDiv = document.getElementById('efficiencyTabContent');
+                if (contentDiv) {
+                    contentDiv.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--danger);">분석 중 오류가 발생했습니다.</p>';
+                }
+            }
+        },
+
+        updateRecruiter(filteredData) {
+            try {
+                const headers = App.state.data?.headers || [];
+                const recruiterIndex = headers.indexOf('증원자');
+
+                if (recruiterIndex === -1) {
+                    const contentDiv = document.getElementById('efficiencyTabContent');
+                    if (contentDiv) {
+                        contentDiv.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--text-secondary);">증원자 데이터를 찾을 수 없습니다.</p>';
+                    }
+                    return;
+                }
+
+                const recruiterStats = App.efficiency.calculateStats(filteredData, recruiterIndex);
+                App.efficiency.renderTable(recruiterStats, '증원자');
+
+            } catch (error) {
+                console.error('증원자별 효율성 분석 업데이트 실패:', error);
+            }
+        },
+
+        updateInterviewer(filteredData) {
+            try {
+                const headers = App.state.data?.headers || [];
+                const interviewerIndex = headers.indexOf('면접자');
+
+                if (interviewerIndex === -1) {
+                    const contentDiv = document.getElementById('efficiencyTabContent');
+                    if (contentDiv) {
+                        contentDiv.innerHTML = '<p style="text-align: center; padding: 20px; color: var(--text-secondary);">면접자 데이터를 찾을 수 없습니다.</p>';
+                    }
+                    return;
+                }
+
+                const interviewerStats = App.efficiency.calculateStats(filteredData, interviewerIndex);
+                App.efficiency.renderTable(interviewerStats, '면접자');
+
+            } catch (error) {
+                console.error('면접관별 효율성 분석 업데이트 실패:', error);
+            }
+        },
+
+        calculateStats(filteredData, categoryIndex) {
+            const headers = App.state.data?.headers || [];
+            const contactResultIndex = headers.indexOf('1차 컨택 결과');
+            const interviewResultIndex = headers.indexOf('면접결과');
+            const joinDateIndex = headers.indexOf('입과일');
+
+            const stats = {};
+
+            filteredData.forEach(row => {
+                const category = String(row[categoryIndex] || '').trim();
+                if (!category || category === '-') return;
+
+                if (!stats[category]) {
+                    stats[category] = {
+                        total: 0,
+                        contacted: 0,
+                        interviewConfirmed: 0,
+                        passed: 0,
+                        joined: 0
+                    };
+                }
+
+                stats[category].total++;
+
+                if (contactResultIndex !== -1) {
+                    const contactResult = String(row[contactResultIndex] || '').trim();
+                    if (contactResult !== '' && contactResult !== '-') {
+                        stats[category].contacted++;
+                    }
+
+                    if (contactResult === '면접확정') {
+                        stats[category].interviewConfirmed++;
+                    }
+                }
+
+                if (interviewResultIndex !== -1) {
+                    const interviewResult = String(row[interviewResultIndex] || '').trim();
+                    if (interviewResult === '합격') {
+                        stats[category].passed++;
+                    }
+                }
+
+                if (joinDateIndex !== -1) {
+                    const joinDate = String(row[joinDateIndex] || '').trim();
+                    if (joinDate !== '' && joinDate !== '-') {
+                        stats[category].joined++;
+                    }
+                }
+            });
+
+            return stats;
+        },
+
+        renderTable(stats, categoryName) {
+            const dataArray = Object.entries(stats).map(([name, data]) => {
+                const interviewConfirmRate = data.total > 0 ? (data.interviewConfirmed / data.total) * 100 : 0;
+                const passRate = data.interviewConfirmed > 0 ? (data.passed / data.interviewConfirmed) * 100 : 0;
+                const joinRate = data.total > 0 ? (data.joined / data.total) * 100 : 0;
+                const volumeWeight = Math.min(data.total / Math.max(...Object.values(stats).map(s => s.total)), 1) * 100;
+
+                const efficiencyScore = (joinRate * 0.4) + (passRate * 0.3) + (interviewConfirmRate * 0.2) + (volumeWeight * 0.1);
+
+                return {
+                    name,
+                    ...data,
+                    interviewConfirmRate: Math.round(interviewConfirmRate),
+                    passRate: Math.round(passRate),
+                    joinRate: Math.round(joinRate),
+                    efficiencyScore: Math.round(efficiencyScore * 10) / 10
+                };
+            }).sort((a, b) => b.efficiencyScore - a.efficiencyScore);
+
+            let tableHtml = `
+                <div style="overflow-x: auto;">
+                    <table class="efficiency-table" style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                        <thead>
+                            <tr style="background: var(--main-bg);">
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--border-color); font-weight: 600;">${categoryName}</th>
+                                <th style="padding: 12px; text-align: center; border-bottom: 2px solid var(--border-color); font-weight: 600;">총 지원자</th>
+                                <th style="padding: 12px; text-align: center; border-bottom: 2px solid var(--border-color); font-weight: 600;">면접확정</th>
+                                <th style="padding: 12px; text-align: center; border-bottom: 2px solid var(--border-color); font-weight: 600;">합격자</th>
+                                <th style="padding: 12px; text-align: center; border-bottom: 2px solid var(--border-color); font-weight: 600;">입과자</th>
+                                <th style="padding: 12px; text-align: center; border-bottom: 2px solid var(--border-color); font-weight: 600;">면접확정률</th>
+                                <th style="padding: 12px; text-align: center; border-bottom: 2px solid var(--border-color); font-weight: 600;">합격률</th>
+                                <th style="padding: 12px; text-align: center; border-bottom: 2px solid var(--border-color); font-weight: 600; color: var(--accent-orange);">최종 입과율</th>
+                                <th style="padding: 12px; text-align: center; border-bottom: 2px solid var(--border-color); font-weight: 600;">효율성 점수</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            dataArray.forEach((item, index) => {
+                const rankColor = index === 0 ? 'var(--success)' : index === 1 ? 'var(--warning)' : index === 2 ? 'var(--accent-orange)' : 'var(--text-primary)';
+                const rankIcon = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+
+                tableHtml += `
+                    <tr style="border-bottom: 1px solid var(--border-color); transition: all 0.2s ease;">
+                        <td style="padding: 12px; font-weight: 600; color: ${rankColor};">${rankIcon} ${item.name}</td>
+                        <td style="padding: 12px; text-align: center; font-weight: 500;">${item.total.toLocaleString()}</td>
+                        <td style="padding: 12px; text-align: center;">${item.interviewConfirmed}</td>
+                        <td style="padding: 12px; text-align: center;">${item.passed}</td>
+                        <td style="padding: 12px; text-align: center;">${item.joined}</td>
+                        <td style="padding: 12px; text-align: center;">${item.interviewConfirmRate}%</td>
+                        <td style="padding: 12px; text-align: center;">${item.passRate}%</td>
+                        <td style="padding: 12px; text-align: center; font-weight: bold; color: var(--accent-orange);">${item.joinRate}%</td>
+                        <td style="padding: 12px; text-align: center; font-weight: bold; color: ${rankColor}; font-size: 1.1rem;">${item.efficiencyScore}</td>
+                    </tr>
+                `;
+            });
+
+            tableHtml += `
+                        </tbody>
+                    </table>
+                </div>
+                <div style="margin-top: 15px; padding: 15px; background: var(--main-bg); border-radius: 8px; font-size: 0.85rem; color: var(--text-secondary);">
+                    <strong>📊 효율성 점수 계산법:</strong> (입과율 × 0.4) + (합격률 × 0.3) + (면접확정률 × 0.2) + (총지원자수 가중치 × 0.1)
+                </div>
+            `;
+
+            const contentDiv = document.getElementById('efficiencyTabContent');
+            if (contentDiv) {
+                contentDiv.innerHTML = tableHtml;
+            }
+        }
+    },
+
+    // =========================
+    // 추이 분석 관련 (추가됨)
+    // =========================
+    trend: {
+        switchTab(period) {
+            if (App.state.charts) {
+                App.state.charts.currentTrendTab = period;
+            }
+
+            document.querySelectorAll('.trend-tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.period === period);
+            });
+
+            App.trend.update();
+        },
+
+        update(filteredData = null, applyDateIndex = null) {
+            if (!applyDateIndex) {
+                applyDateIndex = App.state.data?.headers?.indexOf('지원일') ?? -1;
+            }
+
+            if (applyDateIndex === -1 || !App.state.charts?.instances?.trend) return;
+
+            let trendData = {};
+            let labels = [];
+
+            const currentTab = App.state.charts?.currentTrendTab || 'all';
+
+            if (currentTab === 'all') {
+                const result = App.trend.getAllTrendData(applyDateIndex);
+                trendData = result.data;
+                labels = result.labels;
+            } else if (currentTab === 'year') {
+                const result = App.trend.getYearTrendData(applyDateIndex);
+                trendData = result.data;
+                labels = result.labels;
+            } else if (currentTab === 'month') {
+                const result = App.trend.getMonthTrendData(applyDateIndex);
+                trendData = result.data;
+                labels = result.labels;
+            }
+
+            App.state.charts.instances.trend.data.labels = labels;
+            App.state.charts.instances.trend.data.datasets[0].data = Object.values(trendData);
+            App.state.charts.instances.trend.update();
+        },
+
+        getAllTrendData(applyDateIndex) {
+            const trendData = {};
+
+            for (let i = 11; i >= 0; i--) {
+                const date = new Date();
+                date.setMonth(date.getMonth() - i);
+                const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+                trendData[key] = 0;
+            }
+
+            const allData = App.state.data?.all || [];
+            allData.forEach(row => {
+                if (!row[applyDateIndex]) return;
+                try {
+                    const date = new Date(row[applyDateIndex]);
+                    const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+                    if (trendData.hasOwnProperty(key)) {
+                        trendData[key]++;
+                    }
+                } catch (e) {}
+            });
+
+            const labels = Object.keys(trendData).map(key => {
+                const [year, month] = key.split('-');
+                return `${year}.${month}`;
+            });
+
+            return { data: trendData, labels };
+        },
+
+        getYearTrendData(applyDateIndex) {
+            const trendData = {};
+            const currentYear = new Date().getFullYear();
+
+            for (let i = 4; i >= 0; i--) {
+                const year = currentYear - i;
+                trendData[year] = 0;
+            }
+
+            const allData = App.state.data?.all || [];
+            allData.forEach(row => {
+                if (!row[applyDateIndex]) return;
+                try {
+                    const date = new Date(row[applyDateIndex]);
+                    const year = date.getFullYear();
+                    if (trendData.hasOwnProperty(year)) {
+                        trendData[year]++;
+                    }
+                } catch (e) {}
+            });
+
+            const labels = Object.keys(trendData).map(year => `${year}년`);
+
+            return { data: trendData, labels };
+        },
+
+        getMonthTrendData(applyDateIndex) {
+            const trendData = {};
+            const currentYear = new Date().getFullYear();
+
+            for (let i = 1; i <= 12; i++) {
+                const key = `${currentYear}-${i.toString().padStart(2, '0')}`;
+                trendData[key] = 0;
+            }
+
+            const allData = App.state.data?.all || [];
+            allData.forEach(row => {
+                if (!row[applyDateIndex]) return;
+                try {
+                    const date = new Date(row[applyDateIndex]);
+                    if (date.getFullYear() === currentYear) {
+                        const key = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+                        if (trendData.hasOwnProperty(key)) {
+                            trendData[key]++;
+                        }
+                    }
+                } catch (e) {}
+            });
+
+            const labels = Object.keys(trendData).map(key => {
+                const [year, month] = key.split('-');
+                return `${month}월`;
+            });
+
+            return { data: trendData, labels };
+        }
+    },
+
+    // =========================
     // 모달 관련
     // =========================
     modal: {
