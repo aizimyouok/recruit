@@ -2782,5 +2782,39 @@ window.onclick = function(event) {
 // =========================
 
 document.addEventListener('DOMContentLoaded', () => {
-    App.init.start();
+    try {
+        console.log('🚀 DOM 로드 완료, App 초기화 시작...');
+        console.log('App 객체 존재:', typeof App !== 'undefined');
+        console.log('App.init 존재:', typeof App?.init !== 'undefined');
+        
+        if (typeof App !== 'undefined' && App.init) {
+            App.init.start();
+            console.log('✅ App 초기화 완료!');
+        } else {
+            console.error('❌ App 객체 또는 App.init을 찾을 수 없습니다.');
+        }
+    } catch (error) {
+        console.error('❌ App 초기화 중 오류:', error);
+    }
 });
+
+// 전역 등록 확실히 하기
+if (typeof App !== 'undefined') {
+    window.App = App;
+    console.log('✅ App 객체가 전역에 등록되었습니다.');
+} else {
+    console.error('❌ App 객체가 정의되지 않았습니다. script.js에 오류가 있을 수 있습니다.');
+}
+
+// 디버깅을 위한 전역 함수
+window.debugApp = function() {
+    console.log('=== App 객체 디버그 정보 ===');
+    console.log('App 정의됨:', typeof App !== 'undefined');
+    console.log('window.App 정의됨:', typeof window.App !== 'undefined');
+    console.log('App 내용:', App);
+    if (typeof App !== 'undefined') {
+        console.log('App.init:', typeof App.init);
+        console.log('App.state:', typeof App.state);
+        console.log('App.data:', typeof App.data);
+    }
+};
