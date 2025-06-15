@@ -2060,3 +2060,392 @@ button:focus, .nav-item:focus {
         display: none; 
     }
 }
+
+/* =========================
+   필터 동기화 모듈 스타일
+   ========================= */
+
+/* 필터 관리 위젯 */
+.filter-management-widget {
+    background: linear-gradient(135deg, rgba(167, 139, 250, 0.1), rgba(167, 139, 250, 0.05)) !important;
+}
+
+.filter-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.filter-save-btn, 
+.filter-load-btn, 
+.filter-reset-all-btn {
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.filter-save-btn {
+    background: var(--sidebar-accent);
+    color: white;
+}
+
+.filter-save-btn:hover {
+    background: var(--success);
+    transform: translateY(-1px);
+}
+
+.filter-load-btn {
+    background: var(--accent-orange);
+    color: white;
+}
+
+.filter-load-btn:hover {
+    background: var(--warning);
+    transform: translateY(-1px);
+}
+
+.filter-reset-all-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--sidebar-text);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.filter-reset-all-btn:hover {
+    background: rgba(239, 68, 68, 0.8);
+    border-color: var(--danger);
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* 즐겨찾기 필터 */
+.favorite-filters {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.no-favorites {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center;
+    padding: 10px 0;
+    font-style: italic;
+}
+
+.favorite-filter-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    margin: 4px 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
+}
+
+.favorite-filter-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(3px);
+}
+
+.favorite-filter-item i {
+    color: #fbbf24;
+    font-size: 0.7rem;
+}
+
+.favorite-filter-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 필터 로드 모달 */
+.filter-load-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    animation: fadeIn 0.3s ease;
+}
+
+.filter-load-modal-content {
+    background: var(--content-bg);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+.filter-load-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 2px solid var(--border-color);
+    background: linear-gradient(135deg, var(--sidebar-accent), #a78bfa);
+    color: white;
+}
+
+.filter-load-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.filter-modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.filter-modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
+
+.filter-load-body {
+    padding: 20px 25px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.saved-filters-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.no-filters {
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+    padding: 40px 20px;
+}
+
+.saved-filter-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    background: var(--content-bg);
+}
+
+.saved-filter-item:hover {
+    border-color: var(--sidebar-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(129, 140, 248, 0.15);
+}
+
+.saved-filter-item.favorite {
+    border-color: #fbbf24;
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(251, 191, 36, 0.05));
+}
+
+.filter-info {
+    flex: 1;
+}
+
+.filter-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-name i {
+    color: #fbbf24;
+}
+
+.filter-details {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+    line-height: 1.4;
+}
+
+.filter-date {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    opacity: 0.8;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: 15px;
+}
+
+.filter-action-btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 70px;
+    justify-content: center;
+}
+
+.filter-action-btn.load-btn {
+    background: var(--success);
+    color: white;
+}
+
+.filter-action-btn.load-btn:hover {
+    background: #059669;
+    transform: translateY(-1px);
+}
+
+.filter-action-btn.favorite-btn {
+    background: #fbbf24;
+    color: white;
+}
+
+.filter-action-btn.favorite-btn:hover {
+    background: #f59e0b;
+    transform: translateY(-1px);
+}
+
+.filter-action-btn.delete-btn {
+    background: var(--danger);
+    color: white;
+}
+
+.filter-action-btn.delete-btn:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
+/* 알림 메시지 */
+.filter-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, var(--success), #059669);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    z-index: 3000;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transform: translateX(400px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 4px solid rgba(255, 255, 255, 0.8);
+}
+
+.filter-notification.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.filter-notification::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: notification-shine 2s infinite;
+}
+
+@keyframes notification-shine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .filter-load-modal-content {
+        width: 95%;
+        margin: 0 10px;
+    }
+    
+    .filter-load-header {
+        padding: 15px 20px;
+    }
+    
+    .filter-load-header h3 {
+        font-size: 1.1rem;
+    }
+    
+    .filter-load-body {
+        padding: 15px 20px;
+    }
+    
+    .saved-filter-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+    
+    .filter-actions {
+        margin-left: 0;
+        justify-content: center;
+    }
+    
+    .filter-notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        font-size: 0.85rem;
+        padding: 12px 15px;
+    }
+    
+    .filter-controls {
+        gap: 6px;
+    }
+    
+    .filter-save-btn, 
+    .filter-load-btn, 
+    .filter-reset-all-btn {
+        padding: 6px 10px;
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 1024px) {
+    .filter-management-widget {
+        margin-bottom: 10px;
+        padding: 12px;
+    }
+}
