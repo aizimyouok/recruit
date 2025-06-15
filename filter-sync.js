@@ -683,10 +683,13 @@
     document.addEventListener('DOMContentLoaded', function() {
         // App이 완전히 로드된 후 초기화
         setTimeout(() => {
-            if (window.App && App.init) {
-                App.filterSync.init();
-            }
-        }, 1000);
+    if (window.App && App.init) {
+        App.filterSync.init();
+    } else {
+        console.log('⏰ App 로드 대기 중...');
+        setTimeout(arguments.callee, 500);
+    }
+}, 1000);
     });
 
     console.log('📦 필터 동기화 모듈이 로드되었습니다.');
