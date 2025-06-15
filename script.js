@@ -397,3 +397,220 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 console.log('🔧 script.js 실행 완료!');
+
+// App 객체에 다음 부분을 추가하세요:
+
+// =========================
+// 날짜 필터 헬퍼 함수들
+// =========================
+dateFilter: {
+    changeYear(direction) {
+        const yearInput = document.getElementById('yearInput');
+        if (yearInput) {
+            const currentYear = parseInt(yearInput.value);
+            const newYear = currentYear + direction;
+            if (newYear >= 2020 && newYear <= 2030) {
+                yearInput.value = newYear;
+                this.updateYear();
+            }
+        }
+    },
+
+    updateYear() {
+        const yearInput = document.getElementById('yearInput');
+        if (yearInput) {
+            // 필터 동기화 모듈에 알림
+            if (window.App.filterSync) {
+                App.filterSync.state.globalFilters.period = 'year';
+                App.filterSync.state.globalFilters.startDate = `${yearInput.value}-01-01`;
+                App.filterSync.state.globalFilters.endDate = `${yearInput.value}-12-31`;
+                App.filterSync.syncToAllPages();
+            }
+        }
+    },
+
+    changeMonth(direction) {
+        const monthInput = document.getElementById('monthInput');
+        if (monthInput) {
+            const currentDate = new Date(monthInput.value + '-01');
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            
+            const year = currentDate.getFullYear();
+            const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+            monthInput.value = `${year}-${month}`;
+            this.updateMonth();
+        }
+    },
+
+    updateMonth() {
+        const monthInput = document.getElementById('monthInput');
+        if (monthInput) {
+            const [year, month] = monthInput.value.split('-');
+            const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate();
+            
+            // 필터 동기화 모듈에 알림
+            if (window.App.filterSync) {
+                App.filterSync.state.globalFilters.period = 'month';
+                App.filterSync.state.globalFilters.startDate = `${year}-${month}-01`;
+                App.filterSync.state.globalFilters.endDate = `${year}-${month}-${String(lastDay).padStart(2, '0')}`;
+                App.filterSync.syncToAllPages();
+            }
+        }
+    },
+
+    updateRange() {
+        const startDateInput = document.getElementById('startDateInput');
+        const endDateInput = document.getElementById('endDateInput');
+        
+        if (startDateInput && endDateInput && startDateInput.value && endDateInput.value) {
+            // 필터 동기화 모듈에 알림
+            if (window.App.filterSync) {
+                App.filterSync.state.globalFilters.period = 'custom';
+                App.filterSync.state.globalFilters.startDate = startDateInput.value;
+                App.filterSync.state.globalFilters.endDate = endDateInput.value;
+                App.filterSync.syncToAllPages();
+            }
+        }
+    }
+},
+
+// =========================
+// 개선된 필터 적용 함수
+// =========================
+filter: {
+    apply() {
+        console.log('필터 적용 시작...');
+        
+        // 현재 필터 상태 가져오기
+        const filters = window.App.filterSync ? 
+            App.filterSync.getCurrentFilters() : 
+            {
+                search: document.getElementById('globalSearch')?.value || '',
+                route: document.getElementById('routeFilter')?.value || 'all',
+                position: document.getElementById('positionFilter')?.value || 'all',
+                period: App.state.ui.activeDateMode || 'all'
+            };
+
+        console.log('적용할 필터:', filters);
+
+        // 실제 데이터 필터링 로직
+        if (App.state.data.all.length > 0) {
+            App.state.data.filtered = App.state.data.all.filter(item => {
+                // 검색 필터
+                if (filters.search) {
+                    const searchTerm = filters.search.toLowerCase();
+                    const searchableFields = ['이름', '연락처', '비고', '지원루트', '모집분야'];
+                    const hasMatch = searchableFields.some(field => 
+                        item[field] && item[field].toString().toLowerCase().includes(searchTerm)
+                    );
+                    if (!hasMatch) return false;
+                }
+
+                // 지원루트 필터
+                if (filters.route !== 'all' && item['지원루트'] !== filters.route) {
+                    return false;
+                }
+
+                // 모집분야 필터
+                if (filters.position !== 'all' && item['모집분야'] !== filters.position) {
+                    return false;
+                }
+
+                // 기간 필터 (지원일 기준)
+                if (filters.period !== 'all' && filters.startDate && filters.endDate) {
+                    const applyDate = item['지원일'];
+                    if (applyDate) {
+                        const itemDate = new Date(applyDate);
+                        const startDate = new Date(filters.startDate);
+                        const endDate = new Date(filters.endDate);
+                        
+                        if (itemDate < startDate || itemDate > endDate) {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            });
+
+            // 테이블/카드뷰 업데이트
+            if (App.table && App.table.render) {
+                App.table.render();
+            }
+            if (App.pagination && App.pagination.update) {
+                App.pagination.update();
+            }
+        }
+
+        // 필터 요약 업데이트
+        this.updateFilterSummary(filters);
+    },
+
+    updateFilterSummary(filters) {
+        const summaryElement = document.getElementById('filterSummary');
+        if (!summaryElement) return;
+
+        const activeParts = [];
+        
+        if (filters.search) {
+            activeParts.push(`검색: "${filters.search}"`);
+        }
+        
+        if (filters.route !== 'all') {
+            activeParts.push(`지원루트: ${filters.route}`);
+        }
+        
+        if (filters.position !== 'all') {
+            activeParts.push(`모집분야: ${filters.position}`);
+        }
+        
+        if (filters.period !== 'all') {
+            if (filters.period === 'custom' && filters.startDate && filters.endDate) {
+                activeParts.push(`기간: ${filters.startDate} ~ ${filters.endDate}`);
+            } else {
+                const periodNames = {
+                    'year': '올해',
+                    'month': '이번 달',
+                    'week': '이번 주'
+                };
+                activeParts.push(`기간: ${periodNames[filters.period] || filters.period}`);
+            }
+        }
+
+        if (activeParts.length > 0) {
+            summaryElement.innerHTML = `<strong>적용된 필터:</strong> ${activeParts.join(' | ')}`;
+            summaryElement.style.display = 'block';
+        } else {
+            summaryElement.style.display = 'none';
+        }
+    },
+
+    reset() {
+        // 필터 동기화 모듈이 있으면 사용
+        if (window.App.filterSync) {
+            App.filterSync.resetAllFilters();
+        } else {
+            // 개별적으로 리셋
+            const globalSearch = document.getElementById('globalSearch');
+            const routeFilter = document.getElementById('routeFilter');
+            const positionFilter = document.getElementById('positionFilter');
+            
+            if (globalSearch) globalSearch.value = '';
+            if (routeFilter) routeFilter.value = 'all';
+            if (positionFilter) positionFilter.value = 'all';
+            
+            // 날짜 필터 리셋
+            const allBtn = document.querySelector('#dateModeToggle .date-mode-btn[data-mode="all"]');
+            if (allBtn) {
+                document.querySelectorAll('#dateModeToggle .date-mode-btn').forEach(btn => 
+                    btn.classList.remove('active')
+                );
+                allBtn.classList.add('active');
+                document.getElementById('dateInputsContainer').innerHTML = '';
+                App.state.ui.activeDateMode = 'all';
+            }
+            
+            this.apply();
+        }
+    }
+}
