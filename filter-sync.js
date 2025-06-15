@@ -40,8 +40,7 @@
                 this.loadSavedFilters();
                 this.setupEventListeners();
                 this.createFilterUI();
-                // 초기화 시, 현재 페이지(대시보드)의 필터를 동기화합니다.
-                this.syncToCurrentPage();
+                this.syncAllPages();
                 this.state.isInitialized = true;
                 
                 console.log('✅ 필터 동기화 모듈 초기화 완료!');
@@ -134,7 +133,7 @@
         },
 
         // =========================
-        // 필터 변경 핸들러들 (수정됨)
+        // 필터 변경 핸들러들
         // =========================
         onSidebarFilterChange() {
             const sidebarPeriodFilter = document.getElementById('sidebarPeriodFilter');
@@ -149,15 +148,15 @@
                 this.state.globalFilters.startDate = startDateInput.value;
                 this.state.globalFilters.endDate = endDateInput.value;
             }
-            // 변경된 부분: 모든 페이지의 필터 UI를 업데이트하고 현재 페이지의 데이터를 다시 로드합니다.
-            this.syncFilterUIsAndRefreshData();
+
+            this.syncToAllPages();
         },
 
         onSearchChange() {
             const globalSearch = document.getElementById('globalSearch');
             if (globalSearch) {
                 this.state.globalFilters.search = globalSearch.value;
-                this.syncFilterUIsAndRefreshData();
+                this.syncToAllPages();
             }
         },
 
@@ -173,73 +172,53 @@
                 this.state.globalFilters.position = positionFilter.value;
             }
 
-            this.syncFilterUIsAndRefreshData();
+            this.syncToAllPages();
         },
 
         // =========================
-        // 페이지 동기화 (개선된 로직)
+        // 페이지 동기화
         // =========================
-        /**
-         * 모든 페이지의 필터 UI를 동기화하고, 현재 활성화된 페이지의 데이터만 새로고침합니다.
-         */
-        syncFilterUIsAndRefreshData() {
-            const filters = this.state.globalFilters;
+        syncAllPages() {
+            this.syncToAllPages();
+        },
 
-            // 1. 모든 페이지의 필터 UI 컨트롤을 현재 전역 필터 상태와 일치시킵니다.
-            this.syncToDashboardPage(filters);
-            this.syncToStatsPage(filters);
-            this.syncToEfficiencyPage(filters);
-
-            // 2. 현재 활성화된 페이지를 확인하고 해당 페이지의 데이터만 업데이트합니다.
+        syncToAllPages() {
+            // 현재 활성 페이지 확인
             const activePage = document.querySelector('.page.active');
             if (!activePage) return;
 
-            try {
-                switch (activePage.id) {
-                    case 'dashboard':
-                        // App.filter.apply()는 dashboard의 필터링 및 뷰 업데이트를 담당합니다.
-                        if (window.App && App.filter && App.filter.apply) {
-                            App.filter.apply();
-                        }
-                        break;
-                    case 'stats':
-                        if (window.App && App.stats && App.stats.update) {
-                            App.stats.update();
-                        }
-                        break;
-                    case 'efficiency':
-                         if (window.App && App.efficiency && App.efficiency.updateAll) {
-                            App.efficiency.updateAll();
-                        }
-                        break;
-                }
-            } catch(e) {
-                console.error(`${activePage.id} 페이지 데이터 새로고침 중 오류 발생:`, e);
-            }
+            const pageId = activePage.id;
+
+            // 각 페이지별 필터 동기화
+            this.syncToPage(pageId);
         },
-        
-        /**
-         * 페이지 전환 시 호출되어 새롭게 활성화된 페이지의 UI를 동기화합니다.
-         */
+
         syncToCurrentPage() {
             const activePage = document.querySelector('.page.active');
             if (!activePage) return;
 
+            const pageId = activePage.id;
+            this.syncToPage(pageId);
+        },
+
+        syncToPage(pageId) {
             const filters = this.state.globalFilters;
 
-            switch (activePage.id) {
-                case 'dashboard':
-                    this.syncToDashboardPage(filters);
-                    break;
-                case 'stats':
+            try {
+                if (pageId === 'stats') {
                     this.syncToStatsPage(filters);
-                    break;
-                case 'efficiency':
+                } else if (pageId === 'efficiency') {
                     this.syncToEfficiencyPage(filters);
-                    break;
+                }
+
+                // 대시보드는 항상 동기화 (메인 필터)
+                this.syncToDashboardPage(filters);
+
+            } catch (error) {
+                console.error(`페이지 ${pageId} 동기화 실패:`, error);
             }
         },
-        
+
         syncToDashboardPage(filters) {
             // 검색 필터 동기화
             const globalSearch = document.getElementById('globalSearch');
@@ -259,22 +238,9 @@
                 positionFilter.value = filters.position;
             }
 
-            // ★★★ 추가된 핵심 로직: 대시보드의 날짜 필터 UI 동기화 ★★★
-            if (App.state && App.state.ui) {
-                // 대시보드는 'custom' 대신 'range'를 사용하므로 변환해줍니다.
-                const dashboardDateMode = filters.period === 'custom' ? 'range' : filters.period;
-                App.state.ui.activeDateMode = dashboardDateMode;
-                
-                // script.js에 정의된 날짜 UI 업데이트 함수를 호출합니다.
-                // 이 함수가 날짜 버튼 활성화 및 기간 입력 필드 생성을 담당합니다.
-                if (App.filter && typeof App.filter.updateDateFilterUI === 'function') {
-                    // 날짜 값을 주입하여 UI가 올바르게 생성되도록 합니다.
-                    if (App.filter.dateValues) {
-                        App.filter.dateValues.start = filters.startDate;
-                        App.filter.dateValues.end = filters.endDate;
-                    }
-                    App.filter.updateDateFilterUI();
-                }
+            // 필터 적용
+            if (window.App && App.filter && App.filter.apply) {
+                App.filter.apply();
             }
         },
 
@@ -297,6 +263,11 @@
                     if (customRange) customRange.style.display = 'none';
                 }
             }
+
+            // 통계 업데이트
+            if (window.App && App.stats && App.stats.update) {
+                setTimeout(() => App.stats.update(), 100);
+            }
         },
 
         syncToEfficiencyPage(filters) {
@@ -318,10 +289,15 @@
                     if (customRange) customRange.style.display = 'none';
                 }
             }
+
+            // 효율성 분석 업데이트
+            if (window.App && App.efficiency && App.efficiency.updateAll) {
+                setTimeout(() => App.efficiency.updateAll(), 100);
+            }
         },
 
         // =========================
-        // 필터 저장/불러오기 (이하 코드는 변경 없음)
+        // 필터 저장/불러오기
         // =========================
         openSaveDialog() {
             const filterName = prompt('필터 조합에 이름을 지어주세요:', 
@@ -471,11 +447,11 @@
             // 전역 필터 상태 업데이트
             this.state.globalFilters = { ...filter.filters };
 
-            // 사이드바 필터 UI 업데이트
+            // 사이드바 필터 업데이트
             this.applySidebarFilters(filter.filters);
 
-            // 모든 페이지의 필터 UI를 동기화하고 현재 페이지 데이터를 새로고침
-            this.syncFilterUIsAndRefreshData();
+            // 모든 페이지 동기화
+            this.syncToAllPages();
 
             this.closeLoadModal();
             this.showNotification(`✅ "${filter.name}" 필터가 적용되었습니다.`);
@@ -485,21 +461,27 @@
             const sidebarPeriodFilter = document.getElementById('sidebarPeriodFilter');
             const sidebarStartDate = document.getElementById('sidebarStartDate');
             const sidebarEndDate = document.getElementById('sidebarEndDate');
+            const globalSearch = document.getElementById('globalSearch');
+            const routeFilter = document.getElementById('routeFilter');
+            const positionFilter = document.getElementById('positionFilter');
 
             if (sidebarPeriodFilter) {
                 sidebarPeriodFilter.value = filters.period;
                 
-                const customRange = document.getElementById('sidebarCustomDateRange');
-                if (customRange) {
-                    if (filters.period === 'custom') {
-                        customRange.style.display = 'block';
-                        if (sidebarStartDate) sidebarStartDate.value = filters.startDate;
-                        if (sidebarEndDate) sidebarEndDate.value = filters.endDate;
-                    } else {
-                        customRange.style.display = 'none';
-                    }
+                if (filters.period === 'custom') {
+                    const customRange = document.getElementById('sidebarCustomDateRange');
+                    if (customRange) customRange.style.display = 'block';
+                    if (sidebarStartDate) sidebarStartDate.value = filters.startDate;
+                    if (sidebarEndDate) sidebarEndDate.value = filters.endDate;
+                } else {
+                    const customRange = document.getElementById('sidebarCustomDateRange');
+                    if (customRange) customRange.style.display = 'none';
                 }
             }
+
+            if (globalSearch) globalSearch.value = filters.search;
+            if (routeFilter) routeFilter.value = filters.route;
+            if (positionFilter) positionFilter.value = filters.position;
 
             // 사이드바 위젯 업데이트
             if (window.App && App.sidebar && App.sidebar.updateWidgets) {
@@ -514,6 +496,7 @@
                 this.saveSavedFilters();
                 this.updateFavoriteFiltersList();
                 
+                // 모달이 열려있으면 업데이트
                 const savedFiltersList = document.getElementById('savedFiltersList');
                 if (savedFiltersList) {
                     savedFiltersList.innerHTML = this.renderSavedFiltersList();
@@ -530,6 +513,7 @@
                 this.saveSavedFilters();
                 this.updateFavoriteFiltersList();
                 
+                // 모달이 열려있으면 업데이트
                 const savedFiltersList = document.getElementById('savedFiltersList');
                 if (savedFiltersList) {
                     savedFiltersList.innerHTML = this.renderSavedFiltersList();
@@ -573,6 +557,7 @@
         // =========================
         resetAllFilters() {
             if (confirm('모든 페이지의 필터를 초기화하시겠습니까?')) {
+                // 전역 필터 상태 초기화
                 this.state.globalFilters = {
                     period: 'all',
                     startDate: '',
@@ -582,8 +567,11 @@
                     search: ''
                 };
 
+                // 사이드바 필터 초기화
                 this.applySidebarFilters(this.state.globalFilters);
-                this.syncFilterUIsAndRefreshData();
+
+                // 모든 페이지 동기화
+                this.syncToAllPages();
 
                 this.showNotification('🔄 모든 필터가 초기화되었습니다.');
             }
@@ -621,17 +609,20 @@
         },
 
         showNotification(message) {
+            // 기존 알림 제거
             const existingNotification = document.querySelector('.filter-notification');
             if (existingNotification) {
                 existingNotification.remove();
             }
 
+            // 새 알림 생성
             const notification = document.createElement('div');
             notification.className = 'filter-notification';
             notification.textContent = message;
             
             document.body.appendChild(notification);
 
+            // 애니메이션 후 제거
             setTimeout(() => {
                 notification.classList.add('show');
             }, 100);
@@ -678,7 +669,7 @@
 
         setFilters(filters) {
             this.state.globalFilters = { ...this.state.globalFilters, ...filters };
-            this.syncFilterUIsAndRefreshData();
+            this.syncToAllPages();
         },
 
         isInitialized() {
@@ -687,84 +678,16 @@
     };
 
     // =========================
-    // 자동 초기화 (강화된 버전)
+    // 자동 초기화
     // =========================
-    let initAttempts = 0;
-    const maxAttempts = 20; // 최대 10초 대기
-
-    function waitForApp() {
-        initAttempts++;
-        
-        console.log(`🔍 App 객체 체크 시도 ${initAttempts}/${maxAttempts}`);
-        
-        if (window.App && 
-            window.App.init && 
-            window.App.state && 
-            window.App.data &&
-            typeof window.App.init === 'object') {
-            
-            console.log('✅ App 객체 완전 로드 확인! 필터 동기화 모듈 초기화 시작...');
-            
-            try {
+    document.addEventListener('DOMContentLoaded', function() {
+        // App이 완전히 로드된 후 초기화
+        setTimeout(() => {
+            if (window.App && App.init) {
                 App.filterSync.init();
-            } catch (error) {
-                console.error('❌ 필터 동기화 초기화 실패:', error);
             }
-        } else if (initAttempts < maxAttempts) {
-            console.log(`⏰ App 객체 대기 중... (${initAttempts}/${maxAttempts})`);
-            setTimeout(waitForApp, 500);
-        } else {
-            console.error('❌ App 객체 로드 타임아웃. 수동 초기화를 시도해주세요.');
-            console.log('💡 브라우저 콘솔에서 "App.filterSync.init()" 입력하여 수동 초기화 가능');
-        }
-    }
-
-    // 여러 방법으로 초기화 시도
-    function attemptInitialization() {
-        console.log('🚀 필터 동기화 모듈 초기화 시도 시작...');
-        
-        // 즉시 체크
-        if (window.App && window.App.init && window.App.state && window.App.data) {
-            console.log('✅ 즉시 초기화 가능!');
-            App.filterSync.init();
-            return;
-        }
-        
-        // DOM 로드 완료 대기
-        if (document.readyState === 'loading') {
-            console.log('📄 DOM 로드 대기 중...');
-            document.addEventListener('DOMContentLoaded', function() {
-                console.log('📄 DOM 로드 완료, App 객체 대기 시작...');
-                setTimeout(waitForApp, 100);
-            });
-        } else {
-            console.log('📄 DOM 이미 로드됨, App 객체 대기 시작...');
-            setTimeout(waitForApp, 100);
-        }
-
-        // window.onload로도 시도
-        if (window.addEventListener) {
-            window.addEventListener('load', function() {
-                if (!App.filterSync.isInitialized()) {
-                    console.log('🔄 window.onload에서 재시도...');
-                    setTimeout(waitForApp, 200);
-                }
-            });
-        }
-    }
-
-    // 수동 초기화 함수 글로벌 등록
-    window.initFilterSync = function() {
-        console.log('🔧 수동 초기화 호출됨...');
-        if (window.App && window.App.filterSync) {
-            App.filterSync.init();
-        } else {
-            console.error('❌ App.filterSync 객체를 찾을 수 없습니다.');
-        }
-    };
-
-    // 초기화 시작
-    attemptInitialization();
+        }, 1000);
+    });
 
     console.log('📦 필터 동기화 모듈이 로드되었습니다.');
 
