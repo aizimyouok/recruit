@@ -220,50 +220,107 @@
         },
 
         syncToDashboardPage(filters) {
-            // 검색 필터 동기화
-            const globalSearch = document.getElementById('globalSearch');
-            if (globalSearch && globalSearch.value !== filters.search) {
-                globalSearch.value = filters.search;
+    // 검색 필터 동기화
+    const globalSearch = document.getElementById('globalSearch');
+    if (globalSearch && globalSearch.value !== filters.search) {
+        globalSearch.value = filters.search;
+    }
+
+    // 드롭다운 필터 동기화
+    const routeFilter = document.getElementById('routeFilter');
+    const positionFilter = document.getElementById('positionFilter');
+
+    if (routeFilter && routeFilter.value !== filters.route) {
+        routeFilter.value = filters.route;
+    }
+
+    if (positionFilter && positionFilter.value !== filters.position) {
+        positionFilter.value = filters.position;
+    }
+
+    // ===== 새로 추가: 기간 필터 동기화 =====
+    this.syncMainPageDateFilter(filters);
+
+    // 필터 적용
+    if (window.App && App.filter && App.filter.apply) {
+        App.filter.apply();
+    }
+},
+
+// 새로 추가할 함수
+syncMainPageDateFilter(filters) {
+    try {
+        // 메인 페이지의 날짜 모드 버튼들
+        const dateModeButtons = document.querySelectorAll('#dateModeToggle .date-mode-btn');
+        const dateInputsContainer = document.getElementById('dateInputsContainer');
+
+        if (!dateModeButtons.length || !dateInputsContainer) return;
+
+        // 모든 버튼에서 active 클래스 제거
+        dateModeButtons.forEach(btn => btn.classList.remove('active'));
+
+        // 기간에 따른 버튼 활성화 및 입력 필드 설정
+        if (filters.period === 'all') {
+            const allBtn = document.querySelector('#dateModeToggle .date-mode-btn[data-mode="all"]');
+            if (allBtn) allBtn.classList.add('active');
+            dateInputsContainer.innerHTML = '';
+            
+        } else if (filters.period === 'year') {
+            const yearBtn = document.querySelector('#dateModeToggle .date-mode-btn[data-mode="year"]');
+            if (yearBtn) yearBtn.classList.add('active');
+            
+            const currentYear = new Date().getFullYear();
+            dateInputsContainer.innerHTML = `
+                <button class="date-nav-btn" onclick="App.dateFilter.changeYear(-1)">◀</button>
+                <input type="number" value="${currentYear}" min="2020" max="2030" id="yearInput" 
+                       onchange="App.dateFilter.updateYear()" style="width: 80px;">
+                <button class="date-nav-btn" onclick="App.dateFilter.changeYear(1)">▶</button>
+                <button class="apply-btn" onclick="App.filter.apply()">적용</button>
+            `;
+            
+        } else if (filters.period === 'month') {
+            const monthBtn = document.querySelector('#dateModeToggle .date-mode-btn[data-mode="month"]');
+            if (monthBtn) monthBtn.classList.add('active');
+            
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+            
+            dateInputsContainer.innerHTML = `
+                <button class="date-nav-btn" onclick="App.dateFilter.changeMonth(-1)">◀</button>
+                <input type="month" value="${currentYear}-${currentMonth}" id="monthInput" 
+                       onchange="App.dateFilter.updateMonth()">
+                <button class="date-nav-btn" onclick="App.dateFilter.changeMonth(1)">▶</button>
+                <button class="apply-btn" onclick="App.filter.apply()">적용</button>
+            `;
+            
+        } else if (filters.period === 'custom' && filters.startDate && filters.endDate) {
+            const rangeBtn = document.querySelector('#dateModeToggle .date-mode-btn[data-mode="range"]');
+            if (rangeBtn) rangeBtn.classList.add('active');
+            
+            dateInputsContainer.innerHTML = `
+                <input type="date" value="${filters.startDate}" id="startDateInput" 
+                       onchange="App.dateFilter.updateRange()">
+                <span>~</span>
+                <input type="date" value="${filters.endDate}" id="endDateInput" 
+                       onchange="App.dateFilter.updateRange()">
+                <button class="apply-btn" onclick="App.filter.apply()">적용</button>
+            `;
+        }
+
+        // App.state.ui.activeDateMode 업데이트
+        if (window.App && App.state && App.state.ui) {
+            if (filters.period === 'custom') {
+                App.state.ui.activeDateMode = 'range';
+            } else {
+                App.state.ui.activeDateMode = filters.period;
             }
+        }
 
-            // 드롭다운 필터 동기화
-            const routeFilter = document.getElementById('routeFilter');
-            const positionFilter = document.getElementById('positionFilter');
-
-            if (routeFilter && routeFilter.value !== filters.route) {
-                routeFilter.value = filters.route;
-            }
-
-            if (positionFilter && positionFilter.value !== filters.position) {
-                positionFilter.value = filters.position;
-            }
-
-            // 필터 적용
-            if (window.App && App.filter && App.filter.apply) {
-                App.filter.apply();
-            }
-        },
-
-        syncToStatsPage(filters) {
-            const statsPeriodFilter = document.getElementById('statsPeriodFilter');
-            const statsStartDate = document.getElementById('statsStartDate');
-            const statsEndDate = document.getElementById('statsEndDate');
-
-            if (statsPeriodFilter) {
-                if (filters.period === 'custom' && filters.startDate && filters.endDate) {
-                    statsPeriodFilter.value = 'custom';
-                    if (statsStartDate) statsStartDate.value = filters.startDate;
-                    if (statsEndDate) statsEndDate.value = filters.endDate;
-                    
-                    const customRange = document.getElementById('statsCustomDateRange');
-                    if (customRange) customRange.style.display = 'flex';
-                } else {
-                    statsPeriodFilter.value = filters.period;
-                    const customRange = document.getElementById('statsCustomDateRange');
-                    if (customRange) customRange.style.display = 'none';
-                }
-            }
-
+    } catch (error) {
+        console.error('메인 페이지 날짜 필터 동기화 오류:', error);
+    }
+}
             // 통계 업데이트
             if (window.App && App.stats && App.stats.update) {
                 setTimeout(() => App.stats.update(), 100);
