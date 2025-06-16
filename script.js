@@ -882,76 +882,14 @@ if (contactResultIndex !== -1) {
 },
 
         updateUI(stats, periodLabel) {
-            document.getElementById('sidebarTotalApplicants').textContent = stats.totalCount;
-            document.getElementById('sidebarPeriodLabel').textContent = periodLabel;
-            document.getElementById('sidebarInterviewPending').textContent = stats.interviewPendingCount;
-            document.getElementById('sidebarSuccessRate').textContent = stats.successRate + '%';
-            document.getElementById('sidebarJoinRate').textContent = stats.joinRate + '%';
-        }
-    },
+    document.getElementById('sidebarTotalApplicants').textContent = stats.totalCount;
+    document.getElementById('sidebarPeriodLabel').textContent = periodLabel;
+    document.getElementById('sidebarInterviewPending').textContent = stats.interviewPendingCount;
+    document.getElementById('sidebarSuccessRate').textContent = stats.successRate + '%';
+    document.getElementById('sidebarJoinRate').textContent = stats.joinRate + '%';
+},
 
-    // =========================
-    // 통계 관련
-    // =========================
-    stats: {
-        handlePeriodChange() {
-            const selectedPeriod = document.getElementById('statsPeriodFilter').value;
-            const customRange = document.getElementById('statsCustomDateRange');
-
-            if (selectedPeriod === 'custom') {
-                customRange.style.display = 'flex';
-            } else {
-                customRange.style.display = 'none';
-                App.stats.update();
-            }
-        },
-
-        update() {
-            if (!App.state.data.all || App.state.data.all.length === 0) {
-                console.log('데이터가 없어서 통계 업데이트 불가');
-                return;
-            }
-
-            try {
-                const selectedPeriod = document.getElementById('statsPeriodFilter')?.value || 'all';
-                const applyDateIndex = App.state.data.headers.indexOf('지원일');
-
-                let filteredApplicants = [...App.state.data.all];
-                let periodLabel = '전체 기간';
-
-                if (applyDateIndex !== -1 && selectedPeriod !== 'all') {
-                    const result = App.stats.filterByPeriod(filteredApplicants, selectedPeriod, applyDateIndex);
-                    filteredApplicants = result.data;
-                    periodLabel = result.label;
-                }
-
-                const stats = App.sidebar.calculateStats(filteredApplicants);
-                App.stats.updateStatCards(stats, periodLabel);
-
-                if (window.Chart && Object.keys(App.state.charts.instances).length > 0) {
-                    App.charts.updateData(filteredApplicants);
-                }
-
-                App.trend.update(filteredApplicants, applyDateIndex);
-
-            } catch (error) {
-                console.error('❌ 통계 데이터 업데이트 실패:', error);
-            }
-        },
-
-        filterByPeriod(data, selectedPeriod, applyDateIndex) {
-            return App.sidebar.filterByPeriod(data, selectedPeriod, applyDateIndex);
-        },
-
-        updateStatCards(stats, periodLabel) {
-            App.utils.updateElement('totalApplicantsChart', stats.totalCount);
-            App.utils.updateElement('statsTimePeriod', periodLabel);
-            App.utils.updateElement('pendingInterviewChart', stats.interviewPendingCount);
-            App.utils.updateElement('successRateChart', stats.successRate + '%');
-            App.utils.updateElement('joinRateChart', stats.joinRate + '%');
-        }
-    },
-    // 면접 대기자 필터링 함수 추가
+// 면접 대기자 필터링 함수 추가
 showInterviewPending() {
     console.log('🎯 면접 대기자 필터링 시작');
     
@@ -1022,6 +960,69 @@ showInterviewPending() {
         alert('앞으로 예정된 면접 대기자가 없습니다.');
     }
 }
+
+    // =========================
+    // 통계 관련
+    // =========================
+    stats: {
+        handlePeriodChange() {
+            const selectedPeriod = document.getElementById('statsPeriodFilter').value;
+            const customRange = document.getElementById('statsCustomDateRange');
+
+            if (selectedPeriod === 'custom') {
+                customRange.style.display = 'flex';
+            } else {
+                customRange.style.display = 'none';
+                App.stats.update();
+            }
+        },
+
+        update() {
+            if (!App.state.data.all || App.state.data.all.length === 0) {
+                console.log('데이터가 없어서 통계 업데이트 불가');
+                return;
+            }
+
+            try {
+                const selectedPeriod = document.getElementById('statsPeriodFilter')?.value || 'all';
+                const applyDateIndex = App.state.data.headers.indexOf('지원일');
+
+                let filteredApplicants = [...App.state.data.all];
+                let periodLabel = '전체 기간';
+
+                if (applyDateIndex !== -1 && selectedPeriod !== 'all') {
+                    const result = App.stats.filterByPeriod(filteredApplicants, selectedPeriod, applyDateIndex);
+                    filteredApplicants = result.data;
+                    periodLabel = result.label;
+                }
+
+                const stats = App.sidebar.calculateStats(filteredApplicants);
+                App.stats.updateStatCards(stats, periodLabel);
+
+                if (window.Chart && Object.keys(App.state.charts.instances).length > 0) {
+                    App.charts.updateData(filteredApplicants);
+                }
+
+                App.trend.update(filteredApplicants, applyDateIndex);
+
+            } catch (error) {
+                console.error('❌ 통계 데이터 업데이트 실패:', error);
+            }
+        },
+
+        filterByPeriod(data, selectedPeriod, applyDateIndex) {
+            return App.sidebar.filterByPeriod(data, selectedPeriod, applyDateIndex);
+        },
+
+        updateStatCards(stats, periodLabel) {
+            App.utils.updateElement('totalApplicantsChart', stats.totalCount);
+            App.utils.updateElement('statsTimePeriod', periodLabel);
+            App.utils.updateElement('pendingInterviewChart', stats.interviewPendingCount);
+            App.utils.updateElement('successRateChart', stats.successRate + '%');
+            App.utils.updateElement('joinRateChart', stats.joinRate + '%');
+        }
+    },
+
     
     // =========================
     // 차트 관련
