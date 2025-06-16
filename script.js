@@ -856,7 +856,7 @@ if (contactResultIndex !== -1) {
         }
         return false; // 면접 날짜가 없으면 제외
     }).length;
-},
+}
 
     // 3번: 전체 지원자 대비 합격률
     let successRate = 0;
