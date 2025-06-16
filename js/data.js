@@ -4,6 +4,13 @@
 
 export const DataModule = {
     async fetch(appInstance) {
+        if (appInstance.dataCache) {
+        const loadedFromCache = await appInstance.dataCache.loadFromCache(appInstance);
+        if (loadedFromCache) {
+            console.log('✅ 캐시에서 로딩 완료 - 서버 호출 생략');
+            return; // 캐시에서 로딩했으면 여기서 종료
+        }
+    }
         const tableContainer = document.querySelector('.table-container');
 
         try {
@@ -39,6 +46,10 @@ export const DataModule = {
             appInstance.state.data.all = result.data.slice(1)
                 .filter(row => row && Array.isArray(row) && row.some(cell => cell != null && String(cell).trim() !== ''))
                 .map(row => row.map(cell => cell == null ? '' : String(cell)));
+ 
+            if (appInstance.dataCache) {
+    appInstance.dataCache.saveToCache(appInstance.state.data.headers, appInstance.state.data.all);
+}
 
             DataModule.updateSequenceNumber(appInstance);
 appInstance.state.ui.visibleColumns = appInstance.utils.generateVisibleColumns(appInstance.state.data.headers);
