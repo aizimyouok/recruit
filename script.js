@@ -4,6 +4,8 @@
 import { CONFIG } from './js/config.js';
 import { createInitialState } from './js/state.js';
 import { Utils } from './js/utils.js';
+import { DataModule } from './js/data.js';
+import { UIModule } from './js/ui.js';
 
 // =========================
 // 애플리케이션 메인 객체
@@ -131,296 +133,26 @@ const App = {
     // UI 관련
     // =========================
     ui: {
-        toggleMobileMenu() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.querySelector('.mobile-overlay');
-            sidebar.classList.toggle('mobile-open');
-            overlay.classList.toggle('show');
-        },
-
-        toggleColumnDropdown() {
-            const dropdown = document.getElementById('columnToggleDropdown');
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-        },
-
-        handleColumnToggle(event, columnName) {
-            App.state.ui.visibleColumns[columnName] = event.target.checked;
-            App.filter.apply();
-        },
-
-        setupColumnToggles() {
-            const dropdown = document.getElementById('columnToggleDropdown');
-            dropdown.innerHTML = '';
-            App.state.data.headers.forEach(header => {
-                const item = document.createElement('div');
-                item.className = 'column-toggle-item';
-                item.innerHTML = `<input type="checkbox" id="toggle-${header}" ${App.state.ui.visibleColumns[header] ? 'checked' : ''} onchange="App.ui.handleColumnToggle(event, '${header}')"><label for="toggle-${header}">${header}</label>`;
-                dropdown.appendChild(item);
-            });
-        },
-
-        showLoadingState(container) {
-            container.innerHTML = `
-                <div class="smooth-loading-container">
-                    <div class="advanced-loading-spinner"></div>
-                    <div class="loading-text">
-                        데이터를 불러오는 중입니다
-                        <div class="loading-dots">
-                            <div class="loading-dot"></div>
-                            <div class="loading-dot"></div>
-                            <div class="loading-dot"></div>
-                        </div>
-                    </div>
-                    <div class="loading-subtext">잠시만 기다려 주세요...</div>
-                    ${App.utils.createProgressBar(25, '연결중...')}
-                </div>`;
-        },
-
-        updateProgress(container, percentage, text) {
-            setTimeout(() => {
-                const progressFill = container.querySelector('.progress-fill');
-                const progressPercentage = container.querySelector('.progress-percentage');
-                const loadingSubtext = container.querySelector('.loading-subtext');
-
-                if (progressFill && progressPercentage) {
-                    progressFill.style.width = percentage + '%';
-                    progressPercentage.textContent = percentage + '%';
-                }
-
-                if (loadingSubtext && text) {
-                    loadingSubtext.textContent = text;
-                }
-            }, 200);
-        },
-
-        showErrorState(container, error) {
-            const isNetworkError = error.name === 'TypeError' && error.message.includes('fetch');
-            const canRetry = isNetworkError || error.message.includes('서버에 일시적인');
-
-            container.innerHTML = `
-                <div class="error-container">
-                    <i class="fas fa-exclamation-triangle error-icon"></i>
-                    <h3 class="error-title">데이터 로드 실패</h3>
-                    <p class="error-message">
-                        ${isNetworkError ? '🌐 인터넷 연결을 확인해주세요.' : error.message}
-                    </p>
-                    <div class="error-actions">
-                        ${canRetry ? `
-                            <button class="primary-btn" onclick="App.data.fetch()">
-                                <i class="fas fa-sync-alt"></i> 다시 시도
-                            </button>
-                        ` : ''}
-                        <button class="secondary-btn" onclick="location.reload()">
-                            <i class="fas fa-redo"></i> 페이지 새로고침
-                        </button>
-                    </div>
-                </div>`;
-        }
-    },
+    toggleMobileMenu: () => UIModule.toggleMobileMenu(),
+    toggleColumnDropdown: () => UIModule.toggleColumnDropdown(),
+    handleColumnToggle: (event, columnName) => UIModule.handleColumnToggle(App, event, columnName),
+    setupColumnToggles: () => UIModule.setupColumnToggles(App),
+    showLoadingState: (container) => UIModule.showLoadingState(container, App),
+    updateProgress: (container, percentage, text) => UIModule.updateProgress(container, percentage, text),
+    showErrorState: (container, error) => UIModule.showErrorState(container, error, App)
+}
 
     // =========================
     // 데이터 관련
     // =========================
     data: {
-        async fetch() {
-            const tableContainer = document.querySelector('.table-container');
-
-            try {
-                App.ui.showLoadingState(tableContainer);
-
-                const response = await fetch(`${App.config.APPS_SCRIPT_URL}?action=read`);
-
-                App.ui.updateProgress(tableContainer, 60, '데이터 처리중...');
-
-                if (!response.ok) {
-                    throw new Error(App.utils.getErrorMessage(response.status));
-                }
-
-                const result = await response.json();
-
-                App.ui.updateProgress(tableContainer, 85, '최종 처리중...');
-
-                if (result.status !== 'success') {
-                    throw new Error(result.message || '데이터 처리 중 오류가 발생했습니다.');
-                }
-
-                if (!result.data || !Array.isArray(result.data) || result.data.length === 0) {
-                    throw new Error('데이터가 비어있거나 올바르지 않은 형식입니다.');
-                }
-
-                App.state.data.headers = (result.data[0] || []).map(h => String(h || '').trim());
-                App.state.data.all = result.data.slice(1)
-                    .filter(row => row && Array.isArray(row) && row.some(cell => cell != null && String(cell).trim() !== ''))
-                    .map(row => row.map(cell => cell == null ? '' : String(cell)));
-
-                App.data.updateSequenceNumber();
-                App.state.ui.visibleColumns = App.utils.generateVisibleColumns(App.state.data.headers);
-                App.ui.setupColumnToggles();
-                App.filter.populateDropdowns();
-                App.sidebar.updateWidgets();
-                App.data.updateInterviewSchedule();
-                App.filter.reset(true);
-
-                App.ui.updateProgress(tableContainer, 100, '완료!');
-
-                setTimeout(() => {
-                    App.sidebar.updateWidgets();
-                }, 500);
-
-            } catch (error) {
-                console.error("데이터 불러오기 실패:", error);
-                App.ui.showErrorState(tableContainer, error);
-            }
-        },
-
-        updateSequenceNumber() {
-            const gubunIndex = App.state.data.headers.indexOf('구분');
-            if (gubunIndex !== -1 && App.state.data.all.length > 0) {
-                const lastRow = App.state.data.all[App.state.data.all.length - 1];
-                const lastGubun = parseInt(lastRow[gubunIndex] || '0', 10);
-                App.state.ui.nextSequenceNumber = isNaN(lastGubun) ? App.state.data.all.length + 1 : lastGubun + 1;
-            } else {
-                App.state.ui.nextSequenceNumber = App.state.data.all.length + 1;
-            }
-        },
-
-        updateInterviewSchedule() {
-            let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
-            if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
-
-            const interviewTimeIndex = App.state.data.headers.indexOf('면접 시간');
-            const nameIndex = App.state.data.headers.indexOf('이름');
-            const positionIndex = App.state.data.headers.indexOf('모집분야');
-            const routeIndex = App.state.data.headers.indexOf('지원루트');
-            const recruiterIndex = App.state.data.headers.indexOf('증원자');
-            const interviewerIndex = App.state.data.headers.indexOf('면접자');
-
-            if (interviewDateIndex === -1) {
-                document.getElementById('interviewScheduleList').innerHTML = '<div class="no-interviews">면접 날짜 컬럼을 찾을 수 없습니다.</div>';
-                return;
-            }
-
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const threeDaysLater = new Date(today.getTime() + (3 * 24 * 60 * 60 * 1000));
-
-            const upcomingInterviews = App.state.data.all
-                .filter(row => {
-                    const interviewDate = row[interviewDateIndex];
-                    if (!interviewDate) return false;
-                    try {
-                        const date = new Date(interviewDate);
-                        return date >= today && date <= threeDaysLater;
-                    } catch (e) { return false; }
-                })
-                .sort((a, b) => new Date(a[interviewDateIndex]) - new Date(b[interviewDateIndex]))
-                .slice(0, 7);
-
-            const scheduleContainer = document.getElementById('interviewScheduleList');
-
-            if (upcomingInterviews.length === 0) {
-                scheduleContainer.innerHTML = '<div class="no-interviews">3일 이내 예정된 면접이 없습니다.</div>';
-                return;
-            }
-
-            let tableHtml = `
-                <table class="interview-schedule-table">
-                    <thead>
-                        <tr>
-                            <th>이름</th><th>지원루트</th><th>증원자</th><th>모집분야</th><th>면접자</th><th>면접날짜</th><th>면접시간</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            upcomingInterviews.forEach(row => {
-                const interviewDate = row[interviewDateIndex];
-                let dateDisplay = '';
-
-                const formattedTime = App.utils.formatInterviewTime(row[interviewTimeIndex]);
-
-                try {
-                    const date = new Date(interviewDate);
-                    date.setHours(0, 0, 0, 0);
-                    const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
-                    const weekday = weekdays[date.getDay()];
-
-                    const diffTime = date.getTime() - today.getTime();
-                    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-                    let dayDiff = `D-${diffDays}`;
-                    let ddayClass = '';
-                    if (diffDays === 0) { dayDiff = 'D-Day'; ddayClass = 'today'; }
-
-                    const dateText = `${date.getMonth() + 1}/${date.getDate()}(${weekday})`;
-                    dateDisplay = `<span class="interview-dday ${ddayClass}">${dayDiff}</span><span class="interview-date-text">${dateText}</span>`;
-                } catch (e) { dateDisplay = '날짜 오류'; }
-
-                tableHtml += `
-                    <tr onclick="App.data.showInterviewDetails('${row[nameIndex] || ''}', '${row[routeIndex] || ''}')" style="cursor: pointer;">
-                        <td class="interview-name-cell" title="${row[nameIndex] || ''}">${row[nameIndex] || '-'}</td>
-                        <td class="interview-route-cell" title="${row[routeIndex] || ''}">${row[routeIndex] || '-'}</td>
-                        <td class="interview-recruiter-cell" title="${row[recruiterIndex] || ''}">${row[recruiterIndex] || '-'}</td>
-                        <td class="interview-position-cell" title="${row[positionIndex] || ''}">${row[positionIndex] || '-'}</td>
-                        <td class="interview-interviewer-cell" title="${row[interviewerIndex] || ''}">${row[interviewerIndex] || '-'}</td>
-                        <td class="interview-date-cell" title="${dateDisplay.replace(/<[^>]*>/g, '')}">${dateDisplay}</td>
-                        <td class="interview-time-cell" title="${formattedTime}">${formattedTime}</td>
-                    </tr>
-                `;
-            });
-
-            tableHtml += `</tbody></table>`;
-            scheduleContainer.innerHTML = tableHtml;
-        },
-
-        showInterviewDetails(name, route) {
-            const nameIndex = App.state.data.headers.indexOf('이름');
-            const routeIndex = App.state.data.headers.indexOf('지원루트');
-
-            const targetRow = App.state.data.all.find(row => {
-                const nameMatch = String(row[nameIndex] || '') === name;
-                const routeMatch = String(row[routeIndex] || '') === route;
-                return nameMatch && routeMatch;
-            });
-
-            if (targetRow) {
-                App.modal.openDetail(targetRow);
-            }
-        },
-
-        async save(data, isUpdate = false, gubun = null) {
-            const action = isUpdate ? 'update' : 'create';
-            const payload = isUpdate ? { action, gubun, data } : { action, data };
-
-            const response = await fetch(App.config.APPS_SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
-
-            const result = await response.json();
-            if (result.status !== 'success') {
-                throw new Error(result.message || '저장에 실패했습니다.');
-            }
-
-            return result;
-        },
-
-        async delete(gubun) {
-            const response = await fetch(App.config.APPS_SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    action: 'delete',
-                    gubun: gubun
-                })
-            });
-
-            const result = await response.json();
-            if (result.status !== 'success') {
-                throw new Error(result.message || '삭제에 실패했습니다.');
-            }
-
-            return result;
-        }
-    },
+    fetch: () => DataModule.fetch(App),
+    updateSequenceNumber: () => DataModule.updateSequenceNumber(App),
+    updateInterviewSchedule: () => DataModule.updateInterviewSchedule(App),
+    showInterviewDetails: (name, route) => DataModule.showInterviewDetails(App, name, route),
+    save: (data, isUpdate, gubun) => DataModule.save(App, data, isUpdate, gubun),
+    delete: (gubun) => DataModule.delete(App, gubun)
+},
 
     // =========================
     // 검색 관련
@@ -2377,134 +2109,138 @@ const App = {
     // 유틸리티 함수들 (utils.js에서 가져온 것 + 추가 함수들)
     // =========================
     utils: {
-        // utils.js에서 가져온 순수 함수들
-        ...Utils,
-        
-        // App 객체에 의존하는 함수들을 여기에 직접 정의
-        sortData(data) {
-            if (App.state.ui.currentSortColumn && App.state.ui.currentSortDirection) {
-                const sortIndex = App.state.data.headers.indexOf(App.state.ui.currentSortColumn);
-                if (sortIndex !== -1) {
-                    data.sort((a, b) => {
-                        let valA = a[sortIndex];
-                        let valB = b[sortIndex];
+    // utils.js에서 가져온 순수 함수들
+    ...Utils,
+    
+    // UIModule에서 가져온 함수들
+    createProgressBar: UIModule.createProgressBar,
+    createSkeletonTable: UIModule.createSkeletonTable,
+    
+    // App 객체에 의존하는 함수들
+    sortData(data) {
+        if (App.state.ui.currentSortColumn && App.state.ui.currentSortDirection) {
+            const sortIndex = App.state.data.headers.indexOf(App.state.ui.currentSortColumn);
+            if (sortIndex !== -1) {
+                data.sort((a, b) => {
+                    let valA = a[sortIndex];
+                    let valB = b[sortIndex];
 
-                        if (App.state.ui.currentSortColumn === '지원일' ||
-                            App.state.ui.currentSortColumn.includes('날짜') ||
-                            App.state.ui.currentSortColumn.includes('날자') ||
-                            App.state.ui.currentSortColumn.includes('입과일')) {
-                            valA = new Date(valA || '1970-01-01');
-                            valB = new Date(valB || '1970-01-01');
-                        } else if (['나이', '구분'].includes(App.state.ui.currentSortColumn)) {
-                            valA = Number(valA) || 0;
-                            valB = Number(valB) || 0;
-                        } else {
-                            valA = String(valA || '').toLowerCase();
-                            valB = String(valB || '').toLowerCase();
-                        }
+                    if (App.state.ui.currentSortColumn === '지원일' ||
+                        App.state.ui.currentSortColumn.includes('날짜') ||
+                        App.state.ui.currentSortColumn.includes('날자') ||
+                        App.state.ui.currentSortColumn.includes('입과일')) {
+                        valA = new Date(valA || '1970-01-01');
+                        valB = new Date(valB || '1970-01-01');
+                    } else if (['나이', '구분'].includes(App.state.ui.currentSortColumn)) {
+                        valA = Number(valA) || 0;
+                        valB = Number(valB) || 0;
+                    } else {
+                        valA = String(valA || '').toLowerCase();
+                        valB = String(valB || '').toLowerCase();
+                    }
 
-                        if (valA < valB) return App.state.ui.currentSortDirection === 'asc' ? -1 : 1;
-                        if (valA > valB) return App.state.ui.currentSortDirection === 'asc' ? 1 : -1;
-                        return 0;
+                    if (valA < valB) return App.state.ui.currentSortDirection === 'asc' ? -1 : 1;
+                    if (valA > valB) return App.state.ui.currentSortDirection === 'asc' ? 1 : -1;
+                    return 0;
+                });
+            }
+        }
+        return data;
+    },
+
+    filterDataByPeriod(data, selectedPeriod, applyDateIndex, now) {
+        let filteredData = [...data];
+        let label = '전체 기간';
+
+        if (selectedPeriod === 'year') {
+            const currentYear = now.getFullYear();
+            filteredData = data.filter(row => {
+                try {
+                    const dateValue = row[applyDateIndex];
+                    if (!dateValue) return false;
+                    const date = new Date(dateValue);
+                    return date.getFullYear() === currentYear;
+                } catch (e) { return false; }
+            });
+            label = `${currentYear}년`;
+
+        } else if (selectedPeriod === 'month') {
+            const currentMonth = now.getMonth() + 1;
+            const currentYear = now.getFullYear();
+            filteredData = data.filter(row => {
+                try {
+                    const dateValue = row[applyDateIndex];
+                    if (!dateValue) return false;
+                    const date = new Date(dateValue);
+                    return date.getMonth() + 1 === currentMonth && date.getFullYear() === currentYear;
+                } catch (e) { return false; }
+            });
+            label = `${currentYear}.${currentMonth.toString().padStart(2, '0')}`;
+
+        } else if (selectedPeriod === 'week') {
+            const weekStart = new Date(now);
+            weekStart.setDate(now.getDate() - now.getDay());
+            weekStart.setHours(0, 0, 0, 0);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            weekEnd.setHours(23, 59, 59, 999);
+
+            filteredData = data.filter(row => {
+                try {
+                    const dateValue = row[applyDateIndex];
+                    if (!dateValue) return false;
+                    const date = new Date(dateValue);
+                    return date >= weekStart && date <= weekEnd;
+                } catch (e) { return false; }
+            });
+            label = '이번 주';
+        }
+
+        return { data: filteredData, label };
+    },
+
+    getFilteredDataByPeriod(selectedPeriod) {
+        const applyDateIndex = App.state.data.headers.indexOf('지원일');
+        let filteredApplicants = [...App.state.data.all];
+
+        if (applyDateIndex !== -1 && selectedPeriod !== 'all') {
+            const now = new Date();
+
+            if (selectedPeriod === 'custom') {
+                const startDate = document.getElementById('statsStartDate')?.value;
+                const endDate = document.getElementById('statsEndDate')?.value;
+
+                if (startDate && endDate) {
+                    const start = new Date(startDate);
+                    const end = new Date(endDate);
+                    end.setHours(23, 59, 59, 999);
+
+                    filteredApplicants = App.state.data.all.filter(row => {
+                        try {
+                            const dateValue = row[applyDateIndex];
+                            if (!dateValue) return false;
+                            const date = new Date(dateValue);
+                            return date >= start && date <= end;
+                        } catch (e) { return false; }
                     });
                 }
+            } else {
+                const result = App.utils.filterDataByPeriod(App.state.data.all, selectedPeriod, applyDateIndex, now);
+                filteredApplicants = result.data;
             }
-            return data;
-        },
-
-        filterDataByPeriod(data, selectedPeriod, applyDateIndex, now) {
-            let filteredData = [...data];
-            let label = '전체 기간';
-
-            if (selectedPeriod === 'year') {
-                const currentYear = now.getFullYear();
-                filteredData = data.filter(row => {
-                    try {
-                        const dateValue = row[applyDateIndex];
-                        if (!dateValue) return false;
-                        const date = new Date(dateValue);
-                        return date.getFullYear() === currentYear;
-                    } catch (e) { return false; }
-                });
-                label = `${currentYear}년`;
-
-            } else if (selectedPeriod === 'month') {
-                const currentMonth = now.getMonth() + 1;
-                const currentYear = now.getFullYear();
-                filteredData = data.filter(row => {
-                    try {
-                        const dateValue = row[applyDateIndex];
-                        if (!dateValue) return false;
-                        const date = new Date(dateValue);
-                        return date.getMonth() + 1 === currentMonth && date.getFullYear() === currentYear;
-                    } catch (e) { return false; }
-                });
-                label = `${currentYear}.${currentMonth.toString().padStart(2, '0')}`;
-
-            } else if (selectedPeriod === 'week') {
-                const weekStart = new Date(now);
-                weekStart.setDate(now.getDate() - now.getDay());
-                weekStart.setHours(0, 0, 0, 0);
-                const weekEnd = new Date(weekStart);
-                weekEnd.setDate(weekStart.getDate() + 6);
-                weekEnd.setHours(23, 59, 59, 999);
-
-                filteredData = data.filter(row => {
-                    try {
-                        const dateValue = row[applyDateIndex];
-                        if (!dateValue) return false;
-                        const date = new Date(dateValue);
-                        return date >= weekStart && date <= weekEnd;
-                    } catch (e) { return false; }
-                });
-                label = '이번 주';
-            }
-
-            return { data: filteredData, label };
-        },
-
-        getFilteredDataByPeriod(selectedPeriod) {
-            const applyDateIndex = App.state.data.headers.indexOf('지원일');
-            let filteredApplicants = [...App.state.data.all];
-
-            if (applyDateIndex !== -1 && selectedPeriod !== 'all') {
-                const now = new Date();
-
-                if (selectedPeriod === 'custom') {
-                    const startDate = document.getElementById('statsStartDate')?.value;
-                    const endDate = document.getElementById('statsEndDate')?.value;
-
-                    if (startDate && endDate) {
-                        const start = new Date(startDate);
-                        const end = new Date(endDate);
-                        end.setHours(23, 59, 59, 999);
-
-                        filteredApplicants = App.state.data.all.filter(row => {
-                            try {
-                                const dateValue = row[applyDateIndex];
-                                if (!dateValue) return false;
-                                const date = new Date(dateValue);
-                                return date >= start && date <= end;
-                            } catch (e) { return false; }
-                        });
-                    }
-                } else {
-                    const result = App.utils.filterDataByPeriod(App.state.data.all, selectedPeriod, applyDateIndex, now);
-                    filteredApplicants = result.data;
-                }
-            }
-
-            return filteredApplicants;
-        },
-
-        generateVisibleColumns(headers) {
-            const visibleColumns = {};
-            headers.forEach(header => {
-                visibleColumns[header] = !App.config.DEFAULT_HIDDEN_COLUMNS.includes(header);
-            });
-            return visibleColumns;
         }
+
+        return filteredApplicants;
+    },
+
+    generateVisibleColumns(headers) {
+        const visibleColumns = {};
+        headers.forEach(header => {
+            visibleColumns[header] = !App.config.DEFAULT_HIDDEN_COLUMNS.includes(header);
+        });
+        return visibleColumns;
     }
+}
 }; // 🔥 중요: App 객체 끝에 세미콜론
 
 // =========================
