@@ -11,9 +11,28 @@ export const UIModule = {
     },
 
     toggleColumnDropdown() {
-        const dropdown = document.getElementById('columnToggleDropdown');
-        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-    },
+    const dropdown = document.getElementById('columnToggleDropdown');
+    if (!dropdown) {
+        console.warn('columnToggleDropdown 요소를 찾을 수 없습니다.');
+        return;
+    }
+    
+    const isVisible = dropdown.style.display === 'block';
+    dropdown.style.display = isVisible ? 'none' : 'block';
+    
+    // 드롭다운이 열릴 때 애니메이션 효과
+    if (!isVisible) {
+        dropdown.style.opacity = '0';
+        dropdown.style.transform = 'translateY(-10px) scale(0.95)';
+        
+        // 다음 프레임에서 애니메이션 시작
+        requestAnimationFrame(() => {
+            dropdown.style.transition = 'all 0.2s ease';
+            dropdown.style.opacity = '1';
+            dropdown.style.transform = 'translateY(0) scale(1)';
+        });
+    }
+},
 
     handleColumnToggle(appInstance, event, columnName) {
         appInstance.state.ui.visibleColumns[columnName] = event.target.checked;
@@ -21,15 +40,37 @@ export const UIModule = {
     },
 
     setupColumnToggles(appInstance) {
-        const dropdown = document.getElementById('columnToggleDropdown');
-        dropdown.innerHTML = '';
-        appInstance.state.data.headers.forEach(header => {
-            const item = document.createElement('div');
-            item.className = 'column-toggle-item';
-            item.innerHTML = `<input type="checkbox" id="toggle-${header}" ${appInstance.state.ui.visibleColumns[header] ? 'checked' : ''} onchange="globalThis.App.ui.handleColumnToggle(event, '${header}')"><label for="toggle-${header}">${header}</label>`;
-            dropdown.appendChild(item);
-        });
-    },
+    const dropdown = document.getElementById('columnToggleDropdown');
+    if (!dropdown) {
+        console.warn('columnToggleDropdown 요소를 찾을 수 없습니다.');
+        return;
+    }
+    
+    // 기본 상태로 숨김 처리
+    dropdown.style.display = 'none';
+    dropdown.innerHTML = '';
+    
+    appInstance.state.data.headers.forEach(header => {
+        const item = document.createElement('div');
+        item.className = 'column-toggle-item';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `toggle-${header}`;
+        checkbox.checked = appInstance.state.ui.visibleColumns[header] || false;
+        checkbox.onchange = (event) => appInstance.ui.handleColumnToggle(event, header);
+        
+        const label = document.createElement('label');
+        label.htmlFor = `toggle-${header}`;
+        label.textContent = header;
+        
+        item.appendChild(checkbox);
+        item.appendChild(label);
+        dropdown.appendChild(item);
+    });
+    
+    console.log('🔧 컬럼 토글 설정 완료');
+},
 
     showLoadingState(container, appInstance) {
         container.innerHTML = `
