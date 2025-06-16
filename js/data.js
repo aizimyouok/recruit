@@ -73,10 +73,16 @@ setTimeout(() => {
             }
 
             setTimeout(() => {
-                if (appInstance.sidebar && appInstance.sidebar.updateWidgets) {
-                    appInstance.sidebar.updateWidgets();
-                }
-            }, 500);
+    if (appInstance.sidebar && appInstance.sidebar.updateWidgets) {
+        appInstance.sidebar.updateWidgets();
+    }
+}, 500);
+
+// 👇 여기에 추가
+if (appInstance.cache) {
+    appInstance.cache.invalidate();
+    console.log('🔄 새 데이터 로드 - 캐시 초기화됨');
+}
 
         } catch (error) {
             console.error("데이터 불러오기 실패:", error);
