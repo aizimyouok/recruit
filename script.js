@@ -487,19 +487,29 @@ const App = {
             const cardsView = document.getElementById('cardsView');
             const viewBtns = document.querySelectorAll('.view-btn');
 
+            // 모든 버튼에서 active 클래스 제거
             viewBtns.forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.view-btn[onclick="App.view.switch('${viewType}')"]`).classList.add('active');
+            
+            // 선택된 뷰 버튼에 active 클래스 추가 (더 안전한 방법으로)
+            const targetBtn = document.querySelector(`.view-btn[onclick*="'${viewType}'"]`);
+            if (targetBtn) {
+                targetBtn.classList.add('active');
+            }
 
             const pageData = App.pagination.getCurrentPageData();
 
             if (viewType === 'table') {
                 tableView.style.display = 'block';
+                cardsView.style.display = 'none';
                 cardsView.classList.remove('active');
                 App.render.table(pageData);
-            } else {
+                console.log('📋 테이블 뷰로 전환');
+            } else if (viewType === 'cards') {
                 tableView.style.display = 'none';
+                cardsView.style.display = 'grid';
                 cardsView.classList.add('active');
                 App.render.cards(pageData);
+                console.log('📱 카드 뷰로 전환');
             }
         }
     },
