@@ -528,8 +528,12 @@ const App = {
         },
 
         table(dataToRender) {
-            const tableContainer = document.querySelector('.table-container');
-
+    const tableContainer = document.querySelector('.table-container');
+    
+    if (!tableContainer) {
+        console.error('❌ table-container를 찾을 수 없습니다.');
+        return;
+    }
             if (!dataToRender && App.state.data.all.length === 0) {
                 tableContainer.innerHTML = App.utils.createSkeletonTable();
                 return;
