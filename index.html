@@ -48,11 +48,11 @@
                     <div class="sidebar-widget-value" id="sidebarTotalApplicants" style="color: #818cf8;">0</div>
                     <div class="sidebar-widget-subtitle" id="sidebarPeriodLabel">전체 기간</div>
                 </div>
-                <div class="sidebar-widget" style="border-left: 3px solid #f59e0b;">
-                    <div class="sidebar-widget-title">면접 대기</div>
-                    <div class="sidebar-widget-value" id="sidebarInterviewPending" style="color: #f59e0b;">0</div>
-                    <div class="sidebar-widget-subtitle">1차 면접확정</div>
-                </div>
+                <div class="sidebar-widget clickable-widget" style="border-left: 3px solid #f59e0b; cursor: pointer; transition: all 0.3s ease;" onclick="globalThis.App.sidebar.showInterviewPending()" onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 4px 15px rgba(245, 158, 11, 0.3)'" onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow=''">
+    <div class="sidebar-widget-title">면접 대기 👆</div>
+    <div class="sidebar-widget-value" id="sidebarInterviewPending" style="color: #f59e0b;">0</div>
+    <div class="sidebar-widget-subtitle">오늘 이후 면접 예정</div>
+</div>
                 <div class="sidebar-widget" style="border-left: 3px solid #10b981;">
                     <div class="sidebar-widget-title">합격률</div>
                     <div class="sidebar-widget-value" id="sidebarSuccessRate" style="color: #10b981;">0%</div>
