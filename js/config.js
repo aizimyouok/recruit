@@ -3,7 +3,7 @@
 // =========================
 
 export const CONFIG = {
-    APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycby3-nGn2KZCc49NIELYgr3_Wp_vUElARftdXuIEk-V2dh3Fb9p2yqe3fN4JhIVqpZR2/exec',
+    APPS_SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbybDOQGRynZ2zdV_lQ9xHLBPW3-lw2E1ObW8iY_WEfOHVgEx42ytByVuLBMqnmINYqE/exec',
     ITEMS_PER_PAGE: 30,
     DEFAULT_HIDDEN_COLUMNS: ['비고', '부재', '거절', '보류', '면접확정', '면접 날짜', '면접 시간', '미참석', '불합격/보류', '입과/출근', '입과일', '지점배치', '면접리뷰'],
     REQUIRED_FIELDS: ['이름', '연락처', '지원루트', '모집분야'],
