@@ -354,16 +354,96 @@ export const CSVProcessor = {
     
     // 대시보드 API로 저장 (간소화된 버전)
     async saveToDashboard(applicantData) {
-        if (!window.App || !window.App.data) {
-            throw new Error('대시보드 시스템에 연결할 수 없습니다.');
+    if (!window.App || !window.App.config) {
+        throw new Error('대시보드 시스템에 연결할 수 없습니다.');
+    }
+    
+    try {
+        // 기존 Apps Script API URL 사용
+        const APPS_SCRIPT_URL = window.App.config.APPS_SCRIPT_URL;
+        
+        if (!APPS_SCRIPT_URL) {
+            throw new Error('Apps Script URL이 설정되지 않았습니다.');
         }
         
-        try {
-            await window.App.data.save(applicantData);
-        } catch (error) {
-            throw new Error(`저장 실패: ${error.message}`);
+        // Apps Script에 직접 POST 요청
+        const response = await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'create',
+                data: applicantData
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-    },
+        
+        const result = await response.json();
+        
+        if (result.status !== 'success') {
+            throw new Error(result.message || '저장에 실패했습니다.');
+        }
+        
+        return result;
+        
+    } catch (error) {
+        console.error('Apps Script 저장 오류:', error);
+        throw new Error(`저장 실패: ${error.message}`);
+    }
+},
+
+// 추가: 전체 데이터 동기화 함수 (csvProcessor.js에 추가)
+async syncWithAppsScript() {
+    try {
+        console.log('🔄 Apps Script와 동기화 중...');
+        
+        if (!window.App || !window.App.config) {
+            throw new Error('대시보드 설정을 찾을 수 없습니다.');
+        }
+        
+        const APPS_SCRIPT_URL = window.App.config.APPS_SCRIPT_URL;
+        
+        // Apps Script에서 전체 데이터 다시 불러오기
+        const response = await fetch(`${APPS_SCRIPT_URL}?action=read&t=${Date.now()}`, {
+            method: 'GET',
+            cache: 'no-cache' // 캐시 무시
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result.status !== 'success') {
+            throw new Error(result.message || '데이터 불러오기 실패');
+        }
+        
+        // 기존 데이터 업데이트
+        if (window.App.state && window.App.state.data) {
+            window.App.state.data.headers = result.data[0] || [];
+            window.App.state.data.all = result.data.slice(1) || [];
+            
+            // UI 새로고침
+            if (window.App.filter && window.App.filter.reset) {
+                window.App.filter.reset();
+            }
+            
+            console.log('✅ Apps Script 동기화 완료');
+            return true;
+        }
+        
+        return false;
+        
+    } catch (error) {
+        console.error('❌ Apps Script 동기화 실패:', error);
+        throw error;
+    }
+},
     
     // 파일 파싱
     async parseFile(file) {
@@ -572,76 +652,136 @@ export const CSVProcessor = {
     },
     
     showCompletionResult() {
-        const overlay = document.querySelector('.processing-overlay');
-        
-        const successCount = this.processedCount;
-        const errorCount = this.errors.length;
-        const duplicateCount = this.duplicates.length;
-        
-        overlay.innerHTML = `
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 40px;">
-                <div style="background: var(--success); border-radius: 50%; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
-                    <i class="fas fa-check" style="color: white; font-size: 2rem;"></i>
+    const overlay = document.querySelector('.processing-overlay');
+    
+    const successCount = this.processedCount;
+    const errorCount = this.errors.length;
+    const duplicateCount = this.duplicates.length;
+    
+    overlay.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 40px;">
+            <div style="background: var(--success); border-radius: 50%; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+                <i class="fas fa-check" style="color: white; font-size: 2rem;"></i>
+            </div>
+            
+            <h3 style="margin: 0 0 20px 0; color: var(--text-primary);">🎉 처리 완료!</h3>
+            
+            <div style="background: white; border-radius: 12px; padding: 20px; width: 100%; max-width: 400px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div style="text-align: center; padding: 15px; background: var(--success); color: white; border-radius: 8px;">
+                        <div style="font-size: 1.5rem; font-weight: 700;">${successCount}</div>
+                        <div style="font-size: 0.9rem;">성공</div>
+                    </div>
+                    ${errorCount > 0 ? `
+                    <div style="text-align: center; padding: 15px; background: var(--danger); color: white; border-radius: 8px;">
+                        <div style="font-size: 1.5rem; font-weight: 700;">${errorCount}</div>
+                        <div style="font-size: 0.9rem;">오류</div>
+                    </div>
+                    ` : `
+                    <div style="text-align: center; padding: 15px; background: var(--warning); color: white; border-radius: 8px;">
+                        <div style="font-size: 1.5rem; font-weight: 700;">${duplicateCount}</div>
+                        <div style="font-size: 0.9rem;">중복 스킵</div>
+                    </div>
+                    `}
                 </div>
                 
-                <h3 style="margin: 0 0 20px 0; color: var(--text-primary);">🎉 처리 완료!</h3>
+                ${errorCount > 0 ? `
+                <div style="margin-bottom: 15px;">
+                    <h4 style="color: var(--danger); margin-bottom: 10px;">오류 발생 항목:</h4>
+                    <div style="max-height: 100px; overflow-y: auto; background: var(--main-bg); padding: 10px; border-radius: 6px; font-size: 0.85rem;">
+                        ${this.errors.map(err => `<div>• ${err.name}: ${err.error}</div>`).join('')}
+                    </div>
+                </div>
+                ` : ''}
                 
-                <div style="background: white; border-radius: 12px; padding: 20px; width: 100%; max-width: 400px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-                        <div style="text-align: center; padding: 15px; background: var(--success); color: white; border-radius: 8px;">
-                            <div style="font-size: 1.5rem; font-weight: 700;">${successCount}</div>
-                            <div style="font-size: 0.9rem;">성공</div>
-                        </div>
-                        ${errorCount > 0 ? `
-                        <div style="text-align: center; padding: 15px; background: var(--danger); color: white; border-radius: 8px;">
-                            <div style="font-size: 1.5rem; font-weight: 700;">${errorCount}</div>
-                            <div style="font-size: 0.9rem;">오류</div>
-                        </div>
-                        ` : `
-                        <div style="text-align: center; padding: 15px; background: var(--warning); color: white; border-radius: 8px;">
-                            <div style="font-size: 1.5rem; font-weight: 700;">${duplicateCount}</div>
-                            <div style="font-size: 0.9rem;">중복 스킵</div>
-                        </div>
-                        `}
+                <!-- Apps Script 동기화 진행 -->
+                <div id="sync-status" style="background: rgba(129, 140, 248, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
+                    <div style="color: var(--sidebar-accent); font-weight: 600; margin-bottom: 5px;">
+                        <i class="fas fa-sync-alt fa-spin"></i> 화면 동기화 중...
                     </div>
-                    
-                    <div style="display: flex; gap: 10px;">
-                        <button onclick="location.reload()" style="
-                            flex: 1;
-                            background: var(--sidebar-accent);
-                            color: white;
-                            border: none;
-                            padding: 12px;
-                            border-radius: 8px;
-                            font-weight: 700;
-                            cursor: pointer;
-                        ">
-                            <i class="fas fa-sync-alt"></i> 새로고침
-                        </button>
-                        <button onclick="window.CSVProcessor.reset()" style="
-                            flex: 1;
-                            background: var(--border-color);
-                            color: var(--text-primary);
-                            border: none;
-                            padding: 12px;
-                            border-radius: 8px;
-                            font-weight: 700;
-                            cursor: pointer;
-                        ">
-                            계속 작업
-                        </button>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                        잠시만 기다려주세요
                     </div>
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="window.CSVProcessor.reset()" style="
+                        flex: 1;
+                        background: var(--border-color);
+                        color: var(--text-primary);
+                        border: none;
+                        padding: 12px;
+                        border-radius: 8px;
+                        font-weight: 700;
+                        cursor: pointer;
+                    ">
+                        계속 작업
+                    </button>
+                    <button onclick="location.reload()" style="
+                        flex: 1;
+                        background: var(--sidebar-accent);
+                        color: white;
+                        border: none;
+                        padding: 12px;
+                        border-radius: 8px;
+                        font-weight: 700;
+                        cursor: pointer;
+                    ">
+                        <i class="fas fa-sync-alt"></i> 새로고침
+                    </button>
                 </div>
             </div>
-        `;
+        </div>
+    `;
+    
+    // Apps Script와 자동 동기화 시작
+    this.performAutoSync();
+},
+
+    // 자동 동기화 수행 (csvProcessor.js에 추가)
+async performAutoSync() {
+    const syncStatus = document.getElementById('sync-status');
+    
+    try {
+        // 2초 후 동기화 시작 (저장 완료를 위한 여유시간)
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // 대시보드 데이터 새로고침
-        if (window.App && window.App.data) {
-            setTimeout(() => {
-                window.App.data.fetch();
-            }, 2000);
+        // Apps Script 동기화 실행
+        await this.syncWithAppsScript();
+        
+        // 성공 상태 표시
+        if (syncStatus) {
+            syncStatus.innerHTML = `
+                <div style="color: var(--success); font-weight: 600; margin-bottom: 5px;">
+                    <i class="fas fa-check-circle"></i> 동기화 완료!
+                </div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                    새 데이터가 화면에 반영되었습니다
+                </div>
+            `;
+            syncStatus.style.background = 'rgba(16, 185, 129, 0.1)';
         }
-    },
+        
+        // 성공 알림
+        this.showSuccessNotification('✅ 새 지원자들이 화면에 나타났습니다!');
+        
+    } catch (error) {
+        console.error('❌ 자동 동기화 실패:', error);
+        
+        // 실패 상태 표시
+        if (syncStatus) {
+            syncStatus.innerHTML = `
+                <div style="color: var(--danger); font-weight: 600; margin-bottom: 5px;">
+                    <i class="fas fa-exclamation-triangle"></i> 동기화 실패
+                </div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                    수동으로 새로고침해주세요
+                </div>
+            `;
+            syncStatus.style.background = 'rgba(239, 68, 68, 0.1)';
+        }
+    }
+}
     
     // 리셋
     reset() {
