@@ -823,52 +823,42 @@ const App = {
         },
 
         calculateStats(filteredApplicants) {
-            const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
-            const interviewResultIndex = App.state.data.headers.indexOf('면접결과');
-            const joinDateIndex = App.state.data.headers.indexOf('입과일');
+    const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
+    const interviewResultIndex = App.state.data.headers.indexOf('면접결과');
+    const joinDateIndex = App.state.data.headers.indexOf('입과일');
 
-            const totalCount = filteredApplicants.length;
+    const totalCount = filteredApplicants.length;
 
-            let interviewPendingCount = 0;
-            if (contactResultIndex !== -1) {
-                interviewPendingCount = filteredApplicants.filter(row => {
-                    const contactResult = String(row[contactResultIndex] || '').trim();
-                    return contactResult === '면접확정';
-                }).length;
-            }
+    let interviewPendingCount = 0;
+    if (contactResultIndex !== -1) {
+        interviewPendingCount = filteredApplicants.filter(row => {
+            const contactResult = String(row[contactResultIndex] || '').trim();
+            return contactResult === '면접확정';
+        }).length;
+    }
 
-            let successRate = 0;
-            if (contactResultIndex !== -1 && interviewResultIndex !== -1) {
-                const interviewConfirmed = filteredApplicants.filter(row => {
-                    const contactResult = String(row[contactResultIndex] || '').trim();
-                    return contactResult === '면접확정';
-                });
+    // 3번: 전체 지원자 대비 합격률
+    let successRate = 0;
+    if (interviewResultIndex !== -1 && totalCount > 0) {
+        const passedApplicants = filteredApplicants.filter(row => {
+            const interviewResult = String(row[interviewResultIndex] || '').trim();
+            return interviewResult === '합격';
+        });
+        successRate = Math.round((passedApplicants.length / totalCount) * 100);
+    }
 
-                const passed = interviewConfirmed.filter(row => {
-                    const interviewResult = String(row[interviewResultIndex] || '').trim();
-                    return interviewResult === '합격';
-                });
+    // 4번: 전체 지원자 대비 입과율 (입과일이 있는 사람 비율)
+    let joinRate = 0;
+    if (joinDateIndex !== -1 && totalCount > 0) {
+        const joinedApplicants = filteredApplicants.filter(row => {
+            const joinDate = String(row[joinDateIndex] || '').trim();
+            return joinDate !== '' && joinDate !== '-';
+        });
+        joinRate = Math.round((joinedApplicants.length / totalCount) * 100);
+    }
 
-                successRate = interviewConfirmed.length > 0 ? Math.round((passed.length / interviewConfirmed.length) * 100) : 0;
-            }
-
-            let joinRate = 0;
-            if (interviewResultIndex !== -1 && joinDateIndex !== -1) {
-                const passedApplicants = filteredApplicants.filter(row => {
-                    const interviewResult = String(row[interviewResultIndex] || '').trim();
-                    return interviewResult === '합격';
-                });
-
-                const joinedApplicants = passedApplicants.filter(row => {
-                    const joinDate = String(row[joinDateIndex] || '').trim();
-                    return joinDate !== '' && joinDate !== '-';
-                });
-
-                joinRate = passedApplicants.length > 0 ? Math.round((joinedApplicants.length / passedApplicants.length) * 100) : 0;
-            }
-
-            return { totalCount, interviewPendingCount, successRate, joinRate };
-        },
+    return { totalCount, interviewPendingCount, successRate, joinRate };
+},
 
         updateUI(stats, periodLabel) {
             document.getElementById('sidebarTotalApplicants').textContent = stats.totalCount;
