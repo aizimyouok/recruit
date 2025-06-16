@@ -328,16 +328,16 @@ const App = {
                 const day = now.getDate().toString().padStart(2, '0');
 
                 if (App.state.ui.activeDateMode === 'all') {
-                    html = `<span style="color: var(--text-secondary); font-size: 0.9rem; padding: 0 10px;">모든 데이터 표시</span>`;
-                } else if (App.state.ui.activeDateMode === 'year') {
-                    html = `<input type="number" id="dateInput" value="${year}" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()">`;
-                } else if (App.state.ui.activeDateMode === 'month') {
-                    html = `<button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(-1)">&lt;</button><input type="month" id="dateInput" value="${year}-${month}" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()"><button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(1)">&gt;</button>`;
-                } else if (App.state.ui.activeDateMode === 'day') {
-                    html = `<button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(-1)">&lt;</button><input type="date" id="dateInput" value="${year}-${month}-${day}" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()"><button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(1)">&gt;</button>`;
-                } else if (App.state.ui.activeDateMode === 'range') {
-                    html = `<input type="date" id="startDateInput" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()"><span style="margin: 0 5px;">-</span><input type="date" id="endDateInput" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()">`;
-                }
+    html = `<span style="color: var(--text-secondary); font-size: 0.9rem; padding: 0 10px;">모든 데이터 표시</span>`;
+} else if (App.state.ui.activeDateMode === 'year') {
+    html = `<button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(-1)">&lt;</button><input type="number" id="dateInput" value="${year}" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()" style="text-align: center; width: 80px;"><button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(1)">&gt;</button>`;
+} else if (App.state.ui.activeDateMode === 'month') {
+    html = `<button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(-1)">&lt;</button><input type="month" id="dateInput" value="${year}-${month}" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()"><button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(1)">&gt;</button>`;
+} else if (App.state.ui.activeDateMode === 'day') {
+    html = `<button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(-1)">&lt;</button><input type="date" id="dateInput" value="${year}-${month}-${day}" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()"><button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(1)">&gt;</button>`;
+} else if (App.state.ui.activeDateMode === 'range') {
+    html = `<input type="date" id="startDateInput" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()"><span style="margin: 0 5px;">-</span><input type="date" id="endDateInput" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()">`;
+}
                 container.innerHTML = html;
             } catch (error) {
                 console.error('날짜 필터 UI 업데이트 오류:', error);
