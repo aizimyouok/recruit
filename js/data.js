@@ -100,7 +100,7 @@ export const DataModule = {
         const positionIndex = appInstance.state.data.headers.indexOf('모집분야');
         const routeIndex = appInstance.state.data.headers.indexOf('지원루트');
         const recruiterIndex = appInstance.state.data.headers.indexOf('증원자');
-        const interviewerIndex = appInstance.state.data.headers.indexOf('면접자');
+        const interviewerIndex = appInstance.state.data.headers.indexOf('면접관');
 
         const scheduleContainer = document.getElementById('interviewScheduleList');
         
@@ -139,7 +139,7 @@ export const DataModule = {
             <table class="interview-schedule-table">
                 <thead>
                     <tr>
-                        <th>이름</th><th>지원루트</th><th>증원자</th><th>모집분야</th><th>면접자</th><th>면접날짜</th><th>면접시간</th>
+                        <th>이름</th><th>지원루트</th><th>증원자</th><th>모집분야</th><th>면접관</th><th>면접날짜</th><th>면접시간</th>
                     </tr>
                 </thead>
                 <tbody>
