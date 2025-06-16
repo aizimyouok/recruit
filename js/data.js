@@ -41,33 +41,32 @@ export const DataModule = {
                 .map(row => row.map(cell => cell == null ? '' : String(cell)));
 
             DataModule.updateSequenceNumber(appInstance);
-            appInstance.state.ui.visibleColumns = appInstance.utils.generateVisibleColumns(appInstance.state.data.headers);
-            
-            // 컬럼 토글을 먼저 설정 (즉시 실행)
-            if (appInstance.ui && appInstance.ui.setupColumnToggles) {
-                appInstance.ui.setupColumnToggles();
-            }
-            
-            if (appInstance.filter && appInstance.filter.populateDropdowns) {
-                appInstance.filter.populateDropdowns();
-            }
-            
-            if (appInstance.sidebar && appInstance.sidebar.updateWidgets) {
-                appInstance.sidebar.updateWidgets();
-            }
-            
-            DataModule.updateInterviewSchedule(appInstance);
-            
-            if (appInstance.filter && appInstance.filter.reset) {
-                appInstance.filter.reset(true);
-            }
+appInstance.state.ui.visibleColumns = appInstance.utils.generateVisibleColumns(appInstance.state.data.headers);
 
-            // 컬럼 설정 완료 후 테이블 렌더링 (짧은 지연)
-            setTimeout(() => {
-                if (appInstance.render && appInstance.state.data.all.length > 0) {
-                    appInstance.render.currentView();
-                }
-            }, 100);
+if (appInstance.filter && appInstance.filter.populateDropdowns) {
+    appInstance.filter.populateDropdowns();
+}
+
+if (appInstance.sidebar && appInstance.sidebar.updateWidgets) {
+    appInstance.sidebar.updateWidgets();
+}
+
+DataModule.updateInterviewSchedule(appInstance);
+
+if (appInstance.filter && appInstance.filter.reset) {
+    appInstance.filter.reset(true);
+}
+
+// DOM이 완전히 준비된 후 컬럼 토글 설정
+setTimeout(() => {
+    if (appInstance.ui && appInstance.ui.setupColumnToggles) {
+        appInstance.ui.setupColumnToggles();
+    }
+    
+    if (appInstance.render && appInstance.state.data.all.length > 0) {
+        appInstance.render.currentView();
+    }
+}, 50);
 
             if (tableContainer) {
                 appInstance.ui.updateProgress(tableContainer, 100, '완료!');
