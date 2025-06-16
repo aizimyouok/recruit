@@ -1,5 +1,5 @@
 // =========================
-// utils.js - 순수 유틸리티 함수들만 (순환 참조 없음)
+// utils.js - 순수 유틸리티 함수들 (안전한 DOM 접근 버전)
 // =========================
 
 export const Utils = {
@@ -87,6 +87,8 @@ export const Utils = {
     },
 
     extractRegion(address) {
+        if (!address || typeof address !== 'string') return '기타';
+        
         if (address.includes('서울')) return '서울';
         else if (address.includes('경기')) return '경기';
         else if (address.includes('인천')) return '인천';
@@ -108,20 +110,30 @@ export const Utils = {
     },
 
     formatPhoneNumber(input) {
-        let value = input.value.replace(/\D/g, '').slice(0, 11);
-        if (value.length > 7) {
-            input.value = `${value.slice(0, 3)}-${value.slice(3, 7)}-${value.slice(7)}`;
-        } else if (value.length > 3) {
-            input.value = `${value.slice(0, 3)}-${value.slice(3)}`;
-        } else {
-            input.value = value;
+        if (!input || !input.value) return;
+        
+        try {
+            let value = input.value.replace(/\D/g, '').slice(0, 11);
+            if (value.length > 7) {
+                input.value = `${value.slice(0, 3)}-${value.slice(3, 7)}-${value.slice(7)}`;
+            } else if (value.length > 3) {
+                input.value = `${value.slice(0, 3)}-${value.slice(3)}`;
+            } else {
+                input.value = value;
+            }
+        } catch (error) {
+            console.warn('전화번호 포맷팅 오류:', error);
         }
     },
 
     updateElement(elementId, value) {
-        const element = document.getElementById(elementId);
-        if (element) {
-            element.textContent = value;
+        try {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = String(value || '');
+            }
+        } catch (error) {
+            console.warn(`요소 업데이트 실패: ${elementId}`, error);
         }
     },
 
@@ -177,6 +189,9 @@ export const Utils = {
     },
 
     createProgressBar(percentage = 0, text = '로딩 중...') {
+        percentage = Math.max(0, Math.min(100, Number(percentage) || 0));
+        text = String(text || '로딩 중...');
+        
         return `
             <div class="progress-container">
                 <div class="progress-bar">
@@ -216,5 +231,50 @@ export const Utils = {
                 </table>
             </div>
         `;
+    },
+
+    // 안전한 DOM 쿼리 함수
+    safeQuerySelector(selector) {
+        try {
+            return document.querySelector(selector);
+        } catch (error) {
+            console.warn(`쿼리 셀렉터 오류: ${selector}`, error);
+            return null;
+        }
+    },
+
+    safeQuerySelectorAll(selector) {
+        try {
+            return document.querySelectorAll(selector);
+        } catch (error) {
+            console.warn(`쿼리 셀렉터 올 오류: ${selector}`, error);
+            return [];
+        }
+    },
+
+    // 안전한 이벤트 리스너 추가
+    safeAddEventListener(element, event, handler) {
+        try {
+            if (element && typeof element.addEventListener === 'function') {
+                element.addEventListener(event, handler);
+                return true;
+            }
+        } catch (error) {
+            console.warn('이벤트 리스너 추가 실패:', error);
+        }
+        return false;
+    },
+
+    // 안전한 스타일 설정
+    safeSetStyle(element, property, value) {
+        try {
+            if (element && element.style) {
+                element.style[property] = value;
+                return true;
+            }
+        } catch (error) {
+            console.warn('스타일 설정 실패:', error);
+        }
+        return false;
     }
 };
