@@ -1250,145 +1250,130 @@ body {
 .cards-container { 
     display: none; 
     padding: 20px; 
+    min-height: 200px;
 }
 
 .cards-container.active { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+    display: grid !important; 
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
     gap: 20px; 
+    align-items: start;
 }
 
 .applicant-card { 
     background: var(--content-bg); 
-    border: 1px solid var(--border-color); 
-    border-radius: var(--border-radius); 
+    border: 2px solid var(--border-color); 
+    border-radius: 12px; 
     padding: 20px; 
-    transition: all 0.2s ease; 
+    transition: all 0.3s ease; 
     cursor: pointer; 
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.applicant-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(129, 140, 248, 0.1), transparent);
+    transition: left 0.5s ease;
 }
 
 .applicant-card:hover { 
-    transform: translateY(-2px); 
-    box-shadow: var(--shadow-md); 
+    transform: translateY(-4px); 
+    box-shadow: 0 8px 25px rgba(129, 140, 248, 0.15);
+    border-color: var(--sidebar-accent);
+}
+
+.applicant-card:hover::before {
+    left: 100%;
 }
 
 .card-header { 
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
-    margin-bottom: 15px; 
+    margin-bottom: 16px; 
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--border-color);
 }
 
 .card-name { 
-    font-size: 1.2rem; 
-    font-weight: 600; 
+    font-size: 1.3rem; 
+    font-weight: 700; 
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
 }
 
 .card-sequence { 
-    background: var(--sidebar-accent); 
+    background: linear-gradient(135deg, var(--sidebar-accent), #a78bfa); 
     color: white; 
-    padding: 4px 8px; 
-    border-radius: 12px; 
+    padding: 6px 12px; 
+    border-radius: 20px; 
     font-size: 0.8rem; 
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(129, 140, 248, 0.3);
 }
 
 .card-info { 
-    margin-bottom: 10px; 
+    margin-bottom: 16px; 
+    line-height: 1.6;
+}
+
+.card-info > div {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 .card-label { 
-    font-weight: 500; 
+    font-weight: 600; 
     color: var(--text-secondary); 
     margin-right: 8px; 
-}
-
-.card-footer { 
-    border-top: 1px solid var(--border-color); 
-    padding-top: 15px; 
-    margin-top: 15px; 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-}
-
-.data-table .detail-row { 
-    display: none; 
-}
-
-.data-table .detail-row.show { 
-    display: table-row; 
-    background-color: var(--main-bg); 
-}
-
-.detail-content { 
-    padding: 20px; 
-    box-shadow: inset 0 4px 6px -1px rgba(0,0,0,0.05);
-}
-
-.detail-table { 
-    width: 100%; 
-    border-spacing: 0; 
-    border-collapse: collapse; 
-}
-
-.detail-table td { 
-    padding: 6px 8px; 
-    border-bottom: 1px solid var(--border-color); 
-    white-space: normal; 
-    text-align: left;
-    vertical-align: top;
-}
-
-.detail-table tr:last-child td { 
-    border-bottom: none; 
-}
-
-.detail-table strong { 
-    color: var(--text-secondary); 
-    font-weight: 600;
+    min-width: 80px;
     font-size: 0.9rem;
 }
 
-.column-toggle-container { 
-    position: relative; 
-}
-
-.column-toggle-dropdown { 
-    display: none; 
-    position: absolute; 
-    top: 100%; 
-    right: 0; 
-    margin-top: 5px; 
-    background-color: var(--content-bg); 
-    border: 1px solid var(--border-color); 
-    border-radius: var(--border-radius); 
-    box-shadow: var(--shadow-md); 
-    padding: 15px; 
-    width: 200px; 
-    z-index: 100; 
-}
-
-.column-toggle-item { 
+.card-footer { 
+    border-top: 2px solid var(--border-color); 
+    padding-top: 16px; 
+    margin-top: 16px; 
     display: flex; 
+    justify-content: space-between; 
     align-items: center; 
-    margin-bottom: 10px; 
+    font-size: 0.9rem;
+    color: var(--text-secondary);
 }
 
-.column-toggle-item:last-child { 
-    margin-bottom: 0; 
+.phone-link {
+    background: linear-gradient(135deg, var(--success), #059669);
+    color: white !important;
+    padding: 8px 12px;
+    border-radius: 50%;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
-.column-toggle-item input { 
-    margin-right: 10px; 
-    width: 16px; 
-    height: 16px; 
+.phone-link:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
 }
 
-.column-toggle-item label { 
-    cursor: pointer; 
-    font-size: 0.95rem; 
+/* 상태 배지 카드용 */
+.card-info .status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
-
 /* =========================
    모달
    ========================= */
