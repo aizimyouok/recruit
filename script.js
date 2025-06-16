@@ -9,6 +9,7 @@ import { UIModule } from './js/ui.js';
 import { ModalModule } from './modal.js';
 import { NavigationModule } from './navigation.js';
 import { ThemeModule } from './theme.js';
+import { CacheModule } from './js/cache.js';
 
 // =========================
 // 애플리케이션 메인 객체
@@ -24,6 +25,7 @@ const App = {
     // 애플리케이션 상태 (state.js에서 가져옴)
     // =========================
     state: createInitialState(),
+    cache: CacheModule,
 
     // =========================
     // 애플리케이션 초기화
@@ -132,13 +134,24 @@ const App = {
     // 데이터 관련
     // =========================
     data: {
-        fetch: () => DataModule.fetch(App),
-        updateSequenceNumber: () => DataModule.updateSequenceNumber(App),
-        updateInterviewSchedule: () => DataModule.updateInterviewSchedule(App),
-        showInterviewDetails: (name, route) => DataModule.showInterviewDetails(App, name, route),
-        save: (data, isUpdate, gubun) => DataModule.save(App, data, isUpdate, gubun),
-        delete: (gubun) => DataModule.delete(App, gubun)
+    fetch: () => DataModule.fetch(App),
+    updateSequenceNumber: () => DataModule.updateSequenceNumber(App),
+    updateInterviewSchedule: () => DataModule.updateInterviewSchedule(App),
+    showInterviewDetails: (name, route) => DataModule.showInterviewDetails(App, name, route),
+    
+    // 👇 이 부분을 통째로 교체
+    async save(data, isUpdate = false, gubun = null) {
+        const result = await DataModule.save(App, data, isUpdate, gubun);
+        App.cache.invalidate(); // 👈 이 줄 추가
+        return result;
     },
+    
+    async delete(gubun) {
+        const result = await DataModule.delete(App, gubun);
+        App.cache.invalidate(); // 👈 이 줄 추가
+        return result;
+    }
+},
 
     // =========================
     // 모달 관련 (모듈에서 가져옴)
@@ -768,25 +781,51 @@ sidebar: {
     },
 
     updateWidgets() {
-        const selectedPeriod = document.getElementById('sidebarPeriodFilter')?.value || 'all';
-        const applyDateIndex = App.state.data.headers.indexOf('지원일');
+    const selectedPeriod = document.getElementById('sidebarPeriodFilter')?.value || 'all';
+    const customStartDate = document.getElementById('sidebarStartDate')?.value;
+    const customEndDate = document.getElementById('sidebarEndDate')?.value;
+    
+    // 캐시 키를 위한 필터 정보
+    const filters = {
+        period: selectedPeriod,
+        startDate: customStartDate,
+        endDate: customEndDate,
+        dataLength: App.state.data.all.length
+    };
 
-        let filteredApplicants = [...App.state.data.all];
-        let periodLabel = '전체 기간';
-
-        if (applyDateIndex !== -1 && selectedPeriod !== 'all') {
-            const result = App.sidebar.filterByPeriod(filteredApplicants, selectedPeriod, applyDateIndex);
-            filteredApplicants = result.data;
-            periodLabel = result.label;
-        }
-
-        const stats = App.sidebar.calculateStats(filteredApplicants);
-        App.sidebar.updateUI(stats, periodLabel);
-
+    // 캐시 확인
+    const cachedResult = App.cache.get('sidebar', filters);
+    if (cachedResult) {
+        App.sidebar.updateUI(cachedResult.stats, cachedResult.periodLabel);
         if (document.getElementById('stats').classList.contains('active')) {
             App.stats.update();
         }
-    },
+        return;
+    }
+
+    // 캐시가 없으면 새로 계산
+    const applyDateIndex = App.state.data.headers.indexOf('지원일');
+    let filteredApplicants = [...App.state.data.all];
+    let periodLabel = '전체 기간';
+
+    if (applyDateIndex !== -1 && selectedPeriod !== 'all') {
+        const result = App.sidebar.filterByPeriod(filteredApplicants, selectedPeriod, applyDateIndex);
+        filteredApplicants = result.data;
+        periodLabel = result.label;
+    }
+
+    const stats = App.sidebar.calculateStats(filteredApplicants);
+    
+    // 결과를 캐시에 저장
+    const result = { stats, periodLabel };
+    App.cache.set('sidebar', filters, result);
+    
+    App.sidebar.updateUI(stats, periodLabel);
+
+    if (document.getElementById('stats').classList.contains('active')) {
+        App.stats.update();
+    }
+},
 
     filterByPeriod(data, selectedPeriod, applyDateIndex) {
         return App.sidebar.filterByPeriod(data, selectedPeriod, applyDateIndex);
@@ -941,37 +980,73 @@ sidebar: {
         },
 
         update() {
-            if (!App.state.data.all || App.state.data.all.length === 0) {
-                console.log('데이터가 없어서 통계 업데이트 불가');
-                return;
+    if (!App.state.data.all || App.state.data.all.length === 0) {
+        console.log('데이터가 없어서 통계 업데이트 불가');
+        return;
+    }
+
+    try {
+        const selectedPeriod = document.getElementById('statsPeriodFilter')?.value || 'all';
+        const customStartDate = document.getElementById('statsStartDate')?.value;
+        const customEndDate = document.getElementById('statsEndDate')?.value;
+        
+        // 캐시 키를 위한 필터 정보
+        const filters = {
+            period: selectedPeriod,
+            startDate: customStartDate,
+            endDate: customEndDate,
+            dataLength: App.state.data.all.length // 데이터 변경 감지용
+        };
+
+        // 캐시 확인
+        const cachedResult = App.cache.get('stats', filters);
+        if (cachedResult) {
+            // 캐시된 데이터로 즉시 렌더링
+            App.stats.updateStatCards(cachedResult.stats, cachedResult.periodLabel);
+            if (window.Chart && Object.keys(App.state.charts.instances).length > 0) {
+                App.charts.updateData(cachedResult.filteredData);
             }
+            App.trend.update(cachedResult.filteredData, cachedResult.applyDateIndex);
+            return cachedResult;
+        }
 
-            try {
-                const selectedPeriod = document.getElementById('statsPeriodFilter')?.value || 'all';
-                const applyDateIndex = App.state.data.headers.indexOf('지원일');
+        // 캐시가 없으면 새로 계산
+        console.log('🔄 통계 새로 계산 중...');
+        
+        const applyDateIndex = App.state.data.headers.indexOf('지원일');
+        let filteredApplicants = [...App.state.data.all];
+        let periodLabel = '전체 기간';
 
-                let filteredApplicants = [...App.state.data.all];
-                let periodLabel = '전체 기간';
+        if (applyDateIndex !== -1 && selectedPeriod !== 'all') {
+            const result = App.stats.filterByPeriod(filteredApplicants, selectedPeriod, applyDateIndex);
+            filteredApplicants = result.data;
+            periodLabel = result.label;
+        }
 
-                if (applyDateIndex !== -1 && selectedPeriod !== 'all') {
-                    const result = App.stats.filterByPeriod(filteredApplicants, selectedPeriod, applyDateIndex);
-                    filteredApplicants = result.data;
-                    periodLabel = result.label;
-                }
+        const stats = App.sidebar.calculateStats(filteredApplicants);
+        
+        // 결과를 캐시에 저장
+        const result = {
+            stats,
+            periodLabel,
+            filteredData: filteredApplicants,
+            applyDateIndex
+        };
+        App.cache.set('stats', filters, result);
 
-                const stats = App.sidebar.calculateStats(filteredApplicants);
-                App.stats.updateStatCards(stats, periodLabel);
+        // 화면 업데이트
+        App.stats.updateStatCards(stats, periodLabel);
+        if (window.Chart && Object.keys(App.state.charts.instances).length > 0) {
+            App.charts.updateData(filteredApplicants);
+        }
+        App.trend.update(filteredApplicants, applyDateIndex);
 
-                if (window.Chart && Object.keys(App.state.charts.instances).length > 0) {
-                    App.charts.updateData(filteredApplicants);
-                }
+        return result;
 
-                App.trend.update(filteredApplicants, applyDateIndex);
-
-            } catch (error) {
-                console.error('❌ 통계 데이터 업데이트 실패:', error);
-            }
-        },
+    } catch (error) {
+        console.error('❌ 통계 데이터 업데이트 실패:', error);
+    }
+},
 
         filterByPeriod(data, selectedPeriod, applyDateIndex) {
             return App.sidebar.filterByPeriod(data, selectedPeriod, applyDateIndex);
