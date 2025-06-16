@@ -905,6 +905,84 @@ body {
 }
 
 /* =========================
+   컬럼 토글 드롭다운
+   ========================= */
+
+.column-toggle-container {
+    position: relative;
+    display: inline-block;
+}
+
+.column-toggle-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--content-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 200px;
+    max-width: 250px;
+    max-height: 400px;
+    overflow-y: auto;
+    margin-top: 5px;
+    animation: dropdownSlideIn 0.2s ease;
+}
+
+@keyframes dropdownSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.column-toggle-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.column-toggle-item:last-child {
+    border-bottom: none;
+}
+
+.column-toggle-item:hover {
+    background: var(--main-bg);
+    transform: translateX(2px);
+}
+
+.column-toggle-item input[type="checkbox"] {
+    margin-right: 10px;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--sidebar-accent);
+}
+
+.column-toggle-item label {
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin: 0;
+    flex: 1;
+    user-select: none;
+}
+
+.column-toggle-item label:hover {
+    color: var(--sidebar-accent);
+}
+
+/* =========================
    검색 필터
    ========================= */
 
