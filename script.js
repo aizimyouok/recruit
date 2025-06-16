@@ -10,6 +10,7 @@ import { ModalModule } from './modal.js';
 import { NavigationModule } from './navigation.js';
 import { ThemeModule } from './theme.js';
 import { CacheModule } from './js/cache.js';
+import { DataCacheModule } from './js/dataCache.js';
 
 // =========================
 // 애플리케이션 메인 객체
@@ -26,6 +27,7 @@ const App = {
     // =========================
     state: createInitialState(),
     cache: CacheModule,
+    dataCache: DataCacheModule,
 
     // =========================
     // 애플리케이션 초기화
