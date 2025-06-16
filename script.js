@@ -1565,18 +1565,18 @@ const App = {
 
         updateInterviewer(filteredData) {
             try {
-                const interviewerIndex = App.state.data.headers.indexOf('면접관');
+                const interviewerIndex = App.state.data.headers.indexOf('면접자');
 
                 if (interviewerIndex === -1) {
-                    document.getElementById('efficiencyTabContent').innerHTML = '<p style="text-align: center; padding: 20px; color: var(--text-secondary);">면접관 데이터를 찾을 수 없습니다.</p>';
+                    document.getElementById('efficiencyTabContent').innerHTML = '<p style="text-align: center; padding: 20px; color: var(--text-secondary);">면접자 데이터를 찾을 수 없습니다.</p>';
                     return;
                 }
 
                 const interviewerStats = App.efficiency.calculateStats(filteredData, interviewerIndex);
-                App.efficiency.renderTable(interviewerStats, '면접관');
+                App.efficiency.renderTable(interviewerStats, '면접자');
 
             } catch (error) {
-                console.error('면접관별 효율성 분석 업데이트 실패:', error);
+                console.error('면접자별 효율성 분석 업데이트 실패:', error);
                 document.getElementById('efficiencyTabContent').innerHTML = '<p style="text-align: center; padding: 20px; color: var(--danger);">분석 중 오류가 발생했습니다.</p>';
             }
         },
