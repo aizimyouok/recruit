@@ -1,5 +1,5 @@
 // =========================
-// utils.js - 유틸리티 함수들
+// utils.js - 순수 유틸리티 함수들만 (순환 참조 없음)
 // =========================
 
 export const Utils = {
@@ -86,37 +86,6 @@ export const Utils = {
         return '';
     },
 
-    sortData(data) {
-        if (window.App.state.ui.currentSortColumn && window.App.state.ui.currentSortDirection) {
-            const sortIndex = window.App.state.data.headers.indexOf(window.App.state.ui.currentSortColumn);
-            if (sortIndex !== -1) {
-                data.sort((a, b) => {
-                    let valA = a[sortIndex];
-                    let valB = b[sortIndex];
-
-                    if (window.App.state.ui.currentSortColumn === '지원일' ||
-                        window.App.state.ui.currentSortColumn.includes('날짜') ||
-                        window.App.state.ui.currentSortColumn.includes('날자') ||
-                        window.App.state.ui.currentSortColumn.includes('입과일')) {
-                        valA = new Date(valA || '1970-01-01');
-                        valB = new Date(valB || '1970-01-01');
-                    } else if (['나이', '구분'].includes(window.App.state.ui.currentSortColumn)) {
-                        valA = Number(valA) || 0;
-                        valB = Number(valB) || 0;
-                    } else {
-                        valA = String(valA || '').toLowerCase();
-                        valB = String(valB || '').toLowerCase();
-                    }
-
-                    if (valA < valB) return window.App.state.ui.currentSortDirection === 'asc' ? -1 : 1;
-                    if (valA > valB) return window.App.state.ui.currentSortDirection === 'asc' ? 1 : -1;
-                    return 0;
-                });
-            }
-        }
-        return data;
-    },
-
     extractRegion(address) {
         if (address.includes('서울')) return '서울';
         else if (address.includes('경기')) return '경기';
@@ -136,91 +105,6 @@ export const Utils = {
         else if (address.includes('경남') || address.includes('경상남')) return '경남';
         else if (address.includes('제주')) return '제주';
         else return '기타';
-    },
-
-    filterDataByPeriod(data, selectedPeriod, applyDateIndex, now) {
-        let filteredData = [...data];
-        let label = '전체 기간';
-
-        if (selectedPeriod === 'year') {
-            const currentYear = now.getFullYear();
-            filteredData = data.filter(row => {
-                try {
-                    const dateValue = row[applyDateIndex];
-                    if (!dateValue) return false;
-                    const date = new Date(dateValue);
-                    return date.getFullYear() === currentYear;
-                } catch (e) { return false; }
-            });
-            label = `${currentYear}년`;
-
-        } else if (selectedPeriod === 'month') {
-            const currentMonth = now.getMonth() + 1;
-            const currentYear = now.getFullYear();
-            filteredData = data.filter(row => {
-                try {
-                    const dateValue = row[applyDateIndex];
-                    if (!dateValue) return false;
-                    const date = new Date(dateValue);
-                    return date.getMonth() + 1 === currentMonth && date.getFullYear() === currentYear;
-                } catch (e) { return false; }
-            });
-            label = `${currentYear}.${currentMonth.toString().padStart(2, '0')}`;
-
-        } else if (selectedPeriod === 'week') {
-            const weekStart = new Date(now);
-            weekStart.setDate(now.getDate() - now.getDay());
-            weekStart.setHours(0, 0, 0, 0);
-            const weekEnd = new Date(weekStart);
-            weekEnd.setDate(weekStart.getDate() + 6);
-            weekEnd.setHours(23, 59, 59, 999);
-
-            filteredData = data.filter(row => {
-                try {
-                    const dateValue = row[applyDateIndex];
-                    if (!dateValue) return false;
-                    const date = new Date(dateValue);
-                    return date >= weekStart && date <= weekEnd;
-                } catch (e) { return false; }
-            });
-            label = '이번 주';
-        }
-
-        return { data: filteredData, label };
-    },
-
-    getFilteredDataByPeriod(selectedPeriod) {
-        const applyDateIndex = window.App.state.data.headers.indexOf('지원일');
-        let filteredApplicants = [...window.App.state.data.all];
-
-        if (applyDateIndex !== -1 && selectedPeriod !== 'all') {
-            const now = new Date();
-
-            if (selectedPeriod === 'custom') {
-                const startDate = document.getElementById('statsStartDate')?.value;
-                const endDate = document.getElementById('statsEndDate')?.value;
-
-                if (startDate && endDate) {
-                    const start = new Date(startDate);
-                    const end = new Date(endDate);
-                    end.setHours(23, 59, 59, 999);
-
-                    filteredApplicants = window.App.state.data.all.filter(row => {
-                        try {
-                            const dateValue = row[applyDateIndex];
-                            if (!dateValue) return false;
-                            const date = new Date(dateValue);
-                            return date >= start && date <= end;
-                        } catch (e) { return false; }
-                    });
-                }
-            } else {
-                const result = Utils.filterDataByPeriod(window.App.state.data.all, selectedPeriod, applyDateIndex, now);
-                filteredApplicants = result.data;
-            }
-        }
-
-        return filteredApplicants;
     },
 
     formatPhoneNumber(input) {
@@ -332,13 +216,5 @@ export const Utils = {
                 </table>
             </div>
         `;
-    },
-
-    generateVisibleColumns(headers) {
-        const visibleColumns = {};
-        headers.forEach(header => {
-            visibleColumns[header] = !window.App.config.DEFAULT_HIDDEN_COLUMNS.includes(header);
-        });
-        return visibleColumns;
     }
 };
