@@ -830,8 +830,49 @@ sidebar: {
 },
 
     filterByPeriod(data, selectedPeriod, applyDateIndex) {
-        return App.sidebar.filterByPeriod(data, selectedPeriod, applyDateIndex);
-    },
+    const now = new Date();
+    let filteredData = [...data];
+    let label = '전체 기간';
+
+    try {
+        if (selectedPeriod === 'custom') {
+            const startDateElement = document.getElementById('sidebarStartDate');
+            const endDateElement = document.getElementById('sidebarEndDate');
+            
+            const startDate = startDateElement ? startDateElement.value : null;
+            const endDate = endDateElement ? endDateElement.value : null;
+
+            if (startDate && endDate) {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                end.setHours(23, 59, 59, 999);
+
+                filteredData = data.filter(row => {
+                    try {
+                        const dateValue = row[applyDateIndex];
+                        if (!dateValue) return false;
+                        const date = new Date(dateValue);
+                        return date >= start && date <= end;
+                    } catch (e) { return false; }
+                });
+                
+                const startStr = start.toLocaleDateString('ko-KR');
+                const endStr = end.toLocaleDateString('ko-KR');
+                label = `${startStr} ~ ${endStr}`;
+            }
+        } else {
+            const result = App.utils.filterDataByPeriod(data, selectedPeriod, applyDateIndex, now);
+            filteredData = result.data;
+            label = result.label;
+        }
+    } catch (error) {
+        console.error('사이드바 날짜 필터링 오류:', error);
+        filteredData = data;
+        label = '전체 기간';
+    }
+
+    return { data: filteredData, label };
+},
 
     calculateStats(filteredApplicants) {
         const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
@@ -1050,6 +1091,7 @@ sidebar: {
     }
 },
 
+    
         filterByPeriod(data, selectedPeriod, applyDateIndex) {
             return App.sidebar.filterByPeriod(data, selectedPeriod, applyDateIndex);
         },
