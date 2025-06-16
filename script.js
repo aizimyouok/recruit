@@ -11,6 +11,7 @@ import { NavigationModule } from './navigation.js';
 import { ThemeModule } from './theme.js';
 import { CacheModule } from './js/cache.js';
 import { DataCacheModule } from './js/dataCache.js';
+import { SmartSyncModule } from './js/smartSync.js';
 
 // =========================
 // 애플리케이션 메인 객체
@@ -28,6 +29,7 @@ const App = {
     state: createInitialState(),
     cache: CacheModule,
     dataCache: DataCacheModule,
+    smartSync: SmartSyncModule,
 
     // =========================
     // 애플리케이션 초기화
@@ -2234,6 +2236,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         App.init.start();
+        App.smartSync.init(App);
         console.log('✅ 애플리케이션 초기화 완료');
         
     } catch (error) {
