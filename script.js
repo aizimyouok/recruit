@@ -752,214 +752,177 @@ const App = {
     },
 
     // =========================
-    // 사이드바 관련
-    // =========================
-    sidebar: {
-        handlePeriodChange() {
-            const selectedPeriod = document.getElementById('sidebarPeriodFilter').value;
-            const customRange = document.getElementById('sidebarCustomDateRange');
+// 사이드바 관련
+// =========================
+sidebar: {
+    handlePeriodChange() {
+        const selectedPeriod = document.getElementById('sidebarPeriodFilter').value;
+        const customRange = document.getElementById('sidebarCustomDateRange');
 
-            if (selectedPeriod === 'custom') {
-                customRange.style.display = 'block';
-            } else {
-                customRange.style.display = 'none';
-                App.sidebar.updateWidgets();
-            }
-        },
+        if (selectedPeriod === 'custom') {
+            customRange.style.display = 'block';
+        } else {
+            customRange.style.display = 'none';
+            App.sidebar.updateWidgets();
+        }
+    },
 
-        updateWidgets() {
-            const selectedPeriod = document.getElementById('sidebarPeriodFilter')?.value || 'all';
-            const applyDateIndex = App.state.data.headers.indexOf('지원일');
+    updateWidgets() {
+        const selectedPeriod = document.getElementById('sidebarPeriodFilter')?.value || 'all';
+        const applyDateIndex = App.state.data.headers.indexOf('지원일');
 
-            let filteredApplicants = [...App.state.data.all];
-            let periodLabel = '전체 기간';
+        let filteredApplicants = [...App.state.data.all];
+        let periodLabel = '전체 기간';
 
-            if (applyDateIndex !== -1 && selectedPeriod !== 'all') {
-                const result = App.sidebar.filterByPeriod(filteredApplicants, selectedPeriod, applyDateIndex);
-                filteredApplicants = result.data;
-                periodLabel = result.label;
-            }
+        if (applyDateIndex !== -1 && selectedPeriod !== 'all') {
+            const result = App.sidebar.filterByPeriod(filteredApplicants, selectedPeriod, applyDateIndex);
+            filteredApplicants = result.data;
+            periodLabel = result.label;
+        }
 
-            const stats = App.sidebar.calculateStats(filteredApplicants);
-            App.sidebar.updateUI(stats, periodLabel);
+        const stats = App.sidebar.calculateStats(filteredApplicants);
+        App.sidebar.updateUI(stats, periodLabel);
 
-            if (document.getElementById('stats').classList.contains('active')) {
-                App.stats.update();
-            }
-        },
+        if (document.getElementById('stats').classList.contains('active')) {
+            App.stats.update();
+        }
+    },
 
-        filterByPeriod(data, selectedPeriod, applyDateIndex) {
-            const now = new Date();
-            let filteredData = [...data];
-            let label = '전체 기간';
+    filterByPeriod(data, selectedPeriod, applyDateIndex) {
+        return App.sidebar.filterByPeriod(data, selectedPeriod, applyDateIndex);
+    },
 
-            if (selectedPeriod === 'custom') {
-                const startDate = document.getElementById('sidebarStartDate')?.value;
-                const endDate = document.getElementById('sidebarEndDate')?.value;
+    calculateStats(filteredApplicants) {
+        const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
+        const interviewResultIndex = App.state.data.headers.indexOf('면접결과');
+        const joinDateIndex = App.state.data.headers.indexOf('입과일');
 
-                if (startDate && endDate) {
-                    const start = new Date(startDate);
-                    const end = new Date(endDate);
-                    end.setHours(23, 59, 59, 999);
+        const totalCount = filteredApplicants.length;
 
-                    filteredData = data.filter(row => {
+        let interviewPendingCount = 0;
+        if (contactResultIndex !== -1) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
+            if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
+            
+            interviewPendingCount = filteredApplicants.filter(row => {
+                const contactResult = String(row[contactResultIndex] || '').trim();
+                if (contactResult !== '면접확정') return false;
+                
+                if (interviewDateIndex !== -1) {
+                    const interviewDate = row[interviewDateIndex];
+                    if (interviewDate) {
                         try {
-                            const dateValue = row[applyDateIndex];
-                            if (!dateValue) return false;
-                            const date = new Date(dateValue);
-                            return date >= start && date <= end;
-                        } catch (e) { return false; }
-                    });
-
-                    label = `${startDate} ~ ${endDate}`;
+                            const date = new Date(interviewDate);
+                            date.setHours(0, 0, 0, 0);
+                            return date >= today;
+                        } catch (e) {
+                            return false;
+                        }
+                    }
                 }
-            } else {
-                const result = App.utils.filterDataByPeriod(data, selectedPeriod, applyDateIndex, now);
-                filteredData = result.data;
-                label = result.label;
-            }
-
-            return { data: filteredData, label };
-        },
-
-        calculateStats(filteredApplicants) {
-    const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
-    const interviewResultIndex = App.state.data.headers.indexOf('면접결과');
-    const joinDateIndex = App.state.data.headers.indexOf('입과일');
-
-    const totalCount = filteredApplicants.length;
-
-    let interviewPendingCount = 0;
-if (contactResultIndex !== -1) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // 오늘 00:00:00으로 설정
-    
-    let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
-    if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
-    
-    interviewPendingCount = filteredApplicants.filter(row => {
-        const contactResult = String(row[contactResultIndex] || '').trim();
-        if (contactResult !== '면접확정') return false;
-        
-        // 면접 날짜가 오늘 이후인지 확인
-        if (interviewDateIndex !== -1) {
-            const interviewDate = row[interviewDateIndex];
-            if (interviewDate) {
-                try {
-                    const date = new Date(interviewDate);
-                    date.setHours(0, 0, 0, 0);
-                    return date >= today; // 오늘 포함 이후
-                } catch (e) {
-                    return false;
-                }
-            }
+                return false;
+            }).length;
         }
-        return false; // 면접 날짜가 없으면 제외
-    }).length;
-}
 
-    // 3번: 전체 지원자 대비 합격률
-    let successRate = 0;
-    if (interviewResultIndex !== -1 && totalCount > 0) {
-        const passedApplicants = filteredApplicants.filter(row => {
-            const interviewResult = String(row[interviewResultIndex] || '').trim();
-            return interviewResult === '합격';
-        });
-        successRate = Math.round((passedApplicants.length / totalCount) * 100);
-    }
+        // 3번: 전체 지원자 대비 합격률
+        let successRate = 0;
+        if (interviewResultIndex !== -1 && totalCount > 0) {
+            const passedApplicants = filteredApplicants.filter(row => {
+                const interviewResult = String(row[interviewResultIndex] || '').trim();
+                return interviewResult === '합격';
+            });
+            successRate = Math.round((passedApplicants.length / totalCount) * 100);
+        }
 
-    // 4번: 전체 지원자 대비 입과율 (입과일이 있는 사람 비율)
-    let joinRate = 0;
-    if (joinDateIndex !== -1 && totalCount > 0) {
-        const joinedApplicants = filteredApplicants.filter(row => {
-            const joinDate = String(row[joinDateIndex] || '').trim();
-            return joinDate !== '' && joinDate !== '-';
-        });
-        joinRate = Math.round((joinedApplicants.length / totalCount) * 100);
-    }
+        // 4번: 전체 지원자 대비 입과율
+        let joinRate = 0;
+        if (joinDateIndex !== -1 && totalCount > 0) {
+            const joinedApplicants = filteredApplicants.filter(row => {
+                const joinDate = String(row[joinDateIndex] || '').trim();
+                return joinDate !== '' && joinDate !== '-';
+            });
+            joinRate = Math.round((joinedApplicants.length / totalCount) * 100);
+        }
 
-    return { totalCount, interviewPendingCount, successRate, joinRate };
-},
+        return { totalCount, interviewPendingCount, successRate, joinRate };
+    },
 
-        updateUI(stats, periodLabel) {
-    document.getElementById('sidebarTotalApplicants').textContent = stats.totalCount;
-    document.getElementById('sidebarPeriodLabel').textContent = periodLabel;
-    document.getElementById('sidebarInterviewPending').textContent = stats.interviewPendingCount;
-    document.getElementById('sidebarSuccessRate').textContent = stats.successRate + '%';
-    document.getElementById('sidebarJoinRate').textContent = stats.joinRate + '%';
-},
+    updateUI(stats, periodLabel) {
+        document.getElementById('sidebarTotalApplicants').textContent = stats.totalCount;
+        document.getElementById('sidebarPeriodLabel').textContent = periodLabel;
+        document.getElementById('sidebarInterviewPending').textContent = stats.interviewPendingCount;
+        document.getElementById('sidebarSuccessRate').textContent = stats.successRate + '%';
+        document.getElementById('sidebarJoinRate').textContent = stats.joinRate + '%';
+    },
 
-// 면접 대기자 필터링 함수 추가
-showInterviewPending() {
-    console.log('🎯 면접 대기자 필터링 시작');
-    
-    const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
-    let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
-    if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
-    
-    if (contactResultIndex === -1) {
-        alert('1차 컨택 결과 컬럼을 찾을 수 없습니다.');
-        return;
-    }
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // 필터 리셋
-    App.filter.reset(false);
-    
-    // 면접 대기자만 필터링
-    App.state.data.filtered = App.state.data.all.filter(row => {
-        const contactResult = String(row[contactResultIndex] || '').trim();
-        if (contactResult !== '면접확정') return false;
+    showInterviewPending() {
+        console.log('🎯 면접 대기자 필터링 시작');
         
-        // 면접 날짜가 오늘 이후인지 확인
-        if (interviewDateIndex !== -1) {
-            const interviewDate = row[interviewDateIndex];
-            if (interviewDate) {
-                try {
-                    const date = new Date(interviewDate);
-                    date.setHours(0, 0, 0, 0);
-                    return date >= today;
-                } catch (e) {
-                    return false;
+        const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
+        let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
+        if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
+        
+        if (contactResultIndex === -1) {
+            alert('1차 컨택 결과 컬럼을 찾을 수 없습니다.');
+            return;
+        }
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        App.filter.reset(false);
+        
+        App.state.data.filtered = App.state.data.all.filter(row => {
+            const contactResult = String(row[contactResultIndex] || '').trim();
+            if (contactResult !== '면접확정') return false;
+            
+            if (interviewDateIndex !== -1) {
+                const interviewDate = row[interviewDateIndex];
+                if (interviewDate) {
+                    try {
+                        const date = new Date(interviewDate);
+                        date.setHours(0, 0, 0, 0);
+                        return date >= today;
+                    } catch (e) {
+                        return false;
+                    }
                 }
             }
-        }
-        return false;
-    });
-    
-    // 면접 날짜 기준으로 정렬 (가까운 순)
-    if (interviewDateIndex !== -1) {
-        App.state.data.filtered.sort((a, b) => {
-            const dateA = new Date(a[interviewDateIndex] || '9999-12-31');
-            const dateB = new Date(b[interviewDateIndex] || '9999-12-31');
-            return dateA - dateB;
+            return false;
         });
+        
+        if (interviewDateIndex !== -1) {
+            App.state.data.filtered.sort((a, b) => {
+                const dateA = new Date(a[interviewDateIndex] || '9999-12-31');
+                const dateB = new Date(b[interviewDateIndex] || '9999-12-31');
+                return dateA - dateB;
+            });
+        }
+        
+        App.state.ui.currentPage = 1;
+        App.pagination.updateTotal();
+        App.filter.updateSummary();
+        
+        const pageData = App.pagination.getCurrentPageData();
+        if (App.state.ui.currentView === 'table') {
+            App.render.table(pageData);
+        } else {
+            App.render.cards(pageData);
+        }
+        
+        App.pagination.updateUI();
+        
+        const count = App.state.data.filtered.length;
+        console.log(`✅ 면접 대기자 ${count}명 필터링 완료`);
+        
+        if (count === 0) {
+            alert('앞으로 예정된 면접 대기자가 없습니다.');
+        }
     }
-    
-    App.state.ui.currentPage = 1;
-    App.pagination.updateTotal();
-    App.filter.updateSummary();
-    
-    const pageData = App.pagination.getCurrentPageData();
-    if (App.state.ui.currentView === 'table') {
-        App.render.table(pageData);
-    } else {
-        App.render.cards(pageData);
-    }
-    
-    App.pagination.updateUI();
-    
-    // 성공 메시지
-    const count = App.state.data.filtered.length;
-    console.log(`✅ 면접 대기자 ${count}명 필터링 완료`);
-    
-    // 알림 표시 (선택사항)
-    if (count === 0) {
-        alert('앞으로 예정된 면접 대기자가 없습니다.');
-    }
-}
+},
 
     // =========================
     // 통계 관련
