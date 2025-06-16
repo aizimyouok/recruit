@@ -2510,16 +2510,16 @@ const App = {
 // =========================
 // 🔥 핵심: 전역 객체로 노출 (구문 오류 수정)
 // =========================
-window.App = App;
+globalThis.App = App;
 
 // =========================
 // 전역에서 사용되는 함수들 (하위 호환성)
 // =========================
-window.onclick = function(event) {
-    if (event.target == App.modal.element) {
+document.addEventListener('click', function(event) {
+    if (event.target === document.getElementById('applicantModal')) {
         App.modal.close();
     }
-};
+});
 
 // =========================
 // 애플리케이션 시작
