@@ -830,12 +830,33 @@ const App = {
     const totalCount = filteredApplicants.length;
 
     let interviewPendingCount = 0;
-    if (contactResultIndex !== -1) {
-        interviewPendingCount = filteredApplicants.filter(row => {
-            const contactResult = String(row[contactResultIndex] || '').trim();
-            return contactResult === '면접확정';
-        }).length;
-    }
+if (contactResultIndex !== -1) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // 오늘 00:00:00으로 설정
+    
+    let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
+    if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
+    
+    interviewPendingCount = filteredApplicants.filter(row => {
+        const contactResult = String(row[contactResultIndex] || '').trim();
+        if (contactResult !== '면접확정') return false;
+        
+        // 면접 날짜가 오늘 이후인지 확인
+        if (interviewDateIndex !== -1) {
+            const interviewDate = row[interviewDateIndex];
+            if (interviewDate) {
+                try {
+                    const date = new Date(interviewDate);
+                    date.setHours(0, 0, 0, 0);
+                    return date >= today; // 오늘 포함 이후
+                } catch (e) {
+                    return false;
+                }
+            }
+        }
+        return false; // 면접 날짜가 없으면 제외
+    }).length;
+}
 
     // 3번: 전체 지원자 대비 합격률
     let successRate = 0;
@@ -930,7 +951,78 @@ const App = {
             App.utils.updateElement('joinRateChart', stats.joinRate + '%');
         }
     },
-
+    // 면접 대기자 필터링 함수 추가
+showInterviewPending() {
+    console.log('🎯 면접 대기자 필터링 시작');
+    
+    const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
+    let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
+    if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
+    
+    if (contactResultIndex === -1) {
+        alert('1차 컨택 결과 컬럼을 찾을 수 없습니다.');
+        return;
+    }
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // 필터 리셋
+    App.filter.reset(false);
+    
+    // 면접 대기자만 필터링
+    App.state.data.filtered = App.state.data.all.filter(row => {
+        const contactResult = String(row[contactResultIndex] || '').trim();
+        if (contactResult !== '면접확정') return false;
+        
+        // 면접 날짜가 오늘 이후인지 확인
+        if (interviewDateIndex !== -1) {
+            const interviewDate = row[interviewDateIndex];
+            if (interviewDate) {
+                try {
+                    const date = new Date(interviewDate);
+                    date.setHours(0, 0, 0, 0);
+                    return date >= today;
+                } catch (e) {
+                    return false;
+                }
+            }
+        }
+        return false;
+    });
+    
+    // 면접 날짜 기준으로 정렬 (가까운 순)
+    if (interviewDateIndex !== -1) {
+        App.state.data.filtered.sort((a, b) => {
+            const dateA = new Date(a[interviewDateIndex] || '9999-12-31');
+            const dateB = new Date(b[interviewDateIndex] || '9999-12-31');
+            return dateA - dateB;
+        });
+    }
+    
+    App.state.ui.currentPage = 1;
+    App.pagination.updateTotal();
+    App.filter.updateSummary();
+    
+    const pageData = App.pagination.getCurrentPageData();
+    if (App.state.ui.currentView === 'table') {
+        App.render.table(pageData);
+    } else {
+        App.render.cards(pageData);
+    }
+    
+    App.pagination.updateUI();
+    
+    // 성공 메시지
+    const count = App.state.data.filtered.length;
+    console.log(`✅ 면접 대기자 ${count}명 필터링 완료`);
+    
+    // 알림 표시 (선택사항)
+    if (count === 0) {
+        alert('앞으로 예정된 면접 대기자가 없습니다.');
+    }
+}
+    
     // =========================
     // 차트 관련
     // =========================
