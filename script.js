@@ -140,7 +140,7 @@ const App = {
     showLoadingState: (container) => UIModule.showLoadingState(container, App),
     updateProgress: (container, percentage, text) => UIModule.updateProgress(container, percentage, text),
     showErrorState: (container, error) => UIModule.showErrorState(container, error, App)
-}
+}, // 🔥 중요: 쉼표 필수!
 
     // =========================
     // 데이터 관련
@@ -152,7 +152,7 @@ const App = {
     showInterviewDetails: (name, route) => DataModule.showInterviewDetails(App, name, route),
     save: (data, isUpdate, gubun) => DataModule.save(App, data, isUpdate, gubun),
     delete: (gubun) => DataModule.delete(App, gubun)
-},
+}, // 🔥 중요: 쉼표 필수!
 
     // =========================
     // 검색 관련
