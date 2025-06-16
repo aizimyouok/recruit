@@ -44,9 +44,11 @@ export const DataModule = {
             appInstance.state.ui.visibleColumns = appInstance.utils.generateVisibleColumns(appInstance.state.data.headers);
             
             // 안전한 함수 호출
-            if (appInstance.ui && appInstance.ui.setupColumnToggles) {
-                appInstance.ui.setupColumnToggles();
-            }
+            setTimeout(() => {
+    if (appInstance.ui && appInstance.ui.setupColumnToggles) {
+        appInstance.ui.setupColumnToggles();
+    }
+}, 100);
             
             if (appInstance.filter && appInstance.filter.populateDropdowns) {
                 appInstance.filter.populateDropdowns();
@@ -61,6 +63,11 @@ export const DataModule = {
             if (appInstance.filter && appInstance.filter.reset) {
                 appInstance.filter.reset(true);
             }
+            setTimeout(() => {
+    if (appInstance.render && appInstance.state.data.all.length > 0) {
+        appInstance.render.currentView();
+    }
+}, 200);
 
             if (tableContainer) {
                 appInstance.ui.updateProgress(tableContainer, 100, '완료!');
