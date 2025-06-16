@@ -12,7 +12,6 @@ import { ThemeModule } from './theme.js';
 import { CacheModule } from './js/cache.js';
 import { DataCacheModule } from './js/dataCache.js';
 import { SmartSyncModule } from './js/smartSync.js';
-import { CSVProcessor } from './js/csvProcessor.js';
 
 // =========================
 // 애플리케이션 메인 객체
@@ -2238,26 +2237,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         App.init.start();
         App.smartSync.init(App);
-        
-        // 👇 CSV 자동 처리 시스템 초기화 (새로 추가!)
-        setTimeout(() => {
-            try {
-                if (typeof CSVProcessor !== 'undefined') {
-                    // 전역에 등록
-                    window.CSVProcessor = CSVProcessor;
-                    
-                    // 페이지에 업로드 영역 추가
-                    CSVProcessor.addToPage();
-                    
-                    console.log('📊 CSV 자동 처리 시스템 초기화 완료');
-                } else {
-                    console.warn('⚠️ CSVProcessor 모듈을 찾을 수 없습니다.');
-                }
-            } catch (csvError) {
-                console.error('❌ CSV 처리 시스템 초기화 실패:', csvError);
-            }
-        }, 1000); // 1초 후에 초기화 (다른 시스템들이 준비될 때까지 대기)
-        
         console.log('✅ 애플리케이션 초기화 완료');
         
     } catch (error) {
