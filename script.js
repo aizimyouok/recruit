@@ -1972,14 +1972,19 @@ const App = {
         },
 
         generateVisibleColumns(headers) {
-            const visibleColumns = {};
-            headers.forEach(header => {
-                visibleColumns[header] = !App.config.DEFAULT_HIDDEN_COLUMNS.includes(header);
-            });
-            return visibleColumns;
-        }
+    if (!headers || !Array.isArray(headers)) {
+        console.warn('❌ 올바르지 않은 헤더 데이터');
+        return {};
     }
-}; // 🔥 중요: App 객체 끝에 세미콜론
+    
+    const visibleColumns = {};
+    headers.forEach(header => {
+        if (header && typeof header === 'string') {
+            visibleColumns[header] = !App.config.DEFAULT_HIDDEN_COLUMNS.includes(header);
+        }
+    });
+    return visibleColumns;
+}
 
 // =========================
 // 🔥 핵심: 전역 객체로 노출
