@@ -1890,6 +1890,21 @@ button:focus, .nav-item:focus {
    ========================= */
 
 @media (max-width: 768px) {
+    .column-toggle-dropdown {
+        right: -50px;
+        left: auto;
+        min-width: 180px;
+        max-width: 220px;
+    }
+    
+    .column-toggle-item {
+        padding: 10px 12px;
+    }
+    
+    .column-toggle-item label {
+        font-size: 0.85rem;
+    }
+    
     .efficiency-table {
         font-size: 0.8rem;
     }
