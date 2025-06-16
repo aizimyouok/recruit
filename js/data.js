@@ -1,5 +1,5 @@
 // =========================
-// data.js - 데이터 관련 모듈
+// data.js - 데이터 관련 모듈 (안전한 DOM 접근 버전)
 // =========================
 
 export const DataModule = {
@@ -7,11 +7,15 @@ export const DataModule = {
         const tableContainer = document.querySelector('.table-container');
 
         try {
-            appInstance.ui.showLoadingState(tableContainer);
+            if (tableContainer) {
+                appInstance.ui.showLoadingState(tableContainer);
+            }
 
             const response = await fetch(`${appInstance.config.APPS_SCRIPT_URL}?action=read`);
 
-            appInstance.ui.updateProgress(tableContainer, 60, '데이터 처리중...');
+            if (tableContainer) {
+                appInstance.ui.updateProgress(tableContainer, 60, '데이터 처리중...');
+            }
 
             if (!response.ok) {
                 throw new Error(appInstance.utils.getErrorMessage(response.status));
@@ -19,7 +23,9 @@ export const DataModule = {
 
             const result = await response.json();
 
-            appInstance.ui.updateProgress(tableContainer, 85, '최종 처리중...');
+            if (tableContainer) {
+                appInstance.ui.updateProgress(tableContainer, 85, '최종 처리중...');
+            }
 
             if (result.status !== 'success') {
                 throw new Error(result.message || '데이터 처리 중 오류가 발생했습니다.');
@@ -36,21 +42,41 @@ export const DataModule = {
 
             DataModule.updateSequenceNumber(appInstance);
             appInstance.state.ui.visibleColumns = appInstance.utils.generateVisibleColumns(appInstance.state.data.headers);
-            appInstance.ui.setupColumnToggles();
-            appInstance.filter.populateDropdowns();
-            appInstance.sidebar.updateWidgets();
+            
+            // 안전한 함수 호출
+            if (appInstance.ui && appInstance.ui.setupColumnToggles) {
+                appInstance.ui.setupColumnToggles();
+            }
+            
+            if (appInstance.filter && appInstance.filter.populateDropdowns) {
+                appInstance.filter.populateDropdowns();
+            }
+            
+            if (appInstance.sidebar && appInstance.sidebar.updateWidgets) {
+                appInstance.sidebar.updateWidgets();
+            }
+            
             DataModule.updateInterviewSchedule(appInstance);
-            appInstance.filter.reset(true);
+            
+            if (appInstance.filter && appInstance.filter.reset) {
+                appInstance.filter.reset(true);
+            }
 
-            appInstance.ui.updateProgress(tableContainer, 100, '완료!');
+            if (tableContainer) {
+                appInstance.ui.updateProgress(tableContainer, 100, '완료!');
+            }
 
             setTimeout(() => {
-                appInstance.sidebar.updateWidgets();
+                if (appInstance.sidebar && appInstance.sidebar.updateWidgets) {
+                    appInstance.sidebar.updateWidgets();
+                }
             }, 500);
 
         } catch (error) {
             console.error("데이터 불러오기 실패:", error);
-            appInstance.ui.showErrorState(tableContainer, error);
+            if (tableContainer && appInstance.ui && appInstance.ui.showErrorState) {
+                appInstance.ui.showErrorState(tableContainer, error);
+            }
         }
     },
 
@@ -76,8 +102,15 @@ export const DataModule = {
         const recruiterIndex = appInstance.state.data.headers.indexOf('증원자');
         const interviewerIndex = appInstance.state.data.headers.indexOf('면접자');
 
+        const scheduleContainer = document.getElementById('interviewScheduleList');
+        
+        if (!scheduleContainer) {
+            console.warn('interviewScheduleList 요소를 찾을 수 없습니다.');
+            return;
+        }
+
         if (interviewDateIndex === -1) {
-            document.getElementById('interviewScheduleList').innerHTML = '<div class="no-interviews">면접 날짜 컬럼을 찾을 수 없습니다.</div>';
+            scheduleContainer.innerHTML = '<div class="no-interviews">면접 날짜 컬럼을 찾을 수 없습니다.</div>';
             return;
         }
 
@@ -96,8 +129,6 @@ export const DataModule = {
             })
             .sort((a, b) => new Date(a[interviewDateIndex]) - new Date(b[interviewDateIndex]))
             .slice(0, 7);
-
-        const scheduleContainer = document.getElementById('interviewScheduleList');
 
         if (upcomingInterviews.length === 0) {
             scheduleContainer.innerHTML = '<div class="no-interviews">3일 이내 예정된 면접이 없습니다.</div>';
@@ -136,8 +167,11 @@ export const DataModule = {
                 dateDisplay = `<span class="interview-dday ${ddayClass}">${dayDiff}</span><span class="interview-date-text">${dateText}</span>`;
             } catch (e) { dateDisplay = '날짜 오류'; }
 
+            const safeName = String(row[nameIndex] || '').replace(/'/g, "\\'");
+            const safeRoute = String(row[routeIndex] || '').replace(/'/g, "\\'");
+
             tableHtml += `
-                <tr onclick="globalThis.App.data.showInterviewDetails('${row[nameIndex] || ''}', '${row[routeIndex] || ''}')" style="cursor: pointer;">
+                <tr onclick="globalThis.App && globalThis.App.data && globalThis.App.data.showInterviewDetails('${safeName}', '${safeRoute}')" style="cursor: pointer;">
                     <td class="interview-name-cell" title="${row[nameIndex] || ''}">${row[nameIndex] || '-'}</td>
                     <td class="interview-route-cell" title="${row[routeIndex] || ''}">${row[routeIndex] || '-'}</td>
                     <td class="interview-recruiter-cell" title="${row[recruiterIndex] || ''}">${row[recruiterIndex] || '-'}</td>
@@ -154,17 +188,21 @@ export const DataModule = {
     },
 
     showInterviewDetails(appInstance, name, route) {
-        const nameIndex = appInstance.state.data.headers.indexOf('이름');
-        const routeIndex = appInstance.state.data.headers.indexOf('지원루트');
+        try {
+            const nameIndex = appInstance.state.data.headers.indexOf('이름');
+            const routeIndex = appInstance.state.data.headers.indexOf('지원루트');
 
-        const targetRow = appInstance.state.data.all.find(row => {
-            const nameMatch = String(row[nameIndex] || '') === name;
-            const routeMatch = String(row[routeIndex] || '') === route;
-            return nameMatch && routeMatch;
-        });
+            const targetRow = appInstance.state.data.all.find(row => {
+                const nameMatch = String(row[nameIndex] || '') === name;
+                const routeMatch = String(row[routeIndex] || '') === route;
+                return nameMatch && routeMatch;
+            });
 
-        if (targetRow) {
-            appInstance.modal.openDetail(targetRow);
+            if (targetRow && appInstance.modal && appInstance.modal.openDetail) {
+                appInstance.modal.openDetail(targetRow);
+            }
+        } catch (error) {
+            console.error('면접 상세 정보 표시 실패:', error);
         }
     },
 
