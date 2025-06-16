@@ -63,13 +63,22 @@ const App = {
         },
 
         setupDateFilterListeners() {
-            document.getElementById('dateModeToggle').addEventListener('click', (e) => {
-                if (e.target.tagName === 'BUTTON') {
-                    App.state.ui.activeDateMode = e.target.dataset.mode;
-                    App.filter.updateDateFilterUI();
-                    App.filter.apply();
+            try {
+                const dateModeToggle = document.getElementById('dateModeToggle');
+                if (dateModeToggle) {
+                    dateModeToggle.addEventListener('click', (e) => {
+                        if (e.target.tagName === 'BUTTON') {
+                            App.state.ui.activeDateMode = e.target.dataset.mode;
+                            App.filter.updateDateFilterUI();
+                            App.filter.apply();
+                        }
+                    });
+                } else {
+                    console.warn('dateModeToggle 요소를 찾을 수 없습니다.');
                 }
-            });
+            } catch (error) {
+                console.error('날짜 필터 리스너 설정 실패:', error);
+            }
         }
     },
 
@@ -218,17 +227,23 @@ const App = {
         applyDateFilter(data, applyDateIndex) {
             try {
                 if (App.state.ui.activeDateMode === 'year') {
-                    const year = document.getElementById('dateInput')?.value;
+                    const dateInput = document.getElementById('dateInput');
+                    const year = dateInput ? dateInput.value : null;
                     if(year) return data.filter(row => row[applyDateIndex] && new Date(row[applyDateIndex]).getFullYear() == year);
                 } else if (App.state.ui.activeDateMode === 'month') {
-                    const month = document.getElementById('dateInput')?.value;
+                    const dateInput = document.getElementById('dateInput');
+                    const month = dateInput ? dateInput.value : null;
                     if(month) return data.filter(row => String(row[applyDateIndex] || '').slice(0, 7) === month);
                 } else if (App.state.ui.activeDateMode === 'day') {
-                    const day = document.getElementById('dateInput')?.value;
+                    const dateInput = document.getElementById('dateInput');
+                    const day = dateInput ? dateInput.value : null;
                     if(day) return data.filter(row => String(row[applyDateIndex] || '').slice(0, 10) === day);
                 } else if (App.state.ui.activeDateMode === 'range') {
-                    const startDate = document.getElementById('startDateInput')?.value;
-                    const endDate = document.getElementById('endDateInput')?.value;
+                    const startDateInput = document.getElementById('startDateInput');
+                    const endDateInput = document.getElementById('endDateInput');
+                    const startDate = startDateInput ? startDateInput.value : null;
+                    const endDate = endDateInput ? endDateInput.value : null;
+                    
                     if (startDate && endDate) {
                         const start = new Date(startDate);
                         const end = new Date(endDate);
@@ -286,44 +301,57 @@ const App = {
         },
 
         updateDateFilterUI() {
-            document.querySelectorAll('.date-mode-btn').forEach(btn =>
-                btn.classList.toggle('active', btn.dataset.mode === App.state.ui.activeDateMode)
-            );
+            try {
+                document.querySelectorAll('.date-mode-btn').forEach(btn =>
+                    btn.classList.toggle('active', btn.dataset.mode === App.state.ui.activeDateMode)
+                );
 
-            const container = document.getElementById('dateInputsContainer');
-            let html = '';
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = (now.getMonth() + 1).toString().padStart(2, '0');
-            const day = now.getDate().toString().padStart(2, '0');
+                const container = document.getElementById('dateInputsContainer');
+                if (!container) {
+                    console.warn('dateInputsContainer 요소를 찾을 수 없습니다.');
+                    return;
+                }
 
-            if (App.state.ui.activeDateMode === 'all') {
-                html = `<span style="color: var(--text-secondary); font-size: 0.9rem; padding: 0 10px;">모든 데이터 표시</span>`;
-            } else if (App.state.ui.activeDateMode === 'year') {
-                html = `<input type="number" id="dateInput" value="${year}" onchange="App.filter.apply()">`;
-            } else if (App.state.ui.activeDateMode === 'month') {
-                html = `<button class="date-nav-btn" onclick="App.filter.navigateDate(-1)">&lt;</button><input type="month" id="dateInput" value="${year}-${month}" onchange="App.filter.apply()"><button class="date-nav-btn" onclick="App.filter.navigateDate(1)">&gt;</button>`;
-            } else if (App.state.ui.activeDateMode === 'day') {
-                html = `<button class="date-nav-btn" onclick="App.filter.navigateDate(-1)">&lt;</button><input type="date" id="dateInput" value="${year}-${month}-${day}" onchange="App.filter.apply()"><button class="date-nav-btn" onclick="App.filter.navigateDate(1)">&gt;</button>`;
-            } else if (App.state.ui.activeDateMode === 'range') {
-                html = `<input type="date" id="startDateInput" onchange="App.filter.apply()"><span style="margin: 0 5px;">-</span><input type="date" id="endDateInput" onchange="App.filter.apply()">`;
+                let html = '';
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = (now.getMonth() + 1).toString().padStart(2, '0');
+                const day = now.getDate().toString().padStart(2, '0');
+
+                if (App.state.ui.activeDateMode === 'all') {
+                    html = `<span style="color: var(--text-secondary); font-size: 0.9rem; padding: 0 10px;">모든 데이터 표시</span>`;
+                } else if (App.state.ui.activeDateMode === 'year') {
+                    html = `<input type="number" id="dateInput" value="${year}" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()">`;
+                } else if (App.state.ui.activeDateMode === 'month') {
+                    html = `<button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(-1)">&lt;</button><input type="month" id="dateInput" value="${year}-${month}" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()"><button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(1)">&gt;</button>`;
+                } else if (App.state.ui.activeDateMode === 'day') {
+                    html = `<button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(-1)">&lt;</button><input type="date" id="dateInput" value="${year}-${month}-${day}" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()"><button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(1)">&gt;</button>`;
+                } else if (App.state.ui.activeDateMode === 'range') {
+                    html = `<input type="date" id="startDateInput" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()"><span style="margin: 0 5px;">-</span><input type="date" id="endDateInput" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()">`;
+                }
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('날짜 필터 UI 업데이트 오류:', error);
             }
-            container.innerHTML = html;
         },
 
         navigateDate(direction) {
-            const input = document.getElementById('dateInput');
-            if (!input) return;
+            try {
+                const input = document.getElementById('dateInput');
+                if (!input) return;
 
-            if (App.state.ui.activeDateMode === 'year') {
-                input.value = Number(input.value) + direction;
-            } else {
-                let currentDate = (App.state.ui.activeDateMode === 'month') ? new Date(input.value + '-02') : new Date(input.value);
-                if(App.state.ui.activeDateMode === 'month') currentDate.setMonth(currentDate.getMonth() + direction);
-                else if (App.state.ui.activeDateMode === 'day') currentDate.setDate(currentDate.getDate() + direction);
-                input.value = currentDate.toISOString().slice(0, App.state.ui.activeDateMode === 'month' ? 7 : 10);
+                if (App.state.ui.activeDateMode === 'year') {
+                    input.value = Number(input.value) + direction;
+                } else {
+                    let currentDate = (App.state.ui.activeDateMode === 'month') ? new Date(input.value + '-02') : new Date(input.value);
+                    if(App.state.ui.activeDateMode === 'month') currentDate.setMonth(currentDate.getMonth() + direction);
+                    else if (App.state.ui.activeDateMode === 'day') currentDate.setDate(currentDate.getDate() + direction);
+                    input.value = currentDate.toISOString().slice(0, App.state.ui.activeDateMode === 'month' ? 7 : 10);
+                }
+                App.filter.apply();
+            } catch (error) {
+                console.error('날짜 네비게이션 오류:', error);
             }
-            App.filter.apply();
         }
     },
 
@@ -1841,48 +1869,52 @@ const App = {
             let filteredData = [...data];
             let label = '전체 기간';
 
-            if (selectedPeriod === 'year') {
-                const currentYear = now.getFullYear();
-                filteredData = data.filter(row => {
-                    try {
-                        const dateValue = row[applyDateIndex];
-                        if (!dateValue) return false;
-                        const date = new Date(dateValue);
-                        return date.getFullYear() === currentYear;
-                    } catch (e) { return false; }
-                });
-                label = `${currentYear}년`;
+            try {
+                if (selectedPeriod === 'year') {
+                    const currentYear = now.getFullYear();
+                    filteredData = data.filter(row => {
+                        try {
+                            const dateValue = row[applyDateIndex];
+                            if (!dateValue) return false;
+                            const date = new Date(dateValue);
+                            return date.getFullYear() === currentYear;
+                        } catch (e) { return false; }
+                    });
+                    label = `${currentYear}년`;
 
-            } else if (selectedPeriod === 'month') {
-                const currentMonth = now.getMonth() + 1;
-                const currentYear = now.getFullYear();
-                filteredData = data.filter(row => {
-                    try {
-                        const dateValue = row[applyDateIndex];
-                        if (!dateValue) return false;
-                        const date = new Date(dateValue);
-                        return date.getMonth() + 1 === currentMonth && date.getFullYear() === currentYear;
-                    } catch (e) { return false; }
-                });
-                label = `${currentYear}.${currentMonth.toString().padStart(2, '0')}`;
+                } else if (selectedPeriod === 'month') {
+                    const currentMonth = now.getMonth() + 1;
+                    const currentYear = now.getFullYear();
+                    filteredData = data.filter(row => {
+                        try {
+                            const dateValue = row[applyDateIndex];
+                            if (!dateValue) return false;
+                            const date = new Date(dateValue);
+                            return date.getMonth() + 1 === currentMonth && date.getFullYear() === currentYear;
+                        } catch (e) { return false; }
+                    });
+                    label = `${currentYear}.${currentMonth.toString().padStart(2, '0')}`;
 
-            } else if (selectedPeriod === 'week') {
-                const weekStart = new Date(now);
-                weekStart.setDate(now.getDate() - now.getDay());
-                weekStart.setHours(0, 0, 0, 0);
-                const weekEnd = new Date(weekStart);
-                weekEnd.setDate(weekStart.getDate() + 6);
-                weekEnd.setHours(23, 59, 59, 999);
+                } else if (selectedPeriod === 'week') {
+                    const weekStart = new Date(now);
+                    weekStart.setDate(now.getDate() - now.getDay());
+                    weekStart.setHours(0, 0, 0, 0);
+                    const weekEnd = new Date(weekStart);
+                    weekEnd.setDate(weekStart.getDate() + 6);
+                    weekEnd.setHours(23, 59, 59, 999);
 
-                filteredData = data.filter(row => {
-                    try {
-                        const dateValue = row[applyDateIndex];
-                        if (!dateValue) return false;
-                        const date = new Date(dateValue);
-                        return date >= weekStart && date <= weekEnd;
-                    } catch (e) { return false; }
-                });
-                label = '이번 주';
+                    filteredData = data.filter(row => {
+                        try {
+                            const dateValue = row[applyDateIndex];
+                            if (!dateValue) return false;
+                            const date = new Date(dateValue);
+                            return date >= weekStart && date <= weekEnd;
+                        } catch (e) { return false; }
+                    });
+                    label = '이번 주';
+                }
+            } catch (error) {
+                console.error('날짜 필터링 오류:', error);
             }
 
             return { data: filteredData, label };
@@ -1896,8 +1928,11 @@ const App = {
                 const now = new Date();
 
                 if (selectedPeriod === 'custom') {
-                    const startDate = document.getElementById('statsStartDate')?.value;
-                    const endDate = document.getElementById('statsEndDate')?.value;
+                    const startDateElement = document.getElementById('statsStartDate');
+                    const endDateElement = document.getElementById('statsEndDate');
+                    
+                    const startDate = startDateElement ? startDateElement.value : null;
+                    const endDate = endDateElement ? endDateElement.value : null;
 
                     if (startDate && endDate) {
                         const start = new Date(startDate);
@@ -1935,14 +1970,30 @@ const App = {
 // =========================
 // 🔥 핵심: 전역 객체로 노출
 // =========================
-globalThis.App = App;
+try {
+    if (typeof globalThis !== 'undefined') {
+        globalThis.App = App;
+    } else if (typeof window !== 'undefined') {
+        window.App = App;
+    } else if (typeof global !== 'undefined') {
+        global.App = App;
+    }
+    console.log('✅ App 객체가 전역에 성공적으로 노출되었습니다.');
+} catch (error) {
+    console.error('❌ App 객체 전역 노출 실패:', error);
+}
 
 // =========================
 // 전역에서 사용되는 함수들 (하위 호환성)
 // =========================
 document.addEventListener('click', function(event) {
-    if (event.target === document.getElementById('applicantModal')) {
-        App.modal.close();
+    try {
+        const modal = document.getElementById('applicantModal');
+        if (event.target === modal && globalThis.App && globalThis.App.modal) {
+            globalThis.App.modal.close();
+        }
+    } catch (error) {
+        console.error('모달 클릭 이벤트 오류:', error);
     }
 });
 
@@ -1950,5 +2001,50 @@ document.addEventListener('click', function(event) {
 // 애플리케이션 시작
 // =========================
 document.addEventListener('DOMContentLoaded', () => {
-    App.init.start();
+    try {
+        console.log('🚀 애플리케이션 초기화 시작...');
+        
+        // App 객체가 제대로 생성되었는지 확인
+        if (typeof App === 'undefined') {
+            throw new Error('App 객체가 정의되지 않았습니다.');
+        }
+        
+        // 필수 DOM 요소들이 존재하는지 확인
+        const requiredElements = ['dateModeToggle', 'globalSearch', 'routeFilter', 'positionFilter'];
+        const missingElements = requiredElements.filter(id => !document.getElementById(id));
+        
+        if (missingElements.length > 0) {
+            console.warn('⚠️ 일부 DOM 요소들을 찾을 수 없습니다:', missingElements);
+        }
+        
+        App.init.start();
+        console.log('✅ 애플리케이션 초기화 완료');
+        
+    } catch (error) {
+        console.error('❌ 애플리케이션 초기화 실패:', error);
+        
+        // 사용자에게 오류 메시지 표시
+        const errorContainer = document.createElement('div');
+        errorContainer.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #ef4444;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            z-index: 9999;
+            font-family: 'Noto Sans KR', sans-serif;
+        `;
+        errorContainer.innerHTML = `
+            <h3>⚠️ 애플리케이션 로딩 오류</h3>
+            <p>페이지를 새로고침하거나 관리자에게 문의하세요.</p>
+            <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: white; color: #ef4444; border: none; border-radius: 4px; cursor: pointer;">
+                새로고침
+            </button>
+        `;
+        document.body.appendChild(errorContainer);
+    }
 });
