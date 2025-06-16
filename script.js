@@ -45,26 +45,26 @@ const App = {
         },
 
         setupEventListeners() {
-    document.addEventListener('click', function(event) {
-        const dropdownContainer = document.querySelector('.column-toggle-container');
-        const dropdown = document.getElementById('columnToggleDropdown');
-        
-        if (dropdownContainer && !dropdownContainer.contains(event.target)) {
-            if (dropdown) {
-                dropdown.style.display = 'none';
-            }
-        }
+            document.addEventListener('click', function(event) {
+                const dropdownContainer = document.querySelector('.column-toggle-container');
+                const dropdown = document.getElementById('columnToggleDropdown');
+                
+                if (dropdownContainer && !dropdownContainer.contains(event.target)) {
+                    if (dropdown) {
+                        dropdown.style.display = 'none';
+                    }
+                }
 
-        if (window.innerWidth <= 768) {
-            const sidebar = document.getElementById('sidebar');
-            if (sidebar && sidebar.classList.contains('mobile-open') &&
-                !sidebar.contains(event.target) &&
-                !event.target.closest('.mobile-menu-btn')) {
-                App.ui.toggleMobileMenu();
-            }
-        }
-    });
-},
+                if (window.innerWidth <= 768) {
+                    const sidebar = document.getElementById('sidebar');
+                    if (sidebar && sidebar.classList.contains('mobile-open') &&
+                        !sidebar.contains(event.target) &&
+                        !event.target.closest('.mobile-menu-btn')) {
+                        App.ui.toggleMobileMenu();
+                    }
+                }
+            });
+        },
 
         setupDateFilterListeners() {
             try {
