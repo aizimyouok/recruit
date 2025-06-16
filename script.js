@@ -207,18 +207,23 @@ const App = {
             }
 
             App.state.data.filtered = App.utils.sortData(data);
-            console.log('필터 적용 완료 - 필터링된 데이터:', App.state.data.filtered.length);ㅂ
+            console.log('필터 적용 완료 - 필터링된 데이터:', App.state.data.filtered.length);
 
             App.pagination.updateTotal();
             App.filter.updateSummary();
 
             const pageData = App.pagination.getCurrentPageData();
-            console.log('렌더링할 페이지 데이터:', pageData.length);
+            console.log('렌더링할 페이지 데이터:', pageData.length, '현재 뷰:', App.state.ui.currentView);
 
+            // 뷰에 따라 렌더링
             if (App.state.ui.currentView === 'table') {
                 App.render.table(pageData);
-            } else {
+            } else if (App.state.ui.currentView === 'cards') {
                 App.render.cards(pageData);
+            } else {
+                // 기본값이 설정되지 않은 경우 테이블로 설정
+                App.state.ui.currentView = 'table';
+                App.render.table(pageData);
             }
 
             App.pagination.updateUI();
@@ -520,6 +525,8 @@ const App = {
     render: {
         currentView() {
             const pageData = App.pagination.getCurrentPageData();
+            console.log('🔄 현재 뷰 렌더링:', App.state.ui.currentView, '데이터:', pageData.length, '개');
+            
             if (App.state.ui.currentView === 'table') {
                 App.render.table(pageData);
             } else {
@@ -528,12 +535,13 @@ const App = {
         },
 
         table(dataToRender) {
-    const tableContainer = document.querySelector('.table-container');
-    
-    if (!tableContainer) {
-        console.error('❌ table-container를 찾을 수 없습니다.');
-        return;
-    }
+            const tableContainer = document.querySelector('.table-container');
+            
+            if (!tableContainer) {
+                console.error('❌ table-container를 찾을 수 없습니다.');
+                return;
+            }
+
             if (!dataToRender && App.state.data.all.length === 0) {
                 tableContainer.innerHTML = App.utils.createSkeletonTable();
                 return;
@@ -648,12 +656,20 @@ const App = {
 
         cards(dataToRender) {
             const cardsContainer = document.getElementById('cardsView');
+            
+            if (!cardsContainer) {
+                console.error('❌ cardsView 컨테이너를 찾을 수 없습니다.');
+                return;
+            }
+
             cardsContainer.innerHTML = '';
 
             if (!dataToRender || dataToRender.length === 0) {
-                cardsContainer.innerHTML = '<p style="text-align:center; padding: 40px; grid-column: 1/-1;">표시할 데이터가 없습니다.</p>';
+                cardsContainer.innerHTML = '<p style="text-align:center; padding: 40px; grid-column: 1/-1; color: var(--text-secondary);">표시할 데이터가 없습니다.</p>';
                 return;
             }
+
+            console.log('📱 카드 렌더링 시작:', dataToRender.length, '개 항목');
 
             let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
             if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
@@ -673,6 +689,8 @@ const App = {
                 const phone = getVal('연락처');
                 const route = getVal('지원루트');
                 const position = getVal('모집분야');
+                const recruiter = getVal('증원자');
+                const contactResult = getVal('1차 컨택 결과');
                 let date = getVal('지원일');
 
                 if(date !== '-') {
@@ -683,22 +701,30 @@ const App = {
 
                 const displaySequence = (App.state.ui.currentPage - 1) * App.config.ITEMS_PER_PAGE + index + 1;
 
+                // 상태 표시를 위한 클래스
+                const statusClass = App.utils.getStatusClass('1차 컨택 결과', contactResult);
+                const statusBadge = statusClass ? `<span class="status-badge ${statusClass}">${contactResult}</span>` : contactResult;
+
                 card.innerHTML = `
                     <div class="card-header">
                         <div class="card-name">${name}</div>
                         <div class="card-sequence">#${displaySequence}</div>
                     </div>
                     <div class="card-info">
-                        <div><span class="card-label">연락처:</span> ${phone}</div>
-                        <div><span class="card-label">지원루트:</span> ${route}</div>
-                        <div><span class="card-label">모집분야:</span> ${position}</div>
+                        <div><span class="card-label">📞 연락처:</span> ${phone}</div>
+                        <div><span class="card-label">🔗 지원루트:</span> ${route}</div>
+                        <div><span class="card-label">💼 모집분야:</span> ${position}</div>
+                        <div><span class="card-label">👤 증원자:</span> ${recruiter}</div>
+                        <div><span class="card-label">📋 상태:</span> ${statusBadge}</div>
                     </div>
                     <div class="card-footer">
-                        <span>지원일: ${date}</span>
-                        ${phone !== '-' ? `<a href="tel:${phone.replace(/\D/g, '')}" onclick="event.stopPropagation()"><i class="fas fa-phone"></i></a>` : ''}
+                        <span>📅 지원일: ${date}</span>
+                        ${phone !== '-' ? `<a href="tel:${phone.replace(/\D/g, '')}" onclick="event.stopPropagation()" class="phone-link"><i class="fas fa-phone"></i></a>` : ''}
                     </div>`;
                 cardsContainer.appendChild(card);
             });
+
+            console.log('✅ 카드 렌더링 완료');
         }
     },
 
@@ -1972,19 +1998,21 @@ const App = {
         },
 
         generateVisibleColumns(headers) {
-    if (!headers || !Array.isArray(headers)) {
-        console.warn('❌ 올바르지 않은 헤더 데이터');
-        return {};
-    }
-    
-    const visibleColumns = {};
-    headers.forEach(header => {
-        if (header && typeof header === 'string') {
-            visibleColumns[header] = !App.config.DEFAULT_HIDDEN_COLUMNS.includes(header);
+            if (!headers || !Array.isArray(headers)) {
+                console.warn('❌ 올바르지 않은 헤더 데이터');
+                return {};
+            }
+            
+            const visibleColumns = {};
+            headers.forEach(header => {
+                if (header && typeof header === 'string') {
+                    visibleColumns[header] = !App.config.DEFAULT_HIDDEN_COLUMNS.includes(header);
+                }
+            });
+            return visibleColumns;
         }
-    });
-    return visibleColumns;
-}
+    }
+}; // 🔥 중요: App 객체 끝에 세미콜론
 
 // =========================
 // 🔥 핵심: 전역 객체로 노출 (App 객체 정의 완료 후)
@@ -2001,6 +2029,7 @@ try {
 } catch (error) {
     console.error('❌ App 객체 전역 노출 실패:', error);
 }
+
 // =========================
 // 전역에서 사용되는 함수들 (하위 호환성)
 // =========================
