@@ -1322,6 +1322,7 @@ sidebar: {
         if (document.getElementById('stats').classList.contains('active')) {
             App.stats.update();
         }
+        App.sidebar.updateInterviewDetails();
         return;
     }
 
@@ -1347,6 +1348,7 @@ sidebar: {
     if (document.getElementById('stats').classList.contains('active')) {
         App.stats.update();
     }
+        App.sidebar.updateInterviewDetails();
 },
 
     filterByPeriod(data, selectedPeriod, applyDateIndex) {
@@ -1525,6 +1527,226 @@ sidebar: {
         }
     }
 },
+    // 면접 위젯 토글
+    toggleInterviewWidget() {
+        const details = document.getElementById('interviewDetails');
+        const icon = document.getElementById('interviewToggleIcon');
+        
+        if (details && icon) {
+            const isExpanded = details.classList.contains('expanded');
+            
+            if (isExpanded) {
+                details.classList.remove('expanded');
+                icon.classList.remove('expanded');
+            } else {
+                details.classList.add('expanded');
+                icon.classList.add('expanded');
+                // 확장 시 데이터 업데이트
+                App.sidebar.updateInterviewDetails();
+            }
+        }
+    },
+
+    // 면접 기간 필터 변경
+    updateInterviewPeriod() {
+        const periodSelect = document.getElementById('interviewPeriodSelect');
+        const customRange = document.getElementById('interviewCustomDateRange');
+        
+        if (periodSelect && periodSelect.value === 'custom') {
+            if (customRange) {
+                customRange.style.display = 'block';
+            }
+        } else {
+            if (customRange) {
+                customRange.style.display = 'none';
+            }
+            App.sidebar.updateInterviewDetails();
+        }
+    },
+
+    // 🔥 새로운 면접 상세 정보 업데이트
+    updateInterviewDetails() {
+        const periodSelect = document.getElementById('interviewPeriodSelect');
+        const period = periodSelect ? periodSelect.value : 'today';
+        
+        try {
+            // 시간 기준 필터링된 면접 데이터 가져오기
+            const interviewData = App.sidebar.getInterviewDataByTime(period);
+            
+            // 전체 카운트 업데이트
+            const totalCountElement = document.getElementById('interviewTotalCount');
+            const periodLabelElement = document.getElementById('interviewPeriodLabel');
+            
+            if (totalCountElement) {
+                totalCountElement.textContent = `${interviewData.total}명`;
+            }
+            if (periodLabelElement) {
+                periodLabelElement.textContent = interviewData.periodLabel;
+            }
+            
+            // 면접관별 상세 정보 렌더링
+            App.sidebar.renderInterviewerDetails(interviewData.byInterviewer);
+            
+        } catch (error) {
+            console.error('❌ 면접 상세 정보 업데이트 실패:', error);
+        }
+    },
+
+    // 🔥 시간 기준 면접 데이터 계산
+    getInterviewDataByTime(period) {
+        const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
+        let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
+        if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
+        const interviewTimeIndex = App.state.data.headers.indexOf('면접 시간');
+        const interviewerIndex = App.state.data.headers.indexOf('면접관');
+        const nameIndex = App.state.data.headers.indexOf('이름');
+
+        if (contactResultIndex === -1 || interviewDateIndex === -1) {
+            return { total: 0, byInterviewer: {}, periodLabel: '데이터 없음' };
+        }
+
+        const now = new Date();
+        let startTime, endTime, periodLabel;
+
+        // 기간별 시간 범위 설정
+        switch (period) {
+            case 'today':
+                startTime = new Date(now);
+                startTime.setHours(now.getHours(), now.getMinutes(), 0, 0); // 🔥 현재 시간 기준
+                endTime = new Date(now);
+                endTime.setHours(23, 59, 59, 999);
+                periodLabel = '금일 남은 시간';
+                break;
+            case 'tomorrow':
+                startTime = new Date(now);
+                startTime.setDate(now.getDate() + 1);
+                startTime.setHours(0, 0, 0, 0);
+                endTime = new Date(startTime);
+                endTime.setHours(23, 59, 59, 999);
+                periodLabel = '내일';
+                break;
+            case 'week':
+                startTime = new Date(now);
+                endTime = new Date(now);
+                endTime.setDate(now.getDate() + 7);
+                endTime.setHours(23, 59, 59, 999);
+                periodLabel = '향후 7일';
+                break;
+            case 'month':
+                startTime = new Date(now);
+                endTime = new Date(now);
+                endTime.setMonth(now.getMonth() + 1);
+                endTime.setHours(23, 59, 59, 999);
+                periodLabel = '이번 달';
+                break;
+            case 'custom':
+                const startDateInput = document.getElementById('interviewStartDate');
+                const endDateInput = document.getElementById('interviewEndDate');
+                if (startDateInput && endDateInput && startDateInput.value && endDateInput.value) {
+                    startTime = new Date(startDateInput.value);
+                    endTime = new Date(endDateInput.value);
+                    endTime.setHours(23, 59, 59, 999);
+                    periodLabel = `${startDateInput.value} ~ ${endDateInput.value}`;
+                } else {
+                    return { total: 0, byInterviewer: {}, periodLabel: '기간 선택 필요' };
+                }
+                break;
+            default:
+                startTime = new Date(now);
+                endTime = new Date(now);
+                endTime.setDate(now.getDate() + 7);
+                periodLabel = '향후 7일';
+        }
+
+        // 면접 확정자 필터링
+        const interviews = App.state.data.all.filter(row => {
+            const contactResult = String(row[contactResultIndex] || '').trim();
+            if (contactResult !== '면접확정') return false;
+
+            const interviewDate = row[interviewDateIndex];
+            const interviewTime = row[interviewTimeIndex];
+            
+            if (!interviewDate) return false;
+
+            try {
+                const date = new Date(interviewDate);
+                
+                // 면접 시간이 있으면 시간까지 고려
+                if (interviewTime && period === 'today') {
+                    const timeStr = String(interviewTime).replace(/'/g, '').trim();
+                    const timeMatch = timeStr.match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
+                    
+                    if (timeMatch) {
+                        const hour = parseInt(timeMatch[1]);
+                        const minute = parseInt(timeMatch[2] || '0');
+                        date.setHours(hour, minute, 0, 0);
+                    }
+                }
+
+                return date >= startTime && date <= endTime;
+            } catch (e) {
+                return false;
+            }
+        });
+
+        // 면접관별 그룹핑
+        const byInterviewer = {};
+        interviews.forEach(row => {
+            const interviewer = String(row[interviewerIndex] || '미정').trim();
+            const name = String(row[nameIndex] || '').trim();
+            
+            if (!byInterviewer[interviewer]) {
+                byInterviewer[interviewer] = {
+                    count: 0,
+                    applicants: []
+                };
+            }
+            
+            byInterviewer[interviewer].count++;
+            byInterviewer[interviewer].applicants.push(name);
+        });
+
+        return {
+            total: interviews.length,
+            byInterviewer,
+            periodLabel
+        };
+    },
+
+    // 🔥 면접관별 상세 정보 렌더링
+    renderInterviewerDetails(byInterviewer) {
+        const container = document.getElementById('interviewByInterviewer');
+        if (!container) {
+            console.warn('interviewByInterviewer 요소를 찾을 수 없습니다.');
+            return;
+        }
+
+        if (Object.keys(byInterviewer).length === 0) {
+            container.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.6); font-size: 0.85rem; padding: 10px;">예정된 면접이 없습니다</div>';
+            return;
+        }
+
+        let html = '';
+        Object.entries(byInterviewer)
+            .sort(([,a], [,b]) => b.count - a.count) // 인원 수 많은 순으로 정렬
+            .forEach(([interviewer, data]) => {
+                const applicantsList = data.applicants.slice(0, 3).join(', ') + 
+                                     (data.applicants.length > 3 ? ` 외 ${data.applicants.length - 3}명` : '');
+                
+                html += `
+                    <div class="interviewer-item">
+                        <div>
+                            <div class="interviewer-name">${interviewer}</div>
+                            <div class="interviewer-applicants">${applicantsList}</div>
+                        </div>
+                        <div class="interviewer-count">${data.count}</div>
+                    </div>
+                `;
+            });
+
+        container.innerHTML = html;
+    }
+};
 
     // =========================
     // 통계 관련
