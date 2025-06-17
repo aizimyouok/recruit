@@ -114,119 +114,133 @@ if (appInstance.cache) {
         }
     },
 
-    // data.js의 updateInterviewSchedule 함수 수정
+    // 🔥 수정된 updateInterviewSchedule 함수
+    updateInterviewSchedule(appInstance) {
+        let interviewDateIndex = appInstance.state.data.headers.indexOf('면접 날짜');
+        if (interviewDateIndex === -1) interviewDateIndex = appInstance.state.data.headers.indexOf('면접 날자');
 
-updateInterviewSchedule(appInstance) {
-    let interviewDateIndex = appInstance.state.data.headers.indexOf('면접 날짜');
-    if (interviewDateIndex === -1) interviewDateIndex = appInstance.state.data.headers.indexOf('면접 날자');
+        const interviewTimeIndex = appInstance.state.data.headers.indexOf('면접 시간');
+        const nameIndex = appInstance.state.data.headers.indexOf('이름');
+        const positionIndex = appInstance.state.data.headers.indexOf('모집분야');
+        const routeIndex = appInstance.state.data.headers.indexOf('지원루트');
+        
+        // 🔥 회사명 컬럼 추가
+        const companyIndex = appInstance.state.data.headers.indexOf('회사명');
+        
+        const recruiterIndex = appInstance.state.data.headers.indexOf('증원자');
+        const interviewerIndex = appInstance.state.data.headers.indexOf('면접관');
 
-    const interviewTimeIndex = appInstance.state.data.headers.indexOf('면접 시간');
-    const nameIndex = appInstance.state.data.headers.indexOf('이름');
-    const positionIndex = appInstance.state.data.headers.indexOf('모집분야');
-    const routeIndex = appInstance.state.data.headers.indexOf('지원루트');
-    
-    // 🔥 회사명 컬럼 추가
-    const companyIndex = appInstance.state.data.headers.indexOf('회사명');
-    
-    const recruiterIndex = appInstance.state.data.headers.indexOf('증원자');
-    const interviewerIndex = appInstance.state.data.headers.indexOf('면접관');
+        const scheduleContainer = document.getElementById('interviewScheduleList');
+        
+        if (!scheduleContainer) {
+            console.warn('interviewScheduleList 요소를 찾을 수 없습니다.');
+            return;
+        }
 
-    const scheduleContainer = document.getElementById('interviewScheduleList');
-    
-    if (!scheduleContainer) {
-        console.warn('interviewScheduleList 요소를 찾을 수 없습니다.');
-        return;
-    }
+        if (interviewDateIndex === -1) {
+            scheduleContainer.innerHTML = '<div class="no-interviews">면접 날짜 컬럼을 찾을 수 없습니다.</div>';
+            return;
+        }
 
-    if (interviewDateIndex === -1) {
-        scheduleContainer.innerHTML = '<div class="no-interviews">면접 날짜 컬럼을 찾을 수 없습니다.</div>';
-        return;
-    }
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const threeDaysLater = new Date(today.getTime() + (3 * 24 * 60 * 60 * 1000));
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const threeDaysLater = new Date(today.getTime() + (3 * 24 * 60 * 60 * 1000));
+        const upcomingInterviews = appInstance.state.data.all
+            .filter(row => {
+                const interviewDate = row[interviewDateIndex];
+                if (!interviewDate) return false;
+                try {
+                    const date = new Date(interviewDate);
+                    return date >= today && date <= threeDaysLater;
+                } catch (e) { return false; }
+            })
+            .sort((a, b) => new Date(a[interviewDateIndex]) - new Date(b[interviewDateIndex]))
+            .slice(0, 7);
 
-    const upcomingInterviews = appInstance.state.data.all
-        .filter(row => {
+        if (upcomingInterviews.length === 0) {
+            scheduleContainer.innerHTML = '<div class="no-interviews">3일 이내 예정된 면접이 없습니다.</div>';
+            return;
+        }
+
+        // 🔥 헤더에 회사명 추가
+        let tableHtml = `
+            <table class="interview-schedule-table">
+                <thead>
+                    <tr>
+                        <th>이름</th>
+                        <th>지원루트</th>
+                        ${companyIndex !== -1 ? '<th>회사명</th>' : ''}
+                        <th>증원자</th>
+                        <th>모집분야</th>
+                        <th>면접관</th>
+                        <th>면접날짜</th>
+                        <th>면접시간</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        upcomingInterviews.forEach((row, index) => {
             const interviewDate = row[interviewDateIndex];
-            if (!interviewDate) return false;
+            let dateDisplay = '';
+
+            const formattedTime = appInstance.utils.formatInterviewTime(row[interviewTimeIndex]);
+
             try {
                 const date = new Date(interviewDate);
-                return date >= today && date <= threeDaysLater;
-            } catch (e) { return false; }
-        })
-        .sort((a, b) => new Date(a[interviewDateIndex]) - new Date(b[interviewDateIndex]))
-        .slice(0, 7);
+                date.setHours(0, 0, 0, 0);
+                const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+                const weekday = weekdays[date.getDay()];
 
-    if (upcomingInterviews.length === 0) {
-        scheduleContainer.innerHTML = '<div class="no-interviews">3일 이내 예정된 면접이 없습니다.</div>';
-        return;
-    }
+                const diffTime = date.getTime() - today.getTime();
+                const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                let dayDiff = `D-${diffDays}`;
+                let ddayClass = '';
+                if (diffDays === 0) { dayDiff = 'D-Day'; ddayClass = 'today'; }
 
-    // 🔥 헤더에 회사명 추가
-    let tableHtml = `
-        <table class="interview-schedule-table">
-            <thead>
-                <tr>
-                    <th>이름</th>
-                    <th>지원루트</th>
-                    ${companyIndex !== -1 ? '<th>회사명</th>' : ''}
-                    <th>증원자</th>
-                    <th>모집분야</th>
-                    <th>면접관</th>
-                    <th>면접날짜</th>
-                    <th>면접시간</th>
+                const dateText = `${date.getMonth() + 1}/${date.getDate()}(${weekday})`;
+                dateDisplay = `<span class="interview-dday ${ddayClass}">${dayDiff}</span><span class="interview-date-text">${dateText}</span>`;
+            } catch (e) { dateDisplay = '날짜 오류'; }
+
+            // 🔥 개선된 문자열 이스케이프 처리
+            const name = String(row[nameIndex] || '');
+            const route = String(row[routeIndex] || '');
+            const companyName = companyIndex !== -1 ? (row[companyIndex] || '-') : '';
+            
+            // 🔥 안전한 onclick 이벤트 생성 (JSON.stringify 사용)
+            const clickHandler = `DataModule.handleInterviewClick(${JSON.stringify(name)}, ${JSON.stringify(route)})`;
+
+            tableHtml += `
+                <tr onclick="${clickHandler}" style="cursor: pointer;">
+                    <td class="interview-name-cell" title="${name}">${name || '-'}</td>
+                    <td class="interview-route-cell" title="${route}">${route || '-'}</td>
+                    ${companyIndex !== -1 ? `<td class="interview-company-cell" title="${companyName}">${companyName}</td>` : ''}
+                    <td class="interview-recruiter-cell" title="${row[recruiterIndex] || ''}">${row[recruiterIndex] || '-'}</td>
+                    <td class="interview-position-cell" title="${row[positionIndex] || ''}">${row[positionIndex] || '-'}</td>
+                    <td class="interview-interviewer-cell" title="${row[interviewerIndex] || ''}">${row[interviewerIndex] || '-'}</td>
+                    <td class="interview-date-cell" title="${dateDisplay.replace(/<[^>]*>/g, '')}">${dateDisplay}</td>
+                    <td class="interview-time-cell" title="${formattedTime}">${formattedTime}</td>
                 </tr>
-            </thead>
-            <tbody>
-    `;
+            `;
+        });
 
-    upcomingInterviews.forEach(row => {
-        const interviewDate = row[interviewDateIndex];
-        let dateDisplay = '';
+        tableHtml += `</tbody></table>`;
+        scheduleContainer.innerHTML = tableHtml;
+    },
 
-        const formattedTime = appInstance.utils.formatInterviewTime(row[interviewTimeIndex]);
-
+    // 🔥 새로운 전역 함수 추가
+    handleInterviewClick(name, route) {
         try {
-            const date = new Date(interviewDate);
-            date.setHours(0, 0, 0, 0);
-            const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
-            const weekday = weekdays[date.getDay()];
-
-            const diffTime = date.getTime() - today.getTime();
-            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-            let dayDiff = `D-${diffDays}`;
-            let ddayClass = '';
-            if (diffDays === 0) { dayDiff = 'D-Day'; ddayClass = 'today'; }
-
-            const dateText = `${date.getMonth() + 1}/${date.getDate()}(${weekday})`;
-            dateDisplay = `<span class="interview-dday ${ddayClass}">${dayDiff}</span><span class="interview-date-text">${dateText}</span>`;
-        } catch (e) { dateDisplay = '날짜 오류'; }
-
-        const safeName = String(row[nameIndex] || '').replace(/'/g, "\\'");
-        const safeRoute = String(row[routeIndex] || '').replace(/'/g, "\\'");
-
-        // 🔥 회사명 데이터 가져오기
-        const companyName = companyIndex !== -1 ? (row[companyIndex] || '-') : '';
-
-        tableHtml += `
-            <tr onclick="globalThis.App && globalThis.App.data && globalThis.App.data.showInterviewDetails('${safeName}', '${safeRoute}')" style="cursor: pointer;">
-                <td class="interview-name-cell" title="${row[nameIndex] || ''}">${row[nameIndex] || '-'}</td>
-                <td class="interview-route-cell" title="${row[routeIndex] || ''}">${row[routeIndex] || '-'}</td>
-                ${companyIndex !== -1 ? `<td class="interview-company-cell" title="${companyName}">${companyName}</td>` : ''}
-                <td class="interview-recruiter-cell" title="${row[recruiterIndex] || ''}">${row[recruiterIndex] || '-'}</td>
-                <td class="interview-position-cell" title="${row[positionIndex] || ''}">${row[positionIndex] || '-'}</td>
-                <td class="interview-interviewer-cell" title="${row[interviewerIndex] || ''}">${row[interviewerIndex] || '-'}</td>
-                <td class="interview-date-cell" title="${dateDisplay.replace(/<[^>]*>/g, '')}">${dateDisplay}</td>
-                <td class="interview-time-cell" title="${formattedTime}">${formattedTime}</td>
-            </tr>
-        `;
-    });
-
-    tableHtml += `</tbody></table>`;
-    scheduleContainer.innerHTML = tableHtml;
-}
+            if (window.App && window.App.data && window.App.data.showInterviewDetails) {
+                window.App.data.showInterviewDetails(name, route);
+            } else {
+                console.warn('App.data.showInterviewDetails를 찾을 수 없습니다.');
+            }
+        } catch (error) {
+            console.error('면접 클릭 핸들러 오류:', error);
+        }
+    },
 
     showInterviewDetails(appInstance, name, route) {
         try {
@@ -281,3 +295,8 @@ updateInterviewSchedule(appInstance) {
         return result;
     }
 };
+
+// 🔥 전역 함수로 노출
+if (typeof window !== 'undefined') {
+    window.DataModule = DataModule;
+}
