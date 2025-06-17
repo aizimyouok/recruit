@@ -26,7 +26,9 @@
                 <button class="nav-item" onclick="globalThis.App.navigation.switchPage('stats')" aria-label="통계 분석 페이지로 이동"><i class="fas fa-chart-pie icon"></i> 통계</button>
                 <button class="nav-item" onclick="globalThis.App.navigation.switchPage('efficiency')" aria-label="효율성 분석 페이지로 이동"><i class="fas fa-chart-line icon"></i> 효율성 분석</button>
             </div>
-            <!-- 🔥 새로운 면접 대기 확장 위젯 -->
+            
+            <div class="sidebar-widgets">
+                <!-- 🔥 새로운 면접 대기 확장 위젯 -->
 <div class="sidebar-widget interview-pending-widget" style="border-left: 3px solid #f59e0b; margin-bottom: 20px;">
     <div class="interview-widget-header" onclick="globalThis.App && globalThis.App.sidebar && globalThis.App.sidebar.toggleInterviewWidget()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
         <div>
@@ -66,7 +68,6 @@
         </div>
     </div>
 </div>
-            <div class="sidebar-widgets">
                 <div class="sidebar-widget">
                     <div class="sidebar-widget-title">조회 기간</div>
                     <select id="sidebarPeriodFilter" onchange="globalThis.App.sidebar.handlePeriodChange()" style="width: 100%; padding: 8px; margin-top: 8px; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--sidebar-text); font-size: 0.9rem;">
