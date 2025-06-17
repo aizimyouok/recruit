@@ -423,113 +423,43 @@ const App = {
             }
         },
         
-        // 🔥 수정된 강제 새로고침 - UI 상태 업데이트 포함
+        // 🔥 간단한 강제 새로고침 (캐시만 지우고 기존 fetch 사용)
         async forceRefresh() {
             const startTime = Date.now();
             const stopAnimation = App.ui.showRefreshAnimation();
             App.ui.updateSyncStatus('syncing');
             
             try {
-                console.log('🔄 강제 새로고침 시작...');
+                console.log('🔄 간단 새로고침 시작...');
                 
-                // 1. 모든 캐시 완전 삭제
+                // 1. 캐시만 지우기
                 if (App.cache) {
                     App.cache.invalidate();
+                    console.log('✅ CacheModule 초기화');
                 }
                 
                 if (App.dataCache) {
                     App.dataCache.clearCache();
+                    console.log('✅ DataCacheModule 초기화');
                 }
                 
-                // 2. 로딩 상태 표시
-                const tableContainer = document.querySelector('.table-container');
-                if (tableContainer) {
-                    App.ui.showLoadingState(tableContainer);
-                }
+                // 2. 기존 fetch 함수 사용 (캐시가 없으니 서버에서 새로 가져올 것)
+                await App.data.fetch();
                 
-                // 3. 타임스탬프를 사용해 캐시 완전 무시하고 서버에서 가져오기
-                const response = await fetch(`${App.config.APPS_SCRIPT_URL}?action=read&_t=${Date.now()}`, {
-                    method: 'GET',
-                    cache: 'no-cache',
-                    headers: {
-                        'Cache-Control': 'no-cache, no-store, must-revalidate',
-                        'Pragma': 'no-cache',
-                        'Expires': '0'
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error(App.utils.getErrorMessage(response.status));
-                }
-
-                const result = await response.json();
-
-                if (result.status !== 'success') {
-                    throw new Error(result.message || '데이터 처리 중 오류가 발생했습니다.');
-                }
-
-                if (!result.data || !Array.isArray(result.data) || result.data.length === 0) {
-                    throw new Error('데이터가 비어있거나 올바르지 않은 형식입니다.');
-                }
-
-                // 4. 데이터 업데이트
-                App.state.data.headers = (result.data[0] || []).map(h => String(h || '').trim());
-                App.state.data.all = result.data.slice(1)
-                    .filter(row => row && Array.isArray(row) && row.some(cell => cell != null && String(cell).trim() !== ''))
-                    .map(row => row.map(cell => cell == null ? '' : String(cell)));
-
-                // 5. UI 업데이트
-                App.data.updateSequenceNumber();
-                App.state.ui.visibleColumns = App.utils.generateVisibleColumns(App.state.data.headers);
-
-                if (App.filter && App.filter.populateDropdowns) {
-                    App.filter.populateDropdowns();
-                }
-
-                if (App.sidebar && App.sidebar.updateWidgets) {
-                    App.sidebar.updateWidgets();
-                }
-
-                App.data.updateInterviewSchedule();
-
-                if (App.filter && App.filter.reset) {
-                    App.filter.reset(true);
-                }
-
-                // 6. 컬럼 토글 재설정
-                setTimeout(() => {
-                    if (App.ui && App.ui.setupColumnToggles) {
-                        App.ui.setupColumnToggles();
-                    }
-                    
-                    if (App.render && App.state.data.all.length > 0) {
-                        App.render.currentView();
-                    }
-                }, 50);
-
-                // 7. UI 상태 업데이트
-                App.ui.updateLastUpdateTime();
-                App.ui.updateDataSummary();
-                App.ui.updateSyncStatus('connected');
-                App.ui.trackPerformance('강제 새로고침', startTime);
-
-                console.log(`✅ 강제 새로고침 완료: ${App.state.data.all.length}개 항목`);
+                console.log(`✅ 간단 새로고침 완료: ${App.state.data.all.length}개 항목`);
                 
-                // 8. 성공 알림
+                // 3. 성공 알림
                 App.data.showRefreshNotification('최신 데이터로 업데이트되었습니다! 🔄');
 
             } catch (error) {
-                console.error('❌ 강제 새로고침 실패:', error);
+                console.error('❌ 간단 새로고침 실패:', error);
                 
                 App.ui.updateSyncStatus('disconnected');
-                App.ui.trackPerformance('강제 새로고침 (실패)', startTime);
+                App.ui.trackPerformance('간단 새로고침 (실패)', startTime);
                 
-                const tableContainer = document.querySelector('.table-container');
-                if (tableContainer && App.ui && App.ui.showErrorState) {
-                    App.ui.showErrorState(tableContainer, error);
-                }
+                // 간단한 에러 처리
+                alert('새로고침에 실패했습니다. 인터넷 연결을 확인하고 다시 시도해주세요.');
                 
-                throw error;
             } finally {
                 stopAnimation();
             }
