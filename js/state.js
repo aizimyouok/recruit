@@ -20,6 +20,7 @@ export const createInitialState = () => ({
         currentView: 'table',
         searchTerm: '',
         searchTimeout: null,
+        filterTimeout: null, // 🔥 추가
         currentEditingData: null
     },
     charts: {
