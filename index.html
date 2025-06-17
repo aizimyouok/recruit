@@ -43,17 +43,51 @@
                         <button onclick="globalThis.App.sidebar.updateWidgets()" style="width: 100%; margin-top: 4px; padding: 6px; background: var(--sidebar-accent); color: white; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer;">적용</button>
                     </div>
                 </div>
-                
+                <!-- 🔥 새로운 면접 대기 확장 위젯 -->
+<div class="sidebar-widget interview-pending-widget" style="border-left: 3px solid #f59e0b; margin-bottom: 20px;">
+    <div class="interview-widget-header" onclick="globalThis.App && globalThis.App.sidebar && globalThis.App.sidebar.toggleInterviewWidget()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <div class="sidebar-widget-title">면접 대기 📅</div>
+            <div class="sidebar-widget-value" id="interviewTotalCount" style="color: #f59e0b; font-size: 1.8rem; margin: 8px 0;">0명</div>
+            <div class="sidebar-widget-subtitle" id="interviewPeriodLabel">금일 이후 예정</div>
+        </div>
+        <div class="interview-toggle-icon" id="interviewToggleIcon" style="color: #f59e0b; font-size: 1.2rem; transition: transform 0.3s ease;">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </div>
+    
+    <!-- 면접 기간 필터 -->
+    <div class="interview-period-filter" style="margin: 15px 0; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+        <div class="sidebar-widget-title" style="margin-bottom: 8px;">조회 기간</div>
+        <select id="interviewPeriodSelect" onchange="globalThis.App && globalThis.App.sidebar && globalThis.App.sidebar.updateInterviewPeriod()" style="width: 100%; padding: 6px 8px; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--sidebar-text); font-size: 0.85rem;">
+            <option value="today">오늘</option>
+            <option value="tomorrow">내일</option>
+            <option value="week">이번 주</option>
+            <option value="month">이번 달</option>
+            <option value="custom">기간 선택</option>
+        </select>
+        <div id="interviewCustomDateRange" style="display: none; margin-top: 8px;">
+            <input type="date" id="interviewStartDate" style="width: 100%; padding: 4px; margin-bottom: 4px; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--sidebar-text); font-size: 0.8rem;">
+            <input type="date" id="interviewEndDate" style="width: 100%; padding: 4px; margin-bottom: 4px; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--sidebar-text); font-size: 0.8rem;">
+            <button onclick="globalThis.App && globalThis.App.sidebar && globalThis.App.sidebar.updateInterviewPeriod()" style="width: 100%; padding: 4px; background: var(--sidebar-accent); color: white; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer;">적용</button>
+        </div>
+    </div>
+    
+    <!-- 면접관별 상세 -->
+    <div class="interview-details" id="interviewDetails" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
+        <div class="interview-details-content" style="padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div class="sidebar-widget-title" style="margin-bottom: 12px;">면접관별 현황</div>
+            <div id="interviewByInterviewer">
+                <!-- 면접관별 데이터가 여기에 동적으로 생성됨 -->
+            </div>
+        </div>
+    </div>
+</div>
                 <div class="sidebar-widget" style="border-left: 3px solid #818cf8;">
                     <div class="sidebar-widget-title">지원자</div>
                     <div class="sidebar-widget-value" id="sidebarTotalApplicants" style="color: #818cf8;">0</div>
                     <div class="sidebar-widget-subtitle" id="sidebarPeriodLabel">전체 기간</div>
                 </div>
-                <div class="sidebar-widget clickable-widget" style="border-left: 3px solid #f59e0b; cursor: pointer; transition: all 0.3s ease;" onclick="globalThis.App.sidebar.showInterviewPending()" onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 4px 15px rgba(245, 158, 11, 0.3)'" onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow=''">
-    <div class="sidebar-widget-title">면접 대기 👆</div>
-    <div class="sidebar-widget-value" id="sidebarInterviewPending" style="color: #f59e0b;">0</div>
-    <div class="sidebar-widget-subtitle">오늘 이후 면접 예정</div>
-</div>
                 <div class="sidebar-widget" style="border-left: 3px solid #10b981;">
                     <div class="sidebar-widget-title">합격률</div>
                     <div class="sidebar-widget-value" id="sidebarSuccessRate" style="color: #10b981;">0%</div>
