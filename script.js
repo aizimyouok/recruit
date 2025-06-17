@@ -1287,131 +1287,201 @@ const App = {
     },
 
     // =========================
-// 사이드바 관련
-// =========================
-sidebar: {
-    handlePeriodChange() {
-        const selectedPeriod = document.getElementById('sidebarPeriodFilter').value;
-        const customRange = document.getElementById('sidebarCustomDateRange');
+    // 🔥 사이드바 관련 (면접 대기 카드 세분화 포함)
+    // =========================
+    sidebar: {
+        handlePeriodChange() {
+            const selectedPeriod = document.getElementById('sidebarPeriodFilter').value;
+            const customRange = document.getElementById('sidebarCustomDateRange');
 
-        if (selectedPeriod === 'custom') {
-            customRange.style.display = 'block';
-        } else {
-            customRange.style.display = 'none';
-            App.sidebar.updateWidgets();
-        }
-    },
-
-    updateWidgets() {
-    const selectedPeriod = document.getElementById('sidebarPeriodFilter')?.value || 'all';
-    const customStartDate = document.getElementById('sidebarStartDate')?.value;
-    const customEndDate = document.getElementById('sidebarEndDate')?.value;
-    
-    // 캐시 키를 위한 필터 정보
-    const filters = {
-        period: selectedPeriod,
-        startDate: customStartDate,
-        endDate: customEndDate,
-        dataLength: App.state.data.all.length
-    };
-
-    // 캐시 확인
-    const cachedResult = App.cache.get('sidebar', filters);
-    if (cachedResult) {
-        App.sidebar.updateUI(cachedResult.stats, cachedResult.periodLabel);
-        if (document.getElementById('stats').classList.contains('active')) {
-            App.stats.update();
-        }
-        App.sidebar.updateInterviewDetails();
-        return;
-    }
-
-    // 캐시가 없으면 새로 계산
-    const applyDateIndex = App.state.data.headers.indexOf('지원일');
-    let filteredApplicants = [...App.state.data.all];
-    let periodLabel = '전체 기간';
-
-    if (applyDateIndex !== -1 && selectedPeriod !== 'all') {
-        const result = App.sidebar.filterByPeriod(filteredApplicants, selectedPeriod, applyDateIndex);
-        filteredApplicants = result.data;
-        periodLabel = result.label;
-    }
-
-    const stats = App.sidebar.calculateStats(filteredApplicants);
-    
-    // 결과를 캐시에 저장
-    const result = { stats, periodLabel };
-    App.cache.set('sidebar', filters, result);
-    
-    App.sidebar.updateUI(stats, periodLabel);
-
-    if (document.getElementById('stats').classList.contains('active')) {
-        App.stats.update();
-    }
-        App.sidebar.updateInterviewDetails();
-},
-
-    filterByPeriod(data, selectedPeriod, applyDateIndex) {
-    const now = new Date();
-    let filteredData = [...data];
-    let label = '전체 기간';
-
-    try {
-        if (selectedPeriod === 'custom') {
-            const startDateElement = document.getElementById('sidebarStartDate');
-            const endDateElement = document.getElementById('sidebarEndDate');
-            
-            const startDate = startDateElement ? startDateElement.value : null;
-            const endDate = endDateElement ? endDateElement.value : null;
-
-            if (startDate && endDate) {
-                const start = new Date(startDate);
-                const end = new Date(endDate);
-                end.setHours(23, 59, 59, 999);
-
-                filteredData = data.filter(row => {
-                    try {
-                        const dateValue = row[applyDateIndex];
-                        if (!dateValue) return false;
-                        const date = new Date(dateValue);
-                        return date >= start && date <= end;
-                    } catch (e) { return false; }
-                });
-                
-                const startStr = start.toLocaleDateString('ko-KR');
-                const endStr = end.toLocaleDateString('ko-KR');
-                label = `${startStr} ~ ${endStr}`;
+            if (selectedPeriod === 'custom') {
+                customRange.style.display = 'block';
+            } else {
+                customRange.style.display = 'none';
+                App.sidebar.updateWidgets();
             }
-        } else {
-            const result = App.utils.filterDataByPeriod(data, selectedPeriod, applyDateIndex, now);
-            filteredData = result.data;
-            label = result.label;
-        }
-    } catch (error) {
-        console.error('사이드바 날짜 필터링 오류:', error);
-        filteredData = data;
-        label = '전체 기간';
-    }
+        },
 
-    return { data: filteredData, label };
-},
-
-    calculateStats(filteredApplicants) {
-        const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
-        const interviewResultIndex = App.state.data.headers.indexOf('면접결과');
-        const joinDateIndex = App.state.data.headers.indexOf('입과일');
-
-        const totalCount = filteredApplicants.length;
-
-        let interviewPendingCount = 0;
-        if (contactResultIndex !== -1) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+        updateWidgets() {
+            const selectedPeriod = document.getElementById('sidebarPeriodFilter')?.value || 'all';
+            const customStartDate = document.getElementById('sidebarStartDate')?.value;
+            const customEndDate = document.getElementById('sidebarEndDate')?.value;
             
+            // 캐시 키를 위한 필터 정보
+            const filters = {
+                period: selectedPeriod,
+                startDate: customStartDate,
+                endDate: customEndDate,
+                dataLength: App.state.data.all.length
+            };
+
+            // 캐시 확인
+            const cachedResult = App.cache.get('sidebar', filters);
+            if (cachedResult) {
+                App.sidebar.updateUI(cachedResult.stats, cachedResult.periodLabel);
+                if (document.getElementById('stats').classList.contains('active')) {
+                    App.stats.update();
+                }
+                // 🔥 추가: 면접 위젯 업데이트
+                App.sidebar.updateInterviewDetails();
+                return;
+            }
+
+            // 캐시가 없으면 새로 계산
+            const applyDateIndex = App.state.data.headers.indexOf('지원일');
+            let filteredApplicants = [...App.state.data.all];
+            let periodLabel = '전체 기간';
+
+            if (applyDateIndex !== -1 && selectedPeriod !== 'all') {
+                const result = App.sidebar.filterByPeriod(filteredApplicants, selectedPeriod, applyDateIndex);
+                filteredApplicants = result.data;
+                periodLabel = result.label;
+            }
+
+            const stats = App.sidebar.calculateStats(filteredApplicants);
+            
+            // 결과를 캐시에 저장
+            const result = { stats, periodLabel };
+            App.cache.set('sidebar', filters, result);
+            
+            App.sidebar.updateUI(stats, periodLabel);
+
+            if (document.getElementById('stats').classList.contains('active')) {
+                App.stats.update();
+            }
+
+            // 🔥 추가: 면접 위젯 업데이트
+            App.sidebar.updateInterviewDetails();
+        },
+
+        filterByPeriod(data, selectedPeriod, applyDateIndex) {
+            const now = new Date();
+            let filteredData = [...data];
+            let label = '전체 기간';
+
+            try {
+                if (selectedPeriod === 'custom') {
+                    const startDateElement = document.getElementById('sidebarStartDate');
+                    const endDateElement = document.getElementById('sidebarEndDate');
+                    
+                    const startDate = startDateElement ? startDateElement.value : null;
+                    const endDate = endDateElement ? endDateElement.value : null;
+
+                    if (startDate && endDate) {
+                        const start = new Date(startDate);
+                        const end = new Date(endDate);
+                        end.setHours(23, 59, 59, 999);
+
+                        filteredData = data.filter(row => {
+                            try {
+                                const dateValue = row[applyDateIndex];
+                                if (!dateValue) return false;
+                                const date = new Date(dateValue);
+                                return date >= start && date <= end;
+                            } catch (e) { return false; }
+                        });
+                        
+                        const startStr = start.toLocaleDateString('ko-KR');
+                        const endStr = end.toLocaleDateString('ko-KR');
+                        label = `${startStr} ~ ${endStr}`;
+                    }
+                } else {
+                    const result = App.utils.filterDataByPeriod(data, selectedPeriod, applyDateIndex, now);
+                    filteredData = result.data;
+                    label = result.label;
+                }
+            } catch (error) {
+                console.error('사이드바 날짜 필터링 오류:', error);
+                filteredData = data;
+                label = '전체 기간';
+            }
+
+            return { data: filteredData, label };
+        },
+
+        calculateStats(filteredApplicants) {
+            const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
+            const interviewResultIndex = App.state.data.headers.indexOf('면접결과');
+            const joinDateIndex = App.state.data.headers.indexOf('입과일');
+
+            const totalCount = filteredApplicants.length;
+
+            let interviewPendingCount = 0;
+            if (contactResultIndex !== -1) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
+                if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
+                
+                interviewPendingCount = filteredApplicants.filter(row => {
+                    const contactResult = String(row[contactResultIndex] || '').trim();
+                    if (contactResult !== '면접확정') return false;
+                    
+                    if (interviewDateIndex !== -1) {
+                        const interviewDate = row[interviewDateIndex];
+                        if (interviewDate) {
+                            try {
+                                const date = new Date(interviewDate);
+                                date.setHours(0, 0, 0, 0);
+                                return date >= today;
+                            } catch (e) {
+                                return false;
+                            }
+                        }
+                    }
+                    return false;
+                }).length;
+            }
+
+            // 3번: 전체 지원자 대비 합격률
+            let successRate = 0;
+            if (interviewResultIndex !== -1 && totalCount > 0) {
+                const passedApplicants = filteredApplicants.filter(row => {
+                    const interviewResult = String(row[interviewResultIndex] || '').trim();
+                    return interviewResult === '합격';
+                });
+                successRate = Math.round((passedApplicants.length / totalCount) * 100);
+            }
+
+            // 4번: 전체 지원자 대비 입과율
+            let joinRate = 0;
+            if (joinDateIndex !== -1 && totalCount > 0) {
+                const joinedApplicants = filteredApplicants.filter(row => {
+                    const joinDate = String(row[joinDateIndex] || '').trim();
+                    return joinDate !== '' && joinDate !== '-';
+                });
+                joinRate = Math.round((joinedApplicants.length / totalCount) * 100);
+            }
+
+            return { totalCount, interviewPendingCount, successRate, joinRate };
+        },
+
+        updateUI(stats, periodLabel) {
+            document.getElementById('sidebarTotalApplicants').textContent = stats.totalCount;
+            document.getElementById('sidebarPeriodLabel').textContent = periodLabel;
+            document.getElementById('sidebarSuccessRate').textContent = stats.successRate + '%';
+            document.getElementById('sidebarJoinRate').textContent = stats.joinRate + '%';
+        },
+
+        showInterviewPending() {
+            console.log('🎯 면접 대기자 필터링 시작');
+            
+            const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
             let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
             if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
             
-            interviewPendingCount = filteredApplicants.filter(row => {
+            if (contactResultIndex === -1) {
+                alert('1차 컨택 결과 컬럼을 찾을 수 없습니다.');
+                return;
+            }
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            App.filter.reset(false);
+            
+            App.state.data.filtered = App.state.data.all.filter(row => {
                 const contactResult = String(row[contactResultIndex] || '').trim();
                 if (contactResult !== '면접확정') return false;
                 
@@ -1428,325 +1498,259 @@ sidebar: {
                     }
                 }
                 return false;
-            }).length;
-        }
-
-        // 3번: 전체 지원자 대비 합격률
-        let successRate = 0;
-        if (interviewResultIndex !== -1 && totalCount > 0) {
-            const passedApplicants = filteredApplicants.filter(row => {
-                const interviewResult = String(row[interviewResultIndex] || '').trim();
-                return interviewResult === '합격';
             });
-            successRate = Math.round((passedApplicants.length / totalCount) * 100);
-        }
-
-        // 4번: 전체 지원자 대비 입과율
-        let joinRate = 0;
-        if (joinDateIndex !== -1 && totalCount > 0) {
-            const joinedApplicants = filteredApplicants.filter(row => {
-                const joinDate = String(row[joinDateIndex] || '').trim();
-                return joinDate !== '' && joinDate !== '-';
-            });
-            joinRate = Math.round((joinedApplicants.length / totalCount) * 100);
-        }
-
-        return { totalCount, interviewPendingCount, successRate, joinRate };
-    },
-
-    updateUI(stats, periodLabel) {
-        document.getElementById('sidebarTotalApplicants').textContent = stats.totalCount;
-        document.getElementById('sidebarPeriodLabel').textContent = periodLabel;
-        document.getElementById('sidebarInterviewPending').textContent = stats.interviewPendingCount;
-        document.getElementById('sidebarSuccessRate').textContent = stats.successRate + '%';
-        document.getElementById('sidebarJoinRate').textContent = stats.joinRate + '%';
-    },
-
-    showInterviewPending() {
-        console.log('🎯 면접 대기자 필터링 시작');
-        
-        const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
-        let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
-        if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
-        
-        if (contactResultIndex === -1) {
-            alert('1차 컨택 결과 컬럼을 찾을 수 없습니다.');
-            return;
-        }
-        
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        App.filter.reset(false);
-        
-        App.state.data.filtered = App.state.data.all.filter(row => {
-            const contactResult = String(row[contactResultIndex] || '').trim();
-            if (contactResult !== '면접확정') return false;
             
             if (interviewDateIndex !== -1) {
-                const interviewDate = row[interviewDateIndex];
-                if (interviewDate) {
-                    try {
-                        const date = new Date(interviewDate);
-                        date.setHours(0, 0, 0, 0);
-                        return date >= today;
-                    } catch (e) {
-                        return false;
-                    }
+                App.state.data.filtered.sort((a, b) => {
+                    const dateA = new Date(a[interviewDateIndex] || '9999-12-31');
+                    const dateB = new Date(b[interviewDateIndex] || '9999-12-31');
+                    return dateA - dateB;
+                });
+            }
+            
+            App.state.ui.currentPage = 1;
+            App.pagination.updateTotal();
+            App.filter.updateSummary();
+            
+            const pageData = App.pagination.getCurrentPageData();
+            if (App.state.ui.currentView === 'table') {
+                App.render.table(pageData);
+            } else {
+                App.render.cards(pageData);
+            }
+            
+            App.pagination.updateUI();
+            
+            const count = App.state.data.filtered.length;
+            console.log(`✅ 면접 대기자 ${count}명 필터링 완료`);
+            
+            if (count === 0) {
+                alert('앞으로 예정된 면접 대기자가 없습니다.');
+            }
+        },
+
+        // 🔥 ===== 여기부터 새로 추가된 면접 대기 카드 세분화 함수들 =====
+
+        // 면접 위젯 토글
+        toggleInterviewWidget() {
+            const details = document.getElementById('interviewDetails');
+            const icon = document.getElementById('interviewToggleIcon');
+            
+            if (details && icon) {
+                const isExpanded = details.classList.contains('expanded');
+                
+                if (isExpanded) {
+                    details.classList.remove('expanded');
+                    icon.classList.remove('expanded');
+                } else {
+                    details.classList.add('expanded');
+                    icon.classList.add('expanded');
+                    // 확장 시 데이터 업데이트
+                    App.sidebar.updateInterviewDetails();
                 }
             }
-            return false;
-        });
-        
-        if (interviewDateIndex !== -1) {
-            App.state.data.filtered.sort((a, b) => {
-                const dateA = new Date(a[interviewDateIndex] || '9999-12-31');
-                const dateB = new Date(b[interviewDateIndex] || '9999-12-31');
-                return dateA - dateB;
-            });
-        }
-        
-        App.state.ui.currentPage = 1;
-        App.pagination.updateTotal();
-        App.filter.updateSummary();
-        
-        const pageData = App.pagination.getCurrentPageData();
-        if (App.state.ui.currentView === 'table') {
-            App.render.table(pageData);
-        } else {
-            App.render.cards(pageData);
-        }
-        
-        App.pagination.updateUI();
-        
-        const count = App.state.data.filtered.length;
-        console.log(`✅ 면접 대기자 ${count}명 필터링 완료`);
-        
-        if (count === 0) {
-            alert('앞으로 예정된 면접 대기자가 없습니다.');
-        }
-    }
-},
-    // 면접 위젯 토글
-    toggleInterviewWidget() {
-        const details = document.getElementById('interviewDetails');
-        const icon = document.getElementById('interviewToggleIcon');
-        
-        if (details && icon) {
-            const isExpanded = details.classList.contains('expanded');
+        },
+
+        // 면접 기간 필터 변경
+        updateInterviewPeriod() {
+            const periodSelect = document.getElementById('interviewPeriodSelect');
+            const customRange = document.getElementById('interviewCustomDateRange');
             
-            if (isExpanded) {
-                details.classList.remove('expanded');
-                icon.classList.remove('expanded');
+            if (periodSelect && periodSelect.value === 'custom') {
+                if (customRange) {
+                    customRange.style.display = 'block';
+                }
             } else {
-                details.classList.add('expanded');
-                icon.classList.add('expanded');
-                // 확장 시 데이터 업데이트
+                if (customRange) {
+                    customRange.style.display = 'none';
+                }
                 App.sidebar.updateInterviewDetails();
             }
-        }
-    },
+        },
 
-    // 면접 기간 필터 변경
-    updateInterviewPeriod() {
-        const periodSelect = document.getElementById('interviewPeriodSelect');
-        const customRange = document.getElementById('interviewCustomDateRange');
-        
-        if (periodSelect && periodSelect.value === 'custom') {
-            if (customRange) {
-                customRange.style.display = 'block';
-            }
-        } else {
-            if (customRange) {
-                customRange.style.display = 'none';
-            }
-            App.sidebar.updateInterviewDetails();
-        }
-    },
-
-    // 🔥 새로운 면접 상세 정보 업데이트
-    updateInterviewDetails() {
-        const periodSelect = document.getElementById('interviewPeriodSelect');
-        const period = periodSelect ? periodSelect.value : 'today';
-        
-        try {
-            // 시간 기준 필터링된 면접 데이터 가져오기
-            const interviewData = App.sidebar.getInterviewDataByTime(period);
+        // 🔥 새로운 면접 상세 정보 업데이트
+        updateInterviewDetails() {
+            const periodSelect = document.getElementById('interviewPeriodSelect');
+            const period = periodSelect ? periodSelect.value : 'today';
             
-            // 전체 카운트 업데이트
-            const totalCountElement = document.getElementById('interviewTotalCount');
-            const periodLabelElement = document.getElementById('interviewPeriodLabel');
-            
-            if (totalCountElement) {
-                totalCountElement.textContent = `${interviewData.total}명`;
-            }
-            if (periodLabelElement) {
-                periodLabelElement.textContent = interviewData.periodLabel;
-            }
-            
-            // 면접관별 상세 정보 렌더링
-            App.sidebar.renderInterviewerDetails(interviewData.byInterviewer);
-            
-        } catch (error) {
-            console.error('❌ 면접 상세 정보 업데이트 실패:', error);
-        }
-    },
-
-    // 🔥 시간 기준 면접 데이터 계산
-    getInterviewDataByTime(period) {
-        const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
-        let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
-        if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
-        const interviewTimeIndex = App.state.data.headers.indexOf('면접 시간');
-        const interviewerIndex = App.state.data.headers.indexOf('면접관');
-        const nameIndex = App.state.data.headers.indexOf('이름');
-
-        if (contactResultIndex === -1 || interviewDateIndex === -1) {
-            return { total: 0, byInterviewer: {}, periodLabel: '데이터 없음' };
-        }
-
-        const now = new Date();
-        let startTime, endTime, periodLabel;
-
-        // 기간별 시간 범위 설정
-        switch (period) {
-            case 'today':
-                startTime = new Date(now);
-                startTime.setHours(now.getHours(), now.getMinutes(), 0, 0); // 🔥 현재 시간 기준
-                endTime = new Date(now);
-                endTime.setHours(23, 59, 59, 999);
-                periodLabel = '금일 남은 시간';
-                break;
-            case 'tomorrow':
-                startTime = new Date(now);
-                startTime.setDate(now.getDate() + 1);
-                startTime.setHours(0, 0, 0, 0);
-                endTime = new Date(startTime);
-                endTime.setHours(23, 59, 59, 999);
-                periodLabel = '내일';
-                break;
-            case 'week':
-                startTime = new Date(now);
-                endTime = new Date(now);
-                endTime.setDate(now.getDate() + 7);
-                endTime.setHours(23, 59, 59, 999);
-                periodLabel = '향후 7일';
-                break;
-            case 'month':
-                startTime = new Date(now);
-                endTime = new Date(now);
-                endTime.setMonth(now.getMonth() + 1);
-                endTime.setHours(23, 59, 59, 999);
-                periodLabel = '이번 달';
-                break;
-            case 'custom':
-                const startDateInput = document.getElementById('interviewStartDate');
-                const endDateInput = document.getElementById('interviewEndDate');
-                if (startDateInput && endDateInput && startDateInput.value && endDateInput.value) {
-                    startTime = new Date(startDateInput.value);
-                    endTime = new Date(endDateInput.value);
-                    endTime.setHours(23, 59, 59, 999);
-                    periodLabel = `${startDateInput.value} ~ ${endDateInput.value}`;
-                } else {
-                    return { total: 0, byInterviewer: {}, periodLabel: '기간 선택 필요' };
-                }
-                break;
-            default:
-                startTime = new Date(now);
-                endTime = new Date(now);
-                endTime.setDate(now.getDate() + 7);
-                periodLabel = '향후 7일';
-        }
-
-        // 면접 확정자 필터링
-        const interviews = App.state.data.all.filter(row => {
-            const contactResult = String(row[contactResultIndex] || '').trim();
-            if (contactResult !== '면접확정') return false;
-
-            const interviewDate = row[interviewDateIndex];
-            const interviewTime = row[interviewTimeIndex];
-            
-            if (!interviewDate) return false;
-
             try {
-                const date = new Date(interviewDate);
+                // 시간 기준 필터링된 면접 데이터 가져오기
+                const interviewData = App.sidebar.getInterviewDataByTime(period);
                 
-                // 면접 시간이 있으면 시간까지 고려
-                if (interviewTime && period === 'today') {
-                    const timeStr = String(interviewTime).replace(/'/g, '').trim();
-                    const timeMatch = timeStr.match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
-                    
-                    if (timeMatch) {
-                        const hour = parseInt(timeMatch[1]);
-                        const minute = parseInt(timeMatch[2] || '0');
-                        date.setHours(hour, minute, 0, 0);
-                    }
+                // 전체 카운트 업데이트
+                const totalCountElement = document.getElementById('interviewTotalCount');
+                const periodLabelElement = document.getElementById('interviewPeriodLabel');
+                
+                if (totalCountElement) {
+                    totalCountElement.textContent = `${interviewData.total}명`;
                 }
-
-                return date >= startTime && date <= endTime;
-            } catch (e) {
-                return false;
-            }
-        });
-
-        // 면접관별 그룹핑
-        const byInterviewer = {};
-        interviews.forEach(row => {
-            const interviewer = String(row[interviewerIndex] || '미정').trim();
-            const name = String(row[nameIndex] || '').trim();
-            
-            if (!byInterviewer[interviewer]) {
-                byInterviewer[interviewer] = {
-                    count: 0,
-                    applicants: []
-                };
-            }
-            
-            byInterviewer[interviewer].count++;
-            byInterviewer[interviewer].applicants.push(name);
-        });
-
-        return {
-            total: interviews.length,
-            byInterviewer,
-            periodLabel
-        };
-    },
-
-    // 🔥 면접관별 상세 정보 렌더링
-    renderInterviewerDetails(byInterviewer) {
-        const container = document.getElementById('interviewByInterviewer');
-        if (!container) {
-            console.warn('interviewByInterviewer 요소를 찾을 수 없습니다.');
-            return;
-        }
-
-        if (Object.keys(byInterviewer).length === 0) {
-            container.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.6); font-size: 0.85rem; padding: 10px;">예정된 면접이 없습니다</div>';
-            return;
-        }
-
-        let html = '';
-        Object.entries(byInterviewer)
-            .sort(([,a], [,b]) => b.count - a.count) // 인원 수 많은 순으로 정렬
-            .forEach(([interviewer, data]) => {
-                const applicantsList = data.applicants.slice(0, 3).join(', ') + 
-                                     (data.applicants.length > 3 ? ` 외 ${data.applicants.length - 3}명` : '');
+                if (periodLabelElement) {
+                    periodLabelElement.textContent = interviewData.periodLabel;
+                }
                 
-                html += `
-                    <div class="interviewer-item">
-                        <div>
-                            <div class="interviewer-name">${interviewer}</div>
-                            <div class="interviewer-applicants">${applicantsList}</div>
-                        </div>
-                        <div class="interviewer-count">${data.count}</div>
-                    </div>
-                `;
+                // 면접관별 상세 정보 렌더링
+                App.sidebar.renderInterviewerDetails(interviewData.byInterviewer);
+                
+            } catch (error) {
+                console.error('❌ 면접 상세 정보 업데이트 실패:', error);
+            }
+        },
+
+        // 🔥 시간 기준 면접 데이터 계산
+        getInterviewDataByTime(period) {
+            const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
+            let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
+            if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
+            const interviewTimeIndex = App.state.data.headers.indexOf('면접 시간');
+            const interviewerIndex = App.state.data.headers.indexOf('면접관');
+            const nameIndex = App.state.data.headers.indexOf('이름');
+
+            if (contactResultIndex === -1 || interviewDateIndex === -1) {
+                return { total: 0, byInterviewer: {}, periodLabel: '데이터 없음' };
+            }
+
+            const now = new Date();
+            let startTime, endTime, periodLabel;
+
+            // 기간별 시간 범위 설정
+            switch (period) {
+                case 'today':
+                    startTime = new Date(now);
+                    startTime.setHours(now.getHours(), now.getMinutes(), 0, 0); // 🔥 현재 시간 기준
+                    endTime = new Date(now);
+                    endTime.setHours(23, 59, 59, 999);
+                    periodLabel = '금일 남은 시간';
+                    break;
+                case 'tomorrow':
+                    startTime = new Date(now);
+                    startTime.setDate(now.getDate() + 1);
+                    startTime.setHours(0, 0, 0, 0);
+                    endTime = new Date(startTime);
+                    endTime.setHours(23, 59, 59, 999);
+                    periodLabel = '내일';
+                    break;
+                case 'week':
+                    startTime = new Date(now);
+                    endTime = new Date(now);
+                    endTime.setDate(now.getDate() + 7);
+                    endTime.setHours(23, 59, 59, 999);
+                    periodLabel = '향후 7일';
+                    break;
+                case 'month':
+                    startTime = new Date(now);
+                    endTime = new Date(now);
+                    endTime.setMonth(now.getMonth() + 1);
+                    endTime.setHours(23, 59, 59, 999);
+                    periodLabel = '이번 달';
+                    break;
+                case 'custom':
+                    const startDateInput = document.getElementById('interviewStartDate');
+                    const endDateInput = document.getElementById('interviewEndDate');
+                    if (startDateInput && endDateInput && startDateInput.value && endDateInput.value) {
+                        startTime = new Date(startDateInput.value);
+                        endTime = new Date(endDateInput.value);
+                        endTime.setHours(23, 59, 59, 999);
+                        periodLabel = `${startDateInput.value} ~ ${endDateInput.value}`;
+                    } else {
+                        return { total: 0, byInterviewer: {}, periodLabel: '기간 선택 필요' };
+                    }
+                    break;
+                default:
+                    startTime = new Date(now);
+                    endTime = new Date(now);
+                    endTime.setDate(now.getDate() + 7);
+                    periodLabel = '향후 7일';
+            }
+
+            // 면접 확정자 필터링
+            const interviews = App.state.data.all.filter(row => {
+                const contactResult = String(row[contactResultIndex] || '').trim();
+                if (contactResult !== '면접확정') return false;
+
+                const interviewDate = row[interviewDateIndex];
+                const interviewTime = row[interviewTimeIndex];
+                
+                if (!interviewDate) return false;
+
+                try {
+                    const date = new Date(interviewDate);
+                    
+                    // 면접 시간이 있으면 시간까지 고려
+                    if (interviewTime && period === 'today') {
+                        const timeStr = String(interviewTime).replace(/'/g, '').trim();
+                        const timeMatch = timeStr.match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
+                        
+                        if (timeMatch) {
+                            const hour = parseInt(timeMatch[1]);
+                            const minute = parseInt(timeMatch[2] || '0');
+                            date.setHours(hour, minute, 0, 0);
+                        }
+                    }
+
+                    return date >= startTime && date <= endTime;
+                } catch (e) {
+                    return false;
+                }
             });
 
-        container.innerHTML = html;
-    }
-};
+            // 면접관별 그룹핑
+            const byInterviewer = {};
+            interviews.forEach(row => {
+                const interviewer = String(row[interviewerIndex] || '미정').trim();
+                const name = String(row[nameIndex] || '').trim();
+                
+                if (!byInterviewer[interviewer]) {
+                    byInterviewer[interviewer] = {
+                        count: 0,
+                        applicants: []
+                    };
+                }
+                
+                byInterviewer[interviewer].count++;
+                byInterviewer[interviewer].applicants.push(name);
+            });
+
+            return {
+                total: interviews.length,
+                byInterviewer,
+                periodLabel
+            };
+        },
+
+        // 🔥 면접관별 상세 정보 렌더링
+        renderInterviewerDetails(byInterviewer) {
+            const container = document.getElementById('interviewByInterviewer');
+            if (!container) {
+                console.warn('interviewByInterviewer 요소를 찾을 수 없습니다.');
+                return;
+            }
+
+            if (Object.keys(byInterviewer).length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.6); font-size: 0.85rem; padding: 10px;">예정된 면접이 없습니다</div>';
+                return;
+            }
+
+            let html = '';
+            Object.entries(byInterviewer)
+                .sort(([,a], [,b]) => b.count - a.count) // 인원 수 많은 순으로 정렬
+                .forEach(([interviewer, data]) => {
+                    const applicantsList = data.applicants.slice(0, 3).join(', ') + 
+                                         (data.applicants.length > 3 ? ` 외 ${data.applicants.length - 3}명` : '');
+                    
+                    html += `
+                        <div class="interviewer-item">
+                            <div>
+                                <div class="interviewer-name">${interviewer}</div>
+                                <div class="interviewer-applicants">${applicantsList}</div>
+                            </div>
+                            <div class="interviewer-count">${data.count}</div>
+                        </div>
+                    `;
+                });
+
+            container.innerHTML = html;
+        }
+    },
 
     // =========================
     // 통계 관련
@@ -1765,75 +1769,74 @@ sidebar: {
         },
 
         update() {
-    if (!App.state.data.all || App.state.data.all.length === 0) {
-        console.log('데이터가 없어서 통계 업데이트 불가');
-        return;
-    }
-
-    try {
-        const selectedPeriod = document.getElementById('statsPeriodFilter')?.value || 'all';
-        const customStartDate = document.getElementById('statsStartDate')?.value;
-        const customEndDate = document.getElementById('statsEndDate')?.value;
-        
-        // 캐시 키를 위한 필터 정보
-        const filters = {
-            period: selectedPeriod,
-            startDate: customStartDate,
-            endDate: customEndDate,
-            dataLength: App.state.data.all.length // 데이터 변경 감지용
-        };
-
-        // 캐시 확인
-        const cachedResult = App.cache.get('stats', filters);
-        if (cachedResult) {
-            // 캐시된 데이터로 즉시 렌더링
-            App.stats.updateStatCards(cachedResult.stats, cachedResult.periodLabel);
-            if (window.Chart && Object.keys(App.state.charts.instances).length > 0) {
-                App.charts.updateData(cachedResult.filteredData);
+            if (!App.state.data.all || App.state.data.all.length === 0) {
+                console.log('데이터가 없어서 통계 업데이트 불가');
+                return;
             }
-            App.trend.update(cachedResult.filteredData, cachedResult.applyDateIndex);
-            return cachedResult;
-        }
 
-        // 캐시가 없으면 새로 계산
-        console.log('🔄 통계 새로 계산 중...');
+            try {
+                const selectedPeriod = document.getElementById('statsPeriodFilter')?.value || 'all';
+                const customStartDate = document.getElementById('statsStartDate')?.value;
+                const customEndDate = document.getElementById('statsEndDate')?.value;
+                
+                // 캐시 키를 위한 필터 정보
+                const filters = {
+                    period: selectedPeriod,
+                    startDate: customStartDate,
+                    endDate: customEndDate,
+                    dataLength: App.state.data.all.length // 데이터 변경 감지용
+                };
+
+                // 캐시 확인
+                const cachedResult = App.cache.get('stats', filters);
+                if (cachedResult) {
+                    // 캐시된 데이터로 즉시 렌더링
+                    App.stats.updateStatCards(cachedResult.stats, cachedResult.periodLabel);
+                    if (window.Chart && Object.keys(App.state.charts.instances).length > 0) {
+                        App.charts.updateData(cachedResult.filteredData);
+                    }
+                    App.trend.update(cachedResult.filteredData, cachedResult.applyDateIndex);
+                    return cachedResult;
+                }
+
+                // 캐시가 없으면 새로 계산
+                console.log('🔄 통계 새로 계산 중...');
+                
+                const applyDateIndex = App.state.data.headers.indexOf('지원일');
+                let filteredApplicants = [...App.state.data.all];
+                let periodLabel = '전체 기간';
+
+                if (applyDateIndex !== -1 && selectedPeriod !== 'all') {
+                    const result = App.stats.filterByPeriod(filteredApplicants, selectedPeriod, applyDateIndex);
+                    filteredApplicants = result.data;
+                    periodLabel = result.label;
+                }
+
+                const stats = App.sidebar.calculateStats(filteredApplicants);
+                
+                // 결과를 캐시에 저장
+                const result = {
+                    stats,
+                    periodLabel,
+                    filteredData: filteredApplicants,
+                    applyDateIndex
+                };
+                App.cache.set('stats', filters, result);
+
+                // 화면 업데이트
+                App.stats.updateStatCards(stats, periodLabel);
+                if (window.Chart && Object.keys(App.state.charts.instances).length > 0) {
+                    App.charts.updateData(filteredApplicants);
+                }
+                App.trend.update(filteredApplicants, applyDateIndex);
+
+                return result;
+
+            } catch (error) {
+                console.error('❌ 통계 데이터 업데이트 실패:', error);
+            }
+        },
         
-        const applyDateIndex = App.state.data.headers.indexOf('지원일');
-        let filteredApplicants = [...App.state.data.all];
-        let periodLabel = '전체 기간';
-
-        if (applyDateIndex !== -1 && selectedPeriod !== 'all') {
-            const result = App.stats.filterByPeriod(filteredApplicants, selectedPeriod, applyDateIndex);
-            filteredApplicants = result.data;
-            periodLabel = result.label;
-        }
-
-        const stats = App.sidebar.calculateStats(filteredApplicants);
-        
-        // 결과를 캐시에 저장
-        const result = {
-            stats,
-            periodLabel,
-            filteredData: filteredApplicants,
-            applyDateIndex
-        };
-        App.cache.set('stats', filters, result);
-
-        // 화면 업데이트
-        App.stats.updateStatCards(stats, periodLabel);
-        if (window.Chart && Object.keys(App.state.charts.instances).length > 0) {
-            App.charts.updateData(filteredApplicants);
-        }
-        App.trend.update(filteredApplicants, applyDateIndex);
-
-        return result;
-
-    } catch (error) {
-        console.error('❌ 통계 데이터 업데이트 실패:', error);
-    }
-},
-
-    
         filterByPeriod(data, selectedPeriod, applyDateIndex) {
             return App.sidebar.filterByPeriod(data, selectedPeriod, applyDateIndex);
         },
@@ -2184,49 +2187,49 @@ sidebar: {
             }
         },
 
-    createScatterChart() {
-        const scatterCtx = document.getElementById('scatterChart');
-        if (scatterCtx && !App.state.charts.instances.scatter) {
-            App.state.charts.instances.scatter = new Chart(scatterCtx, {
-                type: 'scatter',
-                data: {
-                    datasets: [{
-                        label: '나이-합격률 관계',
-                        data: [{ x: 25, y: 50 }],
-                        backgroundColor: App.config.CHART_COLORS.orange,
-                        borderColor: App.config.CHART_COLORS.orange,
-                        pointRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false, // 🔥 중요
-                    resizeDelay: 100,
-                    scales: {
-                        x: {
-                            type: 'linear',
-                            position: 'bottom',
-                            title: {
-                                display: true,
-                                text: '나이'
+        createScatterChart() {
+            const scatterCtx = document.getElementById('scatterChart');
+            if (scatterCtx && !App.state.charts.instances.scatter) {
+                App.state.charts.instances.scatter = new Chart(scatterCtx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: '나이-합격률 관계',
+                            data: [{ x: 25, y: 50 }],
+                            backgroundColor: App.config.CHART_COLORS.orange,
+                            borderColor: App.config.CHART_COLORS.orange,
+                            pointRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false, // 🔥 중요
+                        resizeDelay: 100,
+                        scales: {
+                            x: {
+                                type: 'linear',
+                                position: 'bottom',
+                                title: {
+                                    display: true,
+                                    text: '나이'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: '합격률 (%)'
+                                },
+                                min: 0,
+                                max: 100
                             }
                         },
-                        y: {
-                            title: {
-                                display: true,
-                                text: '합격률 (%)'
-                            },
-                            min: 0,
-                            max: 100
+                        animation: {
+                            duration: 300
                         }
-                    },
-                    animation: {
-                        duration: 300
                     }
-                }
-            });
-        }
-    },
+                });
+            }
+        },
 
         updateData(filteredData) {
             const routeIndex = App.state.data.headers.indexOf('지원루트');
