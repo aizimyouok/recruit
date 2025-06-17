@@ -203,16 +203,13 @@ if (appInstance.cache) {
                 dateDisplay = `<span class="interview-dday ${ddayClass}">${dayDiff}</span><span class="interview-date-text">${dateText}</span>`;
             } catch (e) { dateDisplay = '날짜 오류'; }
 
-            // 🔥 개선된 문자열 이스케이프 처리
+            // 🔥 안전한 데이터 속성 사용 (onclick 대신)
             const name = String(row[nameIndex] || '');
             const route = String(row[routeIndex] || '');
             const companyName = companyIndex !== -1 ? (row[companyIndex] || '-') : '';
-            
-            // 🔥 안전한 onclick 이벤트 생성 (JSON.stringify 사용)
-            const clickHandler = `DataModule.handleInterviewClick(${JSON.stringify(name)}, ${JSON.stringify(route)})`;
 
             tableHtml += `
-                <tr onclick="${clickHandler}" style="cursor: pointer;">
+                <tr class="interview-row" data-name="${name}" data-route="${route}" style="cursor: pointer;">
                     <td class="interview-name-cell" title="${name}">${name || '-'}</td>
                     <td class="interview-route-cell" title="${route}">${route || '-'}</td>
                     ${companyIndex !== -1 ? `<td class="interview-company-cell" title="${companyName}">${companyName}</td>` : ''}
@@ -227,20 +224,31 @@ if (appInstance.cache) {
 
         tableHtml += `</tbody></table>`;
         scheduleContainer.innerHTML = tableHtml;
-    },
-
-    // 🔥 새로운 전역 함수 추가
-    handleInterviewClick(name, route) {
-        try {
-            if (window.App && window.App.data && window.App.data.showInterviewDetails) {
-                window.App.data.showInterviewDetails(name, route);
-            } else {
-                console.warn('App.data.showInterviewDetails를 찾을 수 없습니다.');
-            }
-        } catch (error) {
-            console.error('면접 클릭 핸들러 오류:', error);
+        
+        // 🔥 이벤트 위임을 사용한 클릭 이벤트 처리
+        const scheduleTable = scheduleContainer.querySelector('.interview-schedule-table');
+        if (scheduleTable) {
+            // 기존 이벤트 리스너 제거 (중복 방지)
+            scheduleTable.removeEventListener('click', DataModule._handleTableClick);
+            
+            // 새 이벤트 리스너 추가
+            DataModule._handleTableClick = function(event) {
+                const row = event.target.closest('.interview-row');
+                if (row) {
+                    const name = row.getAttribute('data-name');
+                    const route = row.getAttribute('data-route');
+                    if (name && route) {
+                        DataModule.showInterviewDetails(appInstance, name, route);
+                    }
+                }
+            };
+            
+            scheduleTable.addEventListener('click', DataModule._handleTableClick);
         }
     },
+
+    // 🔥 이벤트 핸들러 저장용 (이벤트 리스너 중복 방지)
+    _handleTableClick: null,
 
     showInterviewDetails(appInstance, name, route) {
         try {
@@ -295,8 +303,3 @@ if (appInstance.cache) {
         return result;
     }
 };
-
-// 🔥 전역 함수로 노출
-if (typeof window !== 'undefined') {
-    window.DataModule = DataModule;
-}
