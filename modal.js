@@ -243,8 +243,22 @@ export const ModalModule = {
             // 서버에 수정 저장
             await appInstance.data.save(updatedData, true, gubunValue);
 
-            // 🔥 즉시 반영을 위한 캐시 완전 초기화 및 데이터 새로고침
-            await ModalModule.refreshDataImmediate(appInstance);
+            // 🔥 간단한 해결책: 3초 대기 후 새로고침
+            console.log('💾 서버 저장 완료, 3초 대기 후 새로고침...');
+            saveBtn.innerHTML = '<div class="advanced-loading-spinner" style="width: 20px; height: 20px; margin: 0;"></div> 업데이트 중...';
+            
+            // 3초 대기 (구글 앱스 스크립트 처리 시간 확보)
+            await new Promise(resolve => setTimeout(resolve, 3000));
+
+            try {
+                // 새로고침 시도
+                await ModalModule.refreshDataImmediate(appInstance);
+                console.log('✅ 데이터 새로고침 성공');
+            } catch (refreshError) {
+                console.warn('⚠️ 자동 새로고침 실패, 사용자에게 안내:', refreshError);
+                // 새로고침 실패해도 저장은 성공했으므로 계속 진행
+                alert('정보 수정은 완료되었습니다.\n최신 정보를 보려면 새로고침 버튼을 눌러주세요.');
+            }
 
             alert('정보가 성공적으로 수정되었습니다.');
             ModalModule.close(appInstance);
@@ -292,8 +306,20 @@ export const ModalModule = {
             // 서버에서 삭제
             await appInstance.data.delete(gubunValue);
 
-            // 🔥 즉시 반영을 위한 캐시 완전 초기화 및 데이터 새로고침
-            await ModalModule.refreshDataImmediate(appInstance);
+            // 🔥 삭제 후 3초 대기
+            console.log('🗑️ 서버 삭제 완료, 3초 대기 후 새로고침...');
+            deleteBtn.innerHTML = '<div class="advanced-loading-spinner" style="width: 20px; height: 20px; margin: 0;"></div> 업데이트 중...';
+            
+            await new Promise(resolve => setTimeout(resolve, 3000));
+
+            try {
+                // 새로고침 시도
+                await ModalModule.refreshDataImmediate(appInstance);
+                console.log('✅ 데이터 새로고침 성공');
+            } catch (refreshError) {
+                console.warn('⚠️ 자동 새로고침 실패, 사용자에게 안내:', refreshError);
+                alert('정보 삭제는 완료되었습니다.\n최신 정보를 보려면 새로고침 버튼을 눌러주세요.');
+            }
 
             alert(`'${applicantName}' 님의 정보가 성공적으로 삭제되었습니다.`);
             ModalModule.close(appInstance);
