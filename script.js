@@ -1481,293 +1481,387 @@ sidebar: {
     // =========================
     // 차트 관련
     // =========================
-    charts: {
-        initialize() {
-            if (!window.Chart) {
-                console.error('Chart.js가 로드되지 않았습니다.');
-                return;
-            }
+    // script.js의 charts 객체에 추가할 코드
 
-            try {
-                App.charts.createRouteChart();
-                App.charts.createPositionChart();
-                App.charts.createTrendChart();
-                App.charts.createRegionChart();
-                App.charts.createGenderChart();
-                App.charts.createAgeChart();
+charts: {
+    initialize() {
+        if (!window.Chart) {
+            console.error('Chart.js가 로드되지 않았습니다.');
+            return;
+        }
 
-                console.log('📊 기본 차트 초기화 완료');
+        try {
+            App.charts.createRouteChart();
+            App.charts.createPositionChart();
+            App.charts.createTrendChart();
+            App.charts.createRegionChart();
+            App.charts.createGenderChart();
+            App.charts.createAgeChart();
 
-            } catch (error) {
-                console.error('기본 차트 초기화 실패:', error);
-            }
-        },
+            // 🔥 반응형 리사이즈 이벤트 리스너 추가
+            App.charts.setupResponsiveResize();
 
-        initializeEfficiency() {
-            if (!window.Chart) {
-                console.error('Chart.js가 로드되지 않았습니다.');
-                return;
-            }
+            console.log('📊 기본 차트 초기화 완료');
 
-            try {
-                App.charts.createRadarChart();
-                App.charts.createScatterChart();
+        } catch (error) {
+            console.error('기본 차트 초기화 실패:', error);
+        }
+    },
 
-                console.log('📈 효율성 차트 초기화 완료');
+    initializeEfficiency() {
+        if (!window.Chart) {
+            console.error('Chart.js가 로드되지 않았습니다.');
+            return;
+        }
 
-            } catch (error) {
-                console.error('효율성 차트 초기화 실패:', error);
-            }
-        },
+        try {
+            App.charts.createRadarChart();
+            App.charts.createScatterChart();
 
-        createRouteChart() {
-            const routeCtx = document.getElementById('routeChart');
-            if (routeCtx && !App.state.charts.instances.route) {
-                App.state.charts.instances.route = new Chart(routeCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['데이터 로딩 중...'],
-                        datasets: [{
-                            data: [1],
-                            backgroundColor: App.config.CHART_COLORS.primary,
-                            borderColor: App.config.CHART_COLORS.primary,
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        indexAxis: 'y',
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            x: { beginAtZero: true }
+            // 🔥 효율성 차트도 반응형 리사이즈 적용
+            App.charts.setupResponsiveResize();
+
+            console.log('📈 효율성 차트 초기화 완료');
+
+        } catch (error) {
+            console.error('효율성 차트 초기화 실패:', error);
+        }
+    },
+
+    // 🔥 새로운 함수: 반응형 리사이즈 설정
+    setupResponsiveResize() {
+        let resizeTimeout;
+        
+        const handleResize = () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                console.log('🔄 화면 크기 변경 감지 - 차트 리사이즈 중...');
+                
+                // 모든 차트 인스턴스 리사이즈
+                Object.values(App.state.charts.instances).forEach(chart => {
+                    if (chart && typeof chart.resize === 'function') {
+                        try {
+                            chart.resize();
+                            chart.update('none'); // 애니메이션 없이 업데이트
+                        } catch (error) {
+                            console.warn('차트 리사이즈 실패:', error);
                         }
                     }
                 });
+                
+                console.log('✅ 모든 차트 리사이즈 완료');
+            }, 300); // 300ms 디바운스
+        };
+        
+        // 기존 리스너 제거 (중복 방지)
+        window.removeEventListener('resize', handleResize);
+        
+        // 새 리스너 추가
+        window.addEventListener('resize', handleResize);
+        
+        // 브라우저 줌 감지도 추가
+        let lastWidth = window.innerWidth;
+        let lastHeight = window.innerHeight;
+        
+        const checkZoom = () => {
+            const currentWidth = window.innerWidth;
+            const currentHeight = window.innerHeight;
+            
+            if (Math.abs(currentWidth - lastWidth) > 50 || Math.abs(currentHeight - lastHeight) > 50) {
+                handleResize();
+                lastWidth = currentWidth;
+                lastHeight = currentHeight;
             }
-        },
+        };
+        
+        setInterval(checkZoom, 1000); // 1초마다 확인
+        
+        console.log('📐 반응형 리사이즈 시스템 설정 완료');
+    },
 
-        createPositionChart() {
-            const positionCtx = document.getElementById('positionChart');
-            if (positionCtx && !App.state.charts.instances.position) {
-                App.state.charts.instances.position = new Chart(positionCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['데이터 로딩 중...'],
-                        datasets: [{
-                            data: [1],
-                            backgroundColor: App.config.CHART_COLORS.success,
-                            borderColor: App.config.CHART_COLORS.success,
-                            borderWidth: 1
-                        }]
+    // 차트 생성 함수들 수정 (더 나은 반응형 옵션)
+    createRouteChart() {
+        const routeCtx = document.getElementById('routeChart');
+        if (routeCtx && !App.state.charts.instances.route) {
+            App.state.charts.instances.route = new Chart(routeCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['데이터 로딩 중...'],
+                    datasets: [{
+                        data: [1],
+                        backgroundColor: App.config.CHART_COLORS.primary,
+                        borderColor: App.config.CHART_COLORS.primary,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false, // 🔥 중요: 컨테이너 크기에 맞춤
+                    resizeDelay: 100, // 🔥 리사이즈 지연 시간 단축
+                    plugins: {
+                        legend: { display: false }
                     },
-                    options: {
-                        indexAxis: 'y',
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            x: { beginAtZero: true }
-                        }
+                    scales: {
+                        x: { beginAtZero: true }
+                    },
+                    // 🔥 새로운 애니메이션 설정
+                    animation: {
+                        duration: 300 // 빠른 애니메이션
                     }
-                });
-            }
-        },
+                }
+            });
+        }
+    },
 
-        createTrendChart() {
-            const trendCtx = document.getElementById('trendChart');
-            if (trendCtx && !App.state.charts.instances.trend) {
-                App.state.charts.instances.trend = new Chart(trendCtx, {
-                    type: 'line',
-                    data: {
-                        labels: ['데이터 로딩 중...'],
-                        datasets: [{
-                            label: '지원자 수',
-                            data: [0],
-                            borderColor: App.config.CHART_COLORS.primary,
-                            backgroundColor: App.config.CHART_COLORS.primary + '20',
-                            tension: 0.4,
-                            fill: true
-                        }]
+    createPositionChart() {
+        const positionCtx = document.getElementById('positionChart');
+        if (positionCtx && !App.state.charts.instances.position) {
+            App.state.charts.instances.position = new Chart(positionCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['데이터 로딩 중...'],
+                    datasets: [{
+                        data: [1],
+                        backgroundColor: App.config.CHART_COLORS.success,
+                        borderColor: App.config.CHART_COLORS.success,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false, // 🔥 중요
+                    resizeDelay: 100,
+                    plugins: {
+                        legend: { display: false }
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: { stepSize: 1 }
-                            }
-                        }
+                    scales: {
+                        x: { beginAtZero: true }
+                    },
+                    animation: {
+                        duration: 300
                     }
-                });
-            }
-        },
+                }
+            });
+        }
+    },
 
-        createRegionChart() {
-            const regionCtx = document.getElementById('regionChart');
-            if (regionCtx && !App.state.charts.instances.region) {
-                App.state.charts.instances.region = new Chart(regionCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['데이터 로딩 중...'],
-                        datasets: [{
-                            data: [1],
-                            backgroundColor: [
-                                App.config.CHART_COLORS.primary,
-                                App.config.CHART_COLORS.success,
-                                App.config.CHART_COLORS.warning,
-                                App.config.CHART_COLORS.danger,
-                                App.config.CHART_COLORS.orange
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: 'bottom' }
+    createTrendChart() {
+        const trendCtx = document.getElementById('trendChart');
+        if (trendCtx && !App.state.charts.instances.trend) {
+            App.state.charts.instances.trend = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['데이터 로딩 중...'],
+                    datasets: [{
+                        label: '지원자 수',
+                        data: [0],
+                        borderColor: App.config.CHART_COLORS.primary,
+                        backgroundColor: App.config.CHART_COLORS.primary + '20',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // 🔥 중요
+                    resizeDelay: 100,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }
                         }
-                    }
-                });
-            }
-        },
-
-        createGenderChart() {
-            const genderCtx = document.getElementById('genderChart');
-            if (genderCtx && !App.state.charts.instances.gender) {
-                App.state.charts.instances.gender = new Chart(genderCtx, {
-                    type: 'pie',
-                    data: {
-                        labels: ['데이터 로딩 중...'],
-                        datasets: [{
-                            data: [1],
-                            backgroundColor: [App.config.CHART_COLORS.primary, App.config.CHART_COLORS.warning]
-                        }]
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: 'bottom' }
+                    animation: {
+                        duration: 300
+                    }
+                }
+            });
+        }
+    },
+
+    // 다른 차트들도 동일하게 수정...
+    createRegionChart() {
+        const regionCtx = document.getElementById('regionChart');
+        if (regionCtx && !App.state.charts.instances.region) {
+            App.state.charts.instances.region = new Chart(regionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['데이터 로딩 중...'],
+                    datasets: [{
+                        data: [1],
+                        backgroundColor: [
+                            App.config.CHART_COLORS.primary,
+                            App.config.CHART_COLORS.success,
+                            App.config.CHART_COLORS.warning,
+                            App.config.CHART_COLORS.danger,
+                            App.config.CHART_COLORS.orange
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // 🔥 중요
+                    resizeDelay: 100,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    animation: {
+                        duration: 300
+                    }
+                }
+            });
+        }
+    },
+
+    createGenderChart() {
+        const genderCtx = document.getElementById('genderChart');
+        if (genderCtx && !App.state.charts.instances.gender) {
+            App.state.charts.instances.gender = new Chart(genderCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['데이터 로딩 중...'],
+                    datasets: [{
+                        data: [1],
+                        backgroundColor: [App.config.CHART_COLORS.primary, App.config.CHART_COLORS.warning]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // 🔥 중요
+                    resizeDelay: 100,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    animation: {
+                        duration: 300
+                    }
+                }
+            });
+        }
+    },
+
+    createAgeChart() {
+        const ageCtx = document.getElementById('ageChart');
+        if (ageCtx && !App.state.charts.instances.age) {
+            App.state.charts.instances.age = new Chart(ageCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['데이터 로딩 중...'],
+                    datasets: [{
+                        data: [1],
+                        backgroundColor: App.config.CHART_COLORS.success,
+                        borderColor: App.config.CHART_COLORS.success,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // 🔥 중요
+                    resizeDelay: 100,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    },
+                    animation: {
+                        duration: 300
+                    }
+                }
+            });
+        }
+    },
+
+    createRadarChart() {
+        const radarCtx = document.getElementById('radarChart');
+        if (radarCtx && !App.state.charts.instances.radar) {
+            App.state.charts.instances.radar = new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['지원자 수', '면접확정률', '합격률', '입과율'],
+                    datasets: [{
+                        label: '데이터 로딩 중...',
+                        data: [1, 1, 1, 1],
+                        borderColor: App.config.CHART_COLORS.primary,
+                        backgroundColor: App.config.CHART_COLORS.primary + '30',
+                        pointBackgroundColor: App.config.CHART_COLORS.primary,
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: App.config.CHART_COLORS.primary
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // 🔥 중요
+                    resizeDelay: 100,
+                    elements: {
+                        line: {
+                            borderWidth: 3
                         }
-                    }
-                });
-            }
-        },
-
-        createAgeChart() {
-            const ageCtx = document.getElementById('ageChart');
-            if (ageCtx && !App.state.charts.instances.age) {
-                App.state.charts.instances.age = new Chart(ageCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['데이터 로딩 중...'],
-                        datasets: [{
-                            data: [1],
-                            backgroundColor: App.config.CHART_COLORS.success,
-                            borderColor: App.config.CHART_COLORS.success,
-                            borderWidth: 1
-                        }]
                     },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            y: { beginAtZero: true }
-                        }
-                    }
-                });
-            }
-        },
-
-        createRadarChart() {
-            const radarCtx = document.getElementById('radarChart');
-            if (radarCtx && !App.state.charts.instances.radar) {
-                App.state.charts.instances.radar = new Chart(radarCtx, {
-                    type: 'radar',
-                    data: {
-                        labels: ['지원자 수', '면접확정률', '합격률', '입과율'],
-                        datasets: [{
-                            label: '데이터 로딩 중...',
-                            data: [1, 1, 1, 1],
-                            borderColor: App.config.CHART_COLORS.primary,
-                            backgroundColor: App.config.CHART_COLORS.primary + '30',
-                            pointBackgroundColor: App.config.CHART_COLORS.primary,
-                            pointBorderColor: '#fff',
-                            pointHoverBackgroundColor: '#fff',
-                            pointHoverBorderColor: App.config.CHART_COLORS.primary
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        elements: {
-                            line: {
-                                borderWidth: 3
-                            }
-                        },
-                        scales: {
-                            r: {
-                                angleLines: {
-                                    display: false
-                                },
-                                suggestedMin: 0,
-                                suggestedMax: 100
-                            }
-                        }
-                    }
-                });
-            }
-        },
-
-        createScatterChart() {
-            const scatterCtx = document.getElementById('scatterChart');
-            if (scatterCtx && !App.state.charts.instances.scatter) {
-                App.state.charts.instances.scatter = new Chart(scatterCtx, {
-                    type: 'scatter',
-                    data: {
-                        datasets: [{
-                            label: '나이-합격률 관계',
-                            data: [{ x: 25, y: 50 }],
-                            backgroundColor: App.config.CHART_COLORS.orange,
-                            borderColor: App.config.CHART_COLORS.orange,
-                            pointRadius: 6
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            x: {
-                                type: 'linear',
-                                position: 'bottom',
-                                title: {
-                                    display: true,
-                                    text: '나이'
-                                }
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: false
                             },
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: '합격률 (%)'
-                                },
-                                min: 0,
-                                max: 100
-                            }
+                            suggestedMin: 0,
+                            suggestedMax: 100
                         }
+                    },
+                    animation: {
+                        duration: 300
                     }
-                });
-            }
-        },
+                }
+            });
+        }
+    },
 
+    createScatterChart() {
+        const scatterCtx = document.getElementById('scatterChart');
+        if (scatterCtx && !App.state.charts.instances.scatter) {
+            App.state.charts.instances.scatter = new Chart(scatterCtx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: '나이-합격률 관계',
+                        data: [{ x: 25, y: 50 }],
+                        backgroundColor: App.config.CHART_COLORS.orange,
+                        borderColor: App.config.CHART_COLORS.orange,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // 🔥 중요
+                    resizeDelay: 100,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: '나이'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: '합격률 (%)'
+                            },
+                            min: 0,
+                            max: 100
+                        }
+                    },
+                    animation: {
+                        duration: 300
+                    }
+                }
+            });
+        }
+    }
+}
         updateData(filteredData) {
             const routeIndex = App.state.data.headers.indexOf('지원루트');
             const positionIndex = App.state.data.headers.indexOf('모집분야');
