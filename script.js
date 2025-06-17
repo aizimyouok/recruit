@@ -1409,8 +1409,7 @@ const App = {
             let interviewPendingCount = 0;
             if (contactResultIndex !== -1) {
                 const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                
+                                
                 let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
                 if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
                 
@@ -1420,10 +1419,30 @@ const App = {
                     
                     if (interviewDateIndex !== -1) {
                         const interviewDate = row[interviewDateIndex];
+                        const interviewTime = row[interviewTimeIndex];
                         if (interviewDate) {
                             try {
                                 const date = new Date(interviewDate);
-                                date.setHours(0, 0, 0, 0);
+                                // 🔥 추가: 면접 시간 설정
+                        if (interviewTime) {
+                            const timeStr = String(interviewTime).replace(/'/g, '').trim();
+                            const timeMatch = timeStr.match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
+                            
+                            if (timeMatch) {
+                                const hour = parseInt(timeMatch[1]);
+                                const minute = parseInt(timeMatch[2] || '0');
+                                date.setHours(hour, minute, 0, 0);
+                            } else {
+                                // 시간 정보가 없으면 해당 날짜 끝까지 유효
+                                date.setHours(23, 59, 59, 999);
+                            }
+                        } else {
+                            // 시간 정보가 없으면 해당 날짜 끝까지 유효
+                            date.setHours(23, 59, 59, 999);
+                        }
+                        
+                        // 🔥 수정: 현재 시간 이후만 카운트
+                                
                                 return date >= today;
                             } catch (e) {
                                 return false;
@@ -1613,144 +1632,174 @@ const App = {
             let startTime, endTime, periodLabel;
 
             // 기간별 시간 범위 설정
-            switch (period) {
-                case 'today':
-                    startTime = new Date(now);
-                    startTime.setHours(now.getHours(), now.getMinutes(), 0, 0); // 🔥 현재 시간 기준
-                    endTime = new Date(now);
-                    endTime.setHours(23, 59, 59, 999);
-                    periodLabel = '금일 남은 시간';
-                    break;
-                case 'tomorrow':
-                    startTime = new Date(now);
-                    startTime.setDate(now.getDate() + 1);
-                    startTime.setHours(0, 0, 0, 0);
-                    endTime = new Date(startTime);
-                    endTime.setHours(23, 59, 59, 999);
-                    periodLabel = '내일';
-                    break;
-                case 'week':
-                    startTime = new Date(now);
-                    endTime = new Date(now);
-                    endTime.setDate(now.getDate() + 7);
-                    endTime.setHours(23, 59, 59, 999);
-                    periodLabel = '향후 7일';
-                    break;
-                case 'month':
-                    startTime = new Date(now);
-                    endTime = new Date(now);
-                    endTime.setMonth(now.getMonth() + 1);
-                    endTime.setHours(23, 59, 59, 999);
-                    periodLabel = '이번 달';
-                    break;
-                case 'custom':
-                    const startDateInput = document.getElementById('interviewStartDate');
-                    const endDateInput = document.getElementById('interviewEndDate');
-                    if (startDateInput && endDateInput && startDateInput.value && endDateInput.value) {
-                        startTime = new Date(startDateInput.value);
-                        endTime = new Date(endDateInput.value);
-                        endTime.setHours(23, 59, 59, 999);
-                        periodLabel = `${startDateInput.value} ~ ${endDateInput.value}`;
-                    } else {
-                        return { total: 0, byInterviewer: {}, periodLabel: '기간 선택 필요' };
-                    }
-                    break;
-                default:
-                    startTime = new Date(now);
-                    endTime = new Date(now);
-                    endTime.setDate(now.getDate() + 7);
-                    periodLabel = '향후 7일';
-            }
-
-            // 면접 확정자 필터링
-            const interviews = App.state.data.all.filter(row => {
-                const contactResult = String(row[contactResultIndex] || '').trim();
-                if (contactResult !== '면접확정') return false;
-
-                const interviewDate = row[interviewDateIndex];
-                const interviewTime = row[interviewTimeIndex];
-                
-                if (!interviewDate) return false;
-
-                try {
-                    const date = new Date(interviewDate);
-                    
-                    // 면접 시간이 있으면 시간까지 고려
-                    if (interviewTime && period === 'today') {
-                        const timeStr = String(interviewTime).replace(/'/g, '').trim();
-                        const timeMatch = timeStr.match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
-                        
-                        if (timeMatch) {
-                            const hour = parseInt(timeMatch[1]);
-                            const minute = parseInt(timeMatch[2] || '0');
-                            date.setHours(hour, minute, 0, 0);
-                        }
-                    }
-
-                    return date >= startTime && date <= endTime;
-                } catch (e) {
-                    return false;
-                }
-            });
-
-            // 면접관별 그룹핑
-            const byInterviewer = {};
-            interviews.forEach(row => {
-                const interviewer = String(row[interviewerIndex] || '미정').trim();
-                const name = String(row[nameIndex] || '').trim();
-                
-                if (!byInterviewer[interviewer]) {
-                    byInterviewer[interviewer] = {
-                        count: 0,
-                        applicants: []
-                    };
-                }
-                
-                byInterviewer[interviewer].count++;
-                byInterviewer[interviewer].applicants.push(name);
-            });
-
-            return {
-                total: interviews.length,
-                byInterviewer,
-                periodLabel
-            };
-        },
-
-        // 🔥 면접관별 상세 정보 렌더링
-        renderInterviewerDetails(byInterviewer) {
-            const container = document.getElementById('interviewByInterviewer');
-            if (!container) {
-                console.warn('interviewByInterviewer 요소를 찾을 수 없습니다.');
-                return;
-            }
-
-            if (Object.keys(byInterviewer).length === 0) {
-                container.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.6); font-size: 0.85rem; padding: 10px;">예정된 면접이 없습니다</div>';
-                return;
-            }
-
-            let html = '';
-            Object.entries(byInterviewer)
-                .sort(([,a], [,b]) => b.count - a.count) // 인원 수 많은 순으로 정렬
-                .forEach(([interviewer, data]) => {
-                    const applicantsList = data.applicants.slice(0, 3).join(', ') + 
-                                         (data.applicants.length > 3 ? ` 외 ${data.applicants.length - 3}명` : '');
-                    
-                    html += `
-                        <div class="interviewer-item">
-                            <div>
-                                <div class="interviewer-name">${interviewer}</div>
-                                <div class="interviewer-applicants">${applicantsList}</div>
-                            </div>
-                            <div class="interviewer-count">${data.count}</div>
-                        </div>
-                    `;
-                });
-
-            container.innerHTML = html;
+switch (period) {
+    case 'today':
+        startTime = new Date(now);
+        // 🔥 수정: 현재 시간 그대로 사용 (setHours 제거)
+        endTime = new Date(now);
+        endTime.setHours(23, 59, 59, 999);
+        periodLabel = '금일 남은 시간';
+        break;
+    case 'tomorrow':
+        startTime = new Date(now);
+        startTime.setDate(now.getDate() + 1);
+        startTime.setHours(0, 0, 0, 0);
+        endTime = new Date(startTime);
+        endTime.setHours(23, 59, 59, 999);
+        periodLabel = '내일';
+        break;
+    case 'week':
+        startTime = new Date(now);
+        endTime = new Date(now);
+        endTime.setDate(now.getDate() + 7);
+        endTime.setHours(23, 59, 59, 999);
+        periodLabel = '향후 7일';
+        break;
+    case 'month':
+        startTime = new Date(now);
+        endTime = new Date(now);
+        endTime.setMonth(now.getMonth() + 1);
+        endTime.setHours(23, 59, 59, 999);
+        periodLabel = '이번 달';
+        break;
+    case 'custom':
+        const startDateInput = document.getElementById('interviewStartDate');
+        const endDateInput = document.getElementById('interviewEndDate');
+        if (startDateInput && endDateInput && startDateInput.value && endDateInput.value) {
+            startTime = new Date(startDateInput.value);
+            endTime = new Date(endDateInput.value);
+            endTime.setHours(23, 59, 59, 999);
+            periodLabel = `${startDateInput.value} ~ ${endDateInput.value}`;
+        } else {
+            return { total: 0, byInterviewer: {}, periodLabel: '기간 선택 필요' };
         }
-    },
+        break;
+    default:
+        startTime = new Date(now);
+        endTime = new Date(now);
+        endTime.setDate(now.getDate() + 7);
+        periodLabel = '향후 7일';
+}
+
+// 면접 확정자 필터링
+const interviews = App.state.data.all.filter(row => {
+    const contactResult = String(row[contactResultIndex] || '').trim();
+    if (contactResult !== '면접확정') return false;
+
+    const interviewDate = row[interviewDateIndex];
+    const interviewTime = row[interviewTimeIndex];
+    
+    if (!interviewDate) return false;
+
+    try {
+        const date = new Date(interviewDate);
+        
+        // 🔥 수정: 모든 기간에서 면접 시간 고려
+        if (interviewTime) {
+            const timeStr = String(interviewTime).replace(/'/g, '').trim();
+            const timeMatch = timeStr.match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
+            
+            if (timeMatch) {
+                const hour = parseInt(timeMatch[1]);
+                const minute = parseInt(timeMatch[2] || '0');
+                // 🔥 시간 유효성 검사 추가
+                if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+                    date.setHours(hour, minute, 0, 0);
+                } else {
+                    // 🔥 잘못된 시간 형식일 때 처리
+                    if (period === 'today') {
+                        // 오늘이면 현재 시간 이후로 가정하여 하루 끝으로 설정
+                        date.setHours(23, 59, 59, 999);
+                    } else {
+                        // 다른 날이면 해당 날짜 시작으로 설정
+                        date.setHours(0, 0, 0, 0);
+                    }
+                }
+            } else {
+                // 🔥 시간 파싱 실패 시 기본값 설정
+                if (period === 'today') {
+                    // 오늘이면 하루 끝까지 유효
+                    date.setHours(23, 59, 59, 999);
+                } else {
+                    // 다른 날이면 해당 날짜 시작
+                    date.setHours(0, 0, 0, 0);
+                }
+            }
+        } else {
+            // 🔥 면접 시간 정보가 없을 때 처리
+            if (period === 'today') {
+                // 오늘이면 하루 끝까지 유효 (시간 정보가 없어서 언제인지 모르므로)
+                date.setHours(23, 59, 59, 999);
+            } else {
+                // 다른 날이면 해당 날짜 전체 포함
+                date.setHours(0, 0, 0, 0);
+            }
+        }
+
+        return date >= startTime && date <= endTime;
+    } catch (e) {
+        return false;
+    }
+});
+
+// 면접관별 그룹핑
+const byInterviewer = {};
+interviews.forEach(row => {
+    const interviewer = String(row[interviewerIndex] || '미정').trim();
+    const name = String(row[nameIndex] || '').trim();
+    
+    if (!byInterviewer[interviewer]) {
+        byInterviewer[interviewer] = {
+            count: 0,
+            applicants: []
+        };
+    }
+    
+    byInterviewer[interviewer].count++;
+    byInterviewer[interviewer].applicants.push(name);
+});
+
+return {
+    total: interviews.length,
+    byInterviewer,
+    periodLabel
+};
+},
+
+// 🔥 면접관별 상세 정보 렌더링
+renderInterviewerDetails(byInterviewer) {
+    const container = document.getElementById('interviewByInterviewer');
+    if (!container) {
+        console.warn('interviewByInterviewer 요소를 찾을 수 없습니다.');
+        return;
+    }
+
+    if (Object.keys(byInterviewer).length === 0) {
+        container.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.6); font-size: 0.85rem; padding: 10px;">예정된 면접이 없습니다</div>';
+        return;
+    }
+
+    let html = '';
+    Object.entries(byInterviewer)
+        .sort(([,a], [,b]) => b.count - a.count) // 인원 수 많은 순으로 정렬
+        .forEach(([interviewer, data]) => {
+            const applicantsList = data.applicants.slice(0, 3).join(', ') + 
+                                 (data.applicants.length > 3 ? ` 외 ${data.applicants.length - 3}명` : '');
+            
+            html += `
+                <div class="interviewer-item">
+                    <div>
+                        <div class="interviewer-name">${interviewer}</div>
+                        <div class="interviewer-applicants">${applicantsList}</div>
+                    </div>
+                    <div class="interviewer-count">${data.count}</div>
+                </div>
+            `;
+        });
+
+    container.innerHTML = html;
+}
+},
 
     // =========================
     // 통계 관련
