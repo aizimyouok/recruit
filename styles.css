@@ -363,6 +363,50 @@ body {
 }
 
 /* =========================
+   사이드바 위젯 가로 배치 CSS (추가)
+   ========================= */
+
+/* 🔥 기존 스타일에 추가 */
+.sidebar-widget-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sidebar-widget-left {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+/* 🔥 기존 스타일 수정 */
+.sidebar-widget-title { 
+    font-size: 0.75rem; 
+    font-weight: 600; 
+    color: #a0aec0; 
+    text-transform: uppercase; 
+    margin-bottom: 4px; /* 8px에서 4px로 줄임 */
+    letter-spacing: 0.5px;
+}
+
+.sidebar-widget-value { 
+    font-size: 1.8rem; 
+    font-weight: 700; 
+    color: var(--sidebar-text); 
+    line-height: 1;
+    margin-left: 10px; /* 새로 추가 */
+    margin-bottom: 0; /* 기존 4px를 0으로 */
+}
+
+.sidebar-widget-subtitle { 
+    font-size: 0.7rem; 
+    color: #a0aec0; 
+    margin-top: 0; /* 기존 4px를 0으로 */
+    font-weight: 500;
+    opacity: 0.8;
+}
+
+/* =========================
    통계 페이지 기간 선택 스타일
    ========================= */
 
