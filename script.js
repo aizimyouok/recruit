@@ -32,6 +32,94 @@ const App = {
     smartSync: SmartSyncModule,
 
     // =========================
+    // 🔥 성능 개선 유틸리티들 (상단으로 이동)
+    // =========================
+    performance: {
+        // 🔥 디바운스 함수 (검색, 필터링 등에 사용)
+        debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        },
+
+        // 🔥 스로틀 함수 (스크롤, 리사이즈 등에 사용)
+        throttle(func, limit) {
+            let inThrottle;
+            return function() {
+                const args = arguments;
+                const context = this;
+                if (!inThrottle) {
+                    func.apply(context, args);
+                    inThrottle = true;
+                    setTimeout(() => inThrottle = false, limit);
+                }
+            }
+        },
+
+        // 🔥 가상 스크롤링 (대용량 데이터용)
+        virtualScroll: {
+            itemHeight: 60,
+            visibleCount: 20,
+            bufferCount: 5,
+            
+            calculateVisibleRange(scrollTop, containerHeight) {
+                const startIndex = Math.floor(scrollTop / this.itemHeight);
+                const endIndex = Math.min(
+                    startIndex + Math.ceil(containerHeight / this.itemHeight) + this.bufferCount,
+                    App.state.data.filtered.length
+                );
+                return {
+                    start: Math.max(0, startIndex - this.bufferCount),
+                    end: endIndex
+                };
+            }
+        },
+
+        // 🔥 DOM 업데이트 최적화
+        batchDOMUpdates(updates) {
+            // DOM 업데이트를 배치로 처리하여 리플로우 최소화
+            return new Promise(resolve => {
+                requestAnimationFrame(() => {
+                    updates.forEach(update => update());
+                    resolve();
+                });
+            });
+        },
+
+        // 🔥 메모리 사용량 모니터링
+        monitorMemory() {
+            if ('memory' in performance) {
+                const memory = performance.memory;
+                console.log('📊 메모리 사용량:', {
+                    used: Math.round(memory.usedJSHeapSize / 1048576) + 'MB',
+                    total: Math.round(memory.totalJSHeapSize / 1048576) + 'MB',
+                    limit: Math.round(memory.jsHeapSizeLimit / 1048576) + 'MB'
+                });
+            }
+        },
+
+        // 🔥 자동 가비지 컬렉션 제안
+        suggestGarbageCollection() {
+            if ('memory' in performance) {
+                const memory = performance.memory;
+                const usageRatio = memory.usedJSHeapSize / memory.jsHeapSizeLimit;
+                
+                if (usageRatio > 0.8) {
+                    console.warn('⚠️ 메모리 사용량이 높습니다. 가비지 컬렉션을 고려하세요.');
+                    return true;
+                }
+            }
+            return false;
+        }
+    },
+
+    // =========================
     // 애플리케이션 초기화 (동기화 상태 포함)
     // =========================
     init: {
@@ -136,94 +224,6 @@ const App = {
             }, 1000); // 1초마다 상태 확인
             
             console.log('🔄 동기화 상태 모니터링 설정 완료');
-        }
-    },
-
-    // =========================
-    // 🔥 새로 추가: 성능 개선 유틸리티들
-    // =========================
-    performance: {
-        // 🔥 디바운스 함수 (검색, 필터링 등에 사용)
-        debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        },
-
-        // 🔥 스로틀 함수 (스크롤, 리사이즈 등에 사용)
-        throttle(func, limit) {
-            let inThrottle;
-            return function() {
-                const args = arguments;
-                const context = this;
-                if (!inThrottle) {
-                    func.apply(context, args);
-                    inThrottle = true;
-                    setTimeout(() => inThrottle = false, limit);
-                }
-            }
-        },
-
-        // 🔥 가상 스크롤링 (대용량 데이터용)
-        virtualScroll: {
-            itemHeight: 60,
-            visibleCount: 20,
-            bufferCount: 5,
-            
-            calculateVisibleRange(scrollTop, containerHeight) {
-                const startIndex = Math.floor(scrollTop / this.itemHeight);
-                const endIndex = Math.min(
-                    startIndex + Math.ceil(containerHeight / this.itemHeight) + this.bufferCount,
-                    App.state.data.filtered.length
-                );
-                return {
-                    start: Math.max(0, startIndex - this.bufferCount),
-                    end: endIndex
-                };
-            }
-        },
-
-        // 🔥 DOM 업데이트 최적화
-        batchDOMUpdates(updates) {
-            // DOM 업데이트를 배치로 처리하여 리플로우 최소화
-            return new Promise(resolve => {
-                requestAnimationFrame(() => {
-                    updates.forEach(update => update());
-                    resolve();
-                });
-            });
-        },
-
-        // 🔥 메모리 사용량 모니터링
-        monitorMemory() {
-            if ('memory' in performance) {
-                const memory = performance.memory;
-                console.log('📊 메모리 사용량:', {
-                    used: Math.round(memory.usedJSHeapSize / 1048576) + 'MB',
-                    total: Math.round(memory.totalJSHeapSize / 1048576) + 'MB',
-                    limit: Math.round(memory.jsHeapSizeLimit / 1048576) + 'MB'
-                });
-            }
-        },
-
-        // 🔥 자동 가비지 컬렉션 제안
-        suggestGarbageCollection() {
-            if ('memory' in performance) {
-                const memory = performance.memory;
-                const usageRatio = memory.usedJSHeapSize / memory.jsHeapSizeLimit;
-                
-                if (usageRatio > 0.8) {
-                    console.warn('⚠️ 메모리 사용량이 높습니다. 가비지 컬렉션을 고려하세요.');
-                    return true;
-                }
-            }
-            return false;
         }
     },
 
@@ -639,10 +639,15 @@ const App = {
     // 🔥 개선된 검색 관련
     // =========================
     search: {
-        // 🔥 디바운스된 검색 핸들러
-        handle: (() => {
-            // 성능 개선을 위해 디바운스 함수를 미리 생성
-            const debouncedSearch = App.performance ? App.performance.debounce(function() {
+        // 🔥 함수로 변경 (즉시실행함수에서 일반 함수로)
+        handle() {
+            // 기존 타임아웃 제거
+            if (App.state.ui.searchTimeout) {
+                clearTimeout(App.state.ui.searchTimeout);
+            }
+            
+            // 디바운스 적용
+            App.state.ui.searchTimeout = setTimeout(() => {
                 const searchTerm = String(document.getElementById('globalSearch').value || '').toLowerCase();
                 
                 if (App.state.ui.searchTerm === searchTerm) return; // 동일한 검색어면 건너뛰기
@@ -658,15 +663,8 @@ const App = {
                 // 성능 측정 완료
                 const endTime = Date.now();
                 console.log(`🔍 검색 완료: ${endTime - startTime}ms (검색어: "${searchTerm}")`);
-            }, 150) : function() {
-                // 백업 함수 (performance 모듈이 없는 경우)
-                App.state.ui.searchTerm = String(document.getElementById('globalSearch').value || '').toLowerCase();
-                App.state.ui.currentPage = 1;
-                App.filter.apply();
-            };
-            
-            return debouncedSearch;
-        })(),
+            }, 150);
+        },
 
         // 🔥 고급 검색 기능
         advancedSearch(query, options = {}) {
@@ -699,10 +697,15 @@ const App = {
     // 🔥 개선된 필터 관련
     // =========================
     filter: {
-        // 🔥 스로틀된 필터 적용
-        apply: (() => {
-            // 성능 개선을 위해 스로틀 함수를 미리 생성
-            const throttledApply = App.performance ? App.performance.throttle(function() {
+        // 🔥 간단한 디바운스로 변경
+        apply() {
+            // 기존 타임아웃 제거
+            if (App.state.ui.filterTimeout) {
+                clearTimeout(App.state.ui.filterTimeout);
+            }
+            
+            // 디바운스 적용
+            App.state.ui.filterTimeout = setTimeout(() => {
                 const startTime = Date.now();
                 
                 let data = [...App.state.data.all];
@@ -744,67 +747,7 @@ const App = {
                 
                 console.log('필터 적용 완료 - 필터링된 데이터:', App.state.data.filtered.length);
 
-                // 🔥 UI 업데이트 배치 처리
-                if (App.performance && App.performance.batchDOMUpdates) {
-                    App.performance.batchDOMUpdates([
-                        () => App.pagination.updateTotal(),
-                        () => App.filter.updateSummary(),
-                        () => {
-                            const pageData = App.pagination.getCurrentPageData();
-                            if (App.state.ui.currentView === 'table') {
-                                App.render.table(pageData);
-                            } else {
-                                App.render.cards(pageData);
-                            }
-                        },
-                        () => App.pagination.updateUI()
-                    ]);
-                } else {
-                    // 백업 코드 (performance 모듈이 없는 경우)
-                    App.pagination.updateTotal();
-                    App.filter.updateSummary();
-                    const pageData = App.pagination.getCurrentPageData();
-                    if (App.state.ui.currentView === 'table') {
-                        App.render.table(pageData);
-                    } else {
-                        App.render.cards(pageData);
-                    }
-                    App.pagination.updateUI();
-                }
-
-                const endTime = Date.now();
-                console.log(`⚡ 필터 처리 완료: ${endTime - startTime}ms`);
-                
-                // 메모리 사용량 체크
-                if (data.length > 1000 && App.performance && App.performance.monitorMemory) {
-                    App.performance.monitorMemory();
-                }
-            }, 100) : function() {
-                // 백업 함수 (performance 모듈이 없는 경우)
-                let data = [...App.state.data.all];
-                const routeFilter = document.getElementById('routeFilter').value;
-                const positionFilter = document.getElementById('positionFilter').value;
-                const applyDateIndex = App.state.data.headers.indexOf('지원일');
-                const routeIndex = App.state.data.headers.indexOf('지원루트');
-                const positionIndex = App.state.data.headers.indexOf('모집분야');
-
-                if (App.state.ui.searchTerm) {
-                    data = data.filter(row => row.some(cell => String(cell || '').toLowerCase().includes(App.state.ui.searchTerm)));
-                }
-
-                if (routeFilter !== 'all' && routeIndex !== -1) {
-                    data = data.filter(row => String(row[routeIndex] || '') === routeFilter);
-                }
-
-                if (positionFilter !== 'all' && positionIndex !== -1) {
-                    data = data.filter(row => String(row[positionIndex] || '') === positionFilter);
-                }
-
-                if (applyDateIndex !== -1 && App.state.ui.activeDateMode !== 'all') {
-                    data = App.filter.applyDateFilter(data, applyDateIndex);
-                }
-
-                App.state.data.filtered = App.utils.sortData(data);
+                // 🔥 UI 업데이트
                 App.pagination.updateTotal();
                 App.filter.updateSummary();
                 const pageData = App.pagination.getCurrentPageData();
@@ -814,10 +757,16 @@ const App = {
                     App.render.cards(pageData);
                 }
                 App.pagination.updateUI();
-            };
-            
-            return throttledApply;
-        })(),
+
+                const endTime = Date.now();
+                console.log(`⚡ 필터 처리 완료: ${endTime - startTime}ms`);
+                
+                // 메모리 사용량 체크
+                if (data.length > 1000 && App.performance && App.performance.monitorMemory) {
+                    App.performance.monitorMemory();
+                }
+            }, 100);
+        },
 
         applyDateFilter(data, applyDateIndex) {
             try {
@@ -2055,8 +2004,8 @@ sidebar: {
                 }
             });
         }
-    }
-}
+    },
+
         updateData(filteredData) {
             const routeIndex = App.state.data.headers.indexOf('지원루트');
             const positionIndex = App.state.data.headers.indexOf('모집분야');
@@ -2068,6 +2017,7 @@ sidebar: {
             App.charts.updateAgeChart(filteredData);
         },
 
+        // 🔥 추가된 함수
         updateEfficiencyCharts(filteredData) {
             App.charts.updateRadarChart(filteredData);
             App.charts.updateScatterChart(filteredData);
@@ -2322,7 +2272,9 @@ sidebar: {
             const filteredData = App.efficiency.getFilteredData(selectedPeriod);
             
             App.efficiency.update(filteredData);
-            if (App.state.charts.instances.radar || App.state.charts.instances.scatter) {
+            
+            // 🔥 차트 업데이트 호출 수정
+            if (App.charts && typeof App.charts.updateEfficiencyCharts === 'function') {
                 App.charts.updateEfficiencyCharts(filteredData);
             }
         },
@@ -2845,20 +2797,22 @@ sidebar: {
 }; // 🔥 중요: App 객체 끝에 세미콜론
 
 // =========================
-// 🔥 핵심: 전역 객체로 노출 (App 객체 정의 완료 후)
+// 🔥 App 객체 정의 완료 후 전역 노출
 // =========================
-try {
-    if (typeof globalThis !== 'undefined') {
-        globalThis.App = App;
-    } else if (typeof window !== 'undefined') {
-        window.App = App;
-    } else if (typeof global !== 'undefined') {
-        global.App = App;
+(() => {
+    try {
+        if (typeof globalThis !== 'undefined') {
+            globalThis.App = App;
+        } else if (typeof window !== 'undefined') {
+            window.App = App;
+        } else if (typeof global !== 'undefined') {
+            global.App = App;
+        }
+        console.log('✅ App 객체가 전역에 성공적으로 노출되었습니다.');
+    } catch (error) {
+        console.error('❌ App 객체 전역 노출 실패:', error);
     }
-    console.log('✅ App 객체가 전역에 성공적으로 노출되었습니다.');
-} catch (error) {
-    console.error('❌ App 객체 전역 노출 실패:', error);
-}
+})();
 
 // =========================
 // 전역에서 사용되는 함수들 (하위 호환성)
