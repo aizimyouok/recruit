@@ -206,29 +206,129 @@ body {
     margin-bottom: 0; 
 }
 
+.sidebar-widgets { 
+    padding: 20px 15px; 
+    margin-top: auto; 
+    border-top: 1px solid rgba(255,255,255,0.1); 
+}
+
+.sidebar-widget { 
+    background: rgba(255,255,255,0.1); 
+    padding: 15px; 
+    border-radius: 8px; 
+    margin-bottom: 15px; 
+    border-left: 3px solid var(--sidebar-accent);
+    transition: all 0.3s ease;
+}
+
+.sidebar-widget:hover { 
+    background: rgba(255,255,255,0.15); 
+    transform: translateX(2px);
+}
+
+.sidebar-widget:last-child { 
+    margin-bottom: 0; 
+}
+
+/* 🔥 새로운 가로 배치 레이아웃 */
+.sidebar-widget-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sidebar-widget-left {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
 .sidebar-widget-title { 
     font-size: 0.75rem; 
     font-weight: 600; 
     color: #a0aec0; 
     text-transform: uppercase; 
-    margin-bottom: 8px; 
+    margin-bottom: 4px; 
     letter-spacing: 0.5px;
+}
+
+.sidebar-widget-subtitle { 
+    font-size: 0.7rem; 
+    color: #a0aec0; 
+    font-weight: 500;
+    opacity: 0.8;
 }
 
 .sidebar-widget-value { 
     font-size: 1.8rem; 
     font-weight: 700; 
     color: var(--sidebar-text); 
-    line-height: 1.2;
-    margin-bottom: 4px;
+    line-height: 1;
+    margin-left: 10px; /* 숫자와 왼쪽 텍스트 사이 간격 */
 }
 
-.sidebar-widget-subtitle { 
-    font-size: 0.7rem; 
-    color: #a0aec0; 
-    margin-top: 4px; 
+/* 기존 select 스타일은 그대로 유지 */
+.sidebar-widget select {
+    width: 100%; 
+    padding: 8px 12px; 
+    margin-top: 8px; 
+    border: 1px solid rgba(255,255,255,0.2); 
+    border-radius: 6px; 
+    background: rgba(255,255,255,0.1); 
+    color: var(--sidebar-text); 
+    font-size: 0.9rem;
     font-weight: 500;
-    opacity: 0.8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.sidebar-widget select:hover {
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.3);
+}
+
+.sidebar-widget select:focus {
+    outline: none;
+    border-color: var(--sidebar-accent);
+    box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.2);
+}
+
+.sidebar-widget select option {
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    padding: 8px;
+}
+
+/* 🔥 면접 대기 확장 위젯은 기존 스타일 유지 */
+.interview-pending-widget .interview-widget-header {
+    /* 면접 위젯은 기존 스타일 그대로 */
+}
+
+/* 🔥 반응형 디자인 */
+@media (max-width: 768px) {
+    .sidebar-widget-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .sidebar-widget-value {
+        margin-left: 0;
+        align-self: flex-end;
+    }
+    
+    .sidebar-widgets { 
+        padding: 15px 10px; 
+    }
+    
+    .sidebar-widget { 
+        padding: 12px; 
+        margin-bottom: 10px; 
+    }
+    
+    .sidebar-widget-value { 
+        font-size: 1.2rem; 
+    }
 }
 
 .sidebar-widget select {
