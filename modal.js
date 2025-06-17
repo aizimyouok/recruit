@@ -1,6 +1,4 @@
-// =========================
-// modal.js - 모달 관련 모듈 (즉시 반영 버전)
-// =========================
+// modal.js - 개선된 빠른 처리 버전
 
 export const ModalModule = {
     get element() {
@@ -161,6 +159,7 @@ export const ModalModule = {
         }
     },
 
+    // 🔥 개선된 신규 저장 - 낙관적 업데이트 사용
     async saveNew(appInstance) {
         const saveBtn = document.querySelector('#applicantModal .modal-footer .primary-btn');
         const originalText = saveBtn.innerHTML;
@@ -178,13 +177,11 @@ export const ModalModule = {
                 applicantData['구분'] = appInstance.state.ui.nextSequenceNumber.toString();
             }
             
-            // 🔥 수정된 부분: 지원일이 비어있을 때만 오늘 날짜 설정
+            // 지원일이 비어있을 때만 오늘 날짜 설정
             if (appInstance.state.data.headers.includes('지원일')) {
-                // 사용자가 지원일을 입력하지 않았거나 빈 값인 경우에만 오늘 날짜로 설정
                 if (!applicantData['지원일'] || applicantData['지원일'].trim() === '') {
                     applicantData['지원일'] = new Date().toISOString().split('T')[0];
                 }
-                // 사용자가 입력한 지원일이 있으면 그대로 사용
             }
 
             ModalModule.prepareTimeData(applicantData);
@@ -192,16 +189,32 @@ export const ModalModule = {
             saveBtn.disabled = true;
             saveBtn.innerHTML = '<div class="advanced-loading-spinner" style="width: 20px; height: 20px; margin: 0;"></div> 저장 중...';
 
-            // 서버에 저장
-            await appInstance.data.save(applicantData);
+            // 🔥 1단계: 낙관적 업데이트 - 즉시 UI에 반영
+            ModalModule.performOptimisticUpdate(appInstance, applicantData, 'create');
 
-            // 🔥 즉시 반영을 위한 캐시 완전 초기화 및 데이터 새로고침
-            await ModalModule.refreshDataImmediate(appInstance);
+            // 🔥 2단계: 서버에 저장 (백그라운드)
+            const serverSavePromise = appInstance.data.save(applicantData);
 
+            // 🔥 3단계: 사용자에게 즉시 피드백
             ModalModule.close(appInstance);
-            
-            // 성공 알림
-            ModalModule.showSuccessNotification('새 지원자가 성공적으로 등록되었습니다! 🎉');
+            ModalModule.showSuccessNotification('새 지원자가 등록되었습니다! 🎉');
+
+            // 🔥 4단계: 서버 응답 처리 (백그라운드에서)
+            try {
+                await serverSavePromise;
+                console.log('✅ 서버 저장 완료');
+                
+                // 🔥 5단계: 빠른 검증 (1초 후)
+                setTimeout(async () => {
+                    await ModalModule.quickValidateAndSync(appInstance);
+                }, 1000);
+                
+            } catch (error) {
+                console.error('❌ 서버 저장 실패:', error);
+                // 낙관적 업데이트 롤백
+                ModalModule.rollbackOptimisticUpdate(appInstance);
+                alert('저장에 실패했습니다: ' + error.message);
+            }
 
         } catch (error) {
             console.error("데이터 저장 실패:", error);
@@ -211,6 +224,8 @@ export const ModalModule = {
             saveBtn.innerHTML = originalText;
         }
     },
+
+    // 🔥 개선된 수정 저장
     async saveEdit(appInstance) {
         const saveBtn = document.querySelector('#applicantModal .modal-footer .modal-edit-btn');
         const originalText = saveBtn.innerHTML;
@@ -240,31 +255,31 @@ export const ModalModule = {
             saveBtn.disabled = true;
             saveBtn.innerHTML = '<div class="advanced-loading-spinner" style="width: 20px; height: 20px; margin: 0;"></div> 저장 중...';
 
-            // 서버에 수정 저장
-            await appInstance.data.save(updatedData, true, gubunValue);
+            // 🔥 낙관적 업데이트
+            ModalModule.performOptimisticUpdate(appInstance, updatedData, 'update', gubunValue);
 
-            // 🔥 간단한 해결책: 3초 대기 후 새로고침
-            console.log('💾 서버 저장 완료, 3초 대기 후 새로고침...');
-            saveBtn.innerHTML = '<div class="advanced-loading-spinner" style="width: 20px; height: 20px; margin: 0;"></div> 업데이트 중...';
-            
-            // 3초 대기 (구글 앱스 스크립트 처리 시간 확보)
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            // 🔥 서버에 저장 (백그라운드)
+            const serverSavePromise = appInstance.data.save(updatedData, true, gubunValue);
 
-            try {
-                // 새로고침 시도
-                await ModalModule.refreshDataImmediate(appInstance);
-                console.log('✅ 데이터 새로고침 성공');
-            } catch (refreshError) {
-                console.warn('⚠️ 자동 새로고침 실패, 사용자에게 안내:', refreshError);
-                // 새로고침 실패해도 저장은 성공했으므로 계속 진행
-                alert('정보 수정은 완료되었습니다.\n최신 정보를 보려면 새로고침 버튼을 눌러주세요.');
-            }
-
-            alert('정보가 성공적으로 수정되었습니다.');
+            // 🔥 즉시 피드백
             ModalModule.close(appInstance);
-            
-            // 성공 알림
-            ModalModule.showSuccessNotification('지원자 정보가 성공적으로 수정되었습니다! ✏️');
+            ModalModule.showSuccessNotification('지원자 정보가 수정되었습니다! ✏️');
+
+            // 🔥 서버 응답 처리
+            try {
+                await serverSavePromise;
+                console.log('✅ 서버 수정 완료');
+                
+                // 빠른 검증
+                setTimeout(async () => {
+                    await ModalModule.quickValidateAndSync(appInstance);
+                }, 1000);
+                
+            } catch (error) {
+                console.error('❌ 서버 수정 실패:', error);
+                ModalModule.rollbackOptimisticUpdate(appInstance);
+                alert('수정에 실패했습니다: ' + error.message);
+            }
 
         } catch (error) {
             console.error("데이터 수정 실패:", error);
@@ -275,6 +290,7 @@ export const ModalModule = {
         }
     },
 
+    // 🔥 개선된 삭제
     async delete(appInstance) {
         if (!appInstance.state.ui.currentEditingData) {
             alert('삭제할 데이터가 없습니다.');
@@ -303,29 +319,31 @@ export const ModalModule = {
             deleteBtn.disabled = true;
             deleteBtn.innerHTML = '<div class="advanced-loading-spinner" style="width: 20px; height: 20px; margin: 0;"></div> 삭제 중...';
 
-            // 서버에서 삭제
-            await appInstance.data.delete(gubunValue);
+            // 🔥 낙관적 업데이트
+            ModalModule.performOptimisticUpdate(appInstance, null, 'delete', gubunValue);
 
-            // 🔥 삭제 후 3초 대기
-            console.log('🗑️ 서버 삭제 완료, 3초 대기 후 새로고침...');
-            deleteBtn.innerHTML = '<div class="advanced-loading-spinner" style="width: 20px; height: 20px; margin: 0;"></div> 업데이트 중...';
-            
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            // 🔥 서버에서 삭제 (백그라운드)
+            const serverDeletePromise = appInstance.data.delete(gubunValue);
 
-            try {
-                // 새로고침 시도
-                await ModalModule.refreshDataImmediate(appInstance);
-                console.log('✅ 데이터 새로고침 성공');
-            } catch (refreshError) {
-                console.warn('⚠️ 자동 새로고침 실패, 사용자에게 안내:', refreshError);
-                alert('정보 삭제는 완료되었습니다.\n최신 정보를 보려면 새로고침 버튼을 눌러주세요.');
-            }
-
-            alert(`'${applicantName}' 님의 정보가 성공적으로 삭제되었습니다.`);
+            // 🔥 즉시 피드백
             ModalModule.close(appInstance);
-            
-            // 성공 알림
-            ModalModule.showSuccessNotification('지원자 정보가 성공적으로 삭제되었습니다! 🗑️');
+            ModalModule.showSuccessNotification('지원자 정보가 삭제되었습니다! 🗑️');
+
+            // 🔥 서버 응답 처리
+            try {
+                await serverDeletePromise;
+                console.log('✅ 서버 삭제 완료');
+                
+                // 빠른 검증
+                setTimeout(async () => {
+                    await ModalModule.quickValidateAndSync(appInstance);
+                }, 1000);
+                
+            } catch (error) {
+                console.error('❌ 서버 삭제 실패:', error);
+                ModalModule.rollbackOptimisticUpdate(appInstance);
+                alert('삭제에 실패했습니다: ' + error.message);
+            }
 
         } catch (error) {
             console.error("데이터 삭제 실패:", error);
@@ -335,97 +353,77 @@ export const ModalModule = {
         }
     },
 
-    // 🔥 새로운 함수: 즉시 데이터 새로고침
-    async refreshDataImmediate(appInstance) {
-        console.log('🔄 즉시 데이터 새로고침 시작...');
+    // 🔥 새로운 함수: 낙관적 업데이트
+    performOptimisticUpdate(appInstance, data, operation, gubun = null) {
+        console.log('⚡ 낙관적 업데이트 실행:', operation);
         
-        try {
-            // 1. 모든 캐시 완전 초기화
-            if (appInstance.cache) {
-                appInstance.cache.invalidate();
-                console.log('✅ CacheModule 초기화 완료');
-            }
-            
-            if (appInstance.dataCache) {
-                appInstance.dataCache.clearCache();
-                console.log('✅ DataCacheModule 초기화 완료');
-            }
-            
-            // 2. 강제로 서버에서 새 데이터 가져오기
-            console.log('🌐 서버에서 최신 데이터 가져오는 중...');
-            
-            // 기존 데이터 임시 백업 (에러 발생 시 복구용)
-            const backupData = {
-                headers: [...appInstance.state.data.headers],
-                all: [...appInstance.state.data.all]
-            };
-            
-            // 강제로 fetch (캐시 무시)
-            const response = await fetch(`${appInstance.config.APPS_SCRIPT_URL}?action=read&_t=${Date.now()}`, {
-                method: 'GET',
-                cache: 'no-cache',
-                headers: {
-                    'Cache-Control': 'no-cache, no-store, must-revalidate',
-                    'Pragma': 'no-cache',
-                    'Expires': '0'
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            const result = await response.json();
-
-            if (result.status !== 'success' || !result.data || !Array.isArray(result.data) || result.data.length === 0) {
-                throw new Error('서버에서 올바른 데이터를 받지 못했습니다.');
-            }
-
-            // 3. 새 데이터로 상태 업데이트
-            appInstance.state.data.headers = (result.data[0] || []).map(h => String(h || '').trim());
-            appInstance.state.data.all = result.data.slice(1)
-                .filter(row => row && Array.isArray(row) && row.some(cell => cell != null && String(cell).trim() !== ''))
-                .map(row => row.map(cell => cell == null ? '' : String(cell)));
-
-            console.log(`✅ 새 데이터 로드 완료: ${appInstance.state.data.all.length}개 항목`);
-
-            // 4. UI 업데이트
+        if (operation === 'create') {
+            // 새 데이터를 로컬 상태에 즉시 추가
+            const newRow = appInstance.state.data.headers.map(header => data[header] || '');
+            appInstance.state.data.all.push(newRow);
             appInstance.data.updateSequenceNumber();
-            appInstance.state.ui.visibleColumns = appInstance.utils.generateVisibleColumns(appInstance.state.data.headers);
             
-            if (appInstance.filter && appInstance.filter.populateDropdowns) {
-                appInstance.filter.populateDropdowns();
+        } else if (operation === 'update') {
+            // 기존 데이터를 로컬 상태에서 즉시 수정
+            const gubunIndex = appInstance.state.data.headers.indexOf('구분');
+            const targetIndex = appInstance.state.data.all.findIndex(row => row[gubunIndex] === gubun);
+            
+            if (targetIndex !== -1) {
+                const updatedRow = appInstance.state.data.headers.map(header => data[header] || '');
+                appInstance.state.data.all[targetIndex] = updatedRow;
             }
             
-            if (appInstance.sidebar && appInstance.sidebar.updateWidgets) {
-                appInstance.sidebar.updateWidgets();
-            }
-            
-            appInstance.data.updateInterviewSchedule();
-            
-            // 5. 현재 필터 다시 적용
-            if (appInstance.filter && appInstance.filter.apply) {
-                appInstance.filter.apply();
-            }
+        } else if (operation === 'delete') {
+            // 로컬 상태에서 즉시 삭제
+            const gubunIndex = appInstance.state.data.headers.indexOf('구분');
+            appInstance.state.data.all = appInstance.state.data.all.filter(row => row[gubunIndex] !== gubun);
+        }
+        
+        // UI 즉시 업데이트
+        if (appInstance.filter && appInstance.filter.apply) {
+            appInstance.filter.apply();
+        }
+        
+        if (appInstance.sidebar && appInstance.sidebar.updateWidgets) {
+            appInstance.sidebar.updateWidgets();
+        }
+        
+        appInstance.data.updateInterviewSchedule();
+    },
 
-            console.log('✅ 즉시 데이터 새로고침 완료!');
+    // 🔥 새로운 함수: 롤백
+    rollbackOptimisticUpdate(appInstance) {
+        console.log('🔄 낙관적 업데이트 롤백 - 서버에서 최신 데이터 가져옴');
+        appInstance.data.forceRefresh();
+    },
 
+    // 🔥 새로운 함수: 빠른 검증 및 동기화
+    async quickValidateAndSync(appInstance) {
+        try {
+            console.log('🔍 빠른 검증 시작...');
+            
+            // 서버에서 최신 해시값 확인
+            const response = await fetch(`${appInstance.config.APPS_SCRIPT_URL}?action=hash&_t=${Date.now()}`, {
+                method: 'GET',
+                cache: 'no-cache'
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                
+                // 스마트 동기화 시스템에 새 해시 전달
+                if (appInstance.smartSync && result.hash) {
+                    appInstance.smartSync.currentHash = result.hash;
+                    console.log('✅ 빠른 검증 완료 - 동기화 상태 업데이트됨');
+                }
+            }
+            
         } catch (error) {
-            console.error('❌ 즉시 데이터 새로고침 실패:', error);
-            
-            // 에러 발생 시 기존 방식으로 fallback
-            console.log('🔄 기존 방식으로 데이터 새로고침 시도...');
-            try {
-                await appInstance.data.fetch();
-                console.log('✅ 기존 방식으로 새로고침 성공');
-            } catch (fallbackError) {
-                console.error('❌ 기존 방식 새로고침도 실패:', fallbackError);
-                alert('데이터 새로고침에 실패했습니다. 페이지를 새로고침해주세요.');
-            }
+            console.warn('⚠️ 빠른 검증 실패:', error);
         }
     },
 
-    // 🔥 새로운 함수: 성공 알림 표시
+    // 🔥 개선된 성공 알림 (더 빠른 피드백)
     showSuccessNotification(message) {
         // 기존 알림이 있으면 제거
         const existingNotifications = document.querySelectorAll('.success-notification');
@@ -448,7 +446,7 @@ export const ModalModule = {
             font-size: 0.95rem;
             transform: translateX(400px);
             opacity: 0;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border-left: 4px solid rgba(255, 255, 255, 0.8);
             min-width: 300px;
             text-align: center;
@@ -463,13 +461,13 @@ export const ModalModule = {
         
         document.body.appendChild(notification);
         
-        // 슬라이드 인 애니메이션
+        // 슬라이드 인 애니메이션 (더 빠르게)
         setTimeout(() => {
             notification.style.transform = 'translateX(0)';
             notification.style.opacity = '1';
         }, 10);
         
-        // 3초 후 슬라이드 아웃
+        // 2초 후 슬라이드 아웃 (더 빠르게)
         setTimeout(() => {
             notification.style.transform = 'translateX(400px)';
             notification.style.opacity = '0';
@@ -477,8 +475,8 @@ export const ModalModule = {
                 if (notification.parentNode) {
                     notification.parentNode.removeChild(notification);
                 }
-            }, 400);
-        }, 3000);
+            }, 300);
+        }, 2000);
     },
 
     collectFormData(appInstance) {
