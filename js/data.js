@@ -143,15 +143,28 @@ if (appInstance.cache) {
         }
 
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
         const threeDaysLater = new Date(today.getTime() + (3 * 24 * 60 * 60 * 1000));
 
         const upcomingInterviews = appInstance.state.data.all
             .filter(row => {
                 const interviewDate = row[interviewDateIndex];
+                const interviewTime = row[interviewTimeIndex];
                 if (!interviewDate) return false;
                 try {
                     const date = new Date(interviewDate);
+                    // 🔥 추가: 면접 시간이 있으면 시간까지 설정
+                if (interviewTime) {
+                    const timeStr = String(interviewTime).replace(/'/g, '').trim();
+                    const timeMatch = timeStr.match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
+                    
+                    if (timeMatch) {
+                        const hour = parseInt(timeMatch[1]);
+                        const minute = parseInt(timeMatch[2] || '0');
+                        date.setHours(hour, minute, 0, 0);
+                    }
+                }
+                
+                // 🔥 수정: 현재 시간 이후의 면접만 표시
                     return date >= today && date <= threeDaysLater;
                 } catch (e) { return false; }
             })
