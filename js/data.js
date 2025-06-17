@@ -116,43 +116,40 @@ if (appInstance.cache) {
 
     // 🔥 수정된 updateInterviewSchedule 함수
     updateInterviewSchedule(appInstance) {
-        let interviewDateIndex = appInstance.state.data.headers.indexOf('면접 날짜');
-        if (interviewDateIndex === -1) interviewDateIndex = appInstance.state.data.headers.indexOf('면접 날자');
-
-        const interviewTimeIndex = appInstance.state.data.headers.indexOf('면접 시간');
-        const nameIndex = appInstance.state.data.headers.indexOf('이름');
-        const positionIndex = appInstance.state.data.headers.indexOf('모집분야');
-        const routeIndex = appInstance.state.data.headers.indexOf('지원루트');
-        
-        // 🔥 회사명 컬럼 추가
-        const companyIndex = appInstance.state.data.headers.indexOf('회사명');
-        
-        const recruiterIndex = appInstance.state.data.headers.indexOf('증원자');
-        const interviewerIndex = appInstance.state.data.headers.indexOf('면접관');
-
-        const scheduleContainer = document.getElementById('interviewScheduleList');
-        
-        if (!scheduleContainer) {
-            console.warn('interviewScheduleList 요소를 찾을 수 없습니다.');
-            return;
-        }
-
-        if (interviewDateIndex === -1) {
-            scheduleContainer.innerHTML = '<div class="no-interviews">면접 날짜 컬럼을 찾을 수 없습니다.</div>';
-            return;
-        }
-
-        const today = new Date();
-        const threeDaysLater = new Date(today.getTime() + (3 * 24 * 60 * 60 * 1000));
-
-        const upcomingInterviews = appInstance.state.data.all
-            .filter(row => {
-                const interviewDate = row[interviewDateIndex];
-                const interviewTime = row[interviewTimeIndex];
-                if (!interviewDate) return false;
-                try {
-                    const date = new Date(interviewDate);
-                    // 🔥 추가: 면접 시간이 있으면 시간까지 설정
+    let interviewDateIndex = appInstance.state.data.headers.indexOf('면접 날짜');
+    if (interviewDateIndex === -1) interviewDateIndex = appInstance.state.data.headers.indexOf('면접 날자');
+    const interviewTimeIndex = appInstance.state.data.headers.indexOf('면접 시간');
+    const nameIndex = appInstance.state.data.headers.indexOf('이름');
+    const positionIndex = appInstance.state.data.headers.indexOf('모집분야');
+    const routeIndex = appInstance.state.data.headers.indexOf('지원루트');
+    
+    // 🔥 회사명 컬럼 추가
+    const companyIndex = appInstance.state.data.headers.indexOf('회사명');
+    
+    const recruiterIndex = appInstance.state.data.headers.indexOf('증원자');
+    const interviewerIndex = appInstance.state.data.headers.indexOf('면접관');
+    const scheduleContainer = document.getElementById('interviewScheduleList');
+    
+    if (!scheduleContainer) {
+        console.warn('interviewScheduleList 요소를 찾을 수 없습니다.');
+        return;
+    }
+    if (interviewDateIndex === -1) {
+        scheduleContainer.innerHTML = '<div class="no-interviews">면접 날짜 컬럼을 찾을 수 없습니다.</div>';
+        return;
+    }
+    const today = new Date();
+    const threeDaysLater = new Date(today.getTime() + (3 * 24 * 60 * 60 * 1000));
+    
+    const upcomingInterviews = appInstance.state.data.all
+        .filter(row => {
+            const interviewDate = row[interviewDateIndex];
+            const interviewTime = row[interviewTimeIndex];
+            if (!interviewDate) return false;
+            try {
+                const date = new Date(interviewDate);
+                
+                // 🔥 수정: 면접 시간 파싱 로직 개선
                 if (interviewTime) {
                     const timeStr = String(interviewTime).replace(/'/g, '').trim();
                     const timeMatch = timeStr.match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
@@ -160,16 +157,66 @@ if (appInstance.cache) {
                     if (timeMatch) {
                         const hour = parseInt(timeMatch[1]);
                         const minute = parseInt(timeMatch[2] || '0');
-                        date.setHours(hour, minute, 0, 0);
+                        
+                        // 🔥 누락된 부분 1: 시간 유효성 검사
+                        if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+                            date.setHours(hour, minute, 0, 0);
+                        } else {
+                            // 🔥 누락된 부분 2: 잘못된 시간일 때 처리
+                            date.setHours(23, 59, 59, 999);
+                        }
+                    } else {
+                        // 🔥 누락된 부분 3: 시간 파싱 실패 시 처리
+                        date.setHours(23, 59, 59, 999);
+                    }
+                } else {
+                    // 🔥 누락된 부분 4: 시간 정보가 없을 때 처리
+                    date.setHours(23, 59, 59, 999);
+                }
+                
+                return date >= today && date <= threeDaysLater;
+            } catch (e) { return false; }
+        })
+        // 🔥 수정: 정렬도 시간까지 고려해서 정확하게
+        .sort((a, b) => {
+            try {
+                const dateA = new Date(a[interviewDateIndex]);
+                const dateB = new Date(b[interviewDateIndex]);
+                
+                // 🔥 A의 시간 설정
+                const timeA = a[interviewTimeIndex];
+                if (timeA) {
+                    const timeStrA = String(timeA).replace(/'/g, '').trim();
+                    const timeMatchA = timeStrA.match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
+                    if (timeMatchA) {
+                        const hourA = parseInt(timeMatchA[1]);
+                        const minuteA = parseInt(timeMatchA[2] || '0');
+                        if (hourA >= 0 && hourA <= 23 && minuteA >= 0 && minuteA <= 59) {
+                            dateA.setHours(hourA, minuteA, 0, 0);
+                        }
                     }
                 }
                 
-                // 🔥 수정: 현재 시간 이후의 면접만 표시
-                    return date >= today && date <= threeDaysLater;
-                } catch (e) { return false; }
-            })
-            .sort((a, b) => new Date(a[interviewDateIndex]) - new Date(b[interviewDateIndex]))
-            .slice(0, 7);
+                // 🔥 B의 시간 설정
+                const timeB = b[interviewTimeIndex];
+                if (timeB) {
+                    const timeStrB = String(timeB).replace(/'/g, '').trim();
+                    const timeMatchB = timeStrB.match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
+                    if (timeMatchB) {
+                        const hourB = parseInt(timeMatchB[1]);
+                        const minuteB = parseInt(timeMatchB[2] || '0');
+                        if (hourB >= 0 && hourB <= 23 && minuteB >= 0 && minuteB <= 59) {
+                            dateB.setHours(hourB, minuteB, 0, 0);
+                        }
+                    }
+                }
+                
+                return dateA - dateB;
+            } catch (e) {
+                return 0;
+            }
+        })
+        .slice(0, 7);
 
         if (upcomingInterviews.length === 0) {
             scheduleContainer.innerHTML = '<div class="no-interviews">3일 이내 예정된 면접이 없습니다.</div>';
