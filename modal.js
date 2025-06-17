@@ -1,4 +1,4 @@
-// modal.js - 개선된 빠른 처리 버전
+// modal.js - 개선된 빠른 처리 버전 (시간 표시 버그 수정)
 
 export const ModalModule = {
     get element() {
@@ -159,7 +159,7 @@ export const ModalModule = {
         }
     },
 
-    // 🔥 개선된 신규 저장 - 낙관적 업데이트 사용
+    // 🔥 개선된 신규 저장 - 시간 표시 버그 수정
     async saveNew(appInstance) {
         const saveBtn = document.querySelector('#applicantModal .modal-footer .primary-btn');
         const originalText = saveBtn.innerHTML;
@@ -184,16 +184,21 @@ export const ModalModule = {
                 }
             }
 
-            ModalModule.prepareTimeData(applicantData);
-
             saveBtn.disabled = true;
             saveBtn.innerHTML = '<div class="advanced-loading-spinner" style="width: 20px; height: 20px; margin: 0;"></div> 저장 중...';
 
-            // 🔥 1단계: 낙관적 업데이트 - 즉시 UI에 반영
-            ModalModule.performOptimisticUpdate(appInstance, applicantData, 'create');
+            // 🔥 수정: 서버 전송용과 로컬 업데이트용 데이터 분리
+            const serverData = { ...applicantData };
+            const localData = { ...applicantData };
+            
+            // 🔥 서버 전송용에만 '를 붙임
+            ModalModule.prepareTimeData(serverData);
 
-            // 🔥 2단계: 서버에 저장 (백그라운드)
-            const serverSavePromise = appInstance.data.save(applicantData);
+            // 🔥 1단계: 낙관적 업데이트 - 원본 데이터로 UI 반영
+            ModalModule.performOptimisticUpdate(appInstance, localData, 'create');
+
+            // 🔥 2단계: 서버에 저장 - '가 붙은 데이터로 전송
+            const serverSavePromise = appInstance.data.save(serverData);
 
             // 🔥 3단계: 사용자에게 즉시 피드백
             ModalModule.close(appInstance);
@@ -225,7 +230,7 @@ export const ModalModule = {
         }
     },
 
-    // 🔥 개선된 수정 저장
+    // 🔥 개선된 수정 저장 - 시간 표시 버그 수정
     async saveEdit(appInstance) {
         const saveBtn = document.querySelector('#applicantModal .modal-footer .modal-edit-btn');
         const originalText = saveBtn.innerHTML;
@@ -237,8 +242,6 @@ export const ModalModule = {
                 alert('필수 항목을 모두 입력해주세요.');
                 return;
             }
-
-            ModalModule.prepareTimeData(updatedData);
 
             const gubunIndex = appInstance.state.data.headers.indexOf('구분');
             if (gubunIndex === -1 || !appInstance.state.ui.currentEditingData) {
@@ -255,11 +258,18 @@ export const ModalModule = {
             saveBtn.disabled = true;
             saveBtn.innerHTML = '<div class="advanced-loading-spinner" style="width: 20px; height: 20px; margin: 0;"></div> 저장 중...';
 
-            // 🔥 낙관적 업데이트
-            ModalModule.performOptimisticUpdate(appInstance, updatedData, 'update', gubunValue);
+            // 🔥 수정: 서버 전송용과 로컬 업데이트용 데이터 분리
+            const serverData = { ...updatedData };
+            const localData = { ...updatedData };
+            
+            // 🔥 서버 전송용에만 '를 붙임
+            ModalModule.prepareTimeData(serverData);
 
-            // 🔥 서버에 저장 (백그라운드)
-            const serverSavePromise = appInstance.data.save(updatedData, true, gubunValue);
+            // 🔥 낙관적 업데이트 - 원본 데이터로 UI 반영
+            ModalModule.performOptimisticUpdate(appInstance, localData, 'update', gubunValue);
+
+            // 🔥 서버에 저장 - '가 붙은 데이터로 전송
+            const serverSavePromise = appInstance.data.save(serverData, true, gubunValue);
 
             // 🔥 즉시 피드백
             ModalModule.close(appInstance);
