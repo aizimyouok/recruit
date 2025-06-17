@@ -26,24 +26,7 @@
                 <button class="nav-item" onclick="globalThis.App.navigation.switchPage('stats')" aria-label="통계 분석 페이지로 이동"><i class="fas fa-chart-pie icon"></i> 통계</button>
                 <button class="nav-item" onclick="globalThis.App.navigation.switchPage('efficiency')" aria-label="효율성 분석 페이지로 이동"><i class="fas fa-chart-line icon"></i> 효율성 분석</button>
             </div>
-            
-            <div class="sidebar-widgets">
-                <div class="sidebar-widget">
-                    <div class="sidebar-widget-title">조회 기간</div>
-                    <select id="sidebarPeriodFilter" onchange="globalThis.App.sidebar.handlePeriodChange()" style="width: 100%; padding: 8px; margin-top: 8px; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--sidebar-text); font-size: 0.9rem;">
-                        <option value="all">전체</option>
-                        <option value="year">올해</option>
-                        <option value="month">이번 달</option>
-                        <option value="week">이번 주</option>
-                        <option value="custom">기간 입력</option>
-                    </select>
-                    <div id="sidebarCustomDateRange" style="display: none; margin-top: 8px;">
-                        <input type="date" id="sidebarStartDate" style="width: 100%; padding: 6px; margin-bottom: 4px; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--sidebar-text); font-size: 0.8rem;">
-                        <input type="date" id="sidebarEndDate" style="width: 100%; padding: 6px; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--sidebar-text); font-size: 0.8rem;">
-                        <button onclick="globalThis.App.sidebar.updateWidgets()" style="width: 100%; margin-top: 4px; padding: 6px; background: var(--sidebar-accent); color: white; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer;">적용</button>
-                    </div>
-                </div>
-                <!-- 🔥 새로운 면접 대기 확장 위젯 -->
+            <!-- 🔥 새로운 면접 대기 확장 위젯 -->
 <div class="sidebar-widget interview-pending-widget" style="border-left: 3px solid #f59e0b; margin-bottom: 20px;">
     <div class="interview-widget-header" onclick="globalThis.App && globalThis.App.sidebar && globalThis.App.sidebar.toggleInterviewWidget()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
         <div>
@@ -83,6 +66,23 @@
         </div>
     </div>
 </div>
+            <div class="sidebar-widgets">
+                <div class="sidebar-widget">
+                    <div class="sidebar-widget-title">조회 기간</div>
+                    <select id="sidebarPeriodFilter" onchange="globalThis.App.sidebar.handlePeriodChange()" style="width: 100%; padding: 8px; margin-top: 8px; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--sidebar-text); font-size: 0.9rem;">
+                        <option value="all">전체</option>
+                        <option value="year">올해</option>
+                        <option value="month">이번 달</option>
+                        <option value="week">이번 주</option>
+                        <option value="custom">기간 입력</option>
+                    </select>
+                    <div id="sidebarCustomDateRange" style="display: none; margin-top: 8px;">
+                        <input type="date" id="sidebarStartDate" style="width: 100%; padding: 6px; margin-bottom: 4px; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--sidebar-text); font-size: 0.8rem;">
+                        <input type="date" id="sidebarEndDate" style="width: 100%; padding: 6px; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--sidebar-text); font-size: 0.8rem;">
+                        <button onclick="globalThis.App.sidebar.updateWidgets()" style="width: 100%; margin-top: 4px; padding: 6px; background: var(--sidebar-accent); color: white; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer;">적용</button>
+                    </div>
+                </div>
+                
                 <div class="sidebar-widget" style="border-left: 3px solid #818cf8;">
                     <div class="sidebar-widget-title">지원자</div>
                     <div class="sidebar-widget-value" id="sidebarTotalApplicants" style="color: #818cf8;">0</div>
