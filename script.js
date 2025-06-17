@@ -1400,30 +1400,32 @@ const App = {
         },
 
         calculateStats(filteredApplicants) {
-            const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
-            const interviewResultIndex = App.state.data.headers.indexOf('면접결과');
-            const joinDateIndex = App.state.data.headers.indexOf('입과일');
+    const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
+    const interviewResultIndex = App.state.data.headers.indexOf('면접결과');
+    const joinDateIndex = App.state.data.headers.indexOf('입과일');
+    
+    const totalCount = filteredApplicants.length;
 
-            const totalCount = filteredApplicants.length;
-
-            let interviewPendingCount = 0;
-            if (contactResultIndex !== -1) {
-                const today = new Date();
-                                
-                let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
-                if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
-                
-                interviewPendingCount = filteredApplicants.filter(row => {
-                    const contactResult = String(row[contactResultIndex] || '').trim();
-                    if (contactResult !== '면접확정') return false;
-                    
-                    if (interviewDateIndex !== -1) {
-                        const interviewDate = row[interviewDateIndex];
-                        const interviewTime = row[interviewTimeIndex];
-                        if (interviewDate) {
-                            try {
-                                const date = new Date(interviewDate);
-                                // 🔥 추가: 면접 시간 설정
+    let interviewPendingCount = 0;
+    if (contactResultIndex !== -1) {
+        const today = new Date(); // 🔥 현재 시간 기준
+        
+        let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
+        if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
+        const interviewTimeIndex = App.state.data.headers.indexOf('면접 시간');
+        
+        interviewPendingCount = filteredApplicants.filter(row => {
+            const contactResult = String(row[contactResultIndex] || '').trim();
+            if (contactResult !== '면접확정') return false;
+            
+            if (interviewDateIndex !== -1) {
+                const interviewDate = row[interviewDateIndex];
+                const interviewTime = row[interviewTimeIndex];
+                if (interviewDate) {
+                    try {
+                        const date = new Date(interviewDate);
+                        
+                        // 🔥 면접 시간 설정 로직 개선
                         if (interviewTime) {
                             const timeStr = String(interviewTime).replace(/'/g, '').trim();
                             const timeMatch = timeStr.match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
@@ -1431,51 +1433,56 @@ const App = {
                             if (timeMatch) {
                                 const hour = parseInt(timeMatch[1]);
                                 const minute = parseInt(timeMatch[2] || '0');
-                                date.setHours(hour, minute, 0, 0);
+                                
+                                // 🔥 시간 유효성 검사 추가
+                                if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+                                    date.setHours(hour, minute, 0, 0);
+                                } else {
+                                    // 🔥 잘못된 시간 형식일 때 하루 끝으로 설정
+                                    date.setHours(23, 59, 59, 999);
+                                }
                             } else {
-                                // 시간 정보가 없으면 해당 날짜 끝까지 유효
+                                // 🔥 시간 파싱 실패 시 하루 끝으로 설정
                                 date.setHours(23, 59, 59, 999);
                             }
                         } else {
-                            // 시간 정보가 없으면 해당 날짜 끝까지 유효
+                            // 🔥 시간 정보가 없으면 하루 끝까지 유효
                             date.setHours(23, 59, 59, 999);
                         }
                         
-                        // 🔥 수정: 현재 시간 이후만 카운트
-                                
-                                return date >= today;
-                            } catch (e) {
-                                return false;
-                            }
-                        }
+                        // 🔥 현재 시간 이후만 카운트
+                        return date >= today;
+                    } catch (e) {
+                        return false;
                     }
-                    return false;
-                }).length;
+                }
             }
+            return false;
+        }).length;
+    }
 
-            // 3번: 전체 지원자 대비 합격률
-            let successRate = 0;
-            if (interviewResultIndex !== -1 && totalCount > 0) {
-                const passedApplicants = filteredApplicants.filter(row => {
-                    const interviewResult = String(row[interviewResultIndex] || '').trim();
-                    return interviewResult === '합격';
-                });
-                successRate = Math.round((passedApplicants.length / totalCount) * 100);
-            }
+    // 🔥 합격률 계산
+    let successRate = 0;
+    if (interviewResultIndex !== -1 && totalCount > 0) {
+        const passedApplicants = filteredApplicants.filter(row => {
+            const interviewResult = String(row[interviewResultIndex] || '').trim();
+            return interviewResult === '합격';
+        });
+        successRate = Math.round((passedApplicants.length / totalCount) * 100);
+    }
 
-            // 4번: 전체 지원자 대비 입과율
-            let joinRate = 0;
-            if (joinDateIndex !== -1 && totalCount > 0) {
-                const joinedApplicants = filteredApplicants.filter(row => {
-                    const joinDate = String(row[joinDateIndex] || '').trim();
-                    return joinDate !== '' && joinDate !== '-';
-                });
-                joinRate = Math.round((joinedApplicants.length / totalCount) * 100);
-            }
+    // 🔥 입과율 계산
+    let joinRate = 0;
+    if (joinDateIndex !== -1 && totalCount > 0) {
+        const joinedApplicants = filteredApplicants.filter(row => {
+            const joinDate = String(row[joinDateIndex] || '').trim();
+            return joinDate !== '' && joinDate !== '-';
+        });
+        joinRate = Math.round((joinedApplicants.length / totalCount) * 100);
+    }
 
-            return { totalCount, interviewPendingCount, successRate, joinRate };
-        },
-
+    return { totalCount, interviewPendingCount, successRate, joinRate };
+},
         updateUI(stats, periodLabel) {
             document.getElementById('sidebarTotalApplicants').textContent = stats.totalCount;
             document.getElementById('sidebarPeriodLabel').textContent = periodLabel;
