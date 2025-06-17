@@ -1406,6 +1406,7 @@ const App = {
     
     const totalCount = filteredApplicants.length;
     let interviewPendingCount = 0;
+    
     if (contactResultIndex !== -1) {
         const today = new Date(); // 🔥 현재 시간 기준
         console.log('🔍 현재 시간:', today); // 🔥 디버깅용
@@ -1478,29 +1479,6 @@ const App = {
     }
 
     console.log('🔍 최종 면접 대기 인원:', interviewPendingCount); // 🔥 디버깅용
-
-    // 🔥 합격률 계산
-    let successRate = 0;
-    if (interviewResultIndex !== -1 && totalCount > 0) {
-        const passedApplicants = filteredApplicants.filter(row => {
-            const interviewResult = String(row[interviewResultIndex] || '').trim();
-            return interviewResult === '합격';
-        });
-        successRate = Math.round((passedApplicants.length / totalCount) * 100);
-    }
-
-    // 🔥 입과율 계산
-    let joinRate = 0;
-    if (joinDateIndex !== -1 && totalCount > 0) {
-        const joinedApplicants = filteredApplicants.filter(row => {
-            const joinDate = String(row[joinDateIndex] || '').trim();
-            return joinDate !== '' && joinDate !== '-';
-        });
-        joinRate = Math.round((joinedApplicants.length / totalCount) * 100);
-    }
-
-    return { totalCount, interviewPendingCount, successRate, joinRate };
-},
 
     // 🔥 합격률 계산
     let successRate = 0;
