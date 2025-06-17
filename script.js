@@ -32,22 +32,49 @@ const App = {
     smartSync: SmartSyncModule,
 
     // =========================
-    // 애플리케이션 초기화
+    // 애플리케이션 초기화 (동기화 상태 포함)
     // =========================
     init: {
         async start() {
-            App.theme.initialize();
-            App.init.setupEventListeners();
-            App.init.setupDateFilterListeners();
+            console.log('🚀 애플리케이션 초기화 시작...');
+            const startTime = Date.now();
             
-            // 네비게이션 히스토리 초기화
-            App.navigation.initializeHistoryHandling();
-            App.navigation.addPageTransitionEffects();
-            
-            await App.data.fetch();
-            setTimeout(() => {
-                App.utils.enhanceAccessibility();
-            }, 1000);
+            try {
+                // 1. 기본 설정
+                App.theme.initialize();
+                App.init.setupEventListeners();
+                App.init.setupDateFilterListeners();
+                
+                // 2. 네비게이션 초기화
+                App.navigation.initializeHistoryHandling();
+                App.navigation.addPageTransitionEffects();
+                
+                // 3. 초기 동기화 상태 설정
+                App.ui.updateSyncStatus('syncing');
+                
+                // 4. 데이터 로드
+                await App.data.fetch();
+                
+                // 5. 스마트 동기화 시스템 시작 및 상태 설정
+                App.smartSync.init(App);
+                
+                // 6. 빠른 모드 감지 및 상태 업데이트 (스마트 동기화 모니터링)
+                App.init.setupSyncStatusMonitoring();
+                
+                // 7. 접근성 개선 (비동기)
+                setTimeout(() => {
+                    App.utils.enhanceAccessibility();
+                }, 1000);
+                
+                App.ui.trackPerformance('애플리케이션 초기화', startTime);
+                console.log('✅ 애플리케이션 초기화 완료');
+                
+            } catch (error) {
+                App.ui.updateSyncStatus('disconnected');
+                App.ui.trackPerformance('애플리케이션 초기화 (실패)', startTime);
+                console.error('❌ 애플리케이션 초기화 실패:', error);
+                throw error;
+            }
         },
 
         setupEventListeners() {
@@ -89,6 +116,26 @@ const App = {
             } catch (error) {
                 console.error('날짜 필터 리스너 설정 실패:', error);
             }
+        },
+        
+        // 🔥 새로운 함수: 동기화 상태 모니터링 설정
+        setupSyncStatusMonitoring() {
+            // 스마트 동기화 상태를 주기적으로 확인하고 UI 업데이트
+            setInterval(() => {
+                if (App.smartSync) {
+                    const status = App.smartSync.getStatus();
+                    
+                    if (status.isFastMode) {
+                        App.ui.updateSyncStatus('fast-mode');
+                    } else if (status.isPolling) {
+                        App.ui.updateSyncStatus('connected');
+                    } else {
+                        App.ui.updateSyncStatus('disconnected');
+                    }
+                }
+            }, 1000); // 1초마다 상태 확인
+            
+            console.log('🔄 동기화 상태 모니터링 설정 완료');
         }
     },
 
@@ -124,6 +171,9 @@ const App = {
     // =========================
     // UI 관련
     // =========================
+    // =========================
+    // UI 관련 (상태 표시 추가)
+    // =========================
     ui: {
         toggleMobileMenu: () => UIModule.toggleMobileMenu(),
         toggleColumnDropdown: () => UIModule.toggleColumnDropdown(),
@@ -131,31 +181,421 @@ const App = {
         setupColumnToggles: () => UIModule.setupColumnToggles(App),
         showLoadingState: (container) => UIModule.showLoadingState(container, App),
         updateProgress: (container, percentage, text) => UIModule.updateProgress(container, percentage, text),
-        showErrorState: (container, error) => UIModule.showErrorState(container, error, App)
+        showErrorState: (container, error) => UIModule.showErrorState(container, error, App),
+        
+        // 🔥 새로운 함수들: 상태 표시 및 업데이트 시간 관리
+        updateLastUpdateTime() {
+            const lastUpdateInfo = document.getElementById('lastUpdateInfo');
+            const lastUpdateTime = document.getElementById('lastUpdateTime');
+            
+            if (lastUpdateInfo && lastUpdateTime) {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('ko-KR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                const dateString = now.toLocaleDateString('ko-KR', {
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+                
+                lastUpdateTime.textContent = `${dateString} ${timeString}`;
+                lastUpdateInfo.style.display = 'block';
+                
+                // 업데이트 시 짧은 하이라이트 효과
+                lastUpdateInfo.style.background = 'rgba(16, 185, 129, 0.2)';
+                lastUpdateInfo.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                
+                setTimeout(() => {
+                    lastUpdateInfo.style.background = 'rgba(129, 140, 248, 0.1)';
+                    lastUpdateInfo.style.borderColor = 'rgba(129, 140, 248, 0.2)';
+                }, 2000);
+            }
+        },
+        
+        updateSyncStatus(status) {
+            const syncStatusElement = document.getElementById('syncStatus');
+            const syncStatusIcon = document.getElementById('syncStatusIcon');
+            
+            if (syncStatusElement && syncStatusIcon) {
+                // 기존 클래스 제거
+                syncStatusElement.classList.remove('connected', 'syncing', 'disconnected', 'fast-mode');
+                
+                // 새로운 상태 적용
+                syncStatusElement.classList.add(status);
+                
+                // 툴팁 업데이트
+                const statusMessages = {
+                    connected: '실시간 동기화 연결됨',
+                    syncing: '데이터 동기화 중...',
+                    disconnected: '동기화 연결 끊어짐',
+                    'fast-mode': '빠른 동기화 모드 (수정 후)'
+                };
+                
+                syncStatusElement.title = statusMessages[status] || '알 수 없는 상태';
+                
+                console.log('🔄 동기화 상태 업데이트:', status);
+            }
+        },
+        
+        showRefreshAnimation() {
+            const refreshBtn = document.querySelector('.refresh-btn');
+            const refreshIcon = document.getElementById('refreshIcon');
+            
+            if (refreshBtn && refreshIcon) {
+                refreshBtn.classList.add('loading');
+                refreshBtn.disabled = true;
+                refreshBtn.style.opacity = '0.8';
+                
+                return () => {
+                    refreshBtn.classList.remove('loading');
+                    refreshBtn.disabled = false;
+                    refreshBtn.style.opacity = '1';
+                };
+            }
+            
+            return () => {}; // 빈 함수 반환
+        },
+        
+        // 데이터 통계 요약 표시
+        updateDataSummary() {
+            const totalCount = App.state.data.all.length;
+            const filteredCount = App.state.data.filtered.length;
+            
+            // 브라우저 탭 제목에 개수 표시
+            const originalTitle = 'CFC 채용 현황 대시보드';
+            document.title = totalCount > 0 ? `(${totalCount}) ${originalTitle}` : originalTitle;
+            
+            console.log(`📊 데이터 요약 - 전체: ${totalCount}, 필터링됨: ${filteredCount}`);
+        },
+        
+        // 성능 모니터링
+        trackPerformance(action, startTime) {
+            const endTime = Date.now();
+            const duration = endTime - startTime;
+            
+            console.log(`⏱️ 성능 측정 [${action}]: ${duration}ms`);
+            
+            // 성능 임계값 확인 (5초 이상이면 경고)
+            if (duration > 5000) {
+                console.warn(`⚠️ 성능 경고: ${action}이 ${duration}ms 소요됨`);
+                
+                // 사용자에게 알림 (선택적)
+                if (duration > 10000) {
+                    App.ui.showPerformanceWarning(action, duration);
+                }
+            }
+            
+            return duration;
+        },
+        
+        showPerformanceWarning(action, duration) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+                z-index: 2500;
+                font-size: 0.9rem;
+                max-width: 300px;
+                border-left: 4px solid rgba(255, 255, 255, 0.8);
+            `;
+            
+            notification.innerHTML = `
+                <div style="font-weight: 600; margin-bottom: 4px;">
+                    ⚠️ 성능 알림
+                </div>
+                <div style="font-size: 0.85rem; opacity: 0.9;">
+                    ${action}이 예상보다 오래 걸리고 있습니다 (${Math.round(duration/1000)}초)
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 5000);
+        }
     },
 
     // =========================
-    // 데이터 관련
+    // 데이터 관련 (최종 통합 버전 - UI 상태 업데이트 포함)
     // =========================
     data: {
-    fetch: () => DataModule.fetch(App),
-    updateSequenceNumber: () => DataModule.updateSequenceNumber(App),
-    updateInterviewSchedule: () => DataModule.updateInterviewSchedule(App),
-    showInterviewDetails: (name, route) => DataModule.showInterviewDetails(App, name, route),
-    
-    // 👇 이 부분을 통째로 교체
-    async save(data, isUpdate = false, gubun = null) {
-        const result = await DataModule.save(App, data, isUpdate, gubun);
-        App.cache.invalidate(); // 👈 이 줄 추가
-        return result;
+        fetch: async () => {
+            const startTime = Date.now();
+            App.ui.updateSyncStatus('syncing');
+            
+            try {
+                await DataModule.fetch(App);
+                App.ui.updateLastUpdateTime();
+                App.ui.updateDataSummary();
+                App.ui.updateSyncStatus('connected');
+                App.ui.trackPerformance('데이터 로드', startTime);
+            } catch (error) {
+                App.ui.updateSyncStatus('disconnected');
+                App.ui.trackPerformance('데이터 로드 (실패)', startTime);
+                throw error;
+            }
+        },
+        
+        updateSequenceNumber: () => DataModule.updateSequenceNumber(App),
+        updateInterviewSchedule: () => DataModule.updateInterviewSchedule(App),
+        showInterviewDetails: (name, route) => DataModule.showInterviewDetails(App, name, route),
+        
+        // 🔥 수정된 save 함수 - UI 상태 업데이트 포함
+        async save(data, isUpdate = false, gubun = null) {
+            const startTime = Date.now();
+            App.ui.updateSyncStatus('syncing');
+            
+            try {
+                console.log('💾 데이터 저장 시작:', isUpdate ? '수정' : '신규', data);
+                
+                // 서버에 저장
+                const result = await DataModule.save(App, data, isUpdate, gubun);
+                
+                // 🔥 모든 캐시 완전 초기화
+                if (App.cache) {
+                    App.cache.invalidate();
+                    console.log('✅ CacheModule 초기화 완료');
+                }
+                
+                if (App.dataCache) {
+                    App.dataCache.clearCache();
+                    console.log('✅ DataCacheModule 초기화 완료');
+                }
+                
+                App.ui.updateSyncStatus('connected');
+                App.ui.trackPerformance(isUpdate ? '데이터 수정' : '데이터 생성', startTime);
+                
+                console.log('✅ 데이터 저장 및 캐시 초기화 완료');
+                return result;
+                
+            } catch (error) {
+                App.ui.updateSyncStatus('disconnected');
+                App.ui.trackPerformance('데이터 저장 (실패)', startTime);
+                console.error('❌ 데이터 저장 실패:', error);
+                throw error;
+            }
+        },
+        
+        // 🔥 수정된 delete 함수 - UI 상태 업데이트 포함
+        async delete(gubun) {
+            const startTime = Date.now();
+            App.ui.updateSyncStatus('syncing');
+            
+            try {
+                console.log('🗑️ 데이터 삭제 시작:', gubun);
+                
+                // 서버에서 삭제
+                const result = await DataModule.delete(App, gubun);
+                
+                // 🔥 모든 캐시 완전 초기화
+                if (App.cache) {
+                    App.cache.invalidate();
+                    console.log('✅ CacheModule 초기화 완료');
+                }
+                
+                if (App.dataCache) {
+                    App.dataCache.clearCache();
+                    console.log('✅ DataCacheModule 초기화 완료');
+                }
+                
+                App.ui.updateSyncStatus('connected');
+                App.ui.trackPerformance('데이터 삭제', startTime);
+                
+                console.log('✅ 데이터 삭제 및 캐시 초기화 완료');
+                return result;
+                
+            } catch (error) {
+                App.ui.updateSyncStatus('disconnected');
+                App.ui.trackPerformance('데이터 삭제 (실패)', startTime);
+                console.error('❌ 데이터 삭제 실패:', error);
+                throw error;
+            }
+        },
+        
+        // 🔥 수정된 강제 새로고침 - UI 상태 업데이트 포함
+        async forceRefresh() {
+            const startTime = Date.now();
+            const stopAnimation = App.ui.showRefreshAnimation();
+            App.ui.updateSyncStatus('syncing');
+            
+            try {
+                console.log('🔄 강제 새로고침 시작...');
+                
+                // 1. 모든 캐시 완전 삭제
+                if (App.cache) {
+                    App.cache.invalidate();
+                }
+                
+                if (App.dataCache) {
+                    App.dataCache.clearCache();
+                }
+                
+                // 2. 로딩 상태 표시
+                const tableContainer = document.querySelector('.table-container');
+                if (tableContainer) {
+                    App.ui.showLoadingState(tableContainer);
+                }
+                
+                // 3. 타임스탬프를 사용해 캐시 완전 무시하고 서버에서 가져오기
+                const response = await fetch(`${App.config.APPS_SCRIPT_URL}?action=read&_t=${Date.now()}`, {
+                    method: 'GET',
+                    cache: 'no-cache',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(App.utils.getErrorMessage(response.status));
+                }
+
+                const result = await response.json();
+
+                if (result.status !== 'success') {
+                    throw new Error(result.message || '데이터 처리 중 오류가 발생했습니다.');
+                }
+
+                if (!result.data || !Array.isArray(result.data) || result.data.length === 0) {
+                    throw new Error('데이터가 비어있거나 올바르지 않은 형식입니다.');
+                }
+
+                // 4. 데이터 업데이트
+                App.state.data.headers = (result.data[0] || []).map(h => String(h || '').trim());
+                App.state.data.all = result.data.slice(1)
+                    .filter(row => row && Array.isArray(row) && row.some(cell => cell != null && String(cell).trim() !== ''))
+                    .map(row => row.map(cell => cell == null ? '' : String(cell)));
+
+                // 5. UI 업데이트
+                App.data.updateSequenceNumber();
+                App.state.ui.visibleColumns = App.utils.generateVisibleColumns(App.state.data.headers);
+
+                if (App.filter && App.filter.populateDropdowns) {
+                    App.filter.populateDropdowns();
+                }
+
+                if (App.sidebar && App.sidebar.updateWidgets) {
+                    App.sidebar.updateWidgets();
+                }
+
+                App.data.updateInterviewSchedule();
+
+                if (App.filter && App.filter.reset) {
+                    App.filter.reset(true);
+                }
+
+                // 6. 컬럼 토글 재설정
+                setTimeout(() => {
+                    if (App.ui && App.ui.setupColumnToggles) {
+                        App.ui.setupColumnToggles();
+                    }
+                    
+                    if (App.render && App.state.data.all.length > 0) {
+                        App.render.currentView();
+                    }
+                }, 50);
+
+                // 7. UI 상태 업데이트
+                App.ui.updateLastUpdateTime();
+                App.ui.updateDataSummary();
+                App.ui.updateSyncStatus('connected');
+                App.ui.trackPerformance('강제 새로고침', startTime);
+
+                console.log(`✅ 강제 새로고침 완료: ${App.state.data.all.length}개 항목`);
+                
+                // 8. 성공 알림
+                App.data.showRefreshNotification('최신 데이터로 업데이트되었습니다! 🔄');
+
+            } catch (error) {
+                console.error('❌ 강제 새로고침 실패:', error);
+                
+                App.ui.updateSyncStatus('disconnected');
+                App.ui.trackPerformance('강제 새로고침 (실패)', startTime);
+                
+                const tableContainer = document.querySelector('.table-container');
+                if (tableContainer && App.ui && App.ui.showErrorState) {
+                    App.ui.showErrorState(tableContainer, error);
+                }
+                
+                throw error;
+            } finally {
+                stopAnimation();
+            }
+        },
+        
+        // 새로고침 알림 (기존과 동일)
+        showRefreshNotification(message) {
+            const existingNotifications = document.querySelectorAll('.refresh-notification');
+            existingNotifications.forEach(notification => notification.remove());
+
+            const notification = document.createElement('div');
+            notification.className = 'refresh-notification';
+            
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #818cf8, #6366f1);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(129, 140, 248, 0.3);
+                z-index: 3000;
+                font-weight: 600;
+                font-size: 0.95rem;
+                transform: translateX(400px);
+                opacity: 0;
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                border-left: 4px solid rgba(255, 255, 255, 0.8);
+                min-width: 280px;
+                text-align: center;
+            `;
+            
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px; justify-content: center;">
+                    <i class="fas fa-sync-alt" style="font-size: 1.2rem; animation: rotate 2s linear infinite;"></i>
+                    <span>${message}</span>
+                </div>
+                <style>
+                    @keyframes rotate {
+                        from { transform: rotate(0deg); }
+                        to { transform: rotate(360deg); }
+                    }
+                </style>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // 슬라이드 인 애니메이션
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+                notification.style.opacity = '1';
+            }, 10);
+            
+            // 3초 후 슬라이드 아웃
+            setTimeout(() => {
+                notification.style.transform = 'translateX(400px)';
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 400);
+            }, 3000);
+        }
     },
-    
-    async delete(gubun) {
-        const result = await DataModule.delete(App, gubun);
-        App.cache.invalidate(); // 👈 이 줄 추가
-        return result;
-    }
-},
 
     // =========================
     // 모달 관련 (모듈에서 가져옴)
