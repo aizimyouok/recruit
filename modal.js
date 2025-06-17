@@ -173,11 +173,18 @@ export const ModalModule = {
                 return;
             }
 
+            // 구분 번호 자동 설정
             if (appInstance.state.data.headers.includes('구분')) {
                 applicantData['구분'] = appInstance.state.ui.nextSequenceNumber.toString();
             }
+            
+            // 🔥 수정된 부분: 지원일이 비어있을 때만 오늘 날짜 설정
             if (appInstance.state.data.headers.includes('지원일')) {
-                applicantData['지원일'] = new Date().toISOString().split('T')[0];
+                // 사용자가 지원일을 입력하지 않았거나 빈 값인 경우에만 오늘 날짜로 설정
+                if (!applicantData['지원일'] || applicantData['지원일'].trim() === '') {
+                    applicantData['지원일'] = new Date().toISOString().split('T')[0];
+                }
+                // 사용자가 입력한 지원일이 있으면 그대로 사용
             }
 
             ModalModule.prepareTimeData(applicantData);
@@ -204,7 +211,6 @@ export const ModalModule = {
             saveBtn.innerHTML = originalText;
         }
     },
-
     async saveEdit(appInstance) {
         const saveBtn = document.querySelector('#applicantModal .modal-footer .modal-edit-btn');
         const originalText = saveBtn.innerHTML;
