@@ -242,27 +242,40 @@ if (appInstance.cache) {
         `;
 
         upcomingInterviews.forEach((row, index) => {
-            const interviewDate = row[interviewDateIndex];
-            let dateDisplay = '';
-
-            const formattedTime = appInstance.utils.formatInterviewTime(row[interviewTimeIndex]);
-
-            try {
-                const date = new Date(interviewDate);
-                date.setHours(0, 0, 0, 0);
-                const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
-                const weekday = weekdays[date.getDay()];
-
-                const diffTime = date.getTime() - today.getTime();
-                const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-                let dayDiff = `D-${diffDays}`;
-                let ddayClass = '';
-                if (diffDays === 0) { dayDiff = 'D-Day'; ddayClass = 'today'; }
-
-                const dateText = `${date.getMonth() + 1}/${date.getDate()}(${weekday})`;
-                dateDisplay = `<span class="interview-dday ${ddayClass}">${dayDiff}</span><span class="interview-date-text">${dateText}</span>`;
-            } catch (e) { dateDisplay = '날짜 오류'; }
-
+    const interviewDate = row[interviewDateIndex];
+    let dateDisplay = '';
+    const formattedTime = appInstance.utils.formatInterviewTime(row[interviewTimeIndex]);
+    
+    try {
+        const date = new Date(interviewDate);
+        
+        // 🔥 수정: D-Day 계산용 날짜 (시간 제거)
+        const dateForDday = new Date(interviewDate);
+        dateForDday.setHours(0, 0, 0, 0);
+        
+        // 🔥 수정: 오늘 날짜 (시간 제거)
+        const todayForDday = new Date(today);
+        todayForDday.setHours(0, 0, 0, 0);
+        
+        const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+        const weekday = weekdays[date.getDay()];
+        
+        // 🔥 수정: 시간 제거한 날짜로 D-Day 계산
+        const diffTime = dateForDday.getTime() - todayForDday.getTime();
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+        
+        let dayDiff = `D-${diffDays}`;
+        let ddayClass = '';
+        if (diffDays === 0) { 
+            dayDiff = 'D-Day'; 
+            ddayClass = 'today'; 
+        }
+        
+        const dateText = `${date.getMonth() + 1}/${date.getDate()}(${weekday})`;
+        dateDisplay = `<span class="interview-dday ${ddayClass}">${dayDiff}</span><span class="interview-date-text">${dateText}</span>`;
+    } catch (e) { 
+        dateDisplay = '날짜 오류'; 
+    }
             // 🔥 안전한 데이터 속성 사용 (onclick 대신)
             const name = String(row[nameIndex] || '');
             const route = String(row[routeIndex] || '');
