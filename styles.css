@@ -1225,7 +1225,9 @@ body {
     background-color: var(--content-bg); 
     border-radius: var(--border-radius); 
     box-shadow: var(--shadow-sm); 
-    overflow: hidden; 
+    overflow: hidden;
+    min-width: 0; /* 🔥 이 줄 추가 */
+    width: 100%; /* 🔥 이 줄 추가 */
 }
 
 .table-container { 
@@ -2945,4 +2947,28 @@ button:focus, .nav-item:focus {
 @keyframes loading-shimmer {
     0% { transform: translateX(-100%); }
     100% { transform: translateX(100%); }
+}
+/* 🔥 새로 추가: 차트 캔버스 반응형 강화 */
+canvas {
+    max-width: 100% !important;
+    height: auto !important;
+    min-width: 0 !important;
+}
+
+/* 🔥 새로 추가: 통계 페이지 그리드 개선 */
+div[style*="grid-template-columns"] {
+    width: 100%;
+    min-width: 0;
+}
+
+/* 🔥 새로 추가: 차트 컨테이너 크기 제한 해제 */
+.chart-container {
+    position: relative;
+    background: var(--content-bg);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    min-width: 0;
+    overflow: hidden;
 }
