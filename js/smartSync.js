@@ -1,11 +1,11 @@
 // =========================
-// smartSync.js - 스마트 준실시간 동기화 시스템
+// smartSync.js - 스마트 준실시간 동기화 시스템 (빠른 반영 버전)
 // =========================
 
 export const SmartSyncModule = {
     // 설정
     POLL_INTERVAL: 30000,        // 30초마다 확인
-    FAST_POLL_INTERVAL: 5000,    // 수정 후 5초마다 (1분간)
+    FAST_POLL_INTERVAL: 2000,    // 🔥 수정 후 2초마다 (더 빠르게)
     
     // 상태
     isPolling: false,
@@ -19,13 +19,13 @@ export const SmartSyncModule = {
         this.appInstance = appInstance;
         this.HASH_CHECK_URL = appInstance.config.APPS_SCRIPT_URL + '?action=hash';
         
-        // 5초 후 시작 (앱 로딩 완료 후)
+        // 3초 후 시작 (앱 로딩 완료 후 더 빨리)
         setTimeout(() => {
             this.startPolling();
             this.setupUserActivityDetection();
-        }, 5000);
+        }, 3000);
         
-        console.log('🔄 스마트 동기화 시스템 초기화 완료');
+        console.log('🔄 스마트 동기화 시스템 초기화 완료 (빠른 모드)');
     },
     
     // 주기적 확인 시작
@@ -34,7 +34,7 @@ export const SmartSyncModule = {
         
         this.isPolling = true;
         this.scheduleNextPoll();
-        console.log('🔄 스마트 동기화 시작 (30초 간격)');
+        console.log('🔄 스마트 동기화 시작 (30초 간격, 수정 후 2초 간격)');
     },
     
     // 다음 확인 스케줄링
@@ -106,8 +106,14 @@ export const SmartSyncModule = {
             return;
         }
         
-        // 사용자에게 선택권 제공
-        this.showUpdateNotification();
+        // 🔥 빠른 모드일 때는 자동으로 업데이트 (사용자가 방금 수정했을 가능성이 높음)
+        if (this.isFastMode) {
+            console.log('⚡ 빠른 모드 - 자동 업데이트 실행');
+            await this.performAutoUpdate();
+        } else {
+            // 일반 모드일 때는 사용자에게 선택권 제공
+            this.showUpdateNotification();
+        }
     },
     
     // 현재 편집 중인지 확인
@@ -137,16 +143,8 @@ export const SmartSyncModule = {
             // 로딩 알림 표시
             this.showLoadingNotification();
             
-            // 기존 캐시 무효화
-            if (this.appInstance.dataCache) {
-                this.appInstance.dataCache.clearCache();
-            }
-            if (this.appInstance.cache) {
-                this.appInstance.cache.invalidate();
-            }
-            
-            // 새 데이터 로드
-            await this.appInstance.data.fetch();
+            // 🔥 강제 새로고침 사용 (캐시 완전 무시)
+            await this.appInstance.data.forceRefresh();
             
             // 로딩 알림 제거 후 성공 알림
             this.removeExistingNotifications();
@@ -179,21 +177,22 @@ export const SmartSyncModule = {
         };
     },
     
-    // 빠른 모드 활성화 (수정 후 1분간 5초마다 확인)
+    // 🔥 빠른 모드 활성화 (수정 후 2분간 2초마다 확인)
     activateFastMode() {
-        if (this.isFastMode) return; // 이미 활성화된 경우
-        
-        this.isFastMode = true;
-        console.log('⚡ 빠른 동기화 모드 활성화 (1분간)');
-        
-        if (this.fastModeTimer) {
-            clearTimeout(this.fastModeTimer);
+        if (this.isFastMode) {
+            // 이미 활성화된 경우 타이머 연장
+            if (this.fastModeTimer) {
+                clearTimeout(this.fastModeTimer);
+            }
+        } else {
+            this.isFastMode = true;
+            console.log('⚡ 빠른 동기화 모드 활성화 (2분간, 2초 간격)');
         }
         
         this.fastModeTimer = setTimeout(() => {
             this.isFastMode = false;
             console.log('🔄 일반 동기화 모드로 복귀');
-        }, 60000); // 1분
+        }, 120000); // 2분
     },
     
     // 기존 알림 제거
@@ -433,7 +432,8 @@ export const SmartSyncModule = {
             isFastMode: this.isFastMode,
             currentHash: this.currentHash,
             pollInterval: this.isFastMode ? this.FAST_POLL_INTERVAL : this.POLL_INTERVAL,
-            nextPollIn: this.pollTimer ? 'scheduled' : 'none'
+            nextPollIn: this.pollTimer ? 'scheduled' : 'none',
+            fastModeTimeRemaining: this.isFastMode ? 'active' : 'inactive'
         };
     }
 };
