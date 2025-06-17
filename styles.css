@@ -2972,3 +2972,62 @@ div[style*="grid-template-columns"] {
     min-width: 0;
     overflow: hidden;
 }
+
+/* 🔥 면접 대기 확장 위젯 스타일 */
+.interview-pending-widget {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05)) !important;
+}
+
+.interview-widget-header:hover {
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: 6px;
+    padding: 8px;
+    margin: -8px;
+}
+
+.interview-toggle-icon.expanded {
+    transform: rotate(180deg);
+}
+
+.interview-details.expanded {
+    max-height: 300px !important;
+}
+
+.interviewer-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    margin: 4px 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    border-left: 3px solid #f59e0b;
+    transition: all 0.2s ease;
+}
+
+.interviewer-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateX(3px);
+}
+
+.interviewer-name {
+    font-weight: 600;
+    color: var(--sidebar-text);
+    font-size: 0.9rem;
+}
+
+.interviewer-count {
+    background: #f59e0b;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.interviewer-applicants {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 4px;
+    line-height: 1.3;
+}
