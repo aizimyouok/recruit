@@ -75,9 +75,30 @@
                     </button>
                     <h1 class="main-title" id="pageTitle">지원자 현황</h1>
                 </div>
-                <button class="theme-toggle" onclick="globalThis.App.theme.toggle()" aria-label="다크모드 토글">
-                    <i class="fas fa-moon" id="themeIcon"></i>
-                </button>
+                
+                <!-- 🔥 새로 추가된 헤더 액션들 -->
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <!-- 마지막 업데이트 시간 표시 -->
+                    <div class="last-update-info" id="lastUpdateInfo" style="display: none; font-size: 0.8rem; color: var(--text-secondary); text-align: right;">
+                        <div style="font-weight: 500;">마지막 업데이트</div>
+                        <div id="lastUpdateTime">-</div>
+                    </div>
+                    
+                    <!-- 새로고침 버튼 -->
+                    <button class="refresh-btn" onclick="globalThis.App.data.forceRefresh()" aria-label="데이터 새로고침" title="최신 데이터로 새로고침">
+                        <i class="fas fa-sync-alt" id="refreshIcon"></i>
+                    </button>
+                    
+                    <!-- 동기화 상태 표시 -->
+                    <div class="sync-status" id="syncStatus" title="실시간 동기화 상태">
+                        <i class="fas fa-circle" id="syncStatusIcon"></i>
+                    </div>
+                    
+                    <!-- 테마 토글 -->
+                    <button class="theme-toggle" onclick="globalThis.App.theme.toggle()" aria-label="다크모드 토글">
+                        <i class="fas fa-moon" id="themeIcon"></i>
+                    </button>
+                </div>
             </header>
             
             <div class="content-area" role="main" aria-label="메인 콘텐츠 영역" id="main-content">
