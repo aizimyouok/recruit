@@ -515,11 +515,16 @@ body {
     transform: scale(1.02);
     box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
 }
+/* =========================
+   효율성 분석 테이블 스타일 개선
+   ========================= */
 
 .efficiency-table {
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    width: 100%;
+    border-collapse: collapse;
 }
 
 .efficiency-table th {
@@ -529,25 +534,174 @@ body {
     position: sticky;
     top: 0;
     z-index: 1;
+    padding: 12px;
+    text-align: center;
+    border-bottom: 2px solid var(--border-color);
 }
 
 .efficiency-table td {
     transition: all 0.2s ease;
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    background: var(--content-bg);
 }
 
+/* 🔥 모든 행에 기본 호버 효과 적용 */
+.efficiency-table tbody tr {
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background: var(--content-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.efficiency-table tbody tr:hover {
+    background: linear-gradient(135deg, rgba(129, 140, 248, 0.1), rgba(129, 140, 248, 0.05));
+    transform: translateX(2px);
+    box-shadow: 0 2px 8px rgba(129, 140, 248, 0.15);
+}
+
+.efficiency-table tbody tr:nth-child(even) {
+    background: linear-gradient(135deg, rgba(129, 140, 248, 0.03), rgba(129, 140, 248, 0.01));
+}
+
+.efficiency-table tbody tr:nth-child(even):hover {
+    background: linear-gradient(135deg, rgba(129, 140, 248, 0.12), rgba(129, 140, 248, 0.06));
+}
+
+/* 🔥 상위 3개 특별 스타일 (기존 유지하되 강화) */
 .efficiency-rank-1 {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(16, 185, 129, 0.05)) !important;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.08)) !important;
     border-left: 4px solid var(--success) !important;
+    position: relative;
+}
+
+.efficiency-rank-1::before {
+    content: '🥇';
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
 }
 
 .efficiency-rank-2 {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05)) !important;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.08)) !important;
     border-left: 4px solid var(--warning) !important;
+    position: relative;
+}
+
+.efficiency-rank-2::before {
+    content: '🥈';
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
 }
 
 .efficiency-rank-3 {
-    background: linear-gradient(135deg, rgba(251, 146, 60, 0.1), rgba(251, 146, 60, 0.05)) !important;
+    background: linear-gradient(135deg, rgba(251, 146, 60, 0.15), rgba(251, 146, 60, 0.08)) !important;
     border-left: 4px solid var(--accent-orange) !important;
+    position: relative;
+}
+
+.efficiency-rank-3::before {
+    content: '🥉';
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+}
+
+/* 🔥 4번째 이후 행들을 위한 스타일 */
+.efficiency-table tbody tr:not(.efficiency-rank-1):not(.efficiency-rank-2):not(.efficiency-rank-3) {
+    background: linear-gradient(135deg, rgba(129, 140, 248, 0.05), rgba(129, 140, 248, 0.02));
+    border-left: 3px solid var(--sidebar-accent);
+}
+
+.efficiency-table tbody tr:not(.efficiency-rank-1):not(.efficiency-rank-2):not(.efficiency-rank-3):hover {
+    background: linear-gradient(135deg, rgba(129, 140, 248, 0.12), rgba(129, 140, 248, 0.06));
+    border-left-color: var(--accent-orange);
+}
+
+/* 🔥 첫 번째 컬럼 (이름) 스타일 강화 */
+.efficiency-table tbody tr td:first-child {
+    font-weight: 600;
+    text-align: left;
+    padding-left: 35px; /* 순위 아이콘 공간 확보 */
+}
+
+.efficiency-rank-1 td:first-child,
+.efficiency-rank-2 td:first-child,
+.efficiency-rank-3 td:first-child {
+    padding-left: 45px; /* 메달 아이콘 공간 더 확보 */
+}
+
+/* 🔥 효율성 점수 컬럼 스타일 */
+.efficiency-table tbody tr td:last-child {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.efficiency-rank-1 td:last-child { color: var(--success); }
+.efficiency-rank-2 td:last-child { color: var(--warning); }
+.efficiency-rank-3 td:last-child { color: var(--accent-orange); }
+
+/* 4번째 이후는 기본 색상 */
+.efficiency-table tbody tr:not(.efficiency-rank-1):not(.efficiency-rank-2):not(.efficiency-rank-3) td:last-child {
+    color: var(--sidebar-accent);
+    font-weight: 600;
+}
+
+/* 🔥 입과율 컬럼 강조 */
+.efficiency-table tbody tr td:nth-last-child(2) {
+    font-weight: bold;
+    color: var(--accent-orange);
+}
+
+/* 🔥 반응형 디자인 */
+@media (max-width: 768px) {
+    .efficiency-table {
+        font-size: 0.8rem;
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    
+    .efficiency-table th,
+    .efficiency-table td {
+        padding: 8px 4px !important;
+        min-width: 60px;
+    }
+    
+    .efficiency-table tbody tr td:first-child {
+        padding-left: 25px;
+        min-width: 80px;
+        sticky: left;
+        background: inherit;
+    }
+    
+    .efficiency-rank-1 td:first-child,
+    .efficiency-rank-2 td:first-child,
+    .efficiency-rank-3 td:first-child {
+        padding-left: 30px;
+    }
+}
+
+/* 🔥 다크 테마 지원 */
+[data-theme="dark"] .efficiency-table tbody tr {
+    background: var(--content-bg);
+}
+
+[data-theme="dark"] .efficiency-table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+[data-theme="dark"] .efficiency-table tbody tr:hover {
+    background: linear-gradient(135deg, rgba(167, 139, 250, 0.15), rgba(167, 139, 250, 0.08));
 }
 
 .stat-card-highlight {
