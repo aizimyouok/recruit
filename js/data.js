@@ -232,16 +232,24 @@ if (appInstance.cache) {
             scheduleTable.removeEventListener('click', DataModule._handleTableClick);
             
             // 새 이벤트 리스너 추가
-            DataModule._handleTableClick = function(event) {
-                const row = event.target.closest('.interview-row');
-                if (row) {
-                    const name = row.getAttribute('data-name');
-                    const route = row.getAttribute('data-route');
-                    if (name && route) {
-                        DataModule.showInterviewDetails(appInstance, name, route);
-                    }
-                }
-            };
+            // 🔥 수정된 코드
+DataModule._handleTableClick = function(event) {
+    const row = event.target.closest('.interview-row');
+    if (row) {
+        const name = row.getAttribute('data-name');
+        const route = row.getAttribute('data-route');
+        if (name && route) {
+            // globalThis.App 또는 window.App 사용
+            if (typeof globalThis !== 'undefined' && globalThis.App) {
+                DataModule.showInterviewDetails(globalThis.App, name, route);
+            } else if (typeof window !== 'undefined' && window.App) {
+                DataModule.showInterviewDetails(window.App, name, route);
+            } else {
+                console.error('App 객체를 찾을 수 없습니다.');
+            }
+        }
+    }
+};
             
             scheduleTable.addEventListener('click', DataModule._handleTableClick);
         }
