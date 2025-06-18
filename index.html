@@ -255,6 +255,7 @@
                 </div>
                 
                 <div id="stats" class="page">
+                    <div class="stats-fixed-header">
                     <div class="page-header">
                         <h2 class="page-title">채용 통계 분석</h2>
                         <div class="header-actions">
@@ -275,30 +276,9 @@
                             </button>
                         </div>
                     </div>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                        <div class="content-container stat-card-highlight" style="padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow=''">
-                            <h3 style="color: var(--sidebar-accent); font-size: 2rem; margin: 0;" id="totalApplicantsChart">0</h3>
-                            <p style="color: var(--text-secondary); margin: 5px 0;">지원자 수</p>
-                            <small style="color: var(--text-secondary); font-size: 0.8rem;" id="statsTimePeriod">전체 기간</small>
                         </div>
-                        <div class="content-container stat-card-highlight" style="padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow=''">
-                            <h3 style="color: var(--warning); font-size: 2rem; margin: 0;" id="pendingInterviewChart">0</h3>
-                            <p style="color: var(--text-secondary); margin: 5px 0;">면접 대기</p>
-                            <small style="color: var(--text-secondary); font-size: 0.8rem;">1차 면접확정</small>
-                        </div>
-                        <div class="content-container stat-card-highlight" style="padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow=''">
-                            <h3 style="color: var(--success); font-size: 2rem; margin: 0;" id="successRateChart">0%</h3>
-                            <p style="color: var(--text-secondary); margin: 5px 0;">합격률</p>
-                            <small style="color: var(--text-secondary); font-size: 0.8rem;">전체지원자 대비</small>
-                        </div>
-                        <div class="content-container stat-card-highlight" style="padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow=''">
-                            <h3 style="color: var(--accent-orange); font-size: 2rem; margin: 0;" id="joinRateChart">0%</h3>
-                            <p style="color: var(--text-secondary); margin: 5px 0;">입과율</p>
-                            <small style="color: var(--text-secondary); font-size: 0.8rem;">전체지원자 대비</small>
-                        </div>
-                    </div>
-                    
+
+                    <div class="stats-scrollable-content">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                         <div class="content-container" style="padding: 20px;">
                             <h3 style="margin-bottom: 20px;">지원루트별 분포</h3>
@@ -343,18 +323,8 @@
 <div class="demographics-content">
     <!-- 지역별 분포 (한국 지도) -->
     <div id="regionTab" class="demographics-tab-content active">
-        <div class="korea-map-container">
-            <div id="koreaMap" class="korea-map"></div>
-            <div class="map-legend">
-                <div class="legend-title">지원자 수</div>
-                <div class="legend-scale">
-                    <div class="legend-item"><span class="legend-color" style="background: #e5f3ff;"></span>1-5명</div>
-                    <div class="legend-item"><span class="legend-color" style="background: #b3d9ff;"></span>6-15명</div>
-                    <div class="legend-item"><span class="legend-color" style="background: #66bfff;"></span>16-30명</div>
-                    <div class="legend-item"><span class="legend-color" style="background: #1a8cff;"></span>31명 이상</div>
-                </div>
-            </div>
-        </div>
+    <div id="koreaMap" class="region-display-container"></div>
+</div>
     </div>
     
     <!-- 🔥 새로운 연령별/성별 통합 분포 -->
@@ -362,8 +332,10 @@
         <!-- 연령별/성별 통합 데이터가 여기에 동적으로 생성됨 -->
     </div>
 </div>
+                        </div>
                 
                 <div id="efficiency" class="page">
+                    <div class="stats-fixed-header">
                     <div class="page-header">
                         <h2 class="page-title">효율성 분석</h2>
                         <div class="header-actions">
@@ -384,7 +356,9 @@
                             </button>
                         </div>
                     </div>
-                    
+                        </div>
+
+                    <div class="stats-scrollable-content">
                     <!-- 효율성 분석 탭 -->
                     <div class="content-container" style="padding: 25px; margin-bottom: 20px;">
                         <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
@@ -419,6 +393,7 @@
                     </div>
                 </div>
             </div>
+                        </div>
         </main>
     </div>
     
