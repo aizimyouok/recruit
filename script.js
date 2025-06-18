@@ -90,7 +90,7 @@ const App = {
     
     // 지역별 데이터 집계
     const regionData = {};
-    let maxCount = 0;
+    let totalCount = 0;
     
     filteredData.forEach(row => {
         const address = String(row[addressIndex] || '').trim();
@@ -98,127 +98,31 @@ const App = {
         
         const region = App.utils.extractRegion(address);
         regionData[region] = (regionData[region] || 0) + 1;
-        maxCount = Math.max(maxCount, regionData[region]);
+        totalCount++;
     });
     
-    // 🔥 실제 한반도 지도가 포함된 SVG 생성
-    const svgWidth = 400;
-    const svgHeight = 500;
-    
-    let svgHtml = `
-        <svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}">
-            <defs>
-                <filter id="glow">
-                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                    <feMerge> 
-                        <feMergeNode in="coloredBlur"/>
-                        <feMergeNode in="SourceGraphic"/>
-                    </feMerge>
-                </filter>
-                <pattern id="mapPattern" patternUnits="userSpaceOnUse" width="10" height="10">
-                    <rect width="10" height="10" fill="rgba(129, 140, 248, 0.05)"/>
-                    <circle cx="5" cy="5" r="1" fill="rgba(129, 140, 248, 0.1)"/>
-                </pattern>
-            </defs>
-            
-            <!-- 🔥 한반도 배경 지도 -->
-            <path d="${App.demographics.koreaMapPath}" 
-                  fill="url(#mapPattern)" 
-                  stroke="rgba(129, 140, 248, 0.3)" 
-                  stroke-width="2" 
-                  stroke-dasharray="5,5"/>
-            
-            <!-- 🔥 지역명 라벨 (배경) -->
-    `;
-    
-    // 지역명 라벨 추가
-    Object.entries(App.demographics.koreanRegions).forEach(([region, coords]) => {
-        const shortName = region.length > 2 ? region.substring(0, 2) : region;
-        svgHtml += `
-            <text x="${coords.x}" y="${coords.y - 15}" 
-                  text-anchor="middle" 
-                  font-size="11" 
-                  font-weight="600"
-                  fill="rgba(100, 116, 139, 0.8)"
-                  style="pointer-events: none;">
-                ${shortName}
-            </text>
-        `;
-    });
-    
-    // 지역별 데이터 원 그리기
-    Object.entries(App.demographics.koreanRegions).forEach(([region, coords]) => {
-        const count = regionData[region] || 0;
-        const intensity = maxCount > 0 ? count / maxCount : 0;
-        const radius = Math.max(8, intensity * 25 + 8);
-        const opacity = Math.max(0.3, intensity * 0.8 + 0.2);
-        
-        const color = count > 0 ? 
-            `rgba(129, 140, 248, ${opacity})` : 
-            'rgba(229, 231, 235, 0.5)';
-        
-        svgHtml += `
-            <circle 
-                cx="${coords.x}" 
-                cy="${coords.y}" 
-                r="${radius}"
-                fill="${color}"
-                stroke="rgba(255,255,255,0.9)"
-                stroke-width="2"
-                class="korea-region"
-                data-region="${region}"
-                data-count="${count}"
-                data-name="${coords.name}"
-                style="filter: url(#glow); cursor: pointer; transition: all 0.3s ease;"
-            />
-            <text 
-                x="${coords.x}" 
-                y="${coords.y + 4}" 
-                text-anchor="middle" 
-                font-size="11" 
-                font-weight="700"
-                fill="white"
-                style="pointer-events: none; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);"
-            >${count}</text>
-        `;
-    });
-    
-    svgHtml += '</svg>';
-    mapContainer.innerHTML = svgHtml;
-    
-    App.demographics.addMapTooltips();
+    // 🔥 카드 그리드 스타일로 변경
+    App.demographics.renderRegionCards(regionData, totalCount, mapContainer);
 },
-
-        addMapTooltips() {
-            const regions = document.querySelectorAll('.korea-region');
-            const tooltip = App.demographics.createTooltip();
-            
-            regions.forEach(region => {
-                region.addEventListener('mouseenter', (e) => {
-                    const regionName = e.target.dataset.name;
-                    const count = e.target.dataset.count;
-                    const percentage = App.state.data.filtered.length > 0 
-                        ? Math.round((count / App.state.data.filtered.length) * 100) 
-                        : 0;
-                    
-                    tooltip.innerHTML = `
-                        <div style="font-weight: 600; margin-bottom: 5px;">${regionName}</div>
-                        <div>지원자: <span style="color: #60a5fa;">${count}명</span></div>
-                        <div>비율: <span style="color: #60a5fa;">${percentage}%</span></div>
-                    `;
-                    
-                    App.demographics.showTooltip(tooltip, e);
-                });
-                
-                region.addEventListener('mouseleave', () => {
-                    App.demographics.hideTooltip(tooltip);
-                });
-                
-                region.addEventListener('mousemove', (e) => {
-                    App.demographics.moveTooltip(tooltip, e);
-                });
-            });
-        },
+        // 🔥 새로운 함수: 지역 카드 그리드 렌더링
+renderRegionCards(regionData, totalCount, container) {
+    // 지역 데이터를 인원수 기준으로 정렬
+    const sortedRegions = Object.entries(regionData)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 12); // 상위 12개 지역만 표시
+    
+    // 카드 HTML 생성
+    let html = `<div class="region-cards-container">...`;
+    
+    // 각 지역별 카드 생성
+    sortedRegions.forEach(([region, count], index) => {
+        // 순위별 색상, 아이콘, 진행률 계산
+        // HTML 카드 생성
+    });
+    
+    container.innerHTML = html;
+    App.demographics.addRegionCardEvents();
+}
 
         // 🔥 새로운 통합 연령/성별 분석
 updateAgeGenderStats(filteredData) {
@@ -2287,12 +2191,15 @@ renderInterviewerDetails(byInterviewer) {
         },
 
         updateStatCards(stats, periodLabel) {
-            App.utils.updateElement('totalApplicantsChart', stats.totalCount);
-            App.utils.updateElement('statsTimePeriod', periodLabel);
-            App.utils.updateElement('pendingInterviewChart', stats.interviewPendingCount);
-            App.utils.updateElement('successRateChart', stats.successRate + '%');
-            App.utils.updateElement('joinRateChart', stats.joinRate + '%');
-        }
+    // 🔥 통계 카드들이 삭제되었으므로 이 함수는 비워둠
+    console.log('📊 통계 정보:', {
+        totalApplicants: stats.totalCount,
+        interviewPending: stats.interviewPendingCount,
+        successRate: stats.successRate + '%',
+        joinRate: stats.joinRate + '%',
+        period: periodLabel
+    });
+}
     },
 
     
