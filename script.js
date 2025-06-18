@@ -24,6 +24,365 @@ const App = {
     config: CONFIG,
 
     // =========================
+    // 🔥 새로운 인구통계 분석 모듈
+    // =========================
+    demographics: {
+        currentTab: 'region',
+        koreanRegions: {
+            '서울': { x: 160, y: 180, name: '서울특별시' },
+            '경기': { x: 140, y: 160, name: '경기도' },
+            '인천': { x: 120, y: 170, name: '인천광역시' },
+            '부산': { x: 280, y: 320, name: '부산광역시' },
+            '대구': { x: 250, y: 250, name: '대구광역시' },
+            '대전': { x: 180, y: 220, name: '대전광역시' },
+            '광주': { x: 140, y: 280, name: '광주광역시' },
+            '울산': { x: 290, y: 290, name: '울산광역시' },
+            '세종': { x: 170, y: 200, name: '세종특별자치시' },
+            '강원': { x: 220, y: 120, name: '강원특별자치도' },
+            '충북': { x: 200, y: 180, name: '충청북도' },
+            '충남': { x: 160, y: 200, name: '충청남도' },
+            '전북': { x: 160, y: 250, name: '전라북도' },
+            '전남': { x: 160, y: 300, name: '전라남도' },
+            '경북': { x: 240, y: 200, name: '경상북도' },
+            '경남': { x: 240, y: 280, name: '경상남도' },
+            '제주': { x: 120, y: 380, name: '제주특별자치도' }
+        },
+
+        switchTab(tab) {
+            App.demographics.currentTab = tab;
+            
+            // 탭 버튼 활성화
+            document.querySelectorAll('.demographics-tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tab);
+            });
+            
+            // 탭 콘텐츠 표시
+            document.querySelectorAll('.demographics-tab-content').forEach(content => {
+                content.classList.toggle('active', content.id === tab + 'Tab');
+            });
+            
+            // 데이터 업데이트
+            setTimeout(() => {
+                App.demographics.updateCurrentTab();
+            }, 100);
+        },
+
+        updateCurrentTab() {
+            const filteredData = App.utils.getFilteredDataByPeriod(
+                document.getElementById('statsPeriodFilter')?.value || 'all'
+            );
+            
+            switch (App.demographics.currentTab) {
+                case 'region':
+                    App.demographics.updateRegionMap(filteredData);
+                    break;
+                case 'gender':
+                    App.demographics.updateGenderStats(filteredData);
+                    break;
+                case 'age':
+                    App.demographics.updateAgePyramid(filteredData);
+                    break;
+            }
+        },
+
+        updateRegionMap(filteredData) {
+            const addressIndex = App.state.data.headers.indexOf('지역');
+            const mapContainer = document.getElementById('koreaMap');
+            
+            if (addressIndex === -1 || !mapContainer) return;
+            
+            // 지역별 데이터 집계
+            const regionData = {};
+            let maxCount = 0;
+            
+            filteredData.forEach(row => {
+                const address = String(row[addressIndex] || '').trim();
+                if (!address || address === '-') return;
+                
+                const region = App.utils.extractRegion(address);
+                regionData[region] = (regionData[region] || 0) + 1;
+                maxCount = Math.max(maxCount, regionData[region]);
+            });
+            
+            // SVG 지도 생성
+            const svgWidth = 400;
+            const svgHeight = 500;
+            
+            let svgHtml = `
+                <svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}">
+                    <defs>
+                        <filter id="glow">
+                            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                            <feMerge> 
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
+            `;
+            
+            // 지역별 원 그리기
+            Object.entries(App.demographics.koreanRegions).forEach(([region, coords]) => {
+                const count = regionData[region] || 0;
+                const intensity = maxCount > 0 ? count / maxCount : 0;
+                const radius = Math.max(8, intensity * 25 + 8);
+                const opacity = Math.max(0.3, intensity);
+                
+                // 색상 계산 (파란색 계열)
+                const blue = Math.floor(26 + intensity * 204); // 26-230
+                const color = `rgba(26, 140, 255, ${opacity})`;
+                
+                svgHtml += `
+                    <circle 
+                        cx="${coords.x}" 
+                        cy="${coords.y}" 
+                        r="${radius}"
+                        fill="${color}"
+                        stroke="rgba(255,255,255,0.8)"
+                        stroke-width="2"
+                        class="korea-region"
+                        data-region="${region}"
+                        data-count="${count}"
+                        data-name="${coords.name}"
+                        style="filter: url(#glow); cursor: pointer;"
+                    />
+                    <text 
+                        x="${coords.x}" 
+                        y="${coords.y + 4}" 
+                        text-anchor="middle" 
+                        font-size="10" 
+                        font-weight="600"
+                        fill="white"
+                        style="pointer-events: none; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);"
+                    >${count}</text>
+                `;
+            });
+            
+            svgHtml += '</svg>';
+            mapContainer.innerHTML = svgHtml;
+            
+            // 이벤트 리스너 추가
+            App.demographics.addMapTooltips();
+        },
+
+        addMapTooltips() {
+            const regions = document.querySelectorAll('.korea-region');
+            const tooltip = App.demographics.createTooltip();
+            
+            regions.forEach(region => {
+                region.addEventListener('mouseenter', (e) => {
+                    const regionName = e.target.dataset.name;
+                    const count = e.target.dataset.count;
+                    const percentage = App.state.data.filtered.length > 0 
+                        ? Math.round((count / App.state.data.filtered.length) * 100) 
+                        : 0;
+                    
+                    tooltip.innerHTML = `
+                        <div style="font-weight: 600; margin-bottom: 5px;">${regionName}</div>
+                        <div>지원자: <span style="color: #60a5fa;">${count}명</span></div>
+                        <div>비율: <span style="color: #60a5fa;">${percentage}%</span></div>
+                    `;
+                    
+                    App.demographics.showTooltip(tooltip, e);
+                });
+                
+                region.addEventListener('mouseleave', () => {
+                    App.demographics.hideTooltip(tooltip);
+                });
+                
+                region.addEventListener('mousemove', (e) => {
+                    App.demographics.moveTooltip(tooltip, e);
+                });
+            });
+        },
+
+        updateGenderStats(filteredData) {
+            const genderIndex = App.state.data.headers.indexOf('성별');
+            
+            if (genderIndex === -1) {
+                App.demographics.showNoDataMessage('genderTab');
+                return;
+            }
+            
+            // 성별 데이터 집계
+            let maleCount = 0;
+            let femaleCount = 0;
+            
+            filteredData.forEach(row => {
+                const gender = String(row[genderIndex] || '').trim();
+                if (gender === '남') maleCount++;
+                else if (gender === '여') femaleCount++;
+            });
+            
+            const total = maleCount + femaleCount;
+            const malePercentage = total > 0 ? Math.round((maleCount / total) * 100) : 0;
+            const femalePercentage = total > 0 ? Math.round((femaleCount / total) * 100) : 0;
+            
+            // 카드 업데이트
+            App.utils.updateElement('maleCount', maleCount.toLocaleString());
+            App.utils.updateElement('femaleCount', femaleCount.toLocaleString());
+            App.utils.updateElement('malePercentage', malePercentage + '%');
+            App.utils.updateElement('femalePercentage', femalePercentage + '%');
+            
+            // Pictogram 업데이트
+            App.demographics.updatePictogram(malePercentage, femalePercentage);
+        },
+
+        updatePictogram(malePercentage, femalePercentage) {
+            const container = document.getElementById('genderPictogram');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            // 100개 아이콘 생성
+            for (let i = 0; i < 100; i++) {
+                const icon = document.createElement('i');
+                icon.className = 'pictogram-icon fas';
+                
+                if (i < malePercentage) {
+                    icon.classList.add('fa-male', 'male');
+                } else if (i < malePercentage + femalePercentage) {
+                    icon.classList.add('fa-female', 'female');
+                } else {
+                    icon.classList.add('fa-user');
+                    icon.style.color = '#e5e7eb';
+                }
+                
+                // 애니메이션 지연
+                icon.style.animationDelay = `${i * 10}ms`;
+                
+                container.appendChild(icon);
+            }
+        },
+
+        updateAgePyramid(filteredData) {
+            const ageIndex = App.state.data.headers.indexOf('나이');
+            const genderIndex = App.state.data.headers.indexOf('성별');
+            const pyramidContainer = document.getElementById('agePyramid');
+            
+            if (ageIndex === -1 || !pyramidContainer) {
+                App.demographics.showNoDataMessage('ageTab');
+                return;
+            }
+            
+            // 연령대별 성별 데이터 집계
+            const ageGroups = {
+                '60+': { male: 0, female: 0 },
+                '50-59': { male: 0, female: 0 },
+                '40-49': { male: 0, female: 0 },
+                '30-39': { male: 0, female: 0 },
+                '20-29': { male: 0, female: 0 },
+                '~19': { male: 0, female: 0 }
+            };
+            
+            filteredData.forEach(row => {
+                const ageStr = String(row[ageIndex] || '').trim();
+                const gender = String(row[genderIndex] || '').trim();
+                
+                if (!ageStr || ageStr === '-') return;
+                
+                const age = parseInt(ageStr, 10);
+                if (isNaN(age)) return;
+                
+                let ageGroup;
+                if (age >= 60) ageGroup = '60+';
+                else if (age >= 50) ageGroup = '50-59';
+                else if (age >= 40) ageGroup = '40-49';
+                else if (age >= 30) ageGroup = '30-39';
+                else if (age >= 20) ageGroup = '20-29';
+                else ageGroup = '~19';
+                
+                if (gender === '남') ageGroups[ageGroup].male++;
+                else if (gender === '여') ageGroups[ageGroup].female++;
+            });
+            
+            // 최대값 계산 (스케일링용)
+            const maxValue = Math.max(
+                ...Object.values(ageGroups).map(group => Math.max(group.male, group.female))
+            );
+            
+            // 피라미드 렌더링
+            let pyramidHtml = '';
+            Object.entries(ageGroups).forEach(([ageGroup, data]) => {
+                const maleWidth = maxValue > 0 ? (data.male / maxValue) * 100 : 0;
+                const femaleWidth = maxValue > 0 ? (data.female / maxValue) * 100 : 0;
+                
+                pyramidHtml += `
+                    <div class="pyramid-row" data-age="${ageGroup}">
+                        <div class="pyramid-bar male-bar" style="width: ${maleWidth}%;">
+                            <span class="pyramid-value">${data.male}</span>
+                        </div>
+                        <div class="pyramid-age">${ageGroup}</div>
+                        <div class="pyramid-bar female-bar" style="width: ${femaleWidth}%;">
+                            <span class="pyramid-value">${data.female}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            pyramidContainer.innerHTML = pyramidHtml;
+            
+            // 애니메이션 효과
+            setTimeout(() => {
+                const bars = pyramidContainer.querySelectorAll('.pyramid-bar');
+                bars.forEach((bar, index) => {
+                    setTimeout(() => {
+                        bar.style.opacity = '1';
+                        bar.style.transform = 'scaleX(1)';
+                    }, index * 100);
+                });
+            }, 100);
+        },
+
+        createTooltip() {
+            let tooltip = document.querySelector('.demo-tooltip');
+            if (!tooltip) {
+                tooltip = document.createElement('div');
+                tooltip.className = 'demo-tooltip';
+                document.body.appendChild(tooltip);
+            }
+            return tooltip;
+        },
+
+        showTooltip(tooltip, event) {
+            tooltip.classList.add('show');
+            App.demographics.moveTooltip(tooltip, event);
+        },
+
+        hideTooltip(tooltip) {
+            tooltip.classList.remove('show');
+        },
+
+        moveTooltip(tooltip, event) {
+            const x = event.clientX + 10;
+            const y = event.clientY - 10;
+            
+            tooltip.style.left = x + 'px';
+            tooltip.style.top = y + 'px';
+        },
+
+        showNoDataMessage(tabId) {
+            const tab = document.getElementById(tabId);
+            if (tab) {
+                tab.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px; color: var(--text-secondary);">
+                        <i class="fas fa-chart-bar" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                        <h3 style="margin-bottom: 10px;">데이터가 없습니다</h3>
+                        <p>해당 컬럼의 데이터가 존재하지 않거나 필터링된 결과가 없습니다.</p>
+                    </div>
+                `;
+            }
+        },
+
+        // 초기 로드 시 업데이트
+        initialize() {
+            if (document.getElementById('regionTab')) {
+                App.demographics.updateCurrentTab();
+            }
+        }
+    },
+
+    // =========================
     // 애플리케이션 상태 (state.js에서 가져옴)
     // =========================
     state: createInitialState(),
@@ -1930,9 +2289,7 @@ renderInterviewerDetails(byInterviewer) {
                 App.charts.createRouteChart();
                 App.charts.createPositionChart();
                 App.charts.createTrendChart();
-                App.charts.createRegionChart();
-                App.charts.createGenderChart();
-                App.charts.createAgeChart();
+                // 🔥 인구통계 차트들은 새로운 시스템으로 대체됨
 
                 // 🔥 반응형 리사이즈 이벤트 리스너 추가
                 App.charts.setupResponsiveResize();
@@ -2116,99 +2473,7 @@ renderInterviewerDetails(byInterviewer) {
             }
         },
 
-        createRegionChart() {
-            const regionCtx = document.getElementById('regionChart');
-            if (regionCtx && !App.state.charts.instances.region) {
-                App.state.charts.instances.region = new Chart(regionCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['데이터 로딩 중...'],
-                        datasets: [{
-                            data: [1],
-                            backgroundColor: [
-                                App.config.CHART_COLORS.primary,
-                                App.config.CHART_COLORS.success,
-                                App.config.CHART_COLORS.warning,
-                                App.config.CHART_COLORS.danger,
-                                App.config.CHART_COLORS.orange
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false, // 🔥 중요
-                        resizeDelay: 100,
-                        plugins: {
-                            legend: { position: 'bottom' }
-                        },
-                        animation: {
-                            duration: 300
-                        }
-                    }
-                });
-            }
-        },
-
-        createGenderChart() {
-            const genderCtx = document.getElementById('genderChart');
-            if (genderCtx && !App.state.charts.instances.gender) {
-                App.state.charts.instances.gender = new Chart(genderCtx, {
-                    type: 'pie',
-                    data: {
-                        labels: ['데이터 로딩 중...'],
-                        datasets: [{
-                            data: [1],
-                            backgroundColor: [App.config.CHART_COLORS.primary, App.config.CHART_COLORS.warning]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false, // 🔥 중요
-                        resizeDelay: 100,
-                        plugins: {
-                            legend: { position: 'bottom' }
-                        },
-                        animation: {
-                            duration: 300
-                        }
-                    }
-                });
-            }
-        },
-
-        createAgeChart() {
-            const ageCtx = document.getElementById('ageChart');
-            if (ageCtx && !App.state.charts.instances.age) {
-                App.state.charts.instances.age = new Chart(ageCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['데이터 로딩 중...'],
-                        datasets: [{
-                            data: [1],
-                            backgroundColor: App.config.CHART_COLORS.success,
-                            borderColor: App.config.CHART_COLORS.success,
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false, // 🔥 중요
-                        resizeDelay: 100,
-                        plugins: {
-                            legend: { display: false }
-                        },
-                        scales: {
-                            y: { beginAtZero: true }
-                        },
-                        animation: {
-                            duration: 300
-                        }
-                    }
-                });
-            }
-        },
-
-        createRadarChart() {
+       createRadarChart() {
             const radarCtx = document.getElementById('radarChart');
             if (radarCtx && !App.state.charts.instances.radar) {
                 App.state.charts.instances.radar = new Chart(radarCtx, {
@@ -2302,9 +2567,11 @@ renderInterviewerDetails(byInterviewer) {
 
             App.charts.updateRouteChart(filteredData, routeIndex);
             App.charts.updatePositionChart(filteredData, positionIndex);
-            App.charts.updateRegionChart(filteredData);
-            App.charts.updateGenderChart(filteredData);
-            App.charts.updateAgeChart(filteredData);
+            
+            // 🔥 인구통계는 새로운 시스템으로 업데이트
+            if (document.querySelector('.demographics-container')) {
+                App.demographics.updateCurrentTab();
+            }
         },
 
         // 🔥 추가된 함수
@@ -2344,90 +2611,7 @@ renderInterviewerDetails(byInterviewer) {
                 App.state.charts.instances.position.update();
             }
         },
-
-        updateRegionChart(filteredData) {
-            const addressIndex = App.state.data.headers.indexOf('지역');
-
-            if (addressIndex === -1 || !App.state.charts.instances.region) return;
-
-            const regionData = {};
-
-            filteredData.forEach(row => {
-                const address = String(row[addressIndex] || '').trim();
-                if (!address || address === '-') return;
-
-                let region = App.utils.extractRegion(address);
-                regionData[region] = (regionData[region] || 0) + 1;
-            });
-
-            if (Object.keys(regionData).length === 0) {
-                App.state.charts.instances.region.data.labels = ['데이터 없음'];
-                App.state.charts.instances.region.data.datasets[0].data = [1];
-            } else {
-                App.state.charts.instances.region.data.labels = Object.keys(regionData);
-                App.state.charts.instances.region.data.datasets[0].data = Object.values(regionData);
-            }
-
-            App.state.charts.instances.region.update();
-        },
-
-        updateGenderChart(filteredData) {
-            const genderIndex = App.state.data.headers.indexOf('성별');
-
-            if (genderIndex === -1 || !App.state.charts.instances.gender) return;
-
-            const genderData = {};
-
-            filteredData.forEach(row => {
-                const gender = String(row[genderIndex] || '').trim();
-                if (!gender || gender === '-') return;
-
-                genderData[gender] = (genderData[gender] || 0) + 1;
-            });
-
-            if (Object.keys(genderData).length === 0) {
-                App.state.charts.instances.gender.data.labels = ['데이터 없음'];
-                App.state.charts.instances.gender.data.datasets[0].data = [1];
-            } else {
-                App.state.charts.instances.gender.data.labels = Object.keys(genderData);
-                App.state.charts.instances.gender.data.datasets[0].data = Object.values(genderData);
-            }
-
-            App.state.charts.instances.gender.update();
-        },
-
-        updateAgeChart(filteredData) {
-            const ageIndex = App.state.data.headers.indexOf('나이');
-
-            if (ageIndex === -1 || !App.state.charts.instances.age) return;
-
-            const ageGroupData = {
-                '20대 이하': 0,
-                '30대': 0,
-                '40대': 0,
-                '50대': 0,
-                '60대 이상': 0
-            };
-
-            filteredData.forEach(row => {
-                const ageStr = String(row[ageIndex] || '').trim();
-                if (!ageStr || ageStr === '-') return;
-
-                const age = parseInt(ageStr, 10);
-                if (isNaN(age)) return;
-
-                if (age <= 29) ageGroupData['20대 이하']++;
-                else if (age <= 39) ageGroupData['30대']++;
-                else if (age <= 49) ageGroupData['40대']++;
-                else if (age <= 59) ageGroupData['50대']++;
-                else ageGroupData['60대 이상']++;
-            });
-
-            App.state.charts.instances.age.data.labels = Object.keys(ageGroupData);
-            App.state.charts.instances.age.data.datasets[0].data = Object.values(ageGroupData);
-            App.state.charts.instances.age.update();
-        },
-
+        
         updateRadarChart(filteredData) {
             if (!App.state.charts.instances.radar) return;
 
