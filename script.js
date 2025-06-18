@@ -27,143 +27,167 @@ const App = {
     // 🔥 새로운 인구통계 분석 모듈
     // =========================
     demographics: {
-        currentTab: 'region',
-        koreanRegions: {
-            '서울': { x: 160, y: 180, name: '서울특별시' },
-            '경기': { x: 140, y: 160, name: '경기도' },
-            '인천': { x: 120, y: 170, name: '인천광역시' },
-            '부산': { x: 280, y: 320, name: '부산광역시' },
-            '대구': { x: 250, y: 250, name: '대구광역시' },
-            '대전': { x: 180, y: 220, name: '대전광역시' },
-            '광주': { x: 140, y: 280, name: '광주광역시' },
-            '울산': { x: 290, y: 290, name: '울산광역시' },
-            '세종': { x: 170, y: 200, name: '세종특별자치시' },
-            '강원': { x: 220, y: 120, name: '강원특별자치도' },
-            '충북': { x: 200, y: 180, name: '충청북도' },
-            '충남': { x: 160, y: 200, name: '충청남도' },
-            '전북': { x: 160, y: 250, name: '전라북도' },
-            '전남': { x: 160, y: 300, name: '전라남도' },
-            '경북': { x: 240, y: 200, name: '경상북도' },
-            '경남': { x: 240, y: 280, name: '경상남도' },
-            '제주': { x: 120, y: 380, name: '제주특별자치도' }
-        },
+    currentTab: 'region',
+    koreanRegions: {
+        '서울': { x: 160, y: 180, name: '서울특별시' },
+        '경기': { x: 140, y: 160, name: '경기도' },
+        '인천': { x: 120, y: 170, name: '인천광역시' },
+        '부산': { x: 280, y: 320, name: '부산광역시' },
+        '대구': { x: 250, y: 250, name: '대구광역시' },
+        '대전': { x: 180, y: 220, name: '대전광역시' },
+        '광주': { x: 140, y: 280, name: '광주광역시' },
+        '울산': { x: 290, y: 290, name: '울산광역시' },
+        '세종': { x: 170, y: 200, name: '세종특별자치시' },
+        '강원': { x: 220, y: 120, name: '강원특별자치도' },
+        '충북': { x: 200, y: 180, name: '충청북도' },
+        '충남': { x: 160, y: 200, name: '충청남도' },
+        '전북': { x: 160, y: 250, name: '전라북도' },
+        '전남': { x: 160, y: 300, name: '전라남도' },
+        '경북': { x: 240, y: 200, name: '경상북도' },
+        '경남': { x: 240, y: 280, name: '경상남도' },
+        '제주': { x: 120, y: 380, name: '제주특별자치도' }
+    },
 
-        switchTab(tab) {
-            App.demographics.currentTab = tab;
-            
-            // 탭 버튼 활성화
-            document.querySelectorAll('.demographics-tab-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.tab === tab);
-            });
-            
-            // 탭 콘텐츠 표시
-            document.querySelectorAll('.demographics-tab-content').forEach(content => {
-                content.classList.toggle('active', content.id === tab + 'Tab');
-            });
-            
-            // 데이터 업데이트
-            setTimeout(() => {
-                App.demographics.updateCurrentTab();
-            }, 100);
-        },
+    // 🔥 새로 추가: 한반도 지도 SVG Path
+    koreaMapPath: `M160,120 L180,115 L200,120 L220,110 L250,115 L280,125 L300,140 L310,160 L315,180 L320,200 L325,220 L330,240 L325,260 L320,280 L315,300 L300,315 L285,325 L270,330 L250,335 L230,340 L210,345 L190,350 L170,355 L150,360 L130,365 L115,370 L110,385 L120,390 L140,385 L160,380 L130,365 L125,345 L120,325 L115,305 L110,285 L105,265 L100,245 L95,225 L100,205 L105,185 L110,165 L120,145 L140,130 L160,120 Z`,
 
-        updateCurrentTab() {
-            const filteredData = App.utils.getFilteredDataByPeriod(
-                document.getElementById('statsPeriodFilter')?.value || 'all'
-            );
-            
-            switch (App.demographics.currentTab) {
-                case 'region':
-                    App.demographics.updateRegionMap(filteredData);
-                    break;
-                case 'gender':
-                    App.demographics.updateGenderStats(filteredData);
-                    break;
-                case 'age':
-                    App.demographics.updateAgePyramid(filteredData);
-                    break;
-            }
-        },
+    switchTab(tab) {
+        App.demographics.currentTab = tab;
+        
+        document.querySelectorAll('.demographics-tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tab);
+        });
+        
+        document.querySelectorAll('.demographics-tab-content').forEach(content => {
+            content.classList.toggle('active', content.id === tab + 'Tab');
+        });
+        
+        setTimeout(() => {
+            App.demographics.updateCurrentTab();
+        }, 100);
+    },
+
+    updateCurrentTab() {
+        const filteredData = App.utils.getFilteredDataByPeriod(
+            document.getElementById('statsPeriodFilter')?.value || 'all'
+        );
+        
+        switch (App.demographics.currentTab) {
+            case 'region':
+                App.demographics.updateRegionMap(filteredData);
+                break;
+            case 'ageGender':  // 🔥 변경된 탭 이름
+                App.demographics.updateAgeGenderStats(filteredData);
+                break;
+        }
+    },
 
         updateRegionMap(filteredData) {
-            const addressIndex = App.state.data.headers.indexOf('지역');
-            const mapContainer = document.getElementById('koreaMap');
+    const addressIndex = App.state.data.headers.indexOf('지역');
+    const mapContainer = document.getElementById('koreaMap');
+    
+    if (addressIndex === -1 || !mapContainer) return;
+    
+    // 지역별 데이터 집계
+    const regionData = {};
+    let maxCount = 0;
+    
+    filteredData.forEach(row => {
+        const address = String(row[addressIndex] || '').trim();
+        if (!address || address === '-') return;
+        
+        const region = App.utils.extractRegion(address);
+        regionData[region] = (regionData[region] || 0) + 1;
+        maxCount = Math.max(maxCount, regionData[region]);
+    });
+    
+    // 🔥 실제 한반도 지도가 포함된 SVG 생성
+    const svgWidth = 400;
+    const svgHeight = 500;
+    
+    let svgHtml = `
+        <svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}">
+            <defs>
+                <filter id="glow">
+                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                    <feMerge> 
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+                <pattern id="mapPattern" patternUnits="userSpaceOnUse" width="10" height="10">
+                    <rect width="10" height="10" fill="rgba(129, 140, 248, 0.05)"/>
+                    <circle cx="5" cy="5" r="1" fill="rgba(129, 140, 248, 0.1)"/>
+                </pattern>
+            </defs>
             
-            if (addressIndex === -1 || !mapContainer) return;
+            <!-- 🔥 한반도 배경 지도 -->
+            <path d="${App.demographics.koreaMapPath}" 
+                  fill="url(#mapPattern)" 
+                  stroke="rgba(129, 140, 248, 0.3)" 
+                  stroke-width="2" 
+                  stroke-dasharray="5,5"/>
             
-            // 지역별 데이터 집계
-            const regionData = {};
-            let maxCount = 0;
-            
-            filteredData.forEach(row => {
-                const address = String(row[addressIndex] || '').trim();
-                if (!address || address === '-') return;
-                
-                const region = App.utils.extractRegion(address);
-                regionData[region] = (regionData[region] || 0) + 1;
-                maxCount = Math.max(maxCount, regionData[region]);
-            });
-            
-            // SVG 지도 생성
-            const svgWidth = 400;
-            const svgHeight = 500;
-            
-            let svgHtml = `
-                <svg width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}">
-                    <defs>
-                        <filter id="glow">
-                            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                            <feMerge> 
-                                <feMergeNode in="coloredBlur"/>
-                                <feMergeNode in="SourceGraphic"/>
-                            </feMerge>
-                        </filter>
-                    </defs>
-            `;
-            
-            // 지역별 원 그리기
-            Object.entries(App.demographics.koreanRegions).forEach(([region, coords]) => {
-                const count = regionData[region] || 0;
-                const intensity = maxCount > 0 ? count / maxCount : 0;
-                const radius = Math.max(8, intensity * 25 + 8);
-                const opacity = Math.max(0.3, intensity);
-                
-                // 색상 계산 (파란색 계열)
-                const blue = Math.floor(26 + intensity * 204); // 26-230
-                const color = `rgba(26, 140, 255, ${opacity})`;
-                
-                svgHtml += `
-                    <circle 
-                        cx="${coords.x}" 
-                        cy="${coords.y}" 
-                        r="${radius}"
-                        fill="${color}"
-                        stroke="rgba(255,255,255,0.8)"
-                        stroke-width="2"
-                        class="korea-region"
-                        data-region="${region}"
-                        data-count="${count}"
-                        data-name="${coords.name}"
-                        style="filter: url(#glow); cursor: pointer;"
-                    />
-                    <text 
-                        x="${coords.x}" 
-                        y="${coords.y + 4}" 
-                        text-anchor="middle" 
-                        font-size="10" 
-                        font-weight="600"
-                        fill="white"
-                        style="pointer-events: none; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);"
-                    >${count}</text>
-                `;
-            });
-            
-            svgHtml += '</svg>';
-            mapContainer.innerHTML = svgHtml;
-            
-            // 이벤트 리스너 추가
-            App.demographics.addMapTooltips();
-        },
+            <!-- 🔥 지역명 라벨 (배경) -->
+    `;
+    
+    // 지역명 라벨 추가
+    Object.entries(App.demographics.koreanRegions).forEach(([region, coords]) => {
+        const shortName = region.length > 2 ? region.substring(0, 2) : region;
+        svgHtml += `
+            <text x="${coords.x}" y="${coords.y - 15}" 
+                  text-anchor="middle" 
+                  font-size="11" 
+                  font-weight="600"
+                  fill="rgba(100, 116, 139, 0.8)"
+                  style="pointer-events: none;">
+                ${shortName}
+            </text>
+        `;
+    });
+    
+    // 지역별 데이터 원 그리기
+    Object.entries(App.demographics.koreanRegions).forEach(([region, coords]) => {
+        const count = regionData[region] || 0;
+        const intensity = maxCount > 0 ? count / maxCount : 0;
+        const radius = Math.max(8, intensity * 25 + 8);
+        const opacity = Math.max(0.3, intensity * 0.8 + 0.2);
+        
+        const color = count > 0 ? 
+            `rgba(129, 140, 248, ${opacity})` : 
+            'rgba(229, 231, 235, 0.5)';
+        
+        svgHtml += `
+            <circle 
+                cx="${coords.x}" 
+                cy="${coords.y}" 
+                r="${radius}"
+                fill="${color}"
+                stroke="rgba(255,255,255,0.9)"
+                stroke-width="2"
+                class="korea-region"
+                data-region="${region}"
+                data-count="${count}"
+                data-name="${coords.name}"
+                style="filter: url(#glow); cursor: pointer; transition: all 0.3s ease;"
+            />
+            <text 
+                x="${coords.x}" 
+                y="${coords.y + 4}" 
+                text-anchor="middle" 
+                font-size="11" 
+                font-weight="700"
+                fill="white"
+                style="pointer-events: none; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);"
+            >${count}</text>
+        `;
+    });
+    
+    svgHtml += '</svg>';
+    mapContainer.innerHTML = svgHtml;
+    
+    App.demographics.addMapTooltips();
+},
 
         addMapTooltips() {
             const regions = document.querySelectorAll('.korea-region');
@@ -196,144 +220,141 @@ const App = {
             });
         },
 
-        updateGenderStats(filteredData) {
-            const genderIndex = App.state.data.headers.indexOf('성별');
+        // 🔥 새로운 통합 연령/성별 분석
+updateAgeGenderStats(filteredData) {
+    const ageIndex = App.state.data.headers.indexOf('나이');
+    const genderIndex = App.state.data.headers.indexOf('성별');
+    const container = document.getElementById('ageGenderTab');
+    
+    if (ageIndex === -1 || !container) {
+        App.demographics.showNoDataMessage('ageGenderTab');
+        return;
+    }
+    
+    // 연령대별 성별 데이터 집계
+    const ageGroups = {
+        '60+': { total: 0, male: 0, female: 0 },
+        '50-59': { total: 0, male: 0, female: 0 },
+        '40-49': { total: 0, male: 0, female: 0 },
+        '30-39': { total: 0, male: 0, female: 0 },
+        '20-29': { total: 0, male: 0, female: 0 },
+        '~19': { total: 0, male: 0, female: 0 }
+    };
+    
+    let totalCount = 0;
+    
+    filteredData.forEach(row => {
+        const ageStr = String(row[ageIndex] || '').trim();
+        const gender = String(row[genderIndex] || '').trim();
+        
+        if (!ageStr || ageStr === '-') return;
+        
+        const age = parseInt(ageStr, 10);
+        if (isNaN(age)) return;
+        
+        let ageGroup;
+        if (age >= 60) ageGroup = '60+';
+        else if (age >= 50) ageGroup = '50-59';
+        else if (age >= 40) ageGroup = '40-49';
+        else if (age >= 30) ageGroup = '30-39';
+        else if (age >= 20) ageGroup = '20-29';
+        else ageGroup = '~19';
+        
+        ageGroups[ageGroup].total++;
+        totalCount++;
+        
+        if (gender === '남') ageGroups[ageGroup].male++;
+        else if (gender === '여') ageGroups[ageGroup].female++;
+    });
+    
+    // 🔥 HTML 렌더링 - 총합과 성별 분포를 함께 표시
+    let html = `
+        <div class="age-gender-container">
+            <div class="age-gender-summary">
+                <h4 style="text-align: center; margin-bottom: 20px; color: var(--text-primary); font-size: 1.2rem;">
+                    <i class="fas fa-users" style="color: var(--sidebar-accent); margin-right: 8px;"></i>
+                    연령별/성별 분포
+                </h4>
+                <div class="total-stats" style="text-align: center; margin-bottom: 30px; padding: 15px; background: var(--main-bg); border-radius: 10px;">
+                    <span style="font-size: 2rem; font-weight: 800; color: var(--sidebar-accent);">${totalCount}</span>
+                    <span style="color: var(--text-secondary); margin-left: 10px;">총 지원자</span>
+                </div>
+            </div>
             
-            if (genderIndex === -1) {
-                App.demographics.showNoDataMessage('genderTab');
-                return;
-            }
-            
-            // 성별 데이터 집계
-            let maleCount = 0;
-            let femaleCount = 0;
-            
-            filteredData.forEach(row => {
-                const gender = String(row[genderIndex] || '').trim();
-                if (gender === '남') maleCount++;
-                else if (gender === '여') femaleCount++;
-            });
-            
-            const total = maleCount + femaleCount;
-            const malePercentage = total > 0 ? Math.round((maleCount / total) * 100) : 0;
-            const femalePercentage = total > 0 ? Math.round((femaleCount / total) * 100) : 0;
-            
-            // 카드 업데이트
-            App.utils.updateElement('maleCount', maleCount.toLocaleString());
-            App.utils.updateElement('femaleCount', femaleCount.toLocaleString());
-            App.utils.updateElement('malePercentage', malePercentage + '%');
-            App.utils.updateElement('femalePercentage', femalePercentage + '%');
-            
-            // Pictogram 업데이트
-            App.demographics.updatePictogram(malePercentage, femalePercentage);
-        },
-
-        updatePictogram(malePercentage, femalePercentage) {
-            const container = document.getElementById('genderPictogram');
-            if (!container) return;
-            
-            container.innerHTML = '';
-            
-            // 100개 아이콘 생성
-            for (let i = 0; i < 100; i++) {
-                const icon = document.createElement('i');
-                icon.className = 'pictogram-icon fas';
+            <div class="age-gender-chart">
+    `;
+    
+    // 연령대별 차트
+    Object.entries(ageGroups).forEach(([ageGroup, data]) => {
+        const percentage = totalCount > 0 ? Math.round((data.total / totalCount) * 100) : 0;
+        const malePercentage = data.total > 0 ? Math.round((data.male / data.total) * 100) : 0;
+        const femalePercentage = data.total > 0 ? Math.round((data.female / data.total) * 100) : 0;
+        
+        html += `
+            <div class="age-group-row" style="display: flex; align-items: center; margin-bottom: 20px; padding: 15px; background: var(--content-bg); border-radius: 12px; border: 2px solid var(--border-color); transition: all 0.3s ease;">
+                <div class="age-label" style="min-width: 80px; text-align: center; font-weight: 700; color: var(--text-primary); font-size: 1.1rem;">
+                    ${ageGroup}
+                </div>
                 
-                if (i < malePercentage) {
-                    icon.classList.add('fa-male', 'male');
-                } else if (i < malePercentage + femalePercentage) {
-                    icon.classList.add('fa-female', 'female');
-                } else {
-                    icon.classList.add('fa-user');
-                    icon.style.color = '#e5e7eb';
-                }
+                <div class="age-total" style="min-width: 100px; text-align: center; margin: 0 20px;">
+                    <div style="font-size: 1.8rem; font-weight: 700; color: var(--sidebar-accent);">${data.total}</div>
+                    <div style="font-size: 0.85rem; color: var(--text-secondary);">${percentage}%</div>
+                </div>
                 
-                // 애니메이션 지연
-                icon.style.animationDelay = `${i * 10}ms`;
-                
-                container.appendChild(icon);
-            }
-        },
-
-        updateAgePyramid(filteredData) {
-            const ageIndex = App.state.data.headers.indexOf('나이');
-            const genderIndex = App.state.data.headers.indexOf('성별');
-            const pyramidContainer = document.getElementById('agePyramid');
-            
-            if (ageIndex === -1 || !pyramidContainer) {
-                App.demographics.showNoDataMessage('ageTab');
-                return;
-            }
-            
-            // 연령대별 성별 데이터 집계
-            const ageGroups = {
-                '60+': { male: 0, female: 0 },
-                '50-59': { male: 0, female: 0 },
-                '40-49': { male: 0, female: 0 },
-                '30-39': { male: 0, female: 0 },
-                '20-29': { male: 0, female: 0 },
-                '~19': { male: 0, female: 0 }
-            };
-            
-            filteredData.forEach(row => {
-                const ageStr = String(row[ageIndex] || '').trim();
-                const gender = String(row[genderIndex] || '').trim();
-                
-                if (!ageStr || ageStr === '-') return;
-                
-                const age = parseInt(ageStr, 10);
-                if (isNaN(age)) return;
-                
-                let ageGroup;
-                if (age >= 60) ageGroup = '60+';
-                else if (age >= 50) ageGroup = '50-59';
-                else if (age >= 40) ageGroup = '40-49';
-                else if (age >= 30) ageGroup = '30-39';
-                else if (age >= 20) ageGroup = '20-29';
-                else ageGroup = '~19';
-                
-                if (gender === '남') ageGroups[ageGroup].male++;
-                else if (gender === '여') ageGroups[ageGroup].female++;
-            });
-            
-            // 최대값 계산 (스케일링용)
-            const maxValue = Math.max(
-                ...Object.values(ageGroups).map(group => Math.max(group.male, group.female))
-            );
-            
-            // 피라미드 렌더링
-            let pyramidHtml = '';
-            Object.entries(ageGroups).forEach(([ageGroup, data]) => {
-                const maleWidth = maxValue > 0 ? (data.male / maxValue) * 100 : 0;
-                const femaleWidth = maxValue > 0 ? (data.female / maxValue) * 100 : 0;
-                
-                pyramidHtml += `
-                    <div class="pyramid-row" data-age="${ageGroup}">
-                        <div class="pyramid-bar male-bar" style="width: ${maleWidth}%;">
-                            <span class="pyramid-value">${data.male}</span>
+                <div class="gender-breakdown" style="flex: 1; display: flex; gap: 15px; align-items: center;">
+                    <div class="male-section" style="flex: 1;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="font-size: 0.9rem; color: #3b82f6; font-weight: 600;">
+                                <i class="fas fa-mars" style="margin-right: 5px;"></i>남성
+                            </span>
+                            <span style="font-weight: 600; color: #3b82f6;">${data.male}명 (${malePercentage}%)</span>
                         </div>
-                        <div class="pyramid-age">${ageGroup}</div>
-                        <div class="pyramid-bar female-bar" style="width: ${femaleWidth}%;">
-                            <span class="pyramid-value">${data.female}</span>
+                        <div class="progress-bar" style="height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;">
+                            <div style="height: 100%; background: linear-gradient(90deg, #3b82f6, #2563eb); width: ${malePercentage}%; transition: width 0.5s ease;"></div>
                         </div>
                     </div>
-                `;
+                    
+                    <div class="female-section" style="flex: 1;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="font-size: 0.9rem; color: #ec4899; font-weight: 600;">
+                                <i class="fas fa-venus" style="margin-right: 5px;"></i>여성
+                            </span>
+                            <span style="font-weight: 600; color: #ec4899;">${data.female}명 (${femalePercentage}%)</span>
+                        </div>
+                        <div class="progress-bar" style="height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;">
+                            <div style="height: 100%; background: linear-gradient(90deg, #ec4899, #db2777); width: ${femalePercentage}%; transition: width 0.5s ease;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += `
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+    
+    // 🔥 호버 효과 추가
+    setTimeout(() => {
+        const rows = container.querySelectorAll('.age-group-row');
+        rows.forEach(row => {
+            row.addEventListener('mouseenter', () => {
+                row.style.transform = 'translateX(8px)';
+                row.style.borderColor = 'var(--sidebar-accent)';
+                row.style.boxShadow = '0 4px 15px rgba(129, 140, 248, 0.2)';
             });
             
-            pyramidContainer.innerHTML = pyramidHtml;
-            
-            // 애니메이션 효과
-            setTimeout(() => {
-                const bars = pyramidContainer.querySelectorAll('.pyramid-bar');
-                bars.forEach((bar, index) => {
-                    setTimeout(() => {
-                        bar.style.opacity = '1';
-                        bar.style.transform = 'scaleX(1)';
-                    }, index * 100);
-                });
-            }, 100);
-        },
-
+            row.addEventListener('mouseleave', () => {
+                row.style.transform = 'translateX(0)';
+                row.style.borderColor = 'var(--border-color)';
+                row.style.boxShadow = '';
+            });
+        });
+    }, 100);
+},
         createTooltip() {
             let tooltip = document.querySelector('.demo-tooltip');
             if (!tooltip) {
