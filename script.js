@@ -27,102 +27,233 @@ const App = {
     // 🔥 새로운 인구통계 분석 모듈
     // =========================
     demographics: {
-    currentTab: 'region',
-    koreanRegions: {
-        '서울': { x: 160, y: 180, name: '서울특별시' },
-        '경기': { x: 140, y: 160, name: '경기도' },
-        '인천': { x: 120, y: 170, name: '인천광역시' },
-        '부산': { x: 280, y: 320, name: '부산광역시' },
-        '대구': { x: 250, y: 250, name: '대구광역시' },
-        '대전': { x: 180, y: 220, name: '대전광역시' },
-        '광주': { x: 140, y: 280, name: '광주광역시' },
-        '울산': { x: 290, y: 290, name: '울산광역시' },
-        '세종': { x: 170, y: 200, name: '세종특별자치시' },
-        '강원': { x: 220, y: 120, name: '강원특별자치도' },
-        '충북': { x: 200, y: 180, name: '충청북도' },
-        '충남': { x: 160, y: 200, name: '충청남도' },
-        '전북': { x: 160, y: 250, name: '전라북도' },
-        '전남': { x: 160, y: 300, name: '전라남도' },
-        '경북': { x: 240, y: 200, name: '경상북도' },
-        '경남': { x: 240, y: 280, name: '경상남도' },
-        '제주': { x: 120, y: 380, name: '제주특별자치도' }
-    },
+        currentTab: 'region',
+        
+        // 🔥 기존 지도 데이터는 보관 (필요시 복원 가능)
+        koreanRegions: {
+            '서울': { x: 160, y: 180, name: '서울특별시' },
+            '경기': { x: 140, y: 160, name: '경기도' },
+            '인천': { x: 120, y: 170, name: '인천광역시' },
+            '부산': { x: 280, y: 320, name: '부산광역시' },
+            '대구': { x: 250, y: 250, name: '대구광역시' },
+            '대전': { x: 180, y: 220, name: '대전광역시' },
+            '광주': { x: 140, y: 280, name: '광주광역시' },
+            '울산': { x: 290, y: 290, name: '울산광역시' },
+            '세종': { x: 170, y: 200, name: '세종특별자치시' },
+            '강원': { x: 220, y: 120, name: '강원특별자치도' },
+            '충북': { x: 200, y: 180, name: '충청북도' },
+            '충남': { x: 160, y: 200, name: '충청남도' },
+            '전북': { x: 160, y: 250, name: '전라북도' },
+            '전남': { x: 160, y: 300, name: '전라남도' },
+            '경북': { x: 240, y: 200, name: '경상북도' },
+            '경남': { x: 240, y: 280, name: '경상남도' },
+            '제주': { x: 120, y: 380, name: '제주특별자치도' }
+        },
 
-    // 🔥 새로 추가: 한반도 지도 SVG Path
-    koreaMapPath: `M160,120 L180,115 L200,120 L220,110 L250,115 L280,125 L300,140 L310,160 L315,180 L320,200 L325,220 L330,240 L325,260 L320,280 L315,300 L300,315 L285,325 L270,330 L250,335 L230,340 L210,345 L190,350 L170,355 L150,360 L130,365 L115,370 L110,385 L120,390 L140,385 L160,380 L130,365 L125,345 L120,325 L115,305 L110,285 L105,265 L100,245 L95,225 L100,205 L105,185 L110,165 L120,145 L140,130 L160,120 Z`,
+        switchTab(tab) {
+            App.demographics.currentTab = tab;
+            
+            document.querySelectorAll('.demographics-tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tab);
+            });
+            
+            document.querySelectorAll('.demographics-tab-content').forEach(content => {
+                content.classList.toggle('active', content.id === tab + 'Tab');
+            });
+            
+            setTimeout(() => {
+                App.demographics.updateCurrentTab();
+            }, 100);
+        },
 
-    switchTab(tab) {
-        App.demographics.currentTab = tab;
-        
-        document.querySelectorAll('.demographics-tab-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.tab === tab);
-        });
-        
-        document.querySelectorAll('.demographics-tab-content').forEach(content => {
-            content.classList.toggle('active', content.id === tab + 'Tab');
-        });
-        
-        setTimeout(() => {
-            App.demographics.updateCurrentTab();
-        }, 100);
-    },
-
-    updateCurrentTab() {
-        const filteredData = App.utils.getFilteredDataByPeriod(
-            document.getElementById('statsPeriodFilter')?.value || 'all'
-        );
-        
-        switch (App.demographics.currentTab) {
-            case 'region':
-                App.demographics.updateRegionMap(filteredData);
-                break;
-            case 'ageGender':  // 🔥 변경된 탭 이름
-                App.demographics.updateAgeGenderStats(filteredData);
-                break;
-        }
-    },
+        updateCurrentTab() {
+            const filteredData = App.utils.getFilteredDataByPeriod(
+                document.getElementById('statsPeriodFilter')?.value || 'all'
+            );
+            
+            switch (App.demographics.currentTab) {
+                case 'region':
+                    App.demographics.updateRegionMap(filteredData);
+                    break;
+                case 'ageGender':  // 🔥 변경된 탭 이름
+                    App.demographics.updateAgeGenderStats(filteredData);
+                    break;
+            }
+        },
 
         updateRegionMap(filteredData) {
-    const addressIndex = App.state.data.headers.indexOf('지역');
-    const mapContainer = document.getElementById('koreaMap');
-    
-    if (addressIndex === -1 || !mapContainer) return;
-    
-    // 지역별 데이터 집계
-    const regionData = {};
-    let totalCount = 0;
-    
-    filteredData.forEach(row => {
-        const address = String(row[addressIndex] || '').trim();
-        if (!address || address === '-') return;
-        
-        const region = App.utils.extractRegion(address);
-        regionData[region] = (regionData[region] || 0) + 1;
-        totalCount++;
-    });
-    
-    // 🔥 카드 그리드 스타일로 변경
-    App.demographics.renderRegionCards(regionData, totalCount, mapContainer);
-},
+            const addressIndex = App.state.data.headers.indexOf('지역');
+            const mapContainer = document.getElementById('koreaMap');
+            
+            if (addressIndex === -1 || !mapContainer) return;
+            
+            // 지역별 데이터 집계
+            const regionData = {};
+            let totalCount = 0;
+            
+            filteredData.forEach(row => {
+                const address = String(row[addressIndex] || '').trim();
+                if (!address || address === '-') return;
+                
+                const region = App.utils.extractRegion(address);
+                regionData[region] = (regionData[region] || 0) + 1;
+                totalCount++;
+            });
+            
+            // 🔥 카드 그리드 스타일로 변경
+            App.demographics.renderRegionCards(regionData, totalCount, mapContainer);
+        },
+
         // 🔥 새로운 함수: 지역 카드 그리드 렌더링
-renderRegionCards(regionData, totalCount, container) {
-    // 지역 데이터를 인원수 기준으로 정렬
-    const sortedRegions = Object.entries(regionData)
-        .sort(([,a], [,b]) => b - a)
-        .slice(0, 12); // 상위 12개 지역만 표시
-    
-    // 카드 HTML 생성
-    let html = `<div class="region-cards-container">...`;
-    
-    // 각 지역별 카드 생성
-    sortedRegions.forEach(([region, count], index) => {
-        // 순위별 색상, 아이콘, 진행률 계산
-        // HTML 카드 생성
-    });
-    
-    container.innerHTML = html;
-    App.demographics.addRegionCardEvents();
-}
+        renderRegionCards(regionData, totalCount, container) {
+            // 지역 데이터를 인원수 기준으로 정렬
+            const sortedRegions = Object.entries(regionData)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 12); // 상위 12개 지역만 표시
+            
+            // 최대값 계산 (프로그레스 바용)
+            const maxCount = Math.max(...Object.values(regionData));
+            
+            let html = `
+                <div class="region-cards-container">
+                    <div class="region-summary">
+                        <div class="region-total-info">
+                            <span class="region-total-count">${totalCount}</span>
+                            <span class="region-total-label">총 지원자</span>
+                        </div>
+                        <div class="region-total-regions">
+                            <span class="region-count">${Object.keys(regionData).length}</span>
+                            <span class="region-label">개 지역</span>
+                        </div>
+                    </div>
+                    
+                    <div class="region-cards-grid">
+            `;
+            
+            sortedRegions.forEach(([region, count], index) => {
+                const percentage = totalCount > 0 ? ((count / totalCount) * 100).toFixed(1) : 0;
+                const progressWidth = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                
+                // 순위별 색상 및 아이콘
+                const rankColors = [
+                    '#ffd700', '#c0c0c0', '#cd7f32', '#818cf8', '#10b981', 
+                    '#f59e0b', '#ef4444', '#8b5cf6', '#f97316', '#06b6d4',
+                    '#84cc16', '#f43f5e'
+                ];
+                const rankIcons = [
+                    '🥇', '🥈', '🥉', '🏙️', '🏢', '🌊', '🏛️', '🏘️', '🌆', '🏞️', '🌄', '📍'
+                ];
+                
+                const rankColor = rankColors[index] || '#6b7280';
+                const rankIcon = rankIcons[index] || '📍';
+                const isTopRank = index < 3;
+                
+                html += `
+                    <div class="region-card ${isTopRank ? 'region-card-top' : ''}" 
+                         data-region="${region}" 
+                         data-count="${count}"
+                         data-percentage="${percentage}"
+                         style="--rank-color: ${rankColor}">
+                        
+                        <div class="region-card-header">
+                            <div class="region-icon">${rankIcon}</div>
+                            <div class="region-rank">#${index + 1}</div>
+                        </div>
+                        
+                        <div class="region-card-body">
+                            <div class="region-name" title="${App.demographics.getFullRegionName(region)}">${region}</div>
+                            <div class="region-stats">
+                                <div class="region-count-display">${count}<span class="region-unit">명</span></div>
+                                <div class="region-percentage">${percentage}%</div>
+                            </div>
+                        </div>
+                        
+                        <div class="region-card-footer">
+                            <div class="region-progress-container">
+                                <div class="region-progress-bar">
+                                    <div class="region-progress-fill" style="width: ${progressWidth}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${isTopRank ? '<div class="region-medal-glow"></div>' : ''}
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+            
+            // 카드 호버 이벤트 추가
+            App.demographics.addRegionCardEvents();
+        },
+
+        // 🔥 새로운 함수: 전체 지역명 반환
+        getFullRegionName(shortName) {
+            const regionNames = {
+                '서울': '서울특별시',
+                '경기': '경기도',
+                '인천': '인천광역시',
+                '부산': '부산광역시',
+                '대구': '대구광역시',
+                '대전': '대전광역시',
+                '광주': '광주광역시',
+                '울산': '울산광역시',
+                '세종': '세종특별자치시',
+                '강원': '강원특별자치도',
+                '충북': '충청북도',
+                '충남': '충청남도',
+                '전북': '전라북도',
+                '전남': '전라남도',
+                '경북': '경상북도',
+                '경남': '경상남도',
+                '제주': '제주특별자치도',
+                '기타': '기타 지역'
+            };
+            return regionNames[shortName] || shortName;
+        },
+
+        // 🔥 새로운 함수: 카드 이벤트 추가
+        addRegionCardEvents() {
+            const cards = document.querySelectorAll('.region-card');
+            
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    const region = card.dataset.region;
+                    const count = card.dataset.count;
+                    const percentage = card.dataset.percentage;
+                    const fullName = App.demographics.getFullRegionName(region);
+                    
+                    // 호버 시 추가 정보 표시 (선택적)
+                    card.setAttribute('title', `${fullName}: ${count}명 (${percentage}%)`);
+                    
+                    // 다른 카드들 약간 흐리게
+                    cards.forEach(otherCard => {
+                        if (otherCard !== card) {
+                            otherCard.style.opacity = '0.7';
+                            otherCard.style.transform = 'scale(0.98)';
+                        }
+                    });
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    // 모든 카드 원상복구
+                    cards.forEach(otherCard => {
+                        otherCard.style.opacity = '1';
+                        otherCard.style.transform = 'scale(1)';
+                    });
+                });
+            });
+        },
+
+        addMapTooltips() {
+            // 🔥 카드 그리드 스타일에서는 툴팁이 필요 없으므로 빈 함수로 유지
+            console.log('📍 카드 그리드 스타일에서는 별도 툴팁 불필요');
+        },
 
         // 🔥 새로운 통합 연령/성별 분석
 updateAgeGenderStats(filteredData) {
