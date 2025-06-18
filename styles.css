@@ -405,6 +405,26 @@ body {
     font-weight: 500;
     opacity: 0.8;
 }
+/* =========================
+   통계 페이지 고정 헤더 스타일
+   ========================= */
+
+.stats-fixed-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--main-bg);
+    border-bottom: 2px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin: -30px -30px 20px -30px; /* 컨텐츠 영역의 패딩 상쇄 */
+    padding: 20px 30px;
+    backdrop-filter: blur(10px);
+    background: linear-gradient(135deg, var(--main-bg), rgba(129, 140, 248, 0.02));
+}
+
+.stats-scrollable-content {
+    padding-top: 10px;
+}
 
 /* =========================
    통계 페이지 기간 선택 스타일
@@ -3817,4 +3837,77 @@ div[style*="grid-template-columns"] {
         flex-direction: column;
         gap: 10px;
     }
+}
+/* =========================
+   🔥 새로운 지역별 분포 카드 그리드 스타일
+   ========================= */
+
+.region-display-container {
+    width: 100%;
+    min-height: 400px;
+}
+
+.region-cards-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.region-summary {
+    /* 상단 요약 정보 스타일 */
+    display: flex;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--sidebar-accent), #a78bfa);
+    /* ... */
+}
+
+.region-cards-grid {
+    /* 카드 그리드 레이아웃 */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.region-card {
+    /* 개별 카드 스타일 */
+    background: var(--content-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 16px;
+    /* 호버 애니메이션, 그라데이션 등 */
+}
+
+/* 순위별 특별 효과 */
+.region-card-top { /* 상위 3개 */ }
+.region-medal-glow { /* 메달 글로우 효과 */ }
+
+/* 프로그레스 바 */
+.region-progress-bar { /* ... */ }
+.region-progress-fill { /* 애니메이션 효과 */ }
+
+/* =========================
+   카드 그리드 반응형 디자인
+   ========================= */
+
+@media (max-width: 1024px) {
+    .region-cards-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+    }
+    /* ... */
+}
+
+@media (max-width: 768px) {
+    .region-cards-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+    }
+    /* ... */
+}
+
+@media (max-width: 480px) {
+    .region-cards-grid {
+        grid-template-columns: 1fr 1fr; /* 모바일에서 2열 */
+        gap: 10px;
+    }
+    /* ... */
 }
