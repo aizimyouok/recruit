@@ -54,6 +54,8 @@ export const NavigationModule = {
                     }
                     appInstance.stats.update();
                     appInstance.trend.update();
+                    // 🔥 새로운 인구통계 시스템 초기화
+                    appInstance.demographics.initialize();
                 }
             }, 100);
         } else if (pageId === 'efficiency') {
