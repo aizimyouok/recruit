@@ -255,145 +255,150 @@
                 </div>
                 
                 <div id="stats" class="page">
+                    <!-- 🔥 고정 헤더로 변경 -->
                     <div class="stats-fixed-header">
-                    <div class="page-header">
-                        <h2 class="page-title">채용 통계 분석</h2>
-                        <div class="header-actions">
-                            <select id="statsPeriodFilter" onchange="globalThis.App.stats.handlePeriodChange()" style="padding: 8px 12px; margin-right: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--content-bg); color: var(--text-primary);">
-                                <option value="all">전체 기간</option>
-                                <option value="year">올해</option>
-                                <option value="month">이번 달</option>
-                                <option value="week">이번 주</option>
-                                <option value="custom">기간 입력</option>
-                            </select>
-                            <div id="statsCustomDateRange" style="display: none; margin-right: 10px;">
-                                <input type="date" id="statsStartDate" style="padding: 8px; margin-right: 5px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--content-bg); color: var(--text-primary); font-size: 0.9rem;">
-                                <input type="date" id="statsEndDate" style="padding: 8px; margin-right: 5px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--content-bg); color: var(--text-primary); font-size: 0.9rem;">
-                                <button onclick="globalThis.App.stats.update()" style="padding: 8px 12px; background: var(--sidebar-accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">적용</button>
+                        <div class="page-header">
+                            <h2 class="page-title">채용 통계 분석</h2>
+                            <div class="header-actions">
+                                <select id="statsPeriodFilter" onchange="globalThis.App.stats.handlePeriodChange()" style="padding: 8px 12px; margin-right: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--content-bg); color: var(--text-primary);">
+                                    <option value="all">전체 기간</option>
+                                    <option value="year">올해</option>
+                                    <option value="month">이번 달</option>
+                                    <option value="week">이번 주</option>
+                                    <option value="custom">기간 입력</option>
+                                </select>
+                                <div id="statsCustomDateRange" style="display: none; margin-right: 10px;">
+                                    <input type="date" id="statsStartDate" style="padding: 8px; margin-right: 5px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--content-bg); color: var(--text-primary); font-size: 0.9rem;">
+                                    <input type="date" id="statsEndDate" style="padding: 8px; margin-right: 5px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--content-bg); color: var(--text-primary); font-size: 0.9rem;">
+                                    <button onclick="globalThis.App.stats.update()" style="padding: 8px 12px; background: var(--sidebar-accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">적용</button>
+                                </div>
+                                <button class="secondary-btn" onclick="globalThis.App.stats.update()" aria-label="통계 데이터 새로고침">
+                                    <i class="fas fa-sync-alt"></i> 새로고침
+                                </button>
                             </div>
-                            <button class="secondary-btn" onclick="globalThis.App.stats.update()" aria-label="통계 데이터 새로고침">
-                                <i class="fas fa-sync-alt"></i> 새로고침
-                            </button>
                         </div>
                     </div>
-                        </div>
-
+                    
+                    <!-- 🔥 스크롤 가능한 컨텐츠 영역 -->
                     <div class="stats-scrollable-content">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                        <div class="content-container" style="padding: 20px;">
-                            <h3 style="margin-bottom: 20px;">지원루트별 분포</h3>
-                            <canvas id="routeChart" style="max-height: 300px;" aria-label="지원루트별 분포 차트"></canvas>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div class="content-container" style="padding: 20px;">
+                                <h3 style="margin-bottom: 20px;">지원루트별 분포</h3>
+                                <canvas id="routeChart" style="max-height: 300px;" aria-label="지원루트별 분포 차트"></canvas>
+                            </div>
+                            <div class="content-container" style="padding: 20px;">
+                                <h3 style="margin-bottom: 20px;">모집분야별 분포</h3>
+                                <canvas id="positionChart" style="max-height: 300px;" aria-label="모집분야별 분포 차트"></canvas>
+                            </div>
                         </div>
-                        <div class="content-container" style="padding: 20px;">
-                            <h3 style="margin-bottom: 20px;">모집분야별 분포</h3>
-                            <canvas id="positionChart" style="max-height: 300px;" aria-label="모집분야별 분포 차트"></canvas>
+                        
+                        <div class="content-container" style="padding: 25px; margin-bottom: 20px;">
+                            <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-chart-area" style="color: var(--sidebar-accent);"></i>
+                                지원자 추이 분석
+                            </h3>
+                            <div class="trend-tabs" style="margin-bottom: 20px;">
+                                <button class="trend-tab-btn active" data-period="all" onclick="globalThis.App.trend.switchTab('all')">전체</button>
+                                <button class="trend-tab-btn" data-period="year" onclick="globalThis.App.trend.switchTab('year')">년별</button>
+                                <button class="trend-tab-btn" data-period="month" onclick="globalThis.App.trend.switchTab('month')">월별</button>
+                            </div>
+                            <canvas id="trendChart" style="max-height: 400px;" aria-label="지원자 추이 차트"></canvas>
                         </div>
-                    </div>
-                    
-                    <div class="content-container" style="padding: 25px; margin-bottom: 20px;">
-                        <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                            <i class="fas fa-chart-area" style="color: var(--sidebar-accent);"></i>
-                            지원자 추이 분석
-                        </h3>
-                        <div class="trend-tabs" style="margin-bottom: 20px;">
-                            <button class="trend-tab-btn active" data-period="all" onclick="globalThis.App.trend.switchTab('all')">전체</button>
-                            <button class="trend-tab-btn" data-period="year" onclick="globalThis.App.trend.switchTab('year')">년별</button>
-                            <button class="trend-tab-btn" data-period="month" onclick="globalThis.App.trend.switchTab('month')">월별</button>
-                        </div>
-                        <canvas id="trendChart" style="max-height: 400px;" aria-label="지원자 추이 차트"></canvas>
-                    </div>
-                    
-                    <div class="content-container demographics-container" style="padding: 25px; margin-bottom: 20px;">
-    <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-        <i class="fas fa-users" style="color: var(--sidebar-accent);"></i>
-        인구통계 분석
-    </h3>
-    
-    <!-- 탭 네비게이션 -->
-<div class="demographics-tabs" style="margin-bottom: 25px;">
-    <button class="demographics-tab-btn active" data-tab="region" onclick="globalThis.App.demographics.switchTab('region')">
-        <i class="fas fa-map-marked-alt"></i> 지역별 분포
-    </button>
-    <button class="demographics-tab-btn" data-tab="ageGender" onclick="globalThis.App.demographics.switchTab('ageGender')">
-        <i class="fas fa-users"></i> 연령별/성별 분포
-    </button>
-</div>
+                        
+                        <div class="content-container demographics-container" style="padding: 25px; margin-bottom: 20px;">
+                            <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-users" style="color: var(--sidebar-accent);"></i>
+                                인구통계 분석
+                            </h3>
+                            
+                            <!-- 탭 네비게이션 -->
+                            <div class="demographics-tabs" style="margin-bottom: 25px;">
+                                <button class="demographics-tab-btn active" data-tab="region" onclick="globalThis.App.demographics.switchTab('region')">
+                                    <i class="fas fa-map-marked-alt"></i> 지역별 분포
+                                </button>
+                                <button class="demographics-tab-btn" data-tab="ageGender" onclick="globalThis.App.demographics.switchTab('ageGender')">
+                                    <i class="fas fa-users"></i> 연령별/성별 분포
+                                </button>
+                            </div>
 
-<!-- 탭 컨텐츠 -->
-<div class="demographics-content">
-    <!-- 지역별 분포 (한국 지도) -->
-    <div id="regionTab" class="demographics-tab-content active">
-    <div id="koreaMap" class="region-display-container"></div>
-</div>
-    </div>
-    
-    <!-- 🔥 새로운 연령별/성별 통합 분포 -->
-    <div id="ageGenderTab" class="demographics-tab-content">
-        <!-- 연령별/성별 통합 데이터가 여기에 동적으로 생성됨 -->
-    </div>
-</div>
+                            <!-- 탭 컨텐츠 -->
+                            <div class="demographics-content">
+                                <!-- 🔥 지역별 분포 (카드 그리드 스타일) -->
+                                <div id="regionTab" class="demographics-tab-content active">
+                                    <div id="koreaMap" class="region-display-container"></div>
+                                </div>
+                                
+                                <!-- 🔥 새로운 연령별/성별 통합 분포 -->
+                                <div id="ageGenderTab" class="demographics-tab-content">
+                                    <!-- 연령별/성별 통합 데이터가 여기에 동적으로 생성됨 -->
+                                </div>
+                            </div>
                         </div>
+                    </div>
+                </div>
                 
                 <div id="efficiency" class="page">
+                    <!-- 🔥 고정 헤더로 변경 -->
                     <div class="stats-fixed-header">
-                    <div class="page-header">
-                        <h2 class="page-title">효율성 분석</h2>
-                        <div class="header-actions">
-                            <select id="efficiencyPeriodFilter" onchange="globalThis.App.efficiency.handlePeriodChange()" style="padding: 8px 12px; margin-right: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--content-bg); color: var(--text-primary);">
-                                <option value="all">전체 기간</option>
-                                <option value="year">올해</option>
-                                <option value="month">이번 달</option>
-                                <option value="week">이번 주</option>
-                                <option value="custom">기간 입력</option>
-                            </select>
-                            <div id="efficiencyCustomDateRange" style="display: none; margin-right: 10px;">
-                                <input type="date" id="efficiencyStartDate" style="padding: 8px; margin-right: 5px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--content-bg); color: var(--text-primary); font-size: 0.9rem;">
-                                <input type="date" id="efficiencyEndDate" style="padding: 8px; margin-right: 5px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--content-bg); color: var(--text-primary); font-size: 0.9rem;">
-                                <button onclick="globalThis.App.efficiency.updateAll()" style="padding: 8px 12px; background: var(--sidebar-accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">적용</button>
+                        <div class="page-header">
+                            <h2 class="page-title">효율성 분석</h2>
+                            <div class="header-actions">
+                                <select id="efficiencyPeriodFilter" onchange="globalThis.App.efficiency.handlePeriodChange()" style="padding: 8px 12px; margin-right: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--content-bg); color: var(--text-primary);">
+                                    <option value="all">전체 기간</option>
+                                    <option value="year">올해</option>
+                                    <option value="month">이번 달</option>
+                                    <option value="week">이번 주</option>
+                                    <option value="custom">기간 입력</option>
+                                </select>
+                                <div id="efficiencyCustomDateRange" style="display: none; margin-right: 10px;">
+                                    <input type="date" id="efficiencyStartDate" style="padding: 8px; margin-right: 5px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--content-bg); color: var(--text-primary); font-size: 0.9rem;">
+                                    <input type="date" id="efficiencyEndDate" style="padding: 8px; margin-right: 5px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--content-bg); color: var(--text-primary); font-size: 0.9rem;">
+                                    <button onclick="globalThis.App.efficiency.updateAll()" style="padding: 8px 12px; background: var(--sidebar-accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">적용</button>
+                                </div>
+                                <button class="secondary-btn" onclick="globalThis.App.efficiency.updateAll()" aria-label="효율성 데이터 새로고침">
+                                    <i class="fas fa-sync-alt"></i> 새로고침
+                                </button>
                             </div>
-                            <button class="secondary-btn" onclick="globalThis.App.efficiency.updateAll()" aria-label="효율성 데이터 새로고침">
-                                <i class="fas fa-sync-alt"></i> 새로고침
-                            </button>
                         </div>
-                    </div>
-                        </div>
-
-                    <div class="stats-scrollable-content">
-                    <!-- 효율성 분석 탭 -->
-                    <div class="content-container" style="padding: 25px; margin-bottom: 20px;">
-                        <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                            <i class="fas fa-chart-line" style="color: var(--success);"></i>
-                            카테고리별 효율성
-                        </h3>
-                        <div class="efficiency-tabs" style="margin-bottom: 20px;">
-                            <button class="efficiency-tab-btn active" data-tab="route" onclick="globalThis.App.efficiency.switchTab('route')">지원루트별</button>
-                            <button class="efficiency-tab-btn" data-tab="recruiter" onclick="globalThis.App.efficiency.switchTab('recruiter')">증원자별</button>
-                            <button class="efficiency-tab-btn" data-tab="interviewer" onclick="globalThis.App.efficiency.switchTab('interviewer')">면접관별</button>
-                        </div>
-                        <div id="efficiencyTabContent">
-                            </div>
                     </div>
                     
-                    <!-- 레이더 차트와 산점도 차트 -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                        <div class="content-container" style="padding: 20px;">
+                    <!-- 🔥 스크롤 가능한 컨텐츠 영역 -->
+                    <div class="stats-scrollable-content">
+                        <!-- 효율성 분석 탭 -->
+                        <div class="content-container" style="padding: 25px; margin-bottom: 20px;">
                             <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                                <i class="fas fa-star" style="color: var(--sidebar-accent);"></i>
-                                종합 성과 비교
+                                <i class="fas fa-chart-line" style="color: var(--success);"></i>
+                                카테고리별 효율성
                             </h3>
-                            <canvas id="radarChart" style="max-height: 400px;" aria-label="지원루트별 종합 성과 레이더 차트"></canvas>
+                            <div class="efficiency-tabs" style="margin-bottom: 20px;">
+                                <button class="efficiency-tab-btn active" data-tab="route" onclick="globalThis.App.efficiency.switchTab('route')">지원루트별</button>
+                                <button class="efficiency-tab-btn" data-tab="recruiter" onclick="globalThis.App.efficiency.switchTab('recruiter')">증원자별</button>
+                                <button class="efficiency-tab-btn" data-tab="interviewer" onclick="globalThis.App.efficiency.switchTab('interviewer')">면접관별</button>
+                            </div>
+                            <div id="efficiencyTabContent">
+                                </div>
                         </div>
-                        <div class="content-container" style="padding: 20px;">
-                            <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                                <i class="fas fa-chart-scatter" style="color: var(--accent-orange);"></i>
-                                나이-합격률 상관관계
-                            </h3>
-                            <canvas id="scatterChart" style="max-height: 400px;" aria-label="나이와 합격률 상관관계 산점도 차트"></canvas>
+                        
+                        <!-- 레이더 차트와 산점도 차트 -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div class="content-container" style="padding: 20px;">
+                                <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas fa-star" style="color: var(--sidebar-accent);"></i>
+                                    종합 성과 비교
+                                </h3>
+                                <canvas id="radarChart" style="max-height: 400px;" aria-label="지원루트별 종합 성과 레이더 차트"></canvas>
+                            </div>
+                            <div class="content-container" style="padding: 20px;">
+                                <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas fa-chart-scatter" style="color: var(--accent-orange);"></i>
+                                    나이-합격률 상관관계
+                                </h3>
+                                <canvas id="scatterChart" style="max-height: 400px;" aria-label="나이와 합격률 상관관계 산점도 차트"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-                        </div>
         </main>
     </div>
     
