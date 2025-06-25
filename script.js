@@ -12,7 +12,6 @@ import { ThemeModule } from './theme.js';
 import { CacheModule } from './js/cache.js';
 import { DataCacheModule } from './js/dataCache.js';
 import { SmartSyncModule } from './js/smartSync.js';
-// ★★★★★ 새로 만든 모듈 import ★★★★★
 import { InterviewScheduleModule } from './js/interviewSchedule.js';
 
 // =========================
@@ -448,7 +447,7 @@ const App = {
     cache: CacheModule,
     dataCache: DataCacheModule,
     smartSync: SmartSyncModule,
-
+    interviewSchedule: InterviewScheduleModule, // 모듈 등록
     // =========================
     // 🔥 성능 개선 유틸리티들 (상단으로 이동)
     // =========================
