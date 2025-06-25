@@ -13,7 +13,7 @@ export const InterviewScheduleModule = {
         dateValue: '', // for year, month, day
         startDate: '', // for range
         endDate: '',   // for range
-        sortBy: '면접일', // 기본 정렬 기준 변경
+        sortBy: '면접일',
         sortOrder: 'asc',
         interviews: [],
         visibleColumns: {}
@@ -23,7 +23,7 @@ export const InterviewScheduleModule = {
         console.log('📅 면접일정 페이지 초기화');
         this.app = appInstance;
         this.populateFilters();
-        this.setInitialDateRange(); // 기본 날짜 설정
+        this.setInitialDateRange(); 
         this.setupColumnToggles();
         this.applyFilters();
 
@@ -160,6 +160,7 @@ export const InterviewScheduleModule = {
     applyFilters() {
         if (!this.app) return;
 
+        // Collect filter values
         this.state.interviewer = document.getElementById('scheduleInterviewerFilter')?.value || 'all';
         this.state.company = document.getElementById('scheduleCompanyFilter')?.value || 'all';
         this.state.route = document.getElementById('scheduleRouteFilter')?.value || 'all';
@@ -243,7 +244,7 @@ export const InterviewScheduleModule = {
                 const timeStr = r[interviewTimeIndex] || '';
                 if (!dateStr) return null;
                 try {
-                    const date = new Date(dateStr + "T00:00:00");
+                    const date = new Date(dateStr);
                     const timeMatch = String(timeStr).replace(/'/g, '').trim().match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
                     if (timeMatch) {
                         const hour = parseInt(timeMatch[1], 10);
@@ -449,10 +450,12 @@ export const InterviewScheduleModule = {
     },
 
     setupColumnToggles() {
-        const allHeaders = ['이름', '지원일', '지원루트', '회사명', '모집분야', '면접관', '면접일', '시간', 'D-Day', '비고'];
+        const allHeaders = ['이름', '지원일', '지원루트', '회사명', '모집분야', '면접관', 'D-Day', '면접일', '시간', '비고'];
         
-        const defaultHidden = ['지원일'];
-        allHeaders.forEach(h => { this.state.visibleColumns[h] = !defaultHidden.includes(h); }); 
+        this.state.visibleColumns = {}; // Reset first
+        allHeaders.forEach(h => {
+            this.state.visibleColumns[h] = h !== '지원일'; // '지원일'만 기본 숨김
+        }); 
         
         const dropdown = document.getElementById('scheduleColumnToggleDropdown');
         if (!dropdown) return;
