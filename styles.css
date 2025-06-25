@@ -4036,3 +4036,49 @@ div[style*="grid-template-columns"] {
     opacity: 1;
     color: var(--sidebar-accent);
 }
+
+/* =========================
+   면접관별 건수 표시 (헤더 내 위젯) - 수정된 디자인
+   ========================= */
+.interviewer-counts-header-widget {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* 아이템 간 간격 증가 */
+    background-color: var(--main-bg);
+    padding: 15px 20px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    flex-grow: 1; /* 남는 공간을 모두 차지 */
+    overflow-x: auto;
+    scrollbar-width: thin;
+}
+
+.interviewer-count-item-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+    border-right: 1px solid var(--border-color); /* 구분선 추가 */
+}
+
+.interviewer-count-item-inline:last-child {
+    border-right: none; /* 마지막 아이템에는 구분선 없음 */
+}
+
+.interviewer-count-name-inline {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.interviewer-count-badge-inline {
+    font-size: 1.1rem; /* 숫자 크기 증가 */
+    font-weight: 700;
+    color: var(--sidebar-accent);
+    background-color: rgba(129, 140, 248, 0.1);
+    padding: 4px 10px;
+    border-radius: 6px;
+}
