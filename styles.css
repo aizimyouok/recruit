@@ -1308,6 +1308,8 @@ body {
 .filter-group { 
     display: flex; 
     flex-direction: column; 
+    flex-grow: 1;
+    flex-basis: 160px;
 }
 
 .filter-group label { 
@@ -1324,7 +1326,8 @@ body {
     border-radius: 6px; 
     transition: all 0.2s ease; 
     background: var(--content-bg); 
-    color: var(--text-primary); 
+    color: var(--text-primary);
+    width: 100%;
 }
 
 .filter-group input:focus, .filter-group select:focus { 
@@ -1334,8 +1337,8 @@ body {
 }
 
 .search-input { 
-    min-width: 200px; 
     position: relative;
+    flex-basis: 220px;
 }
 
 .search-input input { 
@@ -1359,24 +1362,48 @@ body {
     background-color: var(--content-bg); 
     border: 1px solid var(--border-color); 
     padding: 5px; 
-    border-radius: 6px; 
+    border-radius: 6px;
+    width: 100%;
+}
+
+.date-mode-toggle-group {
+    display: flex;
+    height: 100%;
+    background-color: var(--main-bg);
+    border-radius: 4px;
+    padding: 2px;
+}
+
+.date-inputs-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-grow: 1;
+}
+
+.date-inputs-group input {
+    height: 100% !important;
+    flex-grow: 1;
 }
 
 .date-mode-btn { 
-    padding: 8px 12px; 
+    padding: 0 10px; 
     border: none; 
     background-color: transparent; 
     font-weight: 500; 
     cursor: pointer; 
     border-radius: 4px; 
-    font-size: 0.9rem; 
+    font-size: 0.85rem; 
     height: 100%; 
     transition: all 0.2s ease; 
+    color: var(--text-secondary);
 }
 
 .date-mode-btn.active { 
-    background-color: var(--text-secondary); 
-    color: white; 
+    background-color: var(--content-bg); 
+    color: var(--sidebar-accent);
+    font-weight: 700;
+    box-shadow: var(--shadow-sm);
 }
 
 .date-nav-btn { 
@@ -1410,21 +1437,15 @@ body {
     color: var(--text-primary); 
 }
 
-.apply-btn { 
-    height: 100%; 
-    padding: 0 15px; 
-    background-color: var(--sidebar-accent); 
-    color: white; 
-    border: none; 
-    border-radius: 4px; 
-    cursor: pointer; 
-    font-weight: 500; 
-    transition: all 0.2s ease; 
+.filter-group.date-filter-group {
+    flex-grow: 2;
+    flex-basis: 350px;
 }
 
-.apply-btn:hover { 
-    filter: brightness(1.1); 
+.filter-group.reset-group {
+    flex-grow: 0;
 }
+
 
 .filter-summary { 
     margin-top: -10px; 
@@ -1565,13 +1586,7 @@ body {
     z-index: 1;
 }
 
-.data-table th.sortable-header { 
-    cursor: pointer; 
-    user-select: none; 
-    transition: background-color 0.2s ease; 
-}
-
-.data-table th.sortable-header:hover { 
+.data-table th:hover { 
     background-color: var(--border-color); 
 }
 
@@ -1585,12 +1600,12 @@ body {
     color: var(--sidebar-accent); 
 }
 
-.data-table tbody tr:not(.detail-row) { 
+.data-table tbody tr { 
     cursor: pointer; 
     transition: background-color 0.2s ease; 
 }
 
-.data-table tbody tr:not(.detail-row):hover { 
+.data-table tbody tr:hover { 
     background-color: var(--main-bg); 
 }
 
@@ -3929,43 +3944,33 @@ div[style*="grid-template-columns"] {
     margin-bottom: 20px;
 }
 
-/* 필터 바 내부 아이템 정렬 */
 #interviewSchedule .filter-bar {
-    display: grid;
-    /* auto-fit 대신 auto-fill을 사용하고, 각 필터의 너비를 더 유연하게 조절합니다. */
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 15px;
-    padding: 20px; 
-    background: var(--content-bg); 
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-color);
+    align-items: flex-end;
 }
 
 #interviewSchedule .filter-group {
-    grid-column: span 1;
-    /* 검색창과 날짜 필터가 다른 필터보다 넓은 공간을 차지하도록 설정합니다. */
+    flex: 1 1 160px; /* 기본 너비 160px, 공간 있으면 늘어남 */
 }
 
 #interviewSchedule .filter-group.search-input {
-    grid-column: span 1;
-    min-width: 200px; /* 검색창 최소 너비 보장 */
+    flex: 2 1 200px; /* 검색창은 더 넓게 */
 }
 
-#interviewSchedule .filter-group:has(#scheduleDateFilterContainer) {
-    grid-column: span 2; /* 날짜 필터는 2칸을 사용하도록 설정 */
-    min-width: 320px; /* 날짜 필터 최소 너비 보장 */
+#interviewSchedule .filter-group.date-filter-group {
+    flex: 3 1 400px; /* 날짜 필터는 가장 넓게 */
+    min-width: 320px;
 }
-@media (max-width: 900px) {
-    #interviewSchedule .filter-group:has(#scheduleDateFilterContainer) {
-        grid-column: span 1;
-    }
+
+#interviewSchedule .filter-group.reset-group {
+    flex: 0 1 auto; /* 초기화 버튼은 고정 크기 */
 }
 
 #interviewSchedule .filter-group input,
 #interviewSchedule .filter-group select {
     width: 100%;
-    min-width: 0;
 }
 
 /* 날짜 필터 UI */
@@ -3975,45 +3980,67 @@ div[style*="grid-template-columns"] {
 
 
 /* =========================
-   면접관별 건수 표시 (헤더 내 위젯)
+   면접관별 건수 표시 (헤더 내 위젯) - Request 1
    ========================= */
-.interviewer-counts-header-widget {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background-color: var(--main-bg);
-    padding: 6px 12px;
-    border-radius: 6px;
+.interviewer-summary-card {
+    flex-grow: 1;
+    background: var(--content-bg);
+    border-radius: var(--border-radius);
+    padding: 20px;
     border: 1px solid var(--border-color);
-    max-width: 500px;
-    overflow-x: auto;
-    scrollbar-width: thin;
+    box-shadow: var(--shadow-sm);
 }
 
-.interviewer-count-item-inline {
+.interviewer-summary-header {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-    padding: 4px 8px;
-    border-radius: 4px;
+    gap: 8px;
+}
+
+.interviewer-summary-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.interviewer-summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    font-size: 0.9rem;
     transition: background-color 0.2s;
+    border-radius: 4px;
 }
 
-.interviewer-count-item-inline:hover {
-    background-color: var(--border-color);
+.interviewer-summary-item:not(:last-child) {
+    border-bottom: 1px dashed var(--border-color);
 }
 
-.interviewer-count-name-inline {
-    font-size: 0.85rem;
+.interviewer-summary-item:hover {
+    background-color: var(--main-bg);
+}
+
+.interviewer-summary-name {
     font-weight: 500;
-    color: var(--text-secondary);
+    color: var(--text-primary);
 }
 
-.interviewer-count-badge-inline {
-    font-size: 0.85rem;
+.interviewer-summary-badge {
+    background-color: var(--sidebar-accent);
+    color: white;
     font-weight: 700;
-    color: var(--sidebar-accent);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    min-width: 40px;
+    text-align: center;
 }
 
 /* =========================
@@ -4035,50 +4062,4 @@ div[style*="grid-template-columns"] {
 #scheduleListContainer th .sort-icon.active {
     opacity: 1;
     color: var(--sidebar-accent);
-}
-
-/* =========================
-   면접관별 건수 표시 (헤더 내 위젯) - 수정된 디자인
-   ========================= */
-.interviewer-counts-header-widget {
-    display: flex;
-    align-items: center;
-    gap: 20px; /* 아이템 간 간격 증가 */
-    background-color: var(--main-bg);
-    padding: 15px 20px;
-    border-radius: var(--border-radius);
-    border: 1px solid var(--border-color);
-    flex-grow: 1; /* 남는 공간을 모두 차지 */
-    overflow-x: auto;
-    scrollbar-width: thin;
-}
-
-.interviewer-count-item-inline {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-    padding: 6px 10px;
-    border-radius: 6px;
-    transition: background-color 0.2s;
-    border-right: 1px solid var(--border-color); /* 구분선 추가 */
-}
-
-.interviewer-count-item-inline:last-child {
-    border-right: none; /* 마지막 아이템에는 구분선 없음 */
-}
-
-.interviewer-count-name-inline {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-}
-
-.interviewer-count-badge-inline {
-    font-size: 1.1rem; /* 숫자 크기 증가 */
-    font-weight: 700;
-    color: var(--sidebar-accent);
-    background-color: rgba(129, 140, 248, 0.1);
-    padding: 4px 10px;
-    border-radius: 6px;
 }
