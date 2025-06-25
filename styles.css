@@ -4001,7 +4001,7 @@ div[style*="grid-template-columns"] {
     color: var(--sidebar-accent);
 }
 /* =========================
-   면접관별 건수 카드 디자인 (신규)
+   면접관별 건수 카드 디자인 (수정)
    ========================= */
 .interviewer-summary-card {
     background-color: var(--content-bg);
@@ -4009,7 +4009,7 @@ div[style*="grid-template-columns"] {
     padding: 20px;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
-    margin-bottom: 20px; /* 필터 바와의 간격 */
+    margin-bottom: 20px;
 }
 
 .interviewer-summary-header {
@@ -4021,32 +4021,43 @@ div[style*="grid-template-columns"] {
     border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
+    justify-content: space-between; /* 총 합계를 오른쪽으로 보내기 위함 */
     gap: 8px;
+}
+
+.interviewer-summary-header .total-count {
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.interviewer-summary-header .total-count .badge {
+    background-color: var(--sidebar-accent);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    margin-left: 5px;
 }
 
 .interviewer-summary-list {
     display: flex;
-    flex-wrap: wrap; /* 면접관이 많으면 다음 줄로 넘어가도록 */
-    gap: 12px 20px; /* 세로, 가로 간격 */
+    flex-wrap: nowrap; /* 중요: 한 줄로 표시 */
+    gap: 20px;
+    overflow-x: auto; /* 넘칠 경우 스크롤 */
+    padding-bottom: 10px;
 }
 
 .interviewer-summary-item {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 0;
+    align-items: baseline;
+    gap: 10px;
     font-size: 0.95rem;
-    min-width: 150px; /* 각 항목의 최소 너비 */
-}
-
-.interviewer-summary-item:not(:last-child) {
-    border-bottom: 1px dashed var(--border-color);
+    white-space: nowrap;
 }
 
 .interviewer-summary-name {
     font-weight: 500;
     color: var(--text-primary);
-    margin-right: 15px;
 }
 
 .interviewer-summary-badge {
@@ -4056,7 +4067,6 @@ div[style*="grid-template-columns"] {
     padding: 5px 12px;
     border-radius: 16px;
     font-size: 0.9rem;
-    min-width: 45px;
     text-align: center;
 }
 /* =========================
