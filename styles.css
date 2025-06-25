@@ -4104,3 +4104,66 @@ div[style*="grid-template-columns"] {
     flex-basis: 400px;
     min-width: 380px;
 }
+
+/* =========================
+   면접일정 페이지 D-Day & 반응형 수정
+   ========================= */
+
+/* D-Day 배지 스타일 */
+.status-badge.d-day {
+    background-color: var(--danger) !important;
+    color: white !important;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.8em;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+.status-badge.d-upcoming {
+    background-color: var(--warning) !important;
+    color: white !important;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.8em;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+/* 면접일정 페이지 반응형 개선 */
+#scheduleListContainer {
+    overflow-x: auto; /* 가로 스크롤 활성화 */
+    -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
+}
+
+#scheduleListContainer .data-table {
+    min-width: 800px; /* 테이블의 최소 너비를 설정하여 작은 화면에서 스크롤바가 생기도록 함 */
+}
+
+/* 필터 바 반응형 개선 */
+@media (max-width: 1280px) {
+    #interviewSchedule .filter-bar {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 768px) {
+    #interviewSchedule .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    #interviewSchedule .filter-group {
+        min-width: 0; /* 모바일에서 최소 너비 제한 해제 */
+    }
+    
+    #interviewSchedule .filter-group.date-filter-group {
+        min-width: 0; /* 날짜 필터도 최소 너비 제한 해제 */
+    }
+
+    #scheduleListContainer .data-table {
+        min-width: 700px; /* 모바일 환경에 맞는 최소 너비 조정 */
+    }
+}
