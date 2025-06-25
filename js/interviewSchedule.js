@@ -1,5 +1,5 @@
 // =================================
-// js/interviewSchedule.js - 면접 일정 페이지 모듈
+// js/interviewSchedule.js - 면접 일정 페이지 모듈 (오류 수정 버전)
 // =================================
 
 export const InterviewScheduleModule = {
@@ -17,7 +17,7 @@ export const InterviewScheduleModule = {
     // 페이지 초기화
     initialize(appInstance) {
         console.log('📅 면접일정 페이지 초기화 시작');
-        this.app = appInstance;
+        this.app = appInstance; // App 인스턴스 참조 저장
         this.populateFilters();
         this.setInitialDateRange();
         this.applyFilters();
@@ -25,27 +25,29 @@ export const InterviewScheduleModule = {
 
     // 필터 옵션 채우기 (면접관, 회사명)
     populateFilters() {
+        if (!this.app || !this.app.state.data.all.length) {
+            console.warn('데이터가 없어 필터를 채울 수 없습니다.');
+            return;
+        }
+
         const { headers, all } = this.app.state.data;
         const interviewerIndex = headers.indexOf('면접관');
         const companyIndex = headers.indexOf('회사명');
 
-        if (interviewerIndex === -1 || companyIndex === -1) {
-            console.warn('면접관 또는 회사명 컬럼을 찾을 수 없습니다.');
-            return;
-        }
+        if (interviewerIndex === -1) console.warn('면접관 컬럼을 찾을 수 없습니다.');
+        if (companyIndex === -1) console.warn('회사명 컬럼을 찾을 수 없습니다.');
 
-        // 중복 없이 면접관, 회사명 목록 추출
         const interviewers = [...new Set(all.map(row => row[interviewerIndex]).filter(Boolean))];
         const companies = [...new Set(all.map(row => row[companyIndex]).filter(Boolean))];
 
         const interviewerFilter = document.getElementById('scheduleInterviewerFilter');
         const companyFilter = document.getElementById('scheduleCompanyFilter');
 
-        // 기존 옵션 초기화 후 '전체' 옵션 추가
+        if (!interviewerFilter || !companyFilter) return;
+
         interviewerFilter.innerHTML = '<option value="all">전체 면접관</option>';
         companyFilter.innerHTML = '<option value="all">전체 회사</option>';
 
-        // 옵션 추가
         interviewers.sort().forEach(name => {
             interviewerFilter.innerHTML += `<option value="${name}">${name}</option>`;
         });
@@ -63,8 +65,12 @@ export const InterviewScheduleModule = {
         const oneMonthLater = new Date(today);
         oneMonthLater.setMonth(today.getMonth() + 1);
 
-        // yyyy-mm-dd 형식으로 변환
-        const formatDate = (date) => date.toISOString().split('T')[0];
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
 
         this.state.startDate = formatDate(today);
         this.state.endDate = formatDate(oneMonthLater);
@@ -75,67 +81,71 @@ export const InterviewScheduleModule = {
 
     // 모든 필터를 적용하여 데이터 처리 및 렌더링
     applyFilters() {
-        // 1. 현재 필터 상태 업데이트
+        if (!this.app) return;
+
         this.state.interviewer = document.getElementById('scheduleInterviewerFilter').value;
         this.state.company = document.getElementById('scheduleCompanyFilter').value;
         this.state.startDate = document.getElementById('scheduleStartDate').value;
         this.state.endDate = document.getElementById('scheduleEndDate').value;
 
-        // 2. 원본 데이터에서 면접 확정 건만 필터링
         const { headers, all } = this.app.state.data;
         const contactResultIndex = headers.indexOf('1차 컨택 결과');
         let interviewDateIndex = headers.indexOf('면접 날짜');
         if (interviewDateIndex === -1) interviewDateIndex = headers.indexOf('면접 날자');
 
+        if (contactResultIndex === -1 || interviewDateIndex === -1) {
+            console.error("'1차 컨택 결과' 또는 '면접 날짜' 컬럼이 시트에 없습니다.");
+            this.renderTable();
+            return;
+        }
+
         let filteredInterviews = all.filter(row => {
-            const contactResult = row[contactResultIndex];
-            const interviewDate = row[interviewDateIndex];
+            const contactResult = (row[contactResultIndex] || '').trim();
+            const interviewDate = (row[interviewDateIndex] || '').trim();
             return contactResult === '면접확정' && interviewDate;
         });
 
-        // 3. 각 필터 조건 적용
-        // 기간 필터
         if (this.state.startDate && this.state.endDate) {
-            const start = new Date(this.state.startDate);
-            const end = new Date(this.state.endDate);
-            end.setHours(23, 59, 59, 999); // 종료일을 포함시키기 위해
+            try {
+                const start = new Date(this.state.startDate);
+                const end = new Date(this.state.endDate);
+                if (isNaN(start.getTime()) || isNaN(end.getTime())) throw new Error("Invalid Date");
+                
+                end.setHours(23, 59, 59, 999);
 
-            filteredInterviews = filteredInterviews.filter(row => {
-                const date = new Date(row[interviewDateIndex]);
-                return date >= start && date <= end;
-            });
+                filteredInterviews = filteredInterviews.filter(row => {
+                    try {
+                        const date = new Date(row[interviewDateIndex]);
+                        if(isNaN(date.getTime())) return false;
+                        return date >= start && date <= end;
+                    } catch {
+                        return false;
+                    }
+                });
+            } catch (e) {
+                console.error("날짜 필터링 오류:", e);
+            }
         }
         
-        // 면접관 필터
         if (this.state.interviewer !== 'all') {
             const interviewerIndex = headers.indexOf('면접관');
-            filteredInterviews = filteredInterviews.filter(row => row[interviewerIndex] === this.state.interviewer);
+            filteredInterviews = filteredInterviews.filter(row => (row[interviewerIndex] || '').includes(this.state.interviewer));
         }
 
-        // 회사명 필터
         if (this.state.company !== 'all') {
             const companyIndex = headers.indexOf('회사명');
             filteredInterviews = filteredInterviews.filter(row => row[companyIndex] === this.state.company);
         }
 
-        // 4. 정렬
         this.state.interviews = this.sortData(filteredInterviews);
-        
-        // 5. 화면 렌더링
         this.renderTable();
     },
 
     // 데이터 정렬
     sortData(data) {
         const { headers } = this.app.state.data;
-        let sortKeyIndex;
-        
-        if (this.state.sortBy === 'interviewDate') {
-            sortKeyIndex = headers.indexOf('면접 날짜');
-            if (sortKeyIndex === -1) sortKeyIndex = headers.indexOf('면접 날자');
-        } else {
-            sortKeyIndex = headers.indexOf(this.state.sortBy);
-        }
+        let sortKeyIndex = headers.indexOf(this.state.sortBy === 'interviewDate' ? '면접 날짜' : this.state.sortBy);
+        if (sortKeyIndex === -1) sortKeyIndex = headers.indexOf('면접 날자');
         
         const timeIndex = headers.indexOf('면접 시간');
 
@@ -143,16 +153,15 @@ export const InterviewScheduleModule = {
             let valA = a[sortKeyIndex];
             let valB = b[sortKeyIndex];
 
-            // 면접 날짜 정렬 시 시간까지 고려
             if (this.state.sortBy === 'interviewDate') {
-                const dateA = new Date(valA);
-                const dateB = new Date(valB);
+                const dateA = new Date(valA || '9999-12-31');
+                const dateB = new Date(valB || '9999-12-31');
 
                 const timeA = String(a[timeIndex] || '').match(/(\d+)/);
                 const timeB = String(b[timeIndex] || '').match(/(\d+)/);
 
-                if (timeA) dateA.setHours(parseInt(timeA[0], 10));
-                if (timeB) dateB.setHours(parseInt(timeB[0], 10));
+                if (timeA) dateA.setHours(parseInt(timeA[0], 10), parseInt(String(a[timeIndex] || '').slice(-2),10) || 0);
+                if (timeB) dateB.setHours(parseInt(timeB[0], 10), parseInt(String(b[timeIndex] || '').slice(-2),10) || 0);
                 
                 valA = dateA;
                 valB = dateB;
@@ -169,7 +178,7 @@ export const InterviewScheduleModule = {
         const container = document.getElementById('scheduleListContainer');
         if (!container) return;
 
-        if (this.state.interviews.length === 0) {
+        if (!this.state.interviews || this.state.interviews.length === 0) {
             container.innerHTML = '<p class="no-results">해당 조건에 맞는 면접 일정이 없습니다.</p>';
             return;
         }
@@ -202,10 +211,9 @@ export const InterviewScheduleModule = {
         
         const date = new Date(interviewDateStr);
         const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
-        const formattedDate = `${date.getMonth() + 1}.${date.getDate()}(${weekdays[date.getDay()]})`;
+        const formattedDate = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}(${weekdays[date.getDay()]})`;
         const formattedDateTime = `${formattedDate} ${interviewTimeStr}`;
 
-        // D-Day 계산
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const interviewDay = new Date(interviewDateStr);
@@ -224,12 +232,14 @@ export const InterviewScheduleModule = {
             dDayBadge = `<span class="d-day-badge d-future">D-${diffDays}</span>`;
         }
         
-        // 면접관 태그
         const interviewers = getValue('면접관').split(',').map(name => name.trim()).filter(Boolean);
         const interviewerTags = interviewers.map(name => `<span class="interviewer-tag">${name}</span>`).join('');
 
+        // 행 클릭 시 상세 모달을 열기 위해 row 데이터를 인코딩하여 저장
+        const rowDataEncoded = encodeURIComponent(JSON.stringify(row));
+
         return `
-            <tr onclick="globalThis.App.modal.openDetail(JSON.parse(decodeURIComponent('${encodeURIComponent(JSON.stringify(row))}')))">
+            <tr onclick="globalThis.App.modal.openDetail(JSON.parse(decodeURIComponent('${rowDataEncoded}')))">
                 <td>${formattedDateTime}</td>
                 <td>${dDayBadge}</td>
                 <td>${applicantName}</td>
