@@ -776,44 +776,62 @@
                     <div class="page-header">
                         <h2 class="page-title">면접관별 상세 일정</h2>
                         <div class="header-actions">
+                            <div class="column-toggle-container">
+                                <button class="secondary-btn" id="scheduleColumnToggleBtn" aria-label="컬럼 표시 설정"><i class="fas fa-columns"></i> 컬럼 설정</button>
+                                <div class="column-toggle-dropdown" id="scheduleColumnToggleDropdown"></div>
+                            </div>
                             <button class="secondary-btn" onclick="globalThis.App.interviewSchedule.refresh()" aria-label="일정 새로고침">
                                 <i class="fas fa-sync-alt"></i> 새로고침
                             </button>
                         </div>
                     </div>
                     
-                    <div class="filter-bar" role="search" aria-label="면접일정 필터링">
-                        <div class="filter-group">
-                            <label for="scheduleInterviewerFilter">면접관</label>
-                            <select id="scheduleInterviewerFilter" onchange="globalThis.App.interviewSchedule.applyFilters()">
-                                <option value="all">전체 면접관</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="scheduleCompanyFilter">회사명</label>
-                            <select id="scheduleCompanyFilter" onchange="globalThis.App.interviewSchedule.applyFilters()">
-                                <option value="all">전체 회사</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label>조회 기간</label>
-                            <div class="date-filter-container">
-                               <input type="date" id="scheduleStartDate" onchange="globalThis.App.interviewSchedule.applyFilters()">
-                               <span style="margin: 0 5px;">-</span>
-                               <input type="date" id="scheduleEndDate" onchange="globalThis.App.interviewSchedule.applyFilters()">
+                    <div class="interview-page-container">
+                        <div class="filter-bar-wrapper">
+                            <div class="filter-bar" role="search" aria-label="면접일정 필터링">
+                                <div class="filter-group search-input">
+                                    <label for="scheduleSearch">통합 검색</label>
+                                    <div style="position: relative;">
+                                        <i class="fas fa-search search-icon"></i>
+                                        <input type="text" id="scheduleSearch" placeholder="이름, 비고 등 검색..." oninput="globalThis.App.interviewSchedule.applyFilters()" />
+                                    </div>
+                                </div>
+                                <div class="filter-group">
+                                    <label for="scheduleRouteFilter">지원루트</label>
+                                    <select id="scheduleRouteFilter" onchange="globalThis.App.interviewSchedule.applyFilters()"></select>
+                                </div>
+                                <div class="filter-group">
+                                    <label for="schedulePositionFilter">모집분야</label>
+                                    <select id="schedulePositionFilter" onchange="globalThis.App.interviewSchedule.applyFilters()"></select>
+                                </div>
+                                <div class="filter-group">
+                                    <label for="scheduleInterviewerFilter">면접관</label>
+                                    <select id="scheduleInterviewerFilter" onchange="globalThis.App.interviewSchedule.applyFilters()"></select>
+                                </div>
+                                <div class="filter-group">
+                                    <label for="scheduleCompanyFilter">회사명</label>
+                                    <select id="scheduleCompanyFilter" onchange="globalThis.App.interviewSchedule.applyFilters()"></select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>조회 기간</label>
+                                    <div class="date-filter-container" id="scheduleDateFilterContainer">
+                                        </div>
+                                </div>
+                                <button class="secondary-btn reset-btn" onclick="globalThis.App.interviewSchedule.resetFilters()" aria-label="모든 필터 초기화">
+                                    <i class="fas fa-undo"></i> 초기화
+                                </button>
                             </div>
                         </div>
-                        <button class="secondary-btn reset-btn" onclick="globalThis.App.interviewSchedule.resetFilters()" aria-label="모든 필터 초기화">
-                            <i class="fas fa-undo"></i> 초기화
-                        </button>
+
+                        <div class="interviewer-counts-container" id="interviewerCountsContainer">
+                            </div>
                     </div>
 
                     <div class="content-container">
                         <div class="table-container" id="scheduleListContainer">
-                        </div>
+                            </div>
                     </div>
                 </div>
-
             </div>
         </main>
     </div>
