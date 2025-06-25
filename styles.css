@@ -3913,156 +3913,38 @@ div[style*="grid-template-columns"] {
 }
 
 /* =========================
-   면접일정 페이지 & 필터 바
-   ========================= */
-#interviewSchedule .page-header {
-    margin-bottom: 20px;
-}
-
-#interviewSchedule .filter-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    align-items: flex-end; /* 중요: 요소들을 아래쪽으로 정렬 */
-    padding: 20px;
-    background: var(--content-bg);
-    border-radius: var(--border-radius);
-    margin-bottom: 20px;
-    box-shadow: var(--shadow-sm);
-}
-
-#interviewSchedule .filter-group {
-    display: flex;
-    flex-direction: column;
-}
-
-#interviewSchedule .filter-group label {
-    font-size: 0.85rem;
-    font-weight: 500;
-    margin-bottom: 5px;
-    color: var(--text-secondary);
-}
-
-#interviewSchedule .filter-group select,
-#interviewSchedule .filter-group input[type="date"] {
-    padding: 10px 12px;
-    font-size: 0.9rem;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background: var(--bg); /* input 배경은 메인 배경과 통일 */
-    color: var(--text-primary);
-    min-width: 180px; /* 최소 너비 지정 */
-}
-
-#interviewSchedule .date-filter-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-#interviewSchedule .reset-btn {
-    height: 42px; /* 다른 필터와 높이 맞춤 */
-}
-
-
-/* =========================
-   면접일정 테이블
-   ========================= */
-#scheduleListContainer .data-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-#scheduleListContainer th, 
-#scheduleListContainer td {
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--border-color);
-    text-align: left;
-    vertical-align: middle;
-}
-
-#scheduleListContainer th {
-    background: var(--bg);
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    position: sticky;
-    top: 0;
-    z-index: 1;
-}
-
-#scheduleListContainer tbody tr {
-    transition: background-color 0.2s ease;
-    cursor: pointer;
-}
-
-#scheduleListContainer tbody tr:hover {
-    background-color: var(--bg);
-}
-
-.d-day-badge {
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-weight: 700;
-    font-size: 0.8rem;
-    color: white;
-    min-width: 55px;
-    text-align: center;
-    display: inline-block;
-}
-
-.d-day-badge.d-day { background-color: var(--danger); }
-.d-day-badge.d-1 { background-color: var(--warning); }
-.d-day-badge.d-future { background-color: var(--success); }
-.d-day-badge.d-past { background-color: var(--secondary-color); opacity: 0.7; }
-
-.interviewer-cell {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    align-items: center;
-}
-
-.interviewer-tag {
-    background-color: var(--bg);
-    border: 1px solid var(--border-color);
-    padding: 4px 10px;
-    border-radius: 5px;
-    font-size: 0.85rem;
-    font-weight: 500;
-}
-
-.no-results {
-    text-align: center;
-    padding: 50px;
-    color: var(--text-secondary);
-    font-size: 1.1rem;
-    font-style: italic;
-}
-/* =========================
-   면접일정 페이지 레이아웃 및 필터
+   면접일정 페이지 & 필터 바 (최종 수정본)
    ========================= */
 
 #interviewSchedule .page-header {
     margin-bottom: 20px;
 }
 
+/* 필터와 면접관 건수 컨테이너를 감싸는 Flex 박스 */
 #interviewSchedule .interview-page-container {
     display: flex;
+    flex-wrap: wrap; /* 화면이 작아지면 아래로 떨어지도록 */
     gap: 20px;
     margin-bottom: 20px;
     align-items: flex-start;
 }
 
+/* 필터 바를 감싸는 영역 */
 #interviewSchedule .filter-bar-wrapper {
-    flex-grow: 1;
+    flex: 1; /* 남는 공간을 모두 차지하도록 */
+    min-width: 500px; /* 최소 너비 */
 }
 
+/* 필터 바 내부 아이템 정렬 */
 #interviewSchedule .filter-bar {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 15px;
+    padding: 20px; 
+    background: var(--content-bg); 
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
 }
 
 #interviewSchedule .filter-group input,
@@ -4071,12 +3953,13 @@ div[style*="grid-template-columns"] {
     min-width: 0;
 }
 
-#interviewSchedule .filter-group .date-filter-container {
+/* 날짜 필터 UI */
+#interviewSchedule .date-filter-container {
     display: flex;
     align-items: center;
     gap: 5px;
-    height: 44px;
-    background-color: var(--content-bg);
+    height: 42px; /* 다른 필터와 높이 맞춤 */
+    background-color: var(--main-bg);
     border: 1px solid var(--border-color);
     padding: 5px;
     border-radius: 6px; 
@@ -4090,6 +3973,7 @@ div[style*="grid-template-columns"] {
     cursor: pointer;
     border-radius: 4px;
     font-size: 0.85rem;
+    height: 100%;
     transition: all 0.2s ease;
 }
 
@@ -4110,41 +3994,55 @@ div[style*="grid-template-columns"] {
 #interviewSchedule #dateInputsContainer input {
     height: auto;
     width: auto;
+    padding: 6px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
 }
 
+
 /* =========================
-   면접관별 건수 표시
+   면접관별 건수 표시 (Request 1)
    ========================= */
 .interviewer-counts-container {
     flex-shrink: 0;
-    width: 250px;
+    width: 280px;
     background: var(--content-bg);
     border-radius: var(--border-radius);
-    padding: 15px;
+    padding: 20px;
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
 }
 
 .interviewer-counts-header {
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: var(--text-primary);
     padding-bottom: 10px;
     margin-bottom: 10px;
     border-bottom: 1px solid var(--border-color);
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 .interviewer-count-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 5px;
+    padding: 10px 5px;
     font-size: 0.9rem;
+    transition: background-color 0.2s;
+    border-radius: 4px;
 }
 
 .interviewer-count-item:not(:last-child) {
     border-bottom: 1px dashed var(--border-color);
+}
+
+.interviewer-count-item:hover {
+    background-color: var(--main-bg);
 }
 
 .interviewer-count-name {
@@ -4156,13 +4054,15 @@ div[style*="grid-template-columns"] {
     background-color: var(--sidebar-accent);
     color: white;
     font-weight: 700;
-    padding: 3px 8px;
-    border-radius: 10px;
-    font-size: 0.8rem;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    min-width: 40px;
+    text-align: center;
 }
 
 /* =========================
-   면접일정 테이블 스타일
+   면접일정 테이블 (Request 3)
    ========================= */
 #scheduleListContainer .data-table {
     width: 100%;
@@ -4187,7 +4087,22 @@ div[style*="grid-template-columns"] {
     position: sticky;
     top: 0;
     z-index: 1;
+    cursor: pointer;
+    user-select: none;
 }
+#scheduleListContainer th:hover {
+    background-color: var(--border-color);
+}
+#scheduleListContainer th .sort-icon {
+    margin-left: 5px;
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+#scheduleListContainer th .sort-icon.active {
+    opacity: 1;
+    color: var(--sidebar-accent);
+}
+
 
 #scheduleListContainer tbody tr {
     transition: background-color 0.2s ease;
@@ -4196,4 +4111,44 @@ div[style*="grid-template-columns"] {
 
 #scheduleListContainer tbody tr:hover {
     background-color: var(--main-bg);
+}
+
+#scheduleListContainer .d-day-badge {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: white;
+    min-width: 55px;
+    text-align: center;
+    display: inline-block;
+}
+
+#scheduleListContainer .d-day-badge.d-day { background-color: var(--danger); }
+#scheduleListContainer .d-day-badge.d-1 { background-color: var(--warning); }
+#scheduleListContainer .d-day-badge.d-future { background-color: var(--success); }
+#scheduleListContainer .d-day-badge.d-past { background-color: var(--secondary-color); opacity: 0.7; }
+
+#scheduleListContainer .interviewer-cell {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+#scheduleListContainer .interviewer-tag {
+    background-color: var(--main-bg);
+    border: 1px solid var(--border-color);
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+#scheduleListContainer .no-results {
+    text-align: center;
+    padding: 50px;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    font-style: italic;
 }
