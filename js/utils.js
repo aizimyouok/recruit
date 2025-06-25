@@ -4,26 +4,27 @@
 
 export const Utils = {
     formatInterviewTime(timeValue) {
-        if (!timeValue || timeValue.trim() === '-') {
+        if (!timeValue || String(timeValue).trim() === '-' || String(timeValue).trim() === '') {
             return '-';
         }
 
-        try {
-            const date = new Date(timeValue);
+        const timeStr = String(timeValue).replace(/'/g, '').trim();
+        // 정규식: HH, HH:mm, HH시, HH시 mm분 등 다양한 형식을 처리
+        const timeMatch = timeStr.match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
 
-            if (isNaN(date.getTime())) {
-                return String(timeValue);
+        if (timeMatch) {
+            let hour = parseInt(timeMatch[1], 10);
+            let minute = parseInt(timeMatch[2] || '0', 10);
+
+            if (!isNaN(hour) && !isNaN(minute) && hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+                const hourStr = String(hour).padStart(2, '0');
+                const minuteStr = String(minute).padStart(2, '0');
+                return `${hourStr}:${minuteStr}`;
             }
-
-            return date.toLocaleTimeString('ko-KR', {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
-            });
-
-        } catch (e) {
-            return String(timeValue);
         }
+        
+        // 매칭 실패 시 원본 문자열 반환
+        return timeStr;
     },
 
     formatDate(dateValue) {
