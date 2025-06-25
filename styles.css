@@ -3932,7 +3932,8 @@ div[style*="grid-template-columns"] {
 /* 필터 바 내부 아이템 정렬 */
 #interviewSchedule .filter-bar {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    /* auto-fit 대신 auto-fill을 사용하고, 각 필터의 너비를 더 유연하게 조절합니다. */
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 15px;
     padding: 20px; 
     background: var(--content-bg); 
@@ -3943,16 +3944,18 @@ div[style*="grid-template-columns"] {
 
 #interviewSchedule .filter-group {
     grid-column: span 1;
+    /* 검색창과 날짜 필터가 다른 필터보다 넓은 공간을 차지하도록 설정합니다. */
 }
 
 #interviewSchedule .filter-group.search-input {
     grid-column: span 1;
+    min-width: 200px; /* 검색창 최소 너비 보장 */
 }
 
 #interviewSchedule .filter-group:has(#scheduleDateFilterContainer) {
-    grid-column: span 2;
+    grid-column: span 2; /* 날짜 필터는 2칸을 사용하도록 설정 */
+    min-width: 320px; /* 날짜 필터 최소 너비 보장 */
 }
-
 @media (max-width: 900px) {
     #interviewSchedule .filter-group:has(#scheduleDateFilterContainer) {
         grid-column: span 1;
