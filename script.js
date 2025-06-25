@@ -12,6 +12,8 @@ import { ThemeModule } from './theme.js';
 import { CacheModule } from './js/cache.js';
 import { DataCacheModule } from './js/dataCache.js';
 import { SmartSyncModule } from './js/smartSync.js';
+// ★★★★★ 새로 만든 모듈 import ★★★★★
+import { InterviewScheduleModule } from './js/interviewSchedule.js';
 
 // =========================
 // 애플리케이션 메인 객체
@@ -256,140 +258,141 @@ const App = {
         },
 
         // 🔥 새로운 통합 연령/성별 분석
-updateAgeGenderStats(filteredData) {
-    const ageIndex = App.state.data.headers.indexOf('나이');
-    const genderIndex = App.state.data.headers.indexOf('성별');
-    const container = document.getElementById('ageGenderTab');
-    
-    if (ageIndex === -1 || !container) {
-        App.demographics.showNoDataMessage('ageGenderTab');
-        return;
-    }
-    
-    // 연령대별 성별 데이터 집계
-    const ageGroups = {
-        '60+': { total: 0, male: 0, female: 0 },
-        '50-59': { total: 0, male: 0, female: 0 },
-        '40-49': { total: 0, male: 0, female: 0 },
-        '30-39': { total: 0, male: 0, female: 0 },
-        '20-29': { total: 0, male: 0, female: 0 },
-        '~19': { total: 0, male: 0, female: 0 }
-    };
-    
-    let totalCount = 0;
-    
-    filteredData.forEach(row => {
-        const ageStr = String(row[ageIndex] || '').trim();
-        const gender = String(row[genderIndex] || '').trim();
-        
-        if (!ageStr || ageStr === '-') return;
-        
-        const age = parseInt(ageStr, 10);
-        if (isNaN(age)) return;
-        
-        let ageGroup;
-        if (age >= 60) ageGroup = '60+';
-        else if (age >= 50) ageGroup = '50-59';
-        else if (age >= 40) ageGroup = '40-49';
-        else if (age >= 30) ageGroup = '30-39';
-        else if (age >= 20) ageGroup = '20-29';
-        else ageGroup = '~19';
-        
-        ageGroups[ageGroup].total++;
-        totalCount++;
-        
-        if (gender === '남') ageGroups[ageGroup].male++;
-        else if (gender === '여') ageGroups[ageGroup].female++;
-    });
-    
-    // 🔥 HTML 렌더링 - 총합과 성별 분포를 함께 표시
-    let html = `
-        <div class="age-gender-container">
-            <div class="age-gender-summary">
-                <h4 style="text-align: center; margin-bottom: 20px; color: var(--text-primary); font-size: 1.2rem;">
-                    <i class="fas fa-users" style="color: var(--sidebar-accent); margin-right: 8px;"></i>
-                    연령별/성별 분포
-                </h4>
-                <div class="total-stats" style="text-align: center; margin-bottom: 30px; padding: 15px; background: var(--main-bg); border-radius: 10px;">
-                    <span style="font-size: 2rem; font-weight: 800; color: var(--sidebar-accent);">${totalCount}</span>
-                    <span style="color: var(--text-secondary); margin-left: 10px;">총 지원자</span>
-                </div>
-            </div>
+        updateAgeGenderStats(filteredData) {
+            const ageIndex = App.state.data.headers.indexOf('나이');
+            const genderIndex = App.state.data.headers.indexOf('성별');
+            const container = document.getElementById('ageGenderTab');
             
-            <div class="age-gender-chart">
-    `;
-    
-    // 연령대별 차트
-    Object.entries(ageGroups).forEach(([ageGroup, data]) => {
-        const percentage = totalCount > 0 ? Math.round((data.total / totalCount) * 100) : 0;
-        const malePercentage = data.total > 0 ? Math.round((data.male / data.total) * 100) : 0;
-        const femalePercentage = data.total > 0 ? Math.round((data.female / data.total) * 100) : 0;
-        
-        html += `
-            <div class="age-group-row" style="display: flex; align-items: center; margin-bottom: 20px; padding: 15px; background: var(--content-bg); border-radius: 12px; border: 2px solid var(--border-color); transition: all 0.3s ease;">
-                <div class="age-label" style="min-width: 80px; text-align: center; font-weight: 700; color: var(--text-primary); font-size: 1.1rem;">
-                    ${ageGroup}
-                </div>
+            if (ageIndex === -1 || !container) {
+                App.demographics.showNoDataMessage('ageGenderTab');
+                return;
+            }
+            
+            // 연령대별 성별 데이터 집계
+            const ageGroups = {
+                '60+': { total: 0, male: 0, female: 0 },
+                '50-59': { total: 0, male: 0, female: 0 },
+                '40-49': { total: 0, male: 0, female: 0 },
+                '30-39': { total: 0, male: 0, female: 0 },
+                '20-29': { total: 0, male: 0, female: 0 },
+                '~19': { total: 0, male: 0, female: 0 }
+            };
+            
+            let totalCount = 0;
+            
+            filteredData.forEach(row => {
+                const ageStr = String(row[ageIndex] || '').trim();
+                const gender = String(row[genderIndex] || '').trim();
                 
-                <div class="age-total" style="min-width: 100px; text-align: center; margin: 0 20px;">
-                    <div style="font-size: 1.8rem; font-weight: 700; color: var(--sidebar-accent);">${data.total}</div>
-                    <div style="font-size: 0.85rem; color: var(--text-secondary);">${percentage}%</div>
-                </div>
+                if (!ageStr || ageStr === '-') return;
                 
-                <div class="gender-breakdown" style="flex: 1; display: flex; gap: 15px; align-items: center;">
-                    <div class="male-section" style="flex: 1;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                            <span style="font-size: 0.9rem; color: #3b82f6; font-weight: 600;">
-                                <i class="fas fa-mars" style="margin-right: 5px;"></i>남성
-                            </span>
-                            <span style="font-weight: 600; color: #3b82f6;">${data.male}명 (${malePercentage}%)</span>
-                        </div>
-                        <div class="progress-bar" style="height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;">
-                            <div style="height: 100%; background: linear-gradient(90deg, #3b82f6, #2563eb); width: ${malePercentage}%; transition: width 0.5s ease;"></div>
+                const age = parseInt(ageStr, 10);
+                if (isNaN(age)) return;
+                
+                let ageGroup;
+                if (age >= 60) ageGroup = '60+';
+                else if (age >= 50) ageGroup = '50-59';
+                else if (age >= 40) ageGroup = '40-49';
+                else if (age >= 30) ageGroup = '30-39';
+                else if (age >= 20) ageGroup = '20-29';
+                else ageGroup = '~19';
+                
+                ageGroups[ageGroup].total++;
+                totalCount++;
+                
+                if (gender === '남') ageGroups[ageGroup].male++;
+                else if (gender === '여') ageGroups[ageGroup].female++;
+            });
+            
+            // 🔥 HTML 렌더링 - 총합과 성별 분포를 함께 표시
+            let html = `
+                <div class="age-gender-container">
+                    <div class="age-gender-summary">
+                        <h4 style="text-align: center; margin-bottom: 20px; color: var(--text-primary); font-size: 1.2rem;">
+                            <i class="fas fa-users" style="color: var(--sidebar-accent); margin-right: 8px;"></i>
+                            연령별/성별 분포
+                        </h4>
+                        <div class="total-stats" style="text-align: center; margin-bottom: 30px; padding: 15px; background: var(--main-bg); border-radius: 10px;">
+                            <span style="font-size: 2rem; font-weight: 800; color: var(--sidebar-accent);">${totalCount}</span>
+                            <span style="color: var(--text-secondary); margin-left: 10px;">총 지원자</span>
                         </div>
                     </div>
                     
-                    <div class="female-section" style="flex: 1;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                            <span style="font-size: 0.9rem; color: #ec4899; font-weight: 600;">
-                                <i class="fas fa-venus" style="margin-right: 5px;"></i>여성
-                            </span>
-                            <span style="font-weight: 600; color: #ec4899;">${data.female}명 (${femalePercentage}%)</span>
+                    <div class="age-gender-chart">
+            `;
+            
+            // 연령대별 차트
+            Object.entries(ageGroups).forEach(([ageGroup, data]) => {
+                const percentage = totalCount > 0 ? Math.round((data.total / totalCount) * 100) : 0;
+                const malePercentage = data.total > 0 ? Math.round((data.male / data.total) * 100) : 0;
+                const femalePercentage = data.total > 0 ? Math.round((data.female / data.total) * 100) : 0;
+                
+                html += `
+                    <div class="age-group-row" style="display: flex; align-items: center; margin-bottom: 20px; padding: 15px; background: var(--content-bg); border-radius: 12px; border: 2px solid var(--border-color); transition: all 0.3s ease;">
+                        <div class="age-label" style="min-width: 80px; text-align: center; font-weight: 700; color: var(--text-primary); font-size: 1.1rem;">
+                            ${ageGroup}
                         </div>
-                        <div class="progress-bar" style="height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;">
-                            <div style="height: 100%; background: linear-gradient(90deg, #ec4899, #db2777); width: ${femalePercentage}%; transition: width 0.5s ease;"></div>
+                        
+                        <div class="age-total" style="min-width: 100px; text-align: center; margin: 0 20px;">
+                            <div style="font-size: 1.8rem; font-weight: 700; color: var(--sidebar-accent);">${data.total}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);">${percentage}%</div>
+                        </div>
+                        
+                        <div class="gender-breakdown" style="flex: 1; display: flex; gap: 15px; align-items: center;">
+                            <div class="male-section" style="flex: 1;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="font-size: 0.9rem; color: #3b82f6; font-weight: 600;">
+                                        <i class="fas fa-mars" style="margin-right: 5px;"></i>남성
+                                    </span>
+                                    <span style="font-weight: 600; color: #3b82f6;">${data.male}명 (${malePercentage}%)</span>
+                                </div>
+                                <div class="progress-bar" style="height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;">
+                                    <div style="height: 100%; background: linear-gradient(90deg, #3b82f6, #2563eb); width: ${malePercentage}%; transition: width 0.5s ease;"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="female-section" style="flex: 1;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                    <span style="font-size: 0.9rem; color: #ec4899; font-weight: 600;">
+                                        <i class="fas fa-venus" style="margin-right: 5px;"></i>여성
+                                    </span>
+                                    <span style="font-weight: 600; color: #ec4899;">${data.female}명 (${femalePercentage}%)</span>
+                                </div>
+                                <div class="progress-bar" style="height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;">
+                                    <div style="height: 100%; background: linear-gradient(90deg, #ec4899, #db2777); width: ${femalePercentage}%; transition: width 0.5s ease;"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        `;
-    });
-    
-    html += `
-            </div>
-        </div>
-    `;
-    
-    container.innerHTML = html;
-    
-    // 🔥 호버 효과 추가
-    setTimeout(() => {
-        const rows = container.querySelectorAll('.age-group-row');
-        rows.forEach(row => {
-            row.addEventListener('mouseenter', () => {
-                row.style.transform = 'translateX(8px)';
-                row.style.borderColor = 'var(--sidebar-accent)';
-                row.style.boxShadow = '0 4px 15px rgba(129, 140, 248, 0.2)';
+                `;
             });
             
-            row.addEventListener('mouseleave', () => {
-                row.style.transform = 'translateX(0)';
-                row.style.borderColor = 'var(--border-color)';
-                row.style.boxShadow = '';
-            });
-        });
-    }, 100);
-},
+            html += `
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+            
+            // 🔥 호버 효과 추가
+            setTimeout(() => {
+                const rows = container.querySelectorAll('.age-group-row');
+                rows.forEach(row => {
+                    row.addEventListener('mouseenter', () => {
+                        row.style.transform = 'translateX(8px)';
+                        row.style.borderColor = 'var(--sidebar-accent)';
+                        row.style.boxShadow = '0 4px 15px rgba(129, 140, 248, 0.2)';
+                    });
+                    
+                    row.addEventListener('mouseleave', () => {
+                        row.style.transform = 'translateX(0)';
+                        row.style.borderColor = 'var(--border-color)';
+                        row.style.boxShadow = '';
+                    });
+                });
+            }, 100);
+        },
+
         createTooltip() {
             let tooltip = document.querySelector('.demo-tooltip');
             if (!tooltip) {
@@ -1278,16 +1281,16 @@ updateAgeGenderStats(filteredData) {
                 const day = now.getDate().toString().padStart(2, '0');
 
                 if (App.state.ui.activeDateMode === 'all') {
-        html = `<span style="color: var(--text-secondary); font-size: 0.9rem; padding: 0 10px;">모든 데이터 표시</span>`;
-    } else if (App.state.ui.activeDateMode === 'year') {
-        html = `<button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(-1)">&lt;</button><input type="number" id="dateInput" value="${year}" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()" style="text-align: center; width: 80px;"><button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(1)">&gt;</button>`;
-    } else if (App.state.ui.activeDateMode === 'month') {
-        html = `<button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(-1)">&lt;</button><input type="month" id="dateInput" value="${year}-${month}" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()"><button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(1)">&gt;</button>`;
-    } else if (App.state.ui.activeDateMode === 'day') {
-        html = `<button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(-1)">&lt;</button><input type="date" id="dateInput" value="${year}-${month}-${day}" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()"><button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(1)">&gt;</button>`;
-    } else if (App.state.ui.activeDateMode === 'range') {
-        html = `<input type="date" id="startDateInput" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()"><span style="margin: 0 5px;">-</span><input type="date" id="endDateInput" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()">`;
-    }
+                    html = `<span style="color: var(--text-secondary); font-size: 0.9rem; padding: 0 10px;">모든 데이터 표시</span>`;
+                } else if (App.state.ui.activeDateMode === 'year') {
+                    html = `<button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(-1)">&lt;</button><input type="number" id="dateInput" value="${year}" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()" style="text-align: center; width: 80px;"><button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(1)">&gt;</button>`;
+                } else if (App.state.ui.activeDateMode === 'month') {
+                    html = `<button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(-1)">&lt;</button><input type="month" id="dateInput" value="${year}-${month}" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()"><button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(1)">&gt;</button>`;
+                } else if (App.state.ui.activeDateMode === 'day') {
+                    html = `<button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(-1)">&lt;</button><input type="date" id="dateInput" value="${year}-${month}-${day}" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()"><button class="date-nav-btn" onclick="globalThis.App && globalThis.App.filter && globalThis.App.filter.navigateDate(1)">&gt;</button>`;
+                } else if (App.state.ui.activeDateMode === 'range') {
+                    html = `<input type="date" id="startDateInput" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()"><span style="margin: 0 5px;">-</span><input type="date" id="endDateInput" onchange="globalThis.App && globalThis.App.filter && globalThis.App.filter.apply()">`;
+                }
                 container.innerHTML = html;
             } catch (error) {
                 console.error('날짜 필터 UI 업데이트 오류:', error);
@@ -1815,108 +1818,108 @@ updateAgeGenderStats(filteredData) {
         },
 
         calculateStats(filteredApplicants) {
-    const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
-    const interviewResultIndex = App.state.data.headers.indexOf('면접결과');
-    const joinDateIndex = App.state.data.headers.indexOf('입과일');
-    
-    const totalCount = filteredApplicants.length;
-    let interviewPendingCount = 0;
-    
-    if (contactResultIndex !== -1) {
-        const today = new Date(); // 🔥 현재 시간 기준
-        console.log('🔍 현재 시간:', today); // 🔥 디버깅용
-        
-        let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
-        if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
-        const interviewTimeIndex = App.state.data.headers.indexOf('면접 시간');
-        
-        console.log('🔍 전체 필터링된 지원자:', filteredApplicants.length); // 🔥 디버깅용
-        
-        interviewPendingCount = filteredApplicants.filter(row => {
-            const contactResult = String(row[contactResultIndex] || '').trim();
-            console.log('🔍 1차 컨택 결과:', contactResult); // 🔥 디버깅용
+            const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
+            const interviewResultIndex = App.state.data.headers.indexOf('면접결과');
+            const joinDateIndex = App.state.data.headers.indexOf('입과일');
             
-            if (contactResult !== '면접확정') return false;
+            const totalCount = filteredApplicants.length;
+            let interviewPendingCount = 0;
             
-            if (interviewDateIndex !== -1) {
-                const interviewDate = row[interviewDateIndex];
-                const interviewTime = row[interviewTimeIndex];
-                console.log('🔍 면접 날짜:', interviewDate, '면접 시간:', interviewTime); // 🔥 디버깅용
+            if (contactResultIndex !== -1) {
+                const today = new Date(); // 🔥 현재 시간 기준
+                console.log('🔍 현재 시간:', today); // 🔥 디버깅용
                 
-                if (interviewDate) {
-                    try {
-                        const date = new Date(interviewDate);
+                let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
+                if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
+                const interviewTimeIndex = App.state.data.headers.indexOf('면접 시간');
+                
+                console.log('🔍 전체 필터링된 지원자:', filteredApplicants.length); // 🔥 디버깅용
+                
+                interviewPendingCount = filteredApplicants.filter(row => {
+                    const contactResult = String(row[contactResultIndex] || '').trim();
+                    console.log('🔍 1차 컨택 결과:', contactResult); // 🔥 디버깅용
+                    
+                    if (contactResult !== '면접확정') return false;
+                    
+                    if (interviewDateIndex !== -1) {
+                        const interviewDate = row[interviewDateIndex];
+                        const interviewTime = row[interviewTimeIndex];
+                        console.log('🔍 면접 날짜:', interviewDate, '면접 시간:', interviewTime); // 🔥 디버깅용
                         
-                        // 🔥 면접 시간 설정 로직 개선
-                        if (interviewTime) {
-                            const timeStr = String(interviewTime).replace(/'/g, '').trim();
-                            console.log('🔍 면접 시간 파싱 전:', timeStr); // 🔥 디버깅용
-                            const timeMatch = timeStr.match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
-                            
-                            if (timeMatch) {
-                                const hour = parseInt(timeMatch[1]);
-                                const minute = parseInt(timeMatch[2] || '0');
-                                console.log('🔍 파싱된 시간:', hour, '시', minute, '분'); // 🔥 디버깅용
+                        if (interviewDate) {
+                            try {
+                                const date = new Date(interviewDate);
                                 
-                                // 🔥 시간 유효성 검사 추가
-                                if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
-                                    date.setHours(hour, minute, 0, 0);
+                                // 🔥 면접 시간 설정 로직 개선
+                                if (interviewTime) {
+                                    const timeStr = String(interviewTime).replace(/'/g, '').trim();
+                                    console.log('🔍 면접 시간 파싱 전:', timeStr); // 🔥 디버깅용
+                                    const timeMatch = timeStr.match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
+                                    
+                                    if (timeMatch) {
+                                        const hour = parseInt(timeMatch[1]);
+                                        const minute = parseInt(timeMatch[2] || '0');
+                                        console.log('🔍 파싱된 시간:', hour, '시', minute, '분'); // 🔥 디버깅용
+                                        
+                                        // 🔥 시간 유효성 검사 추가
+                                        if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+                                            date.setHours(hour, minute, 0, 0);
+                                        } else {
+                                            console.log('🔍 잘못된 시간 형식, 하루 끝으로 설정'); // 🔥 디버깅용
+                                            date.setHours(23, 59, 59, 999);
+                                        }
+                                    } else {
+                                        console.log('🔍 시간 파싱 실패, 하루 끝으로 설정'); // 🔥 디버깅용
+                                        date.setHours(23, 59, 59, 999);
+                                    }
                                 } else {
-                                    console.log('🔍 잘못된 시간 형식, 하루 끝으로 설정'); // 🔥 디버깅용
+                                    console.log('🔍 시간 정보 없음, 하루 끝으로 설정'); // 🔥 디버깅용
                                     date.setHours(23, 59, 59, 999);
                                 }
-                            } else {
-                                console.log('🔍 시간 파싱 실패, 하루 끝으로 설정'); // 🔥 디버깅용
-                                date.setHours(23, 59, 59, 999);
+                                
+                                console.log('🔍 최종 면접 시간:', date); // 🔥 디버깅용
+                                console.log('🔍 면접 시간 >= 현재 시간:', date >= today); // 🔥 디버깅용
+                                
+                                // 🔥 현재 시간 이후만 카운트
+                                const isUpcoming = date >= today;
+                                if (isUpcoming) {
+                                    console.log('✅ 카운트에 포함됨:', row[App.state.data.headers.indexOf('이름')]); // 🔥 디버깅용
+                                }
+                                return isUpcoming;
+                            } catch (e) {
+                                console.error('🔍 날짜 파싱 오류:', e); // 🔥 디버깅용
+                                return false;
                             }
-                        } else {
-                            console.log('🔍 시간 정보 없음, 하루 끝으로 설정'); // 🔥 디버깅용
-                            date.setHours(23, 59, 59, 999);
                         }
-                        
-                        console.log('🔍 최종 면접 시간:', date); // 🔥 디버깅용
-                        console.log('🔍 면접 시간 >= 현재 시간:', date >= today); // 🔥 디버깅용
-                        
-                        // 🔥 현재 시간 이후만 카운트
-                        const isUpcoming = date >= today;
-                        if (isUpcoming) {
-                            console.log('✅ 카운트에 포함됨:', row[App.state.data.headers.indexOf('이름')]); // 🔥 디버깅용
-                        }
-                        return isUpcoming;
-                    } catch (e) {
-                        console.error('🔍 날짜 파싱 오류:', e); // 🔥 디버깅용
-                        return false;
                     }
-                }
+                    return false;
+                }).length;
             }
-            return false;
-        }).length;
-    }
 
-    console.log('🔍 최종 면접 대기 인원:', interviewPendingCount); // 🔥 디버깅용
+            console.log('🔍 최종 면접 대기 인원:', interviewPendingCount); // 🔥 디버깅용
 
-    // 🔥 합격률 계산
-    let successRate = 0;
-    if (interviewResultIndex !== -1 && totalCount > 0) {
-        const passedApplicants = filteredApplicants.filter(row => {
-            const interviewResult = String(row[interviewResultIndex] || '').trim();
-            return interviewResult === '합격';
-        });
-        successRate = Math.round((passedApplicants.length / totalCount) * 100);
-    }
+            // 🔥 합격률 계산
+            let successRate = 0;
+            if (interviewResultIndex !== -1 && totalCount > 0) {
+                const passedApplicants = filteredApplicants.filter(row => {
+                    const interviewResult = String(row[interviewResultIndex] || '').trim();
+                    return interviewResult === '합격';
+                });
+                successRate = Math.round((passedApplicants.length / totalCount) * 100);
+            }
 
-    // 🔥 입과율 계산
-    let joinRate = 0;
-    if (joinDateIndex !== -1 && totalCount > 0) {
-        const joinedApplicants = filteredApplicants.filter(row => {
-            const joinDate = String(row[joinDateIndex] || '').trim();
-            return joinDate !== '' && joinDate !== '-';
-        });
-        joinRate = Math.round((joinedApplicants.length / totalCount) * 100);
-    }
+            // 🔥 입과율 계산
+            let joinRate = 0;
+            if (joinDateIndex !== -1 && totalCount > 0) {
+                const joinedApplicants = filteredApplicants.filter(row => {
+                    const joinDate = String(row[joinDateIndex] || '').trim();
+                    return joinDate !== '' && joinDate !== '-';
+                });
+                joinRate = Math.round((joinedApplicants.length / totalCount) * 100);
+            }
 
-    return { totalCount, interviewPendingCount, successRate, joinRate };
-},
+            return { totalCount, interviewPendingCount, successRate, joinRate };
+        },
         updateUI(stats, periodLabel) {
             document.getElementById('sidebarTotalApplicants').textContent = stats.totalCount;
             document.getElementById('sidebarPeriodLabel').textContent = periodLabel;
@@ -2057,94 +2060,108 @@ updateAgeGenderStats(filteredData) {
         },
 
         // 🔥 시간 기준 면접 데이터 계산
-getInterviewDataByTime(period) {
-    const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
-    let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
-    if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
-    const interviewTimeIndex = App.state.data.headers.indexOf('면접 시간'); // 🔥 이 줄 추가!
-    const interviewerIndex = App.state.data.headers.indexOf('면접관');
-    const nameIndex = App.state.data.headers.indexOf('이름');
+        getInterviewDataByTime(period) {
+            const contactResultIndex = App.state.data.headers.indexOf('1차 컨택 결과');
+            let interviewDateIndex = App.state.data.headers.indexOf('면접 날짜');
+            if (interviewDateIndex === -1) interviewDateIndex = App.state.data.headers.indexOf('면접 날자');
+            const interviewTimeIndex = App.state.data.headers.indexOf('면접 시간'); // 🔥 이 줄 추가!
+            const interviewerIndex = App.state.data.headers.indexOf('면접관');
+            const nameIndex = App.state.data.headers.indexOf('이름');
 
-    if (contactResultIndex === -1 || interviewDateIndex === -1) {
-        return { total: 0, byInterviewer: {}, periodLabel: '데이터 없음' };
-    }
-
-    const now = new Date();
-    let startTime, endTime, periodLabel;
-
-    // 기간별 시간 범위 설정
-    switch (period) {
-        case 'today':
-            startTime = new Date(now);
-            // 🔥 수정: 현재 시간 그대로 사용
-            endTime = new Date(now);
-            endTime.setHours(23, 59, 59, 999);
-            periodLabel = '금일 남은 시간';
-            break;
-        case 'tomorrow':
-            startTime = new Date(now);
-            startTime.setDate(now.getDate() + 1);
-            startTime.setHours(0, 0, 0, 0);
-            endTime = new Date(startTime);
-            endTime.setHours(23, 59, 59, 999);
-            periodLabel = '내일';
-            break;
-        case 'week':
-            startTime = new Date(now);
-            endTime = new Date(now);
-            endTime.setDate(now.getDate() + 7);
-            endTime.setHours(23, 59, 59, 999);
-            periodLabel = '향후 7일';
-            break;
-        case 'month':
-            startTime = new Date(now);
-            endTime = new Date(now);
-            endTime.setMonth(now.getMonth() + 1);
-            endTime.setHours(23, 59, 59, 999);
-            periodLabel = '이번 달';
-            break;
-        case 'custom':
-            const startDateInput = document.getElementById('interviewStartDate');
-            const endDateInput = document.getElementById('interviewEndDate');
-            if (startDateInput && endDateInput && startDateInput.value && endDateInput.value) {
-                startTime = new Date(startDateInput.value);
-                endTime = new Date(endDateInput.value);
-                endTime.setHours(23, 59, 59, 999);
-                periodLabel = `${startDateInput.value} ~ ${endDateInput.value}`;
-            } else {
-                return { total: 0, byInterviewer: {}, periodLabel: '기간 선택 필요' };
+            if (contactResultIndex === -1 || interviewDateIndex === -1) {
+                return { total: 0, byInterviewer: {}, periodLabel: '데이터 없음' };
             }
-            break;
-        default:
-            startTime = new Date(now);
-            endTime = new Date(now);
-            endTime.setDate(now.getDate() + 7);
-            periodLabel = '향후 7일';
-    }
 
-    // 면접 확정자 필터링
-    const interviews = App.state.data.all.filter(row => {
-        const contactResult = String(row[contactResultIndex] || '').trim();
-        if (contactResult !== '면접확정') return false;
+            const now = new Date();
+            let startTime, endTime, periodLabel;
 
-        const interviewDate = row[interviewDateIndex];
-        const interviewTime = row[interviewTimeIndex];
-        
-        if (!interviewDate) return false;
+            // 기간별 시간 범위 설정
+            switch (period) {
+                case 'today':
+                    startTime = new Date(now);
+                    // 🔥 수정: 현재 시간 그대로 사용
+                    endTime = new Date(now);
+                    endTime.setHours(23, 59, 59, 999);
+                    periodLabel = '금일 남은 시간';
+                    break;
+                case 'tomorrow':
+                    startTime = new Date(now);
+                    startTime.setDate(now.getDate() + 1);
+                    startTime.setHours(0, 0, 0, 0);
+                    endTime = new Date(startTime);
+                    endTime.setHours(23, 59, 59, 999);
+                    periodLabel = '내일';
+                    break;
+                case 'week':
+                    startTime = new Date(now);
+                    endTime = new Date(now);
+                    endTime.setDate(now.getDate() + 7);
+                    endTime.setHours(23, 59, 59, 999);
+                    periodLabel = '향후 7일';
+                    break;
+                case 'month':
+                    startTime = new Date(now);
+                    endTime = new Date(now);
+                    endTime.setMonth(now.getMonth() + 1);
+                    endTime.setHours(23, 59, 59, 999);
+                    periodLabel = '이번 달';
+                    break;
+                case 'custom':
+                    const startDateInput = document.getElementById('interviewStartDate');
+                    const endDateInput = document.getElementById('interviewEndDate');
+                    if (startDateInput && endDateInput && startDateInput.value && endDateInput.value) {
+                        startTime = new Date(startDateInput.value);
+                        endTime = new Date(endDateInput.value);
+                        endTime.setHours(23, 59, 59, 999);
+                        periodLabel = `${startDateInput.value} ~ ${endDateInput.value}`;
+                    } else {
+                        return { total: 0, byInterviewer: {}, periodLabel: '기간 선택 필요' };
+                    }
+                    break;
+                default:
+                    startTime = new Date(now);
+                    endTime = new Date(now);
+                    endTime.setDate(now.getDate() + 7);
+                    periodLabel = '향후 7일';
+            }
 
-        try {
-            const date = new Date(interviewDate);
-            
-            // 🔥 수정: 모든 기간에서 면접 시간 고려
-            if (interviewTime) {
-                const timeStr = String(interviewTime).replace(/'/g, '').trim();
-                const timeMatch = timeStr.match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
+            // 면접 확정자 필터링
+            const interviews = App.state.data.all.filter(row => {
+                const contactResult = String(row[contactResultIndex] || '').trim();
+                if (contactResult !== '면접확정') return false;
+
+                const interviewDate = row[interviewDateIndex];
+                const interviewTime = row[interviewTimeIndex];
                 
-                if (timeMatch) {
-                    const hour = parseInt(timeMatch[1]);
-                    const minute = parseInt(timeMatch[2] || '0');
-                    if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
-                        date.setHours(hour, minute, 0, 0);
+                if (!interviewDate) return false;
+
+                try {
+                    const date = new Date(interviewDate);
+                    
+                    // 🔥 수정: 모든 기간에서 면접 시간 고려
+                    if (interviewTime) {
+                        const timeStr = String(interviewTime).replace(/'/g, '').trim();
+                        const timeMatch = timeStr.match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
+                        
+                        if (timeMatch) {
+                            const hour = parseInt(timeMatch[1]);
+                            const minute = parseInt(timeMatch[2] || '0');
+                            if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+                                date.setHours(hour, minute, 0, 0);
+                            } else {
+                                if (period === 'today') {
+                                    date.setHours(23, 59, 59, 999);
+                                } else {
+                                    date.setHours(0, 0, 0, 0);
+                                }
+                            }
+                        } else {
+                            if (period === 'today') {
+                                date.setHours(23, 59, 59, 999);
+                            } else {
+                                date.setHours(0, 0, 0, 0);
+                            }
+                        }
                     } else {
                         if (period === 'today') {
                             date.setHours(23, 59, 59, 999);
@@ -2152,85 +2169,71 @@ getInterviewDataByTime(period) {
                             date.setHours(0, 0, 0, 0);
                         }
                     }
-                } else {
-                    if (period === 'today') {
-                        date.setHours(23, 59, 59, 999);
-                    } else {
-                        date.setHours(0, 0, 0, 0);
-                    }
+
+                    return date >= startTime && date <= endTime;
+                } catch (e) {
+                    return false;
                 }
-            } else {
-                if (period === 'today') {
-                    date.setHours(23, 59, 59, 999);
-                } else {
-                    date.setHours(0, 0, 0, 0);
+            });
+
+            // 면접관별 그룹핑
+            const byInterviewer = {};
+            interviews.forEach(row => {
+                const interviewer = String(row[interviewerIndex] || '미정').trim();
+                const name = String(row[nameIndex] || '').trim();
+                
+                if (!byInterviewer[interviewer]) {
+                    byInterviewer[interviewer] = {
+                        count: 0,
+                        applicants: []
+                    };
                 }
+                
+                byInterviewer[interviewer].count++;
+                byInterviewer[interviewer].applicants.push(name);
+            });
+
+            return {
+                total: interviews.length,
+                byInterviewer,
+                periodLabel
+            };
+        },
+
+        // 🔥 면접관별 상세 정보 렌더링
+        renderInterviewerDetails(byInterviewer) {
+            const container = document.getElementById('interviewByInterviewer');
+            if (!container) {
+                console.warn('interviewByInterviewer 요소를 찾을 수 없습니다.');
+                return;
             }
 
-            return date >= startTime && date <= endTime;
-        } catch (e) {
-            return false;
+            if (Object.keys(byInterviewer).length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.6); font-size: 0.85rem; padding: 10px;">예정된 면접이 없습니다</div>';
+                return;
+            }
+
+            let html = '';
+            Object.entries(byInterviewer)
+                .sort(([,a], [,b]) => b.count - a.count) // 인원 수 많은 순으로 정렬
+                .forEach(([interviewer, data]) => {
+                    const applicantsList = data.applicants.slice(0, 3).join(', ') + 
+                                         (data.applicants.length > 3 ? ` 외 ${data.applicants.length - 3}명` : '');
+                    
+                    html += `
+                        <div class="interviewer-item">
+                            <div>
+                                <div class="interviewer-name">${interviewer}</div>
+                                <div class="interviewer-applicants">${applicantsList}</div>
+                            </div>
+                            <div class="interviewer-count">${data.count}</div>
+                        </div>
+                    `;
+                });
+
+            container.innerHTML = html;
         }
-    });
-
-    // 면접관별 그룹핑
-    const byInterviewer = {};
-    interviews.forEach(row => {
-        const interviewer = String(row[interviewerIndex] || '미정').trim();
-        const name = String(row[nameIndex] || '').trim();
-        
-        if (!byInterviewer[interviewer]) {
-            byInterviewer[interviewer] = {
-                count: 0,
-                applicants: []
-            };
-        }
-        
-        byInterviewer[interviewer].count++;
-        byInterviewer[interviewer].applicants.push(name);
-    });
-
-    return {
-        total: interviews.length,
-        byInterviewer,
-        periodLabel
-    };
-},
-
-// 🔥 면접관별 상세 정보 렌더링
-renderInterviewerDetails(byInterviewer) {
-    const container = document.getElementById('interviewByInterviewer');
-    if (!container) {
-        console.warn('interviewByInterviewer 요소를 찾을 수 없습니다.');
-        return;
-    }
-
-    if (Object.keys(byInterviewer).length === 0) {
-        container.innerHTML = '<div style="text-align: center; color: rgba(255,255,255,0.6); font-size: 0.85rem; padding: 10px;">예정된 면접이 없습니다</div>';
-        return;
-    }
-
-    let html = '';
-    Object.entries(byInterviewer)
-        .sort(([,a], [,b]) => b.count - a.count) // 인원 수 많은 순으로 정렬
-        .forEach(([interviewer, data]) => {
-            const applicantsList = data.applicants.slice(0, 3).join(', ') + 
-                                 (data.applicants.length > 3 ? ` 외 ${data.applicants.length - 3}명` : '');
-            
-            html += `
-                <div class="interviewer-item">
-                    <div>
-                        <div class="interviewer-name">${interviewer}</div>
-                        <div class="interviewer-applicants">${applicantsList}</div>
-                    </div>
-                    <div class="interviewer-count">${data.count}</div>
-                </div>
-            `;
-        });
-
-    container.innerHTML = html;
-}
-},
+    },
 
     // =========================
     // 통계 관련
@@ -2322,15 +2325,15 @@ renderInterviewerDetails(byInterviewer) {
         },
 
         updateStatCards(stats, periodLabel) {
-    // 🔥 통계 카드들이 삭제되었으므로 이 함수는 비워둠
-    console.log('📊 통계 정보:', {
-        totalApplicants: stats.totalCount,
-        interviewPending: stats.interviewPendingCount,
-        successRate: stats.successRate + '%',
-        joinRate: stats.joinRate + '%',
-        period: periodLabel
-    });
-}
+            // 🔥 통계 카드들이 삭제되었으므로 이 함수는 비워둠
+            console.log('📊 통계 정보:', {
+                totalApplicants: stats.totalCount,
+                interviewPending: stats.interviewPendingCount,
+                successRate: stats.successRate + '%',
+                joinRate: stats.joinRate + '%',
+                period: periodLabel
+            });
+        }
     },
 
     
