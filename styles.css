@@ -4059,3 +4059,38 @@ div[style*="grid-template-columns"] {
     min-width: 45px;
     text-align: center;
 }
+/* =========================
+   대시보드 필터 크기 조절 (추가)
+   ========================= */
+
+/* 대시보드 페이지(#dashboard)의 필터 바에만 이 스타일을 적용합니다. */
+#dashboard .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+/* 모든 필터 그룹에 대한 기본 설정 */
+#dashboard .filter-bar .filter-group {
+    flex-grow: 1; 
+    flex-shrink: 1; 
+}
+
+/* '지원루트'와 '모집분야' 필터의 기본 너비를 줄입니다. */
+#dashboard .filter-bar .filter-group:has(#routeFilter),
+#dashboard .filter-bar .filter-group:has(#positionFilter) {
+    flex-basis: 180px; /* 기본 너비를 180px로 설정 */
+    flex-grow: 0; /* 공간이 남아도 더 이상 늘어나지 않음 */
+}
+
+/* '통합 검색' 필터는 조금 더 넓게 설정합니다. */
+#dashboard .filter-bar .filter-group.search-input {
+    flex-basis: 250px;
+}
+
+/* '조회 기간' 필터는 가장 많은 공간을 차지하도록 설정합니다. */
+#dashboard .filter-bar .filter-group:has(.date-filter-container) {
+    flex-grow: 2;
+    flex-basis: 400px;
+    min-width: 380px;
+}
