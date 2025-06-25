@@ -258,7 +258,7 @@ export const InterviewScheduleModule = {
     },
     
     setSortBy(header) {
-        if(header === '면접일' || header === '시간') {
+        if(header === '면접일' || header === '면접 시간') {
             this.state.sortBy = '면접일';
             this.state.sortOrder = this.state.sortOrder === 'asc' ? 'desc' : 'asc';
             this.applyFilters();
@@ -340,7 +340,7 @@ export const InterviewScheduleModule = {
             try {
                 if (header === '면접일') {
                     cellContent = `${dDayHtml} ${dateDisplayHtml || originalValue}`;
-                } else if (header === '시간') {
+                } else if (header === '면접 시간') { // 수정: '시간' -> '면접 시간'
                     cellContent = this.app.utils.formatInterviewTime(originalValue);
                 } else if (header === '지원일') {
                      cellContent = this.app.utils.formatDate(originalValue);
@@ -420,7 +420,8 @@ export const InterviewScheduleModule = {
     },
 
     setupColumnToggles() {
-        const allHeaders = ['이름', '지원일', '지원루트', '회사명', '모집분야', '면접관', '면접일', '시간', '비고'];
+        // 수정: '시간' -> '면접 시간'
+        const allHeaders = ['이름', '지원일', '지원루트', '회사명', '모집분야', '면접관', '면접일', '면접 시간', '비고'];
         
         this.state.visibleColumns = {};
         allHeaders.forEach(h => {
