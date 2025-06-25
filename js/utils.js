@@ -1,29 +1,38 @@
 // =========================
-// utils.js - 순수 유틸리티 함수들 (안전한 DOM 접근 버전)
+// utils.js - 순수 유틸리티 함수들 (안전한 DOM 접근 및 시간 포맷 수정 버전)
 // =========================
 
 export const Utils = {
+    /**
+     * 다양한 시간 형식(예: "14:30", "14시 30분", "15시")을 "HH:mm" 형식으로 변환합니다.
+     * @param {string | number} timeValue - 변환할 시간 값
+     * @returns {string} 포맷된 시간 문자열 또는 '-'
+     */
     formatInterviewTime(timeValue) {
+        // 비어 있거나 플레이스홀더 값일 경우 '-' 반환
         if (!timeValue || String(timeValue).trim() === '-' || String(timeValue).trim() === '') {
             return '-';
         }
 
+        // 입력 문자열 정리
         const timeStr = String(timeValue).replace(/'/g, '').trim();
-        // 정규식: HH, HH:mm, HH시, HH시 mm분 등 다양한 형식을 처리
+        
+        // 정규식을 사용하여 다양한 형식에서 시간과 분을 추출
         const timeMatch = timeStr.match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
 
         if (timeMatch) {
             let hour = parseInt(timeMatch[1], 10);
             let minute = parseInt(timeMatch[2] || '0', 10);
 
+            // 추출된 시간과 분의 유효성 검사
             if (!isNaN(hour) && !isNaN(minute) && hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
                 const hourStr = String(hour).padStart(2, '0');
                 const minuteStr = String(minute).padStart(2, '0');
-                return `${hourStr}:${minuteStr}`;
+                return `${hourStr}:${minuteStr}`; // "HH:mm" 형식으로 반환
             }
         }
         
-        // 매칭 실패 시 원본 문자열 반환
+        // 정규식 매칭에 실패하면 원본 문자열을 안전하게 반환
         return timeStr;
     },
 
