@@ -3913,7 +3913,7 @@ div[style*="grid-template-columns"] {
 }
 
 /* =========================
-   면접일정 페이지 & 필터 바 (최종 수정본)
+   면접일정 페이지 레이아웃 및 필터 (최종 수정본)
    ========================= */
 
 #interviewSchedule .page-header {
@@ -3932,7 +3932,7 @@ div[style*="grid-template-columns"] {
 /* 필터 바를 감싸는 영역 */
 #interviewSchedule .filter-bar-wrapper {
     flex: 1; /* 남는 공간을 모두 차지하도록 */
-    min-width: 500px; /* 최소 너비 */
+    min-width: 500px; /* 필터들이 한 줄에 너무 좁게 표시되지 않도록 최소 너비 지정 */
 }
 
 /* 필터 바 내부 아이템 정렬 */
@@ -4064,29 +4064,7 @@ div[style*="grid-template-columns"] {
 /* =========================
    면접일정 테이블 (Request 3)
    ========================= */
-#scheduleListContainer .data-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-#scheduleListContainer th, 
-#scheduleListContainer td {
-    padding: 12px 15px;
-    border-bottom: 1px solid var(--border-color);
-    text-align: left;
-    vertical-align: middle;
-    white-space: nowrap;
-}
-
 #scheduleListContainer th {
-    background-color: var(--main-bg);
-    font-weight: 600;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    position: sticky;
-    top: 0;
-    z-index: 1;
     cursor: pointer;
     user-select: none;
 }
@@ -4097,58 +4075,9 @@ div[style*="grid-template-columns"] {
     margin-left: 5px;
     color: var(--text-secondary);
     opacity: 0.7;
+    transition: opacity 0.2s, color 0.2s;
 }
 #scheduleListContainer th .sort-icon.active {
     opacity: 1;
     color: var(--sidebar-accent);
-}
-
-
-#scheduleListContainer tbody tr {
-    transition: background-color 0.2s ease;
-    cursor: pointer;
-}
-
-#scheduleListContainer tbody tr:hover {
-    background-color: var(--main-bg);
-}
-
-#scheduleListContainer .d-day-badge {
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-weight: 700;
-    font-size: 0.8rem;
-    color: white;
-    min-width: 55px;
-    text-align: center;
-    display: inline-block;
-}
-
-#scheduleListContainer .d-day-badge.d-day { background-color: var(--danger); }
-#scheduleListContainer .d-day-badge.d-1 { background-color: var(--warning); }
-#scheduleListContainer .d-day-badge.d-future { background-color: var(--success); }
-#scheduleListContainer .d-day-badge.d-past { background-color: var(--secondary-color); opacity: 0.7; }
-
-#scheduleListContainer .interviewer-cell {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    align-items: center;
-}
-
-#scheduleListContainer .interviewer-tag {
-    background-color: var(--main-bg);
-    border: 1px solid var(--border-color);
-    padding: 4px 10px;
-    border-radius: 5px;
-    font-size: 0.85rem;
-    font-weight: 500;
-}
-
-#scheduleListContainer .no-results {
-    text-align: center;
-    padding: 50px;
-    color: var(--text-secondary);
-    font-size: 1.1rem;
-    font-style: italic;
 }
