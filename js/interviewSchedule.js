@@ -304,45 +304,53 @@ export const InterviewScheduleModule = {
         const interviewDateIndex = headers.indexOf('면접 날짜') !== -1 ? headers.indexOf('면접 날짜') : headers.indexOf('면접 날자');
         const interviewDateStr = row[interviewDateIndex];
 
-        let dDayContent = '';
+        let dDayHtml = '';
+        let dateDisplayHtml = '';
+
         if (interviewDateStr) {
             try {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
                 const iDate = new Date(interviewDateStr);
-                iDate.setHours(0, 0, 0, 0);
+                
+                const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+                const weekday = weekdays[iDate.getDay()];
+                dateDisplayHtml = `${iDate.getMonth() + 1}/${iDate.getDate()}(${weekday})`;
 
-                if(!isNaN(iDate.getTime())) {
-                    const diffTime = iDate.getTime() - today.getTime();
-                    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-                    
-                    if (diffDays === 0) {
-                        dDayContent = `<span class="status-badge" style="background-color: var(--danger); margin-right: 8px;">D-Day</span>`;
-                    } else if (diffDays > 0) {
-                        const ddayClass = diffDays <= 3 ? "status-면접확정" : "";
-                        dDayContent = `<span class="status-badge ${ddayClass}" style="margin-right: 8px;">D-${diffDays}</span>`;
-                    }
+                const iDateForDiff = new Date(interviewDateStr);
+                iDateForDiff.setHours(0, 0, 0, 0);
+
+                const diffTime = iDateForDiff.getTime() - today.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (diffDays === 0) {
+                    dDayHtml = `<span class="status-badge d-day">D-Day</span>`;
+                } else if (diffDays > 0) {
+                    dDayHtml = `<span class="status-badge d-upcoming">D-${diffDays}</span>`;
                 }
-            } catch (e) { /* D-Day 계산 실패 시 아무것도 표시 안함 */ }
+            } catch (e) {
+                dateDisplayHtml = getValue(headers[interviewDateIndex]);
+            }
         }
 
         let rowHtml = '';
         visibleHeaders.forEach(header => {
             let cellContent = '-';
+            const originalValue = getValue(header);
             try {
                 if (header === '면접일') {
-                    cellContent = dDayContent + this.app.utils.formatDate(getValue(header));
+                    cellContent = `${dDayHtml} ${dateDisplayHtml || originalValue}`;
                 } else if (header === '시간') {
-                    cellContent = this.app.utils.formatInterviewTime(getValue(header)).replace(/'/g, '');
+                    cellContent = this.app.utils.formatInterviewTime(originalValue);
                 } else if (header === '지원일') {
-                     cellContent = this.app.utils.formatDate(getValue(header));
+                     cellContent = this.app.utils.formatDate(originalValue);
                 } else {
-                    cellContent = getValue(header);
+                    cellContent = originalValue;
                 }
             } catch (e) {
-                cellContent = getValue(header); // 오류 시 원본 데이터 표시
+                cellContent = originalValue; // 오류 시 원본 데이터 표시
             }
-            rowHtml += `<td>${cellContent}</td>`;
+            rowHtml += `<td title="${String(originalValue || '').replace(/<[^>]*>/g, '')}">${cellContent}</td>`;
         });
         
         const rowDataEncoded = encodeURIComponent(JSON.stringify(row));
