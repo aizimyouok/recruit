@@ -98,13 +98,16 @@ export const InterviewScheduleModule = {
 
         this.updateDateInputs();
 
-        container.querySelector('#scheduleDateModeToggle').addEventListener('click', (e) => {
-            if (e.target.tagName === 'BUTTON') {
-                this.state.dateMode = e.target.dataset.mode;
-                this.updateDateFilterUI();
-                this.applyFilters();
-            }
-        });
+        const toggleGroup = container.querySelector('#scheduleDateModeToggle');
+        if(toggleGroup) {
+            toggleGroup.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    this.state.dateMode = e.target.dataset.mode;
+                    this.updateDateFilterUI();
+                    this.applyFilters();
+                }
+            });
+        }
     },
 
     updateDateInputs() {
@@ -155,10 +158,9 @@ export const InterviewScheduleModule = {
         if (this.state.dateMode === 'range') {
             this.state.startDate = document.getElementById('scheduleStartDate')?.value || '';
             this.state.endDate = document.getElementById('scheduleEndDate')?.value || '';
-        } else {
+        } else if (this.state.dateMode !== 'all') {
             this.state.dateValue = document.getElementById('scheduleDateValue')?.value || '';
         }
-
 
         const { headers, all } = this.app.state.data;
         const indices = {
@@ -178,8 +180,9 @@ export const InterviewScheduleModule = {
                 const dateStr = row[indices.interviewDate];
                 if (!dateStr) return false;
                 try {
-                    const date = new Date(dateStr);
-                    if (isNaN(date)) return false;
+                    // 날짜 비교 시 T00:00:00을 명시하여 시간대 오류 방지
+                    const date = new Date(dateStr + 'T00:00:00');
+                    if (isNaN(date.getTime())) return false;
 
                     switch (this.state.dateMode) {
                         case 'year':
@@ -187,12 +190,12 @@ export const InterviewScheduleModule = {
                         case 'month':
                             return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}` === this.state.dateValue;
                         case 'day':
-                            return this.formatDateForInput(date) === this.state.dateValue;
+                             return this.formatDateForInput(date) === this.state.dateValue;
                         case 'range':
-                            const start = new Date(this.state.startDate);
-                            const end = new Date(this.state.endDate);
-                            end.setHours(23, 59, 59, 999);
-                            return date >= start && date <= end;
+                             if (!this.state.startDate || !this.state.endDate) return true;
+                             const start = new Date(this.state.startDate + 'T00:00:00');
+                             const end = new Date(this.state.endDate + 'T00:00:00');
+                             return date >= start && date <= end;
                     }
                 } catch {
                     return false;
@@ -267,12 +270,13 @@ export const InterviewScheduleModule = {
             return 0;
         });
     },
-
+    
     setSortBy(header) {
-        if (this.state.sortBy === header) {
+        const sortKey = (header === '시간') ? '면접일' : header;
+        if (this.state.sortBy === sortKey) {
             this.state.sortOrder = this.state.sortOrder === 'asc' ? 'desc' : 'asc';
         } else {
-            this.state.sortBy = header;
+            this.state.sortBy = sortKey;
             this.state.sortOrder = 'asc';
         }
         this.applyFilters();
@@ -293,13 +297,14 @@ export const InterviewScheduleModule = {
         const createHeaderHtml = (header) => {
             let sortIconClass = 'fa-sort';
             let activeClass = '';
-            if (this.state.sortBy === header || (header === '면접일' && this.state.sortBy === '시간') || (header === '시간' && this.state.sortBy === '면접일')) {
+            const sortKey = (header === '시간') ? '면접일' : header;
+
+            if (this.state.sortBy === sortKey) {
                 sortIconClass = this.state.sortOrder === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
                 activeClass = 'active';
             }
             const sortIcon = `<i class="fas ${sortIconClass} sort-icon ${activeClass}"></i>`;
-            const sortKey = (header === '시간') ? '면접일' : header;
-            return `<th onclick="globalThis.App.interviewSchedule.setSortBy('${sortKey}')">${header} ${sortIcon}</th>`;
+            return `<th onclick="globalThis.App.interviewSchedule.setSortBy('${header}')">${header} ${sortIcon}</th>`;
         };
 
         container.innerHTML = `
@@ -342,7 +347,9 @@ export const InterviewScheduleModule = {
                         if (interviewDateStr) {
                             const today = new Date();
                             today.setHours(0, 0, 0, 0);
-                            const iDate = new Date(interviewDateStr);
+                            const iDate = new Date(interviewDateStr + "T00:00:00");
+                            if(isNaN(iDate.getTime())) break;
+
                             iDate.setHours(0, 0, 0, 0);
                             const diffTime = iDate.getTime() - today.getTime();
                             const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
@@ -400,7 +407,7 @@ export const InterviewScheduleModule = {
                 `;
             });
         } else {
-            html += '<span style="font-size: 0.9rem; color: var(--text-secondary);">필터링된 면접관 없음</span>';
+            html += '<span style="font-size: 0.9rem; color: var(--text-secondary);">결과 없음</span>';
         }
         container.innerHTML = html;
     },
@@ -423,7 +430,6 @@ export const InterviewScheduleModule = {
     setupColumnToggles() {
         const allHeaders = ['이름', '성별', '나이', '지원일', '지원루트', '회사명', '증원자', '모집분야', '면접관', '면접일', '시간', 'D-Day', '비고'];
         
-        // 기본으로 숨길 컬럼
         const defaultHidden = ['성별', '나이', '증원자'];
         allHeaders.forEach(h => { this.state.visibleColumns[h] = !defaultHidden.includes(h); }); 
         
@@ -435,8 +441,8 @@ export const InterviewScheduleModule = {
             const item = document.createElement('div');
             item.className = 'column-toggle-item';
             item.innerHTML = `
-                <input type="checkbox" id="toggle-schedule-${header}" ${this.state.visibleColumns[header] ? 'checked' : ''} />
-                <label for="toggle-schedule-${header}">${header}</label>
+                <input type="checkbox" id="toggle-schedule-${header.replace(/\s/g, '-')}" ${this.state.visibleColumns[header] ? 'checked' : ''} />
+                <label for="toggle-schedule-${header.replace(/\s/g, '-')}">${header}</label>
             `;
             const input = item.querySelector('input');
             if (input) {
