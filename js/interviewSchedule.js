@@ -9,8 +9,6 @@ export const InterviewScheduleModule = {
         route: 'all',
         position: 'all',
         searchTerm: '',
-        dateMode: 'range',
-        dateValue: '',
         startDate: '',
         endDate: '',
         sortBy: '면접일시',
@@ -26,20 +24,28 @@ export const InterviewScheduleModule = {
         this.setInitialDateRange();
         this.setupColumnToggles();
         this.applyFilters();
-        document.getElementById('scheduleColumnToggleBtn').onclick = () => this.toggleColumnDropdown();
+
+        const columnToggleBtn = document.getElementById('scheduleColumnToggleBtn');
+        if (columnToggleBtn) {
+            columnToggleBtn.onclick = () => this.toggleColumnDropdown();
+        }
     },
 
     populateFilters() {
+        if (!this.app || !this.app.state.data.all.length) return;
+
         const { headers, all } = this.app.state.data;
-        const interviewerIndex = headers.indexOf('면접관');
-        const companyIndex = headers.indexOf('회사명');
-        const routeIndex = headers.indexOf('지원루트');
-        const positionIndex = headers.indexOf('모집분야');
+        const indices = {
+            interviewer: headers.indexOf('면접관'),
+            company: headers.indexOf('회사명'),
+            route: headers.indexOf('지원루트'),
+            position: headers.indexOf('모집분야')
+        };
 
         const populate = (selector, index) => {
             const selectElement = document.getElementById(selector);
             if (selectElement && index !== -1) {
-                const options = [...new Set(all.map(row => row[index]).filter(Boolean))];
+                const options = [...new Set(all.map(row => (row[index] || '').trim()).filter(Boolean))];
                 selectElement.innerHTML = `<option value="all">전체</option>`;
                 options.sort().forEach(name => {
                     selectElement.innerHTML += `<option value="${name}">${name}</option>`;
@@ -47,14 +53,13 @@ export const InterviewScheduleModule = {
             }
         };
 
-        populate('scheduleInterviewerFilter', interviewerIndex);
-        populate('scheduleCompanyFilter', companyIndex);
-        populate('scheduleRouteFilter', routeIndex);
-        populate('schedulePositionFilter', positionIndex);
+        populate('scheduleInterviewerFilter', indices.interviewer);
+        populate('scheduleCompanyFilter', indices.company);
+        populate('scheduleRouteFilter', indices.route);
+        populate('schedulePositionFilter', indices.position);
     },
     
     setInitialDateRange() {
-        this.state.dateMode = 'range';
         const today = new Date();
         const oneMonthLater = new Date();
         oneMonthLater.setMonth(today.getMonth() + 1);
@@ -74,23 +79,25 @@ export const InterviewScheduleModule = {
 
     updateDateFilterUI() {
         const container = document.getElementById('scheduleDateFilterContainer');
-        container.innerHTML = `
-            <input type="date" id="scheduleStartDate" value="${this.state.startDate}" onchange="globalThis.App.interviewSchedule.applyFilters()">
-            <span style="margin: 0 5px;">-</span>
-            <input type="date" id="scheduleEndDate" value="${this.state.endDate}" onchange="globalThis.App.interviewSchedule.applyFilters()">
-        `;
+        if (container) {
+            container.innerHTML = `
+                <input type="date" id="scheduleStartDate" value="${this.state.startDate}" onchange="globalThis.App.interviewSchedule.applyFilters()">
+                <span style="margin: 0 5px;">-</span>
+                <input type="date" id="scheduleEndDate" value="${this.state.endDate}" onchange="globalThis.App.interviewSchedule.applyFilters()">
+            `;
+        }
     },
 
     applyFilters() {
         if (!this.app) return;
 
-        this.state.interviewer = document.getElementById('scheduleInterviewerFilter').value;
-        this.state.company = document.getElementById('scheduleCompanyFilter').value;
-        this.state.route = document.getElementById('scheduleRouteFilter').value;
-        this.state.position = document.getElementById('schedulePositionFilter').value;
-        this.state.searchTerm = document.getElementById('scheduleSearch').value.toLowerCase();
-        this.state.startDate = document.getElementById('scheduleStartDate').value;
-        this.state.endDate = document.getElementById('scheduleEndDate').value;
+        this.state.interviewer = document.getElementById('scheduleInterviewerFilter')?.value || 'all';
+        this.state.company = document.getElementById('scheduleCompanyFilter')?.value || 'all';
+        this.state.route = document.getElementById('scheduleRouteFilter')?.value || 'all';
+        this.state.position = document.getElementById('schedulePositionFilter')?.value || 'all';
+        this.state.searchTerm = (document.getElementById('scheduleSearch')?.value || '').toLowerCase();
+        this.state.startDate = document.getElementById('scheduleStartDate')?.value || '';
+        this.state.endDate = document.getElementById('scheduleEndDate')?.value || '';
 
         const { headers, all } = this.app.state.data;
         const indices = {
@@ -104,24 +111,23 @@ export const InterviewScheduleModule = {
 
         let filtered = all.filter(row => (row[indices.contactResult] || '').trim() === '면접확정' && (row[indices.interviewDate] || '').trim());
         
-        // Date filter
         if (this.state.startDate && this.state.endDate) {
             const start = new Date(this.state.startDate);
             const end = new Date(this.state.endDate);
             end.setHours(23, 59, 59, 999);
             filtered = filtered.filter(row => {
-                const date = new Date(row[indices.interviewDate]);
-                return !isNaN(date) && date >= start && date <= end;
+                try {
+                    const date = new Date(row[indices.interviewDate]);
+                    return !isNaN(date) && date >= start && date <= end;
+                } catch { return false; }
             });
         }
 
-        // Dropdown filters
         if (this.state.interviewer !== 'all') filtered = filtered.filter(row => (row[indices.interviewer] || '').includes(this.state.interviewer));
         if (this.state.company !== 'all') filtered = filtered.filter(row => row[indices.company] === this.state.company);
         if (this.state.route !== 'all') filtered = filtered.filter(row => row[indices.route] === this.state.route);
         if (this.state.position !== 'all') filtered = filtered.filter(row => row[indices.position] === this.state.position);
         
-        // Search term filter
         if (this.state.searchTerm) {
             filtered = filtered.filter(row => row.some(cell => String(cell).toLowerCase().includes(this.state.searchTerm)));
         }
@@ -132,26 +138,90 @@ export const InterviewScheduleModule = {
     },
 
     sortData(data) {
-        // Sorting logic here... (same as previous correct version)
-        return data;
+        const { sortBy, sortOrder } = this.state;
+        if (!sortBy) return data;
+
+        const { headers } = this.app.state.data;
+        const interviewDateIndex = headers.indexOf('면접 날짜') !== -1 ? headers.indexOf('면접 날짜') : headers.indexOf('면접 날자');
+        const interviewTimeIndex = headers.indexOf('면접 시간');
+
+        const getSortableValue = (row, header) => {
+            if (header === '면접일시') {
+                const dateStr = row[interviewDateIndex];
+                const timeStr = row[interviewTimeIndex] || '';
+                if (!dateStr) return null;
+                try {
+                    const date = new Date(dateStr);
+                    const timeMatch = String(timeStr).replace(/'/g, '').trim().match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
+                    if (timeMatch) {
+                        const hour = parseInt(timeMatch[1], 10);
+                        const minute = parseInt(timeMatch[2] || '0', 10);
+                        if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
+                            date.setHours(hour, minute, 0, 0);
+                        }
+                    }
+                    return date;
+                } catch (e) {
+                    return null;
+                }
+            }
+            const val = row[headers.indexOf(header)];
+            if (header === '나이') return parseInt(val, 10) || 0;
+            if (header === '지원일') return new Date(val) || null;
+            return String(val || '').toLowerCase();
+        };
+
+        return data.sort((a, b) => {
+            const valA = getSortableValue(a, sortBy);
+            const valB = getSortableValue(b, sortBy);
+
+            if (valA === null || valA === undefined) return 1;
+            if (valB === null || valB === undefined) return -1;
+
+            const order = sortOrder === 'asc' ? 1 : -1;
+            if (valA < valB) return -1 * order;
+            if (valA > valB) return 1 * order;
+            return 0;
+        });
     },
     
+    setSortBy(header) {
+        if (this.state.sortBy === header) {
+            this.state.sortOrder = this.state.sortOrder === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.state.sortBy = header;
+            this.state.sortOrder = 'asc';
+        }
+        this.applyFilters();
+    },
+
     renderTable() {
         const container = document.getElementById('scheduleListContainer');
         if (!container) return;
 
         if (this.state.interviews.length === 0) {
-            container.innerHTML = '<p class="no-results">해당 조건에 맞는 면접 일정이 없습니다.</p>';
+            container.innerHTML = '<p class="no-results" style="text-align:center; padding: 40px; color: var(--text-secondary);">해당 조건에 맞는 면접 일정이 없습니다.</p>';
             return;
         }
 
         const { headers } = this.app.state.data;
         const visibleHeaders = Object.keys(this.state.visibleColumns).filter(h => this.state.visibleColumns[h]);
 
+        const createHeaderHtml = (header) => {
+            let sortIcon = '';
+            if (this.state.sortBy === header) {
+                const iconClass = this.state.sortOrder === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
+                sortIcon = `<i class="fas ${iconClass} sort-icon active"></i>`;
+            } else {
+                sortIcon = `<i class="fas fa-sort sort-icon"></i>`;
+            }
+            return `<th onclick="globalThis.App.interviewSchedule.setSortBy('${header}')">${header} ${sortIcon}</th>`;
+        };
+
         container.innerHTML = `
             <table class="data-table">
                 <thead>
-                    <tr>${visibleHeaders.map(h => `<th>${h}</th>`).join('')}</tr>
+                    <tr>${visibleHeaders.map(h => createHeaderHtml(h)).join('')}</tr>
                 </thead>
                 <tbody>
                     ${this.state.interviews.map(row => this.createRowHtml(row, headers, visibleHeaders)).join('')}
@@ -163,12 +233,58 @@ export const InterviewScheduleModule = {
     createRowHtml(row, headers, visibleHeaders) {
         const getValue = (headerName) => row[headers.indexOf(headerName)] || '-';
         
+        const interviewDateIndex = headers.indexOf('면접 날짜') !== -1 ? headers.indexOf('면접 날짜') : headers.indexOf('면접 날자');
+        const interviewTimeIndex = headers.indexOf('면접 시간');
+        const interviewDateStr = row[interviewDateIndex];
+        const interviewTimeStr = row[interviewTimeIndex];
+
         let rowHtml = '';
         visibleHeaders.forEach(header => {
-            let cellContent = '';
-            // Generate cell content based on header, similar to main dashboard render logic
-            // This part needs to be filled out based on desired display for each column
-            cellContent = getValue(header); // Placeholder
+            let cellContent = '-';
+
+            switch (header) {
+                case '면접일시':
+                    if (interviewDateStr) {
+                        try {
+                            const date = new Date(interviewDateStr);
+                            const datePart = this.app.utils.formatDate(date);
+                            const timePart = this.app.utils.formatInterviewTime(interviewTimeStr).replace(/'/g, '');
+                            cellContent = `${datePart} ${timePart || ''}`.trim();
+                        } catch {
+                            cellContent = interviewDateStr;
+                        }
+                    }
+                    break;
+                case 'D-Day':
+                    if (interviewDateStr) {
+                        try {
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            const iDate = new Date(interviewDateStr);
+                            iDate.setHours(0, 0, 0, 0);
+                            const diffTime = iDate.getTime() - today.getTime();
+                            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                            
+                            if (diffDays === 0) {
+                                cellContent = `<span class="status-badge status-미참석" style="background-color: var(--danger) !important;">D-Day</span>`;
+                            } else if (diffDays > 0) {
+                                const ddayClass = diffDays <= 3 ? "status-면접확정" : "";
+                                cellContent = `<span class="status-badge ${ddayClass}">D-${diffDays}</span>`;
+                            } else {
+                                cellContent = `D+${Math.abs(diffDays)}`;
+                            }
+                        } catch {
+                            cellContent = "-";
+                        }
+                    }
+                    break;
+                case '지원일':
+                     cellContent = this.app.utils.formatDate(getValue(header));
+                     break;
+                default:
+                    cellContent = getValue(header);
+                    break;
+            }
             rowHtml += `<td>${cellContent}</td>`;
         });
         
@@ -178,25 +294,31 @@ export const InterviewScheduleModule = {
 
     renderInterviewerCounts(filteredData, interviewerIndex) {
         const container = document.getElementById('interviewerCountsContainer');
+        if (!container || interviewerIndex === -1) return;
+
         const counts = {};
         filteredData.forEach(row => {
             const interviewers = (row[interviewerIndex] || '미정').split(',').map(name => name.trim());
             interviewers.forEach(name => {
-                counts[name] = (counts[name] || 0) + 1;
+                if(name) counts[name] = (counts[name] || 0) + 1;
             });
         });
 
         const sortedCounts = Object.entries(counts).sort((a, b) => b[1] - a[1]);
 
-        let html = '<div class="interviewer-counts-header">면접관별 진행 건수</div>';
-        sortedCounts.forEach(([name, count]) => {
-            html += `
-                <div class="interviewer-count-item">
-                    <span class="interviewer-count-name">${name}</span>
-                    <span class="interviewer-count-badge">${count}건</span>
-                </div>
-            `;
-        });
+        let html = '<div class="interviewer-counts-header"><i class="fas fa-user-tie"></i>면접관별 진행 건수</div>';
+        if (sortedCounts.length > 0) {
+            sortedCounts.forEach(([name, count]) => {
+                html += `
+                    <div class="interviewer-count-item">
+                        <span class="interviewer-count-name">${name}</span>
+                        <span class="interviewer-count-badge">${count}건</span>
+                    </div>
+                `;
+            });
+        } else {
+            html += '<div style="text-align:center; font-size: 0.85rem; color: var(--text-secondary); padding: 10px;">데이터 없음</div>';
+        }
         container.innerHTML = html;
     },
     
@@ -215,12 +337,13 @@ export const InterviewScheduleModule = {
         this.applyFilters();
     },
 
-    // Column Toggle Functions
     setupColumnToggles() {
         const allHeaders = ['이름', '성별', '나이', '지원일', '지원루트', '회사명', '증원자', '모집분야', '면접관', '면접일시', 'D-Day', '비고'];
-        allHeaders.forEach(h => { this.state.visibleColumns[h] = true; }); // Default to all visible
+        allHeaders.forEach(h => { this.state.visibleColumns[h] = !['성별', '나이', '증원자'].includes(h); }); 
         
         const dropdown = document.getElementById('scheduleColumnToggleDropdown');
+        if (!dropdown) return;
+        
         dropdown.innerHTML = '';
         allHeaders.forEach(header => {
             const item = document.createElement('div');
@@ -229,7 +352,10 @@ export const InterviewScheduleModule = {
                 <input type="checkbox" id="toggle-schedule-${header}" ${this.state.visibleColumns[header] ? 'checked' : ''} />
                 <label for="toggle-schedule-${header}">${header}</label>
             `;
-            item.querySelector('input').onchange = (e) => this.handleColumnToggle(e, header);
+            const input = item.querySelector('input');
+            if (input) {
+                input.onchange = (e) => this.handleColumnToggle(e, header);
+            }
             dropdown.appendChild(item);
         });
     },
@@ -241,6 +367,8 @@ export const InterviewScheduleModule = {
 
     toggleColumnDropdown() {
         const dropdown = document.getElementById('scheduleColumnToggleDropdown');
-        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        if (dropdown) {
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
     }
 };
