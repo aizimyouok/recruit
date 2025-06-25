@@ -378,7 +378,7 @@ export const InterviewScheduleModule = {
         const header = document.createElement('div');
         header.className = 'interviewer-summary-header';
         header.innerHTML = `
-            <span><i class="fas fa-user-tie"></i> 면접관별 진행 건수</span>
+            <span><i class="fas fa-user-tie"></i> 면접 예정 건수</span>
             <span class="total-count">총 <span class="badge">${totalCount}</span></span>
         `;
         container.appendChild(header);
