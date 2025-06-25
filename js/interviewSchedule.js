@@ -13,7 +13,7 @@ export const InterviewScheduleModule = {
         dateValue: '',
         startDate: '',
         endDate: '',
-        sortBy: '면접일', // 기본 정렬 기준
+        sortBy: '면접일', 
         sortOrder: 'asc',
         interviews: [],
         visibleColumns: {}
@@ -188,7 +188,6 @@ export const InterviewScheduleModule = {
 
         let filtered = all.filter(row => (row[indices.contactResult] || '').trim() === '면접확정' && (row[indices.interviewDate] || '').trim());
         
-        // ★★★ 조회 기간 필터 로직 수정 ★★★
         if (this.state.dateMode !== 'all') {
             filtered = filtered.filter(row => {
                 const dateStr = row[indices.interviewDate];
@@ -229,53 +228,41 @@ export const InterviewScheduleModule = {
     },
 
     sortData(data) {
-        const { sortBy, sortOrder } = this.state;
-        if (!sortBy) return data;
-
+        const { sortOrder } = this.state;
         const { headers } = this.app.state.data;
         const interviewDateIndex = headers.indexOf('면접 날짜') !== -1 ? headers.indexOf('면접 날짜') : headers.indexOf('면접 날자');
         const interviewTimeIndex = headers.indexOf('면접 시간');
 
-        const getSortableValue = (row) => {
-            const dateStr = row[interviewDateIndex];
-            if (!dateStr) return null;
-            
-            try {
-                const date = new Date(dateStr);
-                if (isNaN(date.getTime())) return null;
-
-                const timeStr = row[interviewTimeIndex] || '';
-                const timeMatch = String(timeStr).replace(/'/g, '').trim().match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
-                if (timeMatch) {
-                    const hour = parseInt(timeMatch[1], 10);
-                    const minute = parseInt(timeMatch[2] || '0', 10);
-                    if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
-                        date.setHours(hour, minute, 0, 0);
-                    }
-                }
-                return date;
-            } catch (e) {
-                return null;
-            }
-        };
-
         return data.sort((a, b) => {
-            const valA = getSortableValue(a);
-            const valB = getSortableValue(b);
+            const dateA = new Date(a[interviewDateIndex]);
+            const dateB = new Date(b[interviewDateIndex]);
 
-            if (valA === null) return 1;
-            if (valB === null) return -1;
+            if(isNaN(dateA.getTime())) return 1;
+            if(isNaN(dateB.getTime())) return -1;
+            
+            const timeAStr = a[interviewTimeIndex] || '00:00';
+            const timeBStr = b[interviewTimeIndex] || '00:00';
+
+            const timeAMatch = String(timeAStr).match(/(\d{1,2})/);
+            const timeBMatch = String(timeBStr).match(/(\d{1,2})/);
+
+            const hourA = timeAMatch ? parseInt(timeAMatch[1], 10) : 0;
+            const hourB = timeBMatch ? parseInt(timeBMatch[1], 10) : 0;
+            
+            dateA.setHours(hourA, 0, 0, 0);
+            dateB.setHours(hourB, 0, 0, 0);
 
             const order = sortOrder === 'asc' ? 1 : -1;
-            return (valA - valB) * order;
+            return (dateA - dateB) * order;
         });
     },
     
     setSortBy(header) {
-        // 정렬은 항상 면접일+시간 기준으로 하므로 이 함수는 현재 사용되지 않음.
-        // 헤더 클릭 시 정렬 방향만 변경하도록 단순화 가능
-        this.state.sortOrder = this.state.sortOrder === 'asc' ? 'desc' : 'asc';
-        this.applyFilters();
+        if(header === '면접일' || header === '시간') {
+            this.state.sortBy = '면접일';
+            this.state.sortOrder = this.state.sortOrder === 'asc' ? 'desc' : 'asc';
+            this.applyFilters();
+        }
     },
     
     renderTable() {
@@ -292,7 +279,6 @@ export const InterviewScheduleModule = {
 
         const createHeaderHtml = (header) => {
             let sortIcon = '';
-            // 정렬은 항상 면접일 기준이므로, 해당 컬럼에만 정렬 아이콘 표시
             if (header === '면접일') {
                 const iconClass = this.state.sortOrder === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
                 sortIcon = `<i class="fas ${iconClass} sort-icon active"></i>`;
@@ -325,14 +311,17 @@ export const InterviewScheduleModule = {
                 today.setHours(0, 0, 0, 0);
                 const iDate = new Date(interviewDateStr);
                 iDate.setHours(0, 0, 0, 0);
-                const diffTime = iDate.getTime() - today.getTime();
-                const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-                
-                if (diffDays === 0) {
-                    dDayContent = `<span class="status-badge" style="background-color: var(--danger); margin-right: 8px;">D-Day</span>`;
-                } else if (diffDays > 0) {
-                    const ddayClass = diffDays <= 3 ? "status-면접확정" : "";
-                    dDayContent = `<span class="status-badge ${ddayClass}" style="margin-right: 8px;">D-${diffDays}</span>`;
+
+                if(!isNaN(iDate.getTime())) {
+                    const diffTime = iDate.getTime() - today.getTime();
+                    const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    if (diffDays === 0) {
+                        dDayContent = `<span class="status-badge" style="background-color: var(--danger); margin-right: 8px;">D-Day</span>`;
+                    } else if (diffDays > 0) {
+                        const ddayClass = diffDays <= 3 ? "status-면접확정" : "";
+                        dDayContent = `<span class="status-badge ${ddayClass}" style="margin-right: 8px;">D-${diffDays}</span>`;
+                    }
                 }
             } catch (e) { /* D-Day 계산 실패 시 아무것도 표시 안함 */ }
         }
@@ -351,7 +340,7 @@ export const InterviewScheduleModule = {
                     cellContent = getValue(header);
                 }
             } catch (e) {
-                cellContent = "오류";
+                cellContent = getValue(header); // 오류 시 원본 데이터 표시
             }
             rowHtml += `<td>${cellContent}</td>`;
         });
@@ -423,12 +412,11 @@ export const InterviewScheduleModule = {
     },
 
     setupColumnToggles() {
-        // ★★★ 컬럼 순서 변경 및 D-Day 컬럼 제거 ★★★
         const allHeaders = ['이름', '지원일', '지원루트', '회사명', '모집분야', '면접관', '면접일', '시간', '비고'];
         
         this.state.visibleColumns = {};
         allHeaders.forEach(h => {
-            this.state.visibleColumns[h] = true; // '지원일' 포함 모든 컬럼을 기본으로 보이도록 변경
+            this.state.visibleColumns[h] = true; 
         }); 
         
         const dropdown = document.getElementById('scheduleColumnToggleDropdown');
