@@ -122,13 +122,13 @@ export const InterviewScheduleModule = {
 
         switch(this.state.dateMode) {
             case 'year':
-                html = `<input type="number" id="scheduleDateValue" value="${year}" onchange="globalThis.App.interviewSchedule.applyFilters()">`;
+                html = `<input type="number" id="scheduleDateValue" value="${this.state.dateValue || year}" onchange="this.value ? (globalThis.App.interviewSchedule.state.dateValue = this.value, globalThis.App.interviewSchedule.applyFilters()) : null">`;
                 break;
             case 'month':
-                html = `<input type="month" id="scheduleDateValue" value="${year}-${month}" onchange="globalThis.App.interviewSchedule.applyFilters()">`;
+                html = `<input type="month" id="scheduleDateValue" value="${this.state.dateValue || `${year}-${month}`}" onchange="this.value ? (globalThis.App.interviewSchedule.state.dateValue = this.value, globalThis.App.interviewSchedule.applyFilters()) : null">`;
                 break;
             case 'day':
-                html = `<input type="date" id="scheduleDateValue" value="${year}-${month}-${day}" onchange="globalThis.App.interviewSchedule.applyFilters()">`;
+                html = `<input type="date" id="scheduleDateValue" value="${this.state.dateValue || `${year}-${month}-${day}`}" onchange="this.value ? (globalThis.App.interviewSchedule.state.dateValue = this.value, globalThis.App.interviewSchedule.applyFilters()) : null">`;
                 break;
             case 'range':
                 html = `
@@ -180,7 +180,6 @@ export const InterviewScheduleModule = {
                 const dateStr = row[indices.interviewDate];
                 if (!dateStr) return false;
                 try {
-                    // 날짜 비교 시 T00:00:00을 명시하여 시간대 오류 방지
                     const date = new Date(dateStr + 'T00:00:00');
                     if (isNaN(date.getTime())) return false;
 
@@ -232,7 +231,7 @@ export const InterviewScheduleModule = {
                 const timeStr = r[interviewTimeIndex] || '';
                 if (!dateStr) return null;
                 try {
-                    const date = new Date(dateStr);
+                    const date = new Date(dateStr + "T00:00:00");
                     const timeMatch = String(timeStr).replace(/'/g, '').trim().match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
                     if (timeMatch) {
                         const hour = parseInt(timeMatch[1], 10);
@@ -385,6 +384,16 @@ export const InterviewScheduleModule = {
     renderInterviewerCounts(filteredData, interviewerIndex) {
         const container = document.getElementById('interviewerCountsContainer');
         if (!container || interviewerIndex === -1) return;
+        
+        container.innerHTML = ''; // Clear previous content
+        
+        const header = document.createElement('div');
+        header.className = 'interviewer-summary-header';
+        header.innerHTML = '<i class="fas fa-user-tie"></i> 면접관별 진행 건수';
+        container.appendChild(header);
+
+        const list = document.createElement('div');
+        list.className = 'interviewer-summary-list';
 
         const counts = {};
         filteredData.forEach(row => {
@@ -396,20 +405,20 @@ export const InterviewScheduleModule = {
 
         const sortedCounts = Object.entries(counts).sort((a, b) => b[1] - a[1]);
 
-        let html = '';
         if (sortedCounts.length > 0) {
             sortedCounts.forEach(([name, count]) => {
-                html += `
-                    <div class="interviewer-count-item-inline">
-                        <span class="interviewer-count-name-inline">${name}</span>
-                        <span class="interviewer-count-badge-inline">${count}</span>
-                    </div>
+                const item = document.createElement('div');
+                item.className = 'interviewer-summary-item';
+                item.innerHTML = `
+                    <span class="interviewer-summary-name">${name}</span>
+                    <span class="interviewer-summary-badge">${count}건</span>
                 `;
+                list.appendChild(item);
             });
         } else {
-            html += '<span style="font-size: 0.9rem; color: var(--text-secondary);">결과 없음</span>';
+            list.innerHTML = '<div style="text-align:center; font-size: 0.85rem; color: var(--text-secondary); padding: 10px;">데이터 없음</div>';
         }
-        container.innerHTML = html;
+        container.appendChild(list);
     },
     
     resetFilters() {
@@ -428,9 +437,9 @@ export const InterviewScheduleModule = {
     },
 
     setupColumnToggles() {
-        const allHeaders = ['이름', '성별', '나이', '지원일', '지원루트', '회사명', '증원자', '모집분야', '면접관', '면접일', '시간', 'D-Day', '비고'];
+        const allHeaders = ['이름', '지원일', '지원루트', '회사명', '모집분야', '면접관', '면접일', '시간', 'D-Day', '비고'];
         
-        const defaultHidden = ['성별', '나이', '증원자'];
+        const defaultHidden = ['지원일'];
         allHeaders.forEach(h => { this.state.visibleColumns[h] = !defaultHidden.includes(h); }); 
         
         const dropdown = document.getElementById('scheduleColumnToggleDropdown');
