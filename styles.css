@@ -3911,3 +3911,132 @@ div[style*="grid-template-columns"] {
     }
     /* ... */
 }
+
+/* =========================
+   면접일정 페이지 & 필터 바
+   ========================= */
+#interviewSchedule .page-header {
+    margin-bottom: 20px;
+}
+
+#interviewSchedule .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end; /* 중요: 요소들을 아래쪽으로 정렬 */
+    padding: 20px;
+    background: var(--content-bg);
+    border-radius: var(--border-radius);
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+#interviewSchedule .filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+#interviewSchedule .filter-group label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: var(--text-secondary);
+}
+
+#interviewSchedule .filter-group select,
+#interviewSchedule .filter-group input[type="date"] {
+    padding: 10px 12px;
+    font-size: 0.9rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg); /* input 배경은 메인 배경과 통일 */
+    color: var(--text-primary);
+    min-width: 180px; /* 최소 너비 지정 */
+}
+
+#interviewSchedule .date-filter-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#interviewSchedule .reset-btn {
+    height: 42px; /* 다른 필터와 높이 맞춤 */
+}
+
+
+/* =========================
+   면접일정 테이블
+   ========================= */
+#scheduleListContainer .data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#scheduleListContainer th, 
+#scheduleListContainer td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+    vertical-align: middle;
+}
+
+#scheduleListContainer th {
+    background: var(--bg);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+#scheduleListContainer tbody tr {
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+#scheduleListContainer tbody tr:hover {
+    background-color: var(--bg);
+}
+
+.d-day-badge {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: white;
+    min-width: 55px;
+    text-align: center;
+    display: inline-block;
+}
+
+.d-day-badge.d-day { background-color: var(--danger); }
+.d-day-badge.d-1 { background-color: var(--warning); }
+.d-day-badge.d-future { background-color: var(--success); }
+.d-day-badge.d-past { background-color: var(--secondary-color); opacity: 0.7; }
+
+.interviewer-cell {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.interviewer-tag {
+    background-color: var(--bg);
+    border: 1px solid var(--border-color);
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.no-results {
+    text-align: center;
+    padding: 50px;
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    font-style: italic;
+}
