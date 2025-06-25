@@ -3946,22 +3946,23 @@ div[style*="grid-template-columns"] {
 
 #interviewSchedule .filter-bar {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: wrap; /* 공간이 부족하면 다음 줄로 넘어가도록 설정 */
     gap: 15px;
-    align-items: flex-end;
+    align-items: flex-end; /* 필터 요소들의 하단을 정렬 */
 }
 
 #interviewSchedule .filter-group {
-    flex: 1 1 160px; /* 기본 너비 160px, 공간 있으면 늘어남 */
+    flex: 1 1 150px; /* 기본 너비 150px, 공간이 있으면 늘어남 */
+    min-width: 150px; /* 최소 너비 지정 */
 }
 
 #interviewSchedule .filter-group.search-input {
-    flex: 2 1 200px; /* 검색창은 더 넓게 */
+    flex: 2 1 200px; /* 검색창은 다른 필터보다 넓게 */
 }
 
 #interviewSchedule .filter-group.date-filter-group {
-    flex: 3 1 400px; /* 날짜 필터는 가장 넓게 */
-    min-width: 320px;
+    flex: 3 1 380px; /* 날짜 필터는 가장 넓게 */
+    min-width: 380px;
 }
 
 #interviewSchedule .filter-group.reset-group {
@@ -3978,70 +3979,6 @@ div[style*="grid-template-columns"] {
     height: 44px; /* 다른 필터와 높이 맞춤 */
 }
 
-
-/* =========================
-   면접관별 건수 표시 (헤더 내 위젯) - Request 1
-   ========================= */
-.interviewer-summary-card {
-    flex-grow: 1;
-    background: var(--content-bg);
-    border-radius: var(--border-radius);
-    padding: 20px;
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
-}
-
-.interviewer-summary-header {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    padding-bottom: 10px;
-    margin-bottom: 10px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.interviewer-summary-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.interviewer-summary-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px;
-    font-size: 0.9rem;
-    transition: background-color 0.2s;
-    border-radius: 4px;
-}
-
-.interviewer-summary-item:not(:last-child) {
-    border-bottom: 1px dashed var(--border-color);
-}
-
-.interviewer-summary-item:hover {
-    background-color: var(--main-bg);
-}
-
-.interviewer-summary-name {
-    font-weight: 500;
-    color: var(--text-primary);
-}
-
-.interviewer-summary-badge {
-    background-color: var(--sidebar-accent);
-    color: white;
-    font-weight: 700;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.85rem;
-    min-width: 40px;
-    text-align: center;
-}
 
 /* =========================
    면접일정 테이블 (Request 3)
@@ -4062,4 +3999,63 @@ div[style*="grid-template-columns"] {
 #scheduleListContainer th .sort-icon.active {
     opacity: 1;
     color: var(--sidebar-accent);
+}
+/* =========================
+   면접관별 건수 카드 디자인 (신규)
+   ========================= */
+.interviewer-summary-card {
+    background-color: var(--content-bg);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    margin-bottom: 20px; /* 필터 바와의 간격 */
+}
+
+.interviewer-summary-header {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.interviewer-summary-list {
+    display: flex;
+    flex-wrap: wrap; /* 면접관이 많으면 다음 줄로 넘어가도록 */
+    gap: 12px 20px; /* 세로, 가로 간격 */
+}
+
+.interviewer-summary-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 0.95rem;
+    min-width: 150px; /* 각 항목의 최소 너비 */
+}
+
+.interviewer-summary-item:not(:last-child) {
+    border-bottom: 1px dashed var(--border-color);
+}
+
+.interviewer-summary-name {
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-right: 15px;
+}
+
+.interviewer-summary-badge {
+    background-color: var(--sidebar-accent);
+    color: white;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 16px;
+    font-size: 0.9rem;
+    min-width: 45px;
+    text-align: center;
 }
