@@ -25,7 +25,7 @@ export const NavigationModule = {
             dashboard: '지원자 현황', 
             stats: '채용 통계 분석',
             efficiency: '효율성 분석',
-            interviewSchedule: '면접 일정' // 추가된 부분
+            interviewSchedule: '면접관별 상세 일정' 
         };
         
         const titleElement = document.getElementById('pageTitle');
