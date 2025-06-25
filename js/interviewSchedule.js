@@ -120,21 +120,28 @@ export const InterviewScheduleModule = {
         const month = (now.getMonth() + 1).toString().padStart(2, '0');
         const day = now.getDate().toString().padStart(2, '0');
 
+        const handleInputChange = (e) => {
+            if (e.target.value) {
+                this.state.dateValue = e.target.value;
+                this.applyFilters();
+            }
+        };
+
         switch(this.state.dateMode) {
             case 'year':
-                html = `<input type="number" id="scheduleDateValue" value="${this.state.dateValue || year}" onchange="this.value ? (globalThis.App.interviewSchedule.state.dateValue = this.value, globalThis.App.interviewSchedule.applyFilters()) : null">`;
+                html = `<input type="number" class="date-input" id="scheduleDateValue" value="${this.state.dateValue || year}">`;
                 break;
             case 'month':
-                html = `<input type="month" id="scheduleDateValue" value="${this.state.dateValue || `${year}-${month}`}" onchange="this.value ? (globalThis.App.interviewSchedule.state.dateValue = this.value, globalThis.App.interviewSchedule.applyFilters()) : null">`;
+                html = `<input type="month" class="date-input" id="scheduleDateValue" value="${this.state.dateValue || `${year}-${month}`}">`;
                 break;
             case 'day':
-                html = `<input type="date" id="scheduleDateValue" value="${this.state.dateValue || `${year}-${month}-${day}`}" onchange="this.value ? (globalThis.App.interviewSchedule.state.dateValue = this.value, globalThis.App.interviewSchedule.applyFilters()) : null">`;
+                html = `<input type="date" class="date-input" id="scheduleDateValue" value="${this.state.dateValue || `${year}-${month}-${day}`}">`;
                 break;
             case 'range':
                 html = `
-                    <input type="date" id="scheduleStartDate" value="${this.state.startDate}" onchange="globalThis.App.interviewSchedule.applyFilters()">
+                    <input type="date" class="date-input" id="scheduleStartDate" value="${this.state.startDate}" onchange="globalThis.App.interviewSchedule.applyFilters()">
                     <span style="margin: 0 5px;">-</span>
-                    <input type="date" id="scheduleEndDate" value="${this.state.endDate}" onchange="globalThis.App.interviewSchedule.applyFilters()">
+                    <input type="date" class="date-input" id="scheduleEndDate" value="${this.state.endDate}" onchange="globalThis.App.interviewSchedule.applyFilters()">
                 `;
                 break;
             case 'all':
@@ -143,6 +150,11 @@ export const InterviewScheduleModule = {
                 break;
         }
         container.innerHTML = html;
+
+        if (this.state.dateMode !== 'range' && this.state.dateMode !== 'all') {
+             const input = container.querySelector('#scheduleDateValue');
+             if (input) input.addEventListener('change', handleInputChange);
+        }
     },
 
     applyFilters() {
@@ -348,10 +360,10 @@ export const InterviewScheduleModule = {
                             today.setHours(0, 0, 0, 0);
                             const iDate = new Date(interviewDateStr + "T00:00:00");
                             if(isNaN(iDate.getTime())) break;
-
+                            
                             iDate.setHours(0, 0, 0, 0);
                             const diffTime = iDate.getTime() - today.getTime();
-                            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                             
                             if (diffDays === 0) {
                                 cellContent = `<span class="status-badge" style="background-color: var(--danger);">D-Day</span>`;
