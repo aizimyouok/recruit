@@ -1,13 +1,67 @@
-// js/report.js (함수 위치 오류 최종 수정 및 AI 기능 통합 버전)
+// js/report.js (오류 해결 및 AI 기능 통합 최종 완성 버전)
 
+/**
+ * 리포트 종류별 구성요소를 정의하는 템플릿 객체
+ */
 const ReportTemplates = {
-    executive: { name: '경영진용 요약', title: '경영진용 요약 리포트', sections: ['kpi', 'charts'] },
-    detailed: { name: '상세 분석 리포트', title: '상세 분석 리포트', sections: ['table'] },
-    recruiter: { name: '채용담당자용 리포트', title: '채용담당자용 리포트', sections: ['placeholder'] },
-    weekly: { name: '주간 채용 현황', title: '주간 채용 현황', sections: ['placeholder'] },
-    monthly: { name: '월간 채용 성과', title: '월간 채용 성과', sections: ['placeholder'] },
-    comparison: { name: '기간별 비교 리포트', title: '기간별 비교 리포트', sections: ['placeholder'] },
-    ai: { name: 'AI 분석', title: 'Gemini AI 분석 리포트', sections: [] }
+    executive: {
+        name: '경영진용 요약',
+        title: '경영진용 요약 리포트',
+        sections: ['kpi', 'charts']
+    },
+    detailed: {
+        name: '상세 분석 리포트',
+        title: '상세 분석 리포트',
+        sections: ['table']
+    },
+    recruiter: {
+        name: '채용담당자용 리포트',
+        title: '채용담당자용 리포트',
+        sections: ['placeholder']
+    },
+    weekly: {
+        name: '주간 채용 현황',
+        title: '주간 채용 현황',
+        sections: ['placeholder']
+    },
+    monthly: {
+        name: '월간 채용 성과',
+        title: '월간 채용 성과',
+        sections: ['placeholder']
+    },
+    comparison: {
+        name: '기간별 비교 리포트',
+        title: '기간별 비교 리포트',
+        sections: ['placeholder']
+    },
+    ai: {
+        name: 'AI 분석 가이드',
+        title: 'Gemini AI 분석 리포트',
+        sections: [] // AI 탭은 동적으로 내용을 채움
+    }
+};
+
+/**
+ * AI 분석 가이드 항목 정의
+ */
+const AiAnalysisGuideItems = {
+    '유입 분석': [
+        { id: 'source_efficiency', label: '가장 효율적인 지원 경로는?', description: '어떤 지원루트가 가장 많은 최종 입사자를 만들어내는지 분석합니다.' },
+        { id: 'recruiter_performance', label: '최고의 증원자는 누구인가?', description: '어떤 증원자가 추천한 지원자들이 면접 합격률이 높은지 분석합니다.' },
+        { id: 'position_source', label: '특정 모집 분야에 강한 경로는?', description: '특정 모집분야의 지원자들이 주로 어떤 경로로 지원하는지 분석합니다.' }
+    ],
+    '지원자 특징 분석': [
+        { id: 'passer_profile', label: '최종 합격자들의 공통점은?', description: '합격자들의 주요 나이대, 성별, 지역 등 인구통계학적 특징을 파악합니다.' },
+        { id: 'interviewee_profile', label: '면접 전환율이 높은 지원자 유형은?', description: '서류 통과 후 면접까지 잘 이어지는 지원자들의 특징을 분석합니다.' }
+    ],
+    '채용 과정 분석': [
+        { id: 'bottleneck', label: '이탈이 가장 많은 구간은?', description: '지원부터 입과까지 단계별 전환율을 계산하고 병목 구간을 찾아냅니다.' },
+        { id: 'interviewer_tendency', label: '면접관별 합격률 차이는?', description: '면접관별 평균 합격률과 평가 성향을 비교 분석합니다.' },
+        { id: 'lead_time', label: '채용 소요 기간(Lead Time) 분석', description: '지원부터 입과까지 평균 며칠이 걸리는지 분석합니다.' }
+    ],
+    '텍스트 데이터 분석': [
+        { id: 'rejection_keywords', label: '불합격자 면접 리뷰의 핵심 키워드는?', description: '불합격 처리된 지원자들의 면접리뷰에서 공통 키워드를 추출합니다.' }
+    ]
 };
 
 export const ReportModule = {
@@ -34,16 +88,16 @@ export const ReportModule = {
                     this.state.currentReportType = target.dataset.reportType;
                     document.querySelectorAll('.report-tab-btn').forEach(btn => btn.classList.remove('active'));
                     target.classList.add('active');
-                    this.handleGenerateButtonClick();
+                    this.generateReport();
                 }
             });
         }
-        const generateBtn = document.querySelector('#report .page-header .primary-btn');
-        if (generateBtn) {
-            generateBtn.onclick = () => this.handleGenerateButtonClick();
+        const actionBtn = document.getElementById('reportActionBtn');
+        if (actionBtn) {
+            actionBtn.onclick = () => this.handleGenerateButtonClick();
         }
     },
-    
+
     // =================================================
     // 리포트 생성 컨트롤 타워
     // =================================================
@@ -57,10 +111,20 @@ export const ReportModule = {
     
     generateReport() {
         const reportType = this.state.currentReportType;
+        const actionBtn = document.getElementById('reportActionBtn');
+        const guideContainer = document.getElementById('aiAnalysisGuide');
+        const previewContainer = document.getElementById('reportPreviewContainer');
+        
+        guideContainer.style.display = 'none';
+        previewContainer.style.display = 'block';
+
         if (reportType === 'ai') {
-            const previewContainer = document.getElementById('reportPreviewContainer');
-            previewContainer.innerHTML = `<div class="report-placeholder">상단 필터로 분석할 데이터 범위를 설정한 후, '리포트 생성하기' 버튼을 눌러주세요.</div>`;
+            previewContainer.innerHTML = '';
+            guideContainer.style.display = 'block';
+            actionBtn.innerHTML = `<i class="fas fa-magic"></i> 선택 항목 AI 분석`;
+            this.renderAiGuide();
         } else {
+            actionBtn.innerHTML = `<i class="fas fa-file-download"></i> 리포트 생성하기`;
             this.generateTemplateReport();
         }
     },
@@ -91,9 +155,51 @@ export const ReportModule = {
     // =================================================
     // AI 분석 관련 함수
     // =================================================
+    renderAiGuide() {
+        const guideContainer = document.getElementById('aiAnalysisGuide');
+        let html = `
+            <div class="ai-guide-header">
+                <h3>AI 분석 가이드</h3>
+                <p>분석하고 싶은 항목을 선택하고, 상단 필터로 데이터 범위를 조정한 후 분석 버튼을 눌러주세요.</p>
+            </div>
+            <div class="ai-guide-grid">
+        `;
+        for (const [category, items] of Object.entries(AiAnalysisGuideItems)) {
+            html += `<div class="ai-guide-category"><h4><i class="fas fa-check-square"></i> ${category}</h4>`;
+            items.forEach(item => {
+                html += `
+                    <div class="ai-guide-item">
+                        <label>
+                            <input type="checkbox" name="ai_analysis_task" value="${item.id}">
+                            <span>${item.label}</span>
+                        </label>
+                        <small>${item.description}</small>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        }
+        html += `</div>`;
+        guideContainer.innerHTML = html;
+    },
+
     async requestAiAnalysis() {
+        const checkedItems = document.querySelectorAll('input[name="ai_analysis_task"]:checked');
+        if (checkedItems.length === 0) {
+            alert('분석할 항목을 하나 이상 선택해주세요.');
+            return;
+        }
+
+        const tasks = Array.from(checkedItems).map(item => ({
+            id: item.value,
+            label: item.nextElementSibling.textContent
+        }));
+        
+        const guideContainer = document.getElementById('aiAnalysisGuide');
         const previewContainer = document.getElementById('reportPreviewContainer');
-        previewContainer.innerHTML = `<div class="smooth-loading-container"><div class="advanced-loading-spinner"></div><p class="loading-text">Gemini AI가 데이터를 분석 중입니다...</p></div>`;
+        guideContainer.style.display = 'none';
+        previewContainer.style.display = 'block';
+        previewContainer.innerHTML = `<div class="smooth-loading-container"><div class="advanced-loading-spinner"></div><p class="loading-text">Gemini AI가 선택된 항목들을 분석 중입니다...</p></div>`;
 
         try {
             const options = this.getFilterOptions();
@@ -104,12 +210,14 @@ export const ReportModule = {
                 return;
             }
 
+            // 실제 백엔드(Apps Script)로 요청 전송
             const response = await fetch(this.app.config.APPS_SCRIPT_URL, {
                 method: 'POST',
                 body: JSON.stringify({
                     action: 'analyzeData',
                     data: dataForAnalysis,
-                    headers: this.app.state.data.headers
+                    headers: this.app.state.data.headers,
+                    tasks: tasks // 선택된 분석 과제 목록 전달
                 })
             });
 
@@ -124,6 +232,7 @@ export const ReportModule = {
             if (result.analysis.chartData) {
                 this.renderAiChart(result.analysis.chartData);
             }
+
         } catch (error) {
             console.error("AI 분석 요청 실패:", error);
             previewContainer.innerHTML = `<div class="error-container"><h3>AI 분석 실패</h3><p>${error.message}</p></div>`;
@@ -168,8 +277,102 @@ export const ReportModule = {
     },
 
     // =================================================
-    // 필터링 및 데이터 처리 헬퍼 함수
+    // 모든 헬퍼 함수들 (필터, UI, 데이터 처리 등)
     // =================================================
+    populateFilters() {
+        const reportFilterBar = document.getElementById('reportFilterBar');
+        if (!reportFilterBar) return;
+        if (!this.app || !this.app.state.data.all.length) {
+            reportFilterBar.innerHTML = `<p style="color: var(--text-secondary);">데이터 로딩 중...</p>`;
+            setTimeout(() => this.populateFilters(), 1000);
+            return;
+        }
+
+        const { headers, all } = this.app.state.data;
+        const indices = {
+            interviewer: headers.indexOf('면접관'),
+            company: headers.indexOf('회사명'),
+            route: headers.indexOf('지원루트'),
+            position: headers.indexOf('모집분야')
+        };
+        reportFilterBar.innerHTML = `
+            <div class="filter-group search-input"><label for="reportSearch">통합 검색</label><div style="position: relative;"><i class="fas fa-search search-icon"></i><input type="text" id="reportSearch" placeholder="이름, 비고 등 검색..." /></div></div>
+            <div class="filter-group"><label for="reportRouteFilter">지원루트</label><select id="reportRouteFilter"></select></div>
+            <div class="filter-group"><label for="reportPositionFilter">모집분야</label><select id="reportPositionFilter"></select></div>
+            <div class="filter-group"><label for="reportInterviewerFilter">면접관</label><select id="reportInterviewerFilter"></select></div>
+            <div class="filter-group"><label for="reportCompanyFilter">회사명</label><select id="reportCompanyFilter"></select></div>
+            <div class="filter-group date-filter-group"><label>조회 기간</label><div class="date-filter-container" id="reportDateFilterContainer"></div></div>
+            <div class="filter-group reset-group"><button class="secondary-btn reset-btn" onclick="globalThis.App.report.resetFilters()"><i class="fas fa-undo"></i> 초기화</button></div>
+        `;
+
+        const populate = (selector, index) => {
+            const selectElement = document.getElementById(selector);
+            if (selectElement && index !== -1) {
+                const options = [...new Set(all.map(row => (row[index] || '').trim()).filter(Boolean))];
+                selectElement.innerHTML = `<option value="all">전체</option>`;
+                options.sort().forEach(name => { selectElement.innerHTML += `<option value="${name}">${name}</option>`; });
+            }
+        };
+        populate('reportInterviewerFilter', indices.interviewer);
+        populate('reportCompanyFilter', indices.company);
+        populate('reportRouteFilter', indices.route);
+        populate('reportPositionFilter', indices.position);
+        
+        this.setInitialDateRange();
+    },
+
+    setInitialDateRange() {
+        if (!this.state) { this.state = {}; }
+        this.state.dateMode = 'range';
+        this.state.startDate = this.formatDateForInput(new Date(new Date().getFullYear(), 0, 1));
+        this.state.endDate = this.formatDateForInput(new Date());
+        this.updateDateFilterUI();
+    },
+
+    formatDateForInput(date) {
+        if (!date || !(date instanceof Date)) return '';
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    },
+
+    updateDateFilterUI() {
+        const container = document.getElementById('reportDateFilterContainer');
+        if (!container) return;
+        container.innerHTML = `<div id="reportDateModeToggle" class="date-mode-toggle-group"><button class="date-mode-btn ${this.state.dateMode === 'all' ? 'active' : ''}" data-mode="all">전체</button><button class="date-mode-btn ${this.state.dateMode === 'range' ? 'active' : ''}" data-mode="range">기간</button></div><div id="reportDateInputsContainer" class="date-inputs-group"></div>`;
+        this.updateDateInputs();
+        const toggleGroup = container.querySelector('#reportDateModeToggle');
+        if (toggleGroup) {
+            toggleGroup.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    this.state.dateMode = e.target.dataset.mode;
+                    this.updateDateFilterUI();
+                }
+            });
+        }
+    },
+
+    updateDateInputs() {
+        const container = document.getElementById('reportDateInputsContainer');
+        if (!container) return;
+        if (this.state.dateMode === 'range') {
+            container.innerHTML = `<input type="date" class="date-input" id="reportStartDate" value="${this.state.startDate}"><span style="margin: 0 5px;">-</span><input type="date" class="date-input" id="reportEndDate" value="${this.state.endDate}">`;
+        } else {
+            container.innerHTML = `<span style="padding: 0 10px; color: var(--text-secondary);">전체 기간</span>`;
+        }
+    },
+
+    resetFilters() {
+        const searchInput = document.getElementById('reportSearch');
+        if (searchInput) searchInput.value = '';
+        document.getElementById('reportRouteFilter').value = 'all';
+        document.getElementById('reportPositionFilter').value = 'all';
+        document.getElementById('reportInterviewerFilter').value = 'all';
+        document.getElementById('reportCompanyFilter').value = 'all';
+        this.setInitialDateRange();
+    },
+
     getFilterOptions() {
         return {
             interviewer: document.getElementById('reportInterviewerFilter')?.value || 'all',
@@ -182,7 +385,7 @@ export const ReportModule = {
             endDate: document.getElementById('reportEndDate')?.value,
         };
     },
-    
+
     getFilteredData(options) {
         const { all, headers } = this.app.state.data;
         let data = [...all];
@@ -213,124 +416,6 @@ export const ReportModule = {
         return data;
     },
     
-    // =================================================
-    // UI 렌더링 헬퍼 함수 (필터, 날짜 등)
-    // =================================================
-    populateFilters() {
-        const reportFilterBar = document.getElementById('reportFilterBar');
-        if (!reportFilterBar) return;
-        if (!this.app || !this.app.state.data.all.length) {
-            reportFilterBar.innerHTML = `<p style="color: var(--text-secondary);">전체 지원자 데이터를 불러오는 중입니다...</p>`;
-            setTimeout(() => this.populateFilters(), 1000);
-            return;
-        }
-
-        const { headers, all } = this.app.state.data;
-        const indices = {
-            interviewer: headers.indexOf('면접관'),
-            company: headers.indexOf('회사명'),
-            route: headers.indexOf('지원루트'),
-            position: headers.indexOf('모집분야')
-        };
-        reportFilterBar.innerHTML = `
-            <div class="filter-group search-input">
-                <label for="reportSearch">통합 검색</label>
-                <div style="position: relative;">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="reportSearch" placeholder="이름, 비고 등 검색..." />
-                </div>
-            </div>
-            <div class="filter-group"><label for="reportRouteFilter">지원루트</label><select id="reportRouteFilter"></select></div>
-            <div class="filter-group"><label for="reportPositionFilter">모집분야</label><select id="reportPositionFilter"></select></div>
-            <div class="filter-group"><label for="reportInterviewerFilter">면접관</label><select id="reportInterviewerFilter"></select></div>
-            <div class="filter-group"><label for="reportCompanyFilter">회사명</label><select id="reportCompanyFilter"></select></div>
-            <div class="filter-group date-filter-group"><label>조회 기간</label><div class="date-filter-container" id="reportDateFilterContainer"></div></div>
-            <div class="filter-group reset-group"><button class="secondary-btn reset-btn" onclick="globalThis.App.report.resetFilters()"><i class="fas fa-undo"></i> 초기화</button></div>
-        `;
-
-        const populate = (selector, index) => {
-            const selectElement = document.getElementById(selector);
-            if (selectElement && index !== -1) {
-                const options = [...new Set(all.map(row => (row[index] || '').trim()).filter(Boolean))];
-                selectElement.innerHTML = `<option value="all">전체</option>`;
-                options.sort().forEach(name => {
-                    selectElement.innerHTML += `<option value="${name}">${name}</option>`;
-                });
-            }
-        };
-        populate('reportInterviewerFilter', indices.interviewer);
-        populate('reportCompanyFilter', indices.company);
-        populate('reportRouteFilter', indices.route);
-        populate('reportPositionFilter', indices.position);
-        
-        this.setInitialDateRange();
-    },
-
-    setInitialDateRange() {
-        if (!this.state) { this.state = {}; }
-        this.state.dateMode = 'range';
-        this.state.startDate = this.formatDateForInput(new Date(new Date().getFullYear(), 0, 1));
-        this.state.endDate = this.formatDateForInput(new Date());
-        this.updateDateFilterUI();
-    },
-
-    formatDateForInput(date) {
-        if (!date || !(date instanceof Date)) return '';
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    },
-
-    updateDateFilterUI() {
-        const container = document.getElementById('reportDateFilterContainer');
-        if (!container) return;
-        container.innerHTML = `
-            <div id="reportDateModeToggle" class="date-mode-toggle-group">
-                <button class="date-mode-btn ${this.state.dateMode === 'all' ? 'active' : ''}" data-mode="all">전체</button>
-                <button class="date-mode-btn ${this.state.dateMode === 'range' ? 'active' : ''}" data-mode="range">기간</button>
-            </div>
-            <div id="reportDateInputsContainer" class="date-inputs-group"></div>
-        `;
-        this.updateDateInputs();
-        const toggleGroup = container.querySelector('#reportDateModeToggle');
-        if (toggleGroup) {
-            toggleGroup.addEventListener('click', (e) => {
-                if (e.target.tagName === 'BUTTON') {
-                    this.state.dateMode = e.target.dataset.mode;
-                    this.updateDateFilterUI();
-                }
-            });
-        }
-    },
-
-    updateDateInputs() {
-        const container = document.getElementById('reportDateInputsContainer');
-        if (!container) return;
-        if (this.state.dateMode === 'range') {
-            container.innerHTML = `
-                <input type="date" class="date-input" id="reportStartDate" value="${this.state.startDate}">
-                <span style="margin: 0 5px;">-</span>
-                <input type="date" class="date-input" id="reportEndDate" value="${this.state.endDate}">
-            `;
-        } else {
-            container.innerHTML = `<span style="padding: 0 10px; color: var(--text-secondary);">전체 기간</span>`;
-        }
-    },
-
-    resetFilters() {
-        const searchInput = document.getElementById('reportSearch');
-        if (searchInput) searchInput.value = '';
-        document.getElementById('reportRouteFilter').value = 'all';
-        document.getElementById('reportPositionFilter').value = 'all';
-        document.getElementById('reportInterviewerFilter').value = 'all';
-        document.getElementById('reportCompanyFilter').value = 'all';
-        this.setInitialDateRange();
-    },
-
-    // =================================================
-    // HTML 템플릿 렌더링 함수
-    // =================================================
     buildReportFromTemplate(template, data, options) {
         const now = new Date();
         const periodText = this.getPeriodText(options);
