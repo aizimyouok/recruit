@@ -1,4 +1,10 @@
-// js/report.js (오류 해결 및 AI 기능 통합 최종 완성 버전)
+/**
+ * @file report.js
+ * @description 리포트 발행 페이지의 모든 UI 및 데이터 로직을 관리합니다.
+ * - 템플릿 기반 리포트 생성
+ * - AI 분석 가이드 UI 생성
+ * - AI 분석 요청 및 결과 시각화
+ */
 
 /**
  * 리포트 종류별 구성요소를 정의하는 템플릿 객체
@@ -13,26 +19,6 @@ const ReportTemplates = {
         name: '상세 분석 리포트',
         title: '상세 분석 리포트',
         sections: ['table']
-    },
-    recruiter: {
-        name: '채용담당자용 리포트',
-        title: '채용담당자용 리포트',
-        sections: ['placeholder']
-    },
-    weekly: {
-        name: '주간 채용 현황',
-        title: '주간 채용 현황',
-        sections: ['placeholder']
-    },
-    monthly: {
-        name: '월간 채용 성과',
-        title: '월간 채용 성과',
-        sections: ['placeholder']
-    },
-    comparison: {
-        name: '기간별 비교 리포트',
-        title: '기간별 비교 리포트',
-        sections: ['placeholder']
     },
     ai: {
         name: 'AI 분석 가이드',
@@ -63,6 +49,7 @@ const AiAnalysisGuideItems = {
         { id: 'rejection_keywords', label: '불합격자 면접 리뷰의 핵심 키워드는?', description: '불합격 처리된 지원자들의 면접리뷰에서 공통 키워드를 추출합니다.' }
     ]
 };
+
 
 export const ReportModule = {
     state: {
@@ -210,14 +197,13 @@ export const ReportModule = {
                 return;
             }
 
-            // 실제 백엔드(Apps Script)로 요청 전송
             const response = await fetch(this.app.config.APPS_SCRIPT_URL, {
                 method: 'POST',
                 body: JSON.stringify({
                     action: 'analyzeData',
                     data: dataForAnalysis,
                     headers: this.app.state.data.headers,
-                    tasks: tasks // 선택된 분석 과제 목록 전달
+                    tasks: tasks
                 })
             });
 
@@ -229,8 +215,8 @@ export const ReportModule = {
             const reportHtml = this.buildAiReport(result.analysis, options);
             previewContainer.innerHTML = reportHtml;
 
-            if (result.analysis.chartData) {
-                this.renderAiChart(result.analysis.chartData);
+            if (result.analysis.trendChartData) {
+                this.renderAiChart(result.analysis.trendChartData);
             }
 
         } catch (error) {
@@ -241,36 +227,89 @@ export const ReportModule = {
     
     buildAiReport(result, options) {
         const periodText = this.getPeriodText(options);
+        const kpis = result.kpis || {};
+        const insights = result.insights || [];
+        const actionItems = result.actionItems || [];
+
+        const kpiHtml = `
+            <div class="kpi-card">
+                <div class="kpi-header"><i class="fas fa-users"></i> 총 지원자</div>
+                <div class="kpi-value">${kpis.totalApplicants?.value || 'N/A'}</div>
+                <div class="kpi-change positive">${kpis.totalApplicants?.change || ''}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-header"><i class="fas fa-comments"></i> 면접 전환율</div>
+                <div class="kpi-value">${kpis.interviewRate?.value || 'N/A'}</div>
+                <div class="kpi-change positive">${kpis.interviewRate?.change || ''}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-header"><i class="fas fa-check-circle"></i> 최종 합격률</div>
+                <div class="kpi-value">${kpis.passRate?.value || 'N/A'}</div>
+                <div class="kpi-change negative">${kpis.passRate?.change || ''}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-header"><i class="fas fa-rocket"></i> 입사 전환율</div>
+                <div class="kpi-value">${kpis.hireRate?.value || 'N/A'}</div>
+                <div class="kpi-change positive">${kpis.hireRate?.change || ''}</div>
+            </div>
+        `;
+
+        const insightsHtml = insights.map(item => `
+            <div class="insight-card">
+                <div class="insight-title">${item.title || '핵심 발견'}</div>
+                <p class="insight-text">${item.text || '내용 없음'}</p>
+            </div>
+        `).join('');
+
+        const actionItemsHtml = actionItems.map(item => `
+            <li class="action-item">${item}</li>
+        `).join('');
+
         return `
-            <div id="reportPage">
-                <h1>${ReportTemplates.ai.title}</h1>
-                <p class="report-info"><strong>분석 기간:</strong> ${periodText}</p>
-                <h2><i class="fas fa-search"></i> 분석 요약</h2>
-                <p class="ai-summary" style="padding: 15px; background: var(--main-bg, #f8fafc); border-radius: 8px;">${result.summary}</p>
-                <h2><i class="fas fa-lightbulb"></i> 추천 액션</h2>
-                <p class="ai-recommendation" style="padding: 15px; background: var(--main-bg, #f8fafc); border-radius: 8px;">${result.recommendation}</p>
-                ${result.chartData ? `
-                <h2><i class="fas fa-chart-bar"></i> 데이터 시각화: ${result.chartData.title}</h2>
-                <div class="chart-container-report">
-                    <canvas id="aiReportChart"></canvas>
+            <div id="advancedReportPage">
+                <div class="report-main-header">
+                    <h1>채용 성과 리포트</h1>
+                    <p>${periodText} 종합 분석 보고서</p>
+                </div>
+                <div class="report-grid kpi-grid">${kpiHtml}</div>
+                
+                ${result.trendChartData ? `
+                <div class="report-section">
+                    <h2><i class="fas fa-chart-line"></i> 트렌드 분석</h2>
+                    <div class="chart-container-report">
+                        <canvas id="aiTrendChart"></canvas>
+                    </div>
                 </div>
                 ` : ''}
+
+                <div class="report-section">
+                    <h2><i class="fas fa-lightbulb"></i> 핵심 인사이트</h2>
+                    <div class="report-grid insight-grid">${insightsHtml}</div>
+                </div>
+
+                <div class="report-section">
+                    <h2><i class="fas fa-tasks"></i> 다음 달 액션 아이템</h2>
+                    <ol class="action-item-list">${actionItemsHtml}</ol>
+                </div>
             </div>
         `;
     },
 
     renderAiChart(chartData) {
-        const ctx = document.getElementById('aiReportChart')?.getContext('2d');
-        if (!ctx) return;
+        const ctx = document.getElementById('aiTrendChart')?.getContext('2d');
+        if (!ctx || !chartData) return;
+
         new Chart(ctx, {
-            type: chartData.type || 'bar',
+            type: chartData.type || 'line',
             data: {
                 labels: chartData.labels,
-                datasets: [{
-                    label: chartData.title,
-                    data: chartData.values,
-                    backgroundColor: Object.values(this.app.config.CHART_COLORS)
-                }]
+                datasets: chartData.datasets.map((ds, index) => ({
+                    ...ds,
+                    borderColor: Object.values(this.app.config.CHART_COLORS)[index],
+                    backgroundColor: `${Object.values(this.app.config.CHART_COLORS)[index]}33`,
+                    fill: true,
+                    tension: 0.4
+                }))
             },
             options: { responsive: true, maintainAspectRatio: false }
         });
