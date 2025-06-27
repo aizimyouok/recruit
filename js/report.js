@@ -1,284 +1,278 @@
-// =========================
-// data.js - 데이터 관련 모듈 (리포트 페이지 연동 최종 버전)
-// =========================
+// js/report.js (초기화 오류 수정된 최종 버전)
 
-export const DataModule = {
-    async fetch(appInstance) {
-        if (appInstance.dataCache) {
-            const loadedFromCache = await appInstance.dataCache.loadFromCache(appInstance);
-            if (loadedFromCache) {
-                console.log('✅ 캐시에서 로딩 완료 - 서버 호출 생략');
-                if (appInstance.navigation.getCurrentPage() === 'report' && appInstance.report) {
-                    appInstance.report.populateFilters();
-                }
-                return;
-            }
-        }
-        const tableContainer = document.querySelector('#dashboard .table-container');
+export const ReportModule = {
+    // 모듈의 상태를 관리할 state 객체 추가 (이 부분이 누락되어 오류 발생)
+    state: {},
 
-        try {
-            if (tableContainer) {
-                appInstance.ui.showLoadingState(tableContainer);
-            }
-
-            const response = await fetch(`${appInstance.config.APPS_SCRIPT_URL}?action=read`);
-
-            if (tableContainer) {
-                appInstance.ui.updateProgress(tableContainer, 60, '데이터 처리중...');
-            }
-
-            if (!response.ok) {
-                throw new Error(appInstance.utils.getErrorMessage(response.status));
-            }
-
-            const result = await response.json();
-
-            if (tableContainer) {
-                appInstance.ui.updateProgress(tableContainer, 85, '최종 처리중...');
-            }
-
-            if (result.status !== 'success') {
-                throw new Error(result.message || '데이터 처리 중 오류가 발생했습니다.');
-            }
-
-            if (!result.data || !Array.isArray(result.data) || result.data.length === 0) {
-                throw new Error('데이터가 비어있거나 올바르지 않은 형식입니다.');
-            }
-
-            appInstance.state.data.headers = (result.data[0] || []).map(h => String(h || '').trim());
-            appInstance.state.data.all = result.data.slice(1)
-                .filter(row => row && Array.isArray(row) && row.some(cell => cell != null && String(cell).trim() !== ''))
-                .map(row => row.map(cell => cell == null ? '' : String(cell)));
- 
-            if (appInstance.dataCache) {
-                appInstance.dataCache.saveToCache(appInstance.state.data.headers, appInstance.state.data.all);
-            }
-
-            DataModule.updateSequenceNumber(appInstance);
-            appInstance.state.ui.visibleColumns = appInstance.utils.generateVisibleColumns(appInstance.state.data.headers);
-
-            if (appInstance.filter && appInstance.filter.populateDropdowns) {
-                appInstance.filter.populateDropdowns();
-            }
-
-            if (appInstance.sidebar && appInstance.sidebar.updateWidgets) {
-                appInstance.sidebar.updateWidgets();
-            }
-
-            DataModule.updateInterviewSchedule(appInstance);
-
-            if (appInstance.filter && appInstance.filter.reset) {
-                appInstance.filter.reset(true);
-            }
-
-            setTimeout(() => {
-                if (appInstance.ui && appInstance.ui.setupColumnToggles) {
-                    appInstance.ui.setupColumnToggles();
-                }
-                
-                if (appInstance.render && appInstance.state.data.all.length > 0) {
-                    appInstance.render.currentView();
-                }
-            }, 50);
-
-            if (tableContainer) {
-                appInstance.ui.updateProgress(tableContainer, 100, '완료!');
-            }
-
-            setTimeout(() => {
-                if (appInstance.sidebar && appInstance.sidebar.updateWidgets) {
-                    appInstance.sidebar.updateWidgets();
-                }
-            }, 500);
-
-            if (appInstance.cache) {
-                appInstance.cache.invalidate();
-                console.log('🔄 새 데이터 로드 - 캐시 초기화됨');
-            }
-
-            // ▼▼▼▼▼ [바로 이 부분이 핵심입니다!] ▼▼▼▼▼
-            if (appInstance.navigation.getCurrentPage() === 'report' && appInstance.report) {
-                console.log('🔄 데이터 로드 완료. 리포트 필터를 다시 그립니다.');
-                appInstance.report.populateFilters();
-            }
-            // ▲▲▲▲▲ [바로 이 부분이 핵심입니다!] ▲▲▲▲▲
-
-        } catch (error) {
-            console.error("데이터 불러오기 실패:", error);
-            if (tableContainer && appInstance.ui && appInstance.ui.showErrorState) {
-                appInstance.ui.showErrorState(tableContainer, error);
-            }
-        }
+    // 페이지가 처음 열릴 때 실행되는 초기화 함수
+    initialize(appInstance) {
+        this.app = appInstance;
+        console.log('📊 리포트 모듈 초기화');
+        this.populateFilters();
+        this.setInitialDateRange();
     },
 
-    updateSequenceNumber(appInstance) {
-        const gubunIndex = appInstance.state.data.headers.indexOf('구분');
-        if (gubunIndex !== -1 && appInstance.state.data.all.length > 0) {
-            const lastRow = appInstance.state.data.all[appInstance.state.data.all.length - 1];
-            const lastGubun = parseInt(lastRow[gubunIndex] || '0', 10);
-            appInstance.state.ui.nextSequenceNumber = isNaN(lastGubun) ? appInstance.state.data.all.length + 1 : lastGubun + 1;
-        } else {
-            appInstance.state.ui.nextSequenceNumber = appInstance.state.data.all.length + 1;
-        }
-    },
-
-    updateInterviewSchedule(appInstance) {
-        let interviewDateIndex = appInstance.state.data.headers.indexOf('면접 날짜');
-        if (interviewDateIndex === -1) interviewDateIndex = appInstance.state.data.headers.indexOf('면접 날자');
-        const interviewTimeIndex = appInstance.state.data.headers.indexOf('면접 시간');
-        const nameIndex = appInstance.state.data.headers.indexOf('이름');
-        const positionIndex = appInstance.state.data.headers.indexOf('모집분야');
-        const routeIndex = appInstance.state.data.headers.indexOf('지원루트');
-        const companyIndex = appInstance.state.data.headers.indexOf('회사명');
-        const recruiterIndex = appInstance.state.data.headers.indexOf('증원자');
-        const interviewerIndex = appInstance.state.data.headers.indexOf('면접관');
-        const scheduleContainer = document.getElementById('interviewScheduleList');
-        
-        if (!scheduleContainer) return;
-        if (interviewDateIndex === -1) {
-            scheduleContainer.innerHTML = '<div class="no-interviews">면접 날짜 컬럼을 찾을 수 없습니다.</div>';
-            return;
-        }
-        const today = new Date();
-        const threeDaysLater = new Date(today.getTime() + (3 * 24 * 60 * 60 * 1000));
-        
-        const upcomingInterviews = appInstance.state.data.all
-            .filter(row => {
-                const interviewDate = row[interviewDateIndex];
-                const interviewTime = row[interviewTimeIndex];
-                if (!interviewDate) return false;
-                try {
-                    const date = new Date(interviewDate);
-                    if (interviewTime) {
-                        const timeStr = String(interviewTime).replace(/'/g, '').trim();
-                        const timeMatch = timeStr.match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
-                        if (timeMatch) {
-                            const hour = parseInt(timeMatch[1]);
-                            const minute = parseInt(timeMatch[2] || '0');
-                            if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) date.setHours(hour, minute, 0, 0);
-                            else date.setHours(23, 59, 59, 999);
-                        } else date.setHours(23, 59, 59, 999);
-                    } else date.setHours(23, 59, 59, 999);
-                    return date >= today && date <= threeDaysLater;
-                } catch (e) { return false; }
-            })
-            .sort((a, b) => {
-                try {
-                    const dateA = new Date(a[interviewDateIndex]);
-                    const dateB = new Date(b[interviewDateIndex]);
-                    const timeA = a[interviewTimeIndex];
-                    if (timeA) {
-                        const timeStrA = String(timeA).replace(/'/g, '').trim();
-                        const timeMatchA = timeStrA.match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
-                        if (timeMatchA) {
-                            const hourA = parseInt(timeMatchA[1]);
-                            const minuteA = parseInt(timeMatchA[2] || '0');
-                            if (hourA >= 0 && hourA <= 23 && minuteA >= 0 && minuteA <= 59) dateA.setHours(hourA, minuteA, 0, 0);
-                        }
-                    }
-                    const timeB = b[interviewTimeIndex];
-                    if (timeB) {
-                        const timeStrB = String(timeB).replace(/'/g, '').trim();
-                        const timeMatchB = timeStrB.match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
-                        if (timeMatchB) {
-                            const hourB = parseInt(timeMatchB[1]);
-                            const minuteB = parseInt(timeMatchB[2] || '0');
-                            if (hourB >= 0 && hourB <= 23 && minuteB >= 0 && minuteB <= 59) dateB.setHours(hourB, minuteB, 0, 0);
-                        }
-                    }
-                    return dateA - dateB;
-                } catch (e) { return 0; }
-            })
-            .slice(0, 7);
-
-        if (upcomingInterviews.length === 0) {
-            scheduleContainer.innerHTML = '<div class="no-interviews">3일 이내 예정된 면접이 없습니다.</div>';
+    // 필터 드롭다운 목록을 데이터로 채우는 함수
+    populateFilters() {
+        if (!this.app || !this.app.state.data.all.length) {
+            console.log('리포트 필터 생성 대기: 데이터가 아직 로드되지 않았습니다.');
             return;
         }
 
-        let tableHtml = `
-            <table class="interview-schedule-table">
-                <thead>
-                    <tr><th>이름</th><th>지원루트</th>${companyIndex !== -1 ? '<th>회사명</th>' : ''}<th>증원자</th><th>모집분야</th><th>면접관</th><th>면접날짜</th><th>면접시간</th></tr>
-                </thead>
-                <tbody>
+        const { headers, all } = this.app.state.data;
+        const indices = {
+            interviewer: headers.indexOf('면접관'),
+            company: headers.indexOf('회사명'),
+            route: headers.indexOf('지원루트'),
+            position: headers.indexOf('모집분야')
+        };
+
+        const populate = (selector, index) => {
+            const selectElement = document.getElementById(selector);
+            if (selectElement && index !== -1) {
+                const options = [...new Set(all.map(row => (row[index] || '').trim()).filter(Boolean))];
+                selectElement.innerHTML = `<option value="all">전체</option>`;
+                options.sort().forEach(name => {
+                    selectElement.innerHTML += `<option value="${name}">${name}</option>`;
+                });
+            }
+        };
+
+        populate('reportInterviewerFilter', indices.interviewer);
+        populate('reportCompanyFilter', indices.company);
+        populate('reportRouteFilter', indices.route);
+        populate('reportPositionFilter', indices.position);
+    },
+    
+    // 페이지 로드 시 기본 날짜 범위를 설정하는 함수
+    setInitialDateRange() {
+        // 모듈의 state를 초기화 (기존 코드에서는 이 부분이 잘못되어 있었음)
+        this.state = {
+            dateMode: 'range',
+            startDate: this.formatDateForInput(new Date(new Date().getFullYear(), 0, 1)), // 올해 1월 1일
+            endDate: this.formatDateForInput(new Date()) // 오늘
+        };
+        this.updateDateFilterUI();
+    },
+
+    // 날짜를 YYYY-MM-DD 형식으로 변환하는 헬퍼 함수
+    formatDateForInput(date) {
+        if (!date || !(date instanceof Date)) return '';
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    },
+
+    // 날짜 필터 UI를 현재 상태에 맞게 업데이트하는 함수
+    updateDateFilterUI() {
+        const container = document.getElementById('reportDateFilterContainer');
+        if (!container) return;
+
+        container.innerHTML = `
+            <div id="reportDateModeToggle" class="date-mode-toggle-group">
+                <button class="date-mode-btn ${this.state.dateMode === 'all' ? 'active' : ''}" data-mode="all">전체</button>
+                <button class="date-mode-btn ${this.state.dateMode === 'range' ? 'active' : ''}" data-mode="range">기간</button>
+            </div>
+            <div id="reportDateInputsContainer" class="date-inputs-group"></div>
         `;
 
-        upcomingInterviews.forEach((row, index) => {
-            const interviewDate = row[interviewDateIndex];
-            let dateDisplay = '';
-            const formattedTime = appInstance.utils.formatInterviewTime(row[interviewTimeIndex]);
-            try {
-                const date = new Date(interviewDate);
-                const dateForDday = new Date(interviewDate);
-                dateForDday.setHours(0, 0, 0, 0);
-                const todayForDday = new Date(today);
-                todayForDday.setHours(0, 0, 0, 0);
-                const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
-                const weekday = weekdays[date.getDay()];
-                const diffTime = dateForDday.getTime() - todayForDday.getTime();
-                const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-                let dayDiff = `D-${diffDays}`;
-                let ddayClass = '';
-                if (diffDays === 0) { dayDiff = 'D-Day'; ddayClass = 'today'; }
-                const dateText = `${date.getMonth() + 1}/${date.getDate()}(${weekday})`;
-                dateDisplay = `<span class="interview-dday ${ddayClass}">${dayDiff}</span><span class="interview-date-text">${dateText}</span>`;
-            } catch (e) { dateDisplay = '날짜 오류'; }
+        this.updateDateInputs();
 
-            const name = String(row[nameIndex] || '');
-            const route = String(row[routeIndex] || '');
-            const companyName = companyIndex !== -1 ? (row[companyIndex] || '-') : '';
-
-            tableHtml += `<tr class="interview-row" data-name="${name}" data-route="${route}" style="cursor: pointer;"><td class="interview-name-cell" title="${name}">${name || '-'}</td><td class="interview-route-cell" title="${route}">${route || '-'}</td>${companyIndex !== -1 ? `<td class="interview-company-cell" title="${companyName}">${companyName}</td>` : ''}<td class="interview-recruiter-cell" title="${row[recruiterIndex] || ''}">${row[recruiterIndex] || '-'}</td><td class="interview-position-cell" title="${row[positionIndex] || ''}">${row[positionIndex] || '-'}</td><td class="interview-interviewer-cell" title="${row[interviewerIndex] || ''}">${row[interviewerIndex] || '-'}</td><td class="interview-date-cell" title="${dateDisplay.replace(/<[^>]*>/g, '')}">${dateDisplay}</td><td class="interview-time-cell" title="${formattedTime}">${formattedTime}</td></tr>`;
-        });
-
-        tableHtml += `</tbody></table>`;
-        scheduleContainer.innerHTML = tableHtml;
-        
-        const scheduleTable = scheduleContainer.querySelector('.interview-schedule-table');
-        if (scheduleTable) {
-            scheduleTable.removeEventListener('click', DataModule._handleTableClick);
-            DataModule._handleTableClick = function(event) {
-                const row = event.target.closest('.interview-row');
-                if (row) {
-                    const name = row.getAttribute('data-name');
-                    const route = row.getAttribute('data-route');
-                    if (name && route) {
-                        const app = typeof globalThis !== 'undefined' ? globalThis.App : window.App;
-                        if(app) DataModule.showInterviewDetails(app, name, route);
-                    }
+        const toggleGroup = container.querySelector('#reportDateModeToggle');
+        if(toggleGroup) {
+            toggleGroup.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    this.state.dateMode = e.target.dataset.mode;
+                    this.updateDateFilterUI();
                 }
-            };
-            scheduleTable.addEventListener('click', DataModule._handleTableClick);
+            });
+        }
+    },
+    
+    // 날짜 입력 필드를 업데이트하는 함수
+    updateDateInputs() {
+        const container = document.getElementById('reportDateInputsContainer');
+        if (!container) return;
+        
+        if (this.state.dateMode === 'range') {
+            container.innerHTML = `
+                <input type="date" class="date-input" id="reportStartDate" value="${this.state.startDate}">
+                <span style="margin: 0 5px;">-</span>
+                <input type="date" class="date-input" id="reportEndDate" value="${this.state.endDate}">
+            `;
+        } else {
+             container.innerHTML = `<span class="date-input-text">전체 기간</span>`;
         }
     },
 
-    _handleTableClick: null,
+    // '리포트 생성하기' 버튼 클릭 시 실행되는 메인 함수
+    generateReport() {
+        const previewContainer = document.getElementById('reportPreviewContainer');
+        previewContainer.innerHTML = `<div class="smooth-loading-container"><div class="advanced-loading-spinner"></div><p class="loading-text">리포트를 생성 중입니다...</p></div>`;
 
-    showInterviewDetails(appInstance, name, route) {
-        try {
-            const nameIndex = appInstance.state.data.headers.indexOf('이름');
-            const routeIndex = appInstance.state.data.headers.indexOf('지원루트');
-            const targetRow = appInstance.state.data.all.find(row => String(row[nameIndex] || '') === name && String(row[routeIndex] || '') === route);
-            if (targetRow && appInstance.modal) appInstance.modal.openDetail(targetRow);
-        } catch (error) {
-            console.error('면접 상세 정보 표시 실패:', error);
+        setTimeout(() => {
+            try {
+                // UI에서 현재 필터 값들을 가져옴
+                const options = {
+                    interviewer: document.getElementById('reportInterviewerFilter').value,
+                    company: document.getElementById('reportCompanyFilter').value,
+                    route: document.getElementById('reportRouteFilter').value,
+                    position: document.getElementById('reportPositionFilter').value,
+                    searchTerm: (document.getElementById('reportSearch')?.value || '').toLowerCase(),
+                    dateMode: this.state.dateMode,
+                    startDate: document.getElementById('reportStartDate')?.value,
+                    endDate: document.getElementById('reportEndDate')?.value,
+                };
+                
+                const filteredData = this.getFilteredData(options);
+                const reportHtml = this.buildReportHtml(filteredData, options);
+                previewContainer.innerHTML = reportHtml;
+                this.renderReportCharts(filteredData);
+            } catch (error) {
+                console.error("리포트 생성 중 오류 발생:", error);
+                previewContainer.innerHTML = `<div class="error-container"><i class="fas fa-exclamation-triangle error-icon"></i><h3 class="error-title">리포트 생성 실패</h3><p class="error-message">리포트를 만드는 중 문제가 발생했습니다. 콘솔을 확인해주세요.</p></div>`;
+            }
+        }, 500);
+    },
+
+    // 선택된 옵션에 따라 데이터를 필터링하는 함수
+    getFilteredData(options) {
+        const { all, headers } = this.app.state.data;
+        let data = [...all];
+        const indices = {
+            applyDate: headers.indexOf('지원일'),
+            interviewer: headers.indexOf('면접관'),
+            company: headers.indexOf('회사명'),
+            route: headers.indexOf('지원루트'),
+            position: headers.indexOf('모집분야')
+        };
+
+        if (options.dateMode === 'range' && indices.applyDate !== -1) {
+            data = data.filter(row => {
+                const dateStr = row[indices.applyDate];
+                if (!dateStr || !options.startDate || !options.endDate) return true;
+                const date = new Date(dateStr);
+                const start = new Date(options.startDate);
+                const end = new Date(options.endDate);
+                return date >= start && date <= end;
+            });
+        }
+        
+        if (options.interviewer !== 'all' && indices.interviewer !==-1) data = data.filter(row => (row[indices.interviewer] || '').includes(options.interviewer));
+        if (options.company !== 'all' && indices.company !==-1) data = data.filter(row => row[indices.company] === options.company);
+        if (options.route !== 'all' && indices.route !== -1) data = data.filter(row => row[indices.route] === options.route);
+        if (options.position !== 'all' && indices.position !== -1) data = data.filter(row => row[indices.position] === options.position);
+        
+        if (options.searchTerm) {
+            data = data.filter(row => row.some(cell => String(cell).toLowerCase().includes(options.searchTerm)));
+        }
+        
+        return data;
+    },
+    
+    // '초기화' 버튼 클릭 시 필터를 기본값으로 되돌리는 함수
+    resetFilters() {
+        const searchInput = document.getElementById('reportSearch');
+        if(searchInput) searchInput.value = '';
+        
+        document.getElementById('reportRouteFilter').value = 'all';
+        document.getElementById('reportPositionFilter').value = 'all';
+        document.getElementById('reportInterviewerFilter').value = 'all';
+        document.getElementById('reportCompanyFilter').value = 'all';
+        this.setInitialDateRange();
+    },
+
+    // 필터링된 데이터로 리포트의 HTML 구조를 만드는 함수
+    buildReportHtml(data, options) {
+        const now = new Date();
+        const periodText = this.getPeriodText(options);
+        const headers = this.app.state.data.headers;
+        const totalApplicants = data.length;
+        const interviewConfirmedCount = data.filter(row => (row[headers.indexOf('1차 컨택 결과')] || '') === '면접확정').length;
+        const passedCount = data.filter(row => (row[headers.indexOf('면접결과')] || '') === '합격').length;
+        const joinedCount = data.filter(row => (row[headers.indexOf('입과일')] || '').trim() !== '').length;
+        const interviewRate = totalApplicants > 0 ? ((interviewConfirmedCount / totalApplicants) * 100).toFixed(1) : 0;
+        const passRate = interviewConfirmedCount > 0 ? ((passedCount / interviewConfirmedCount) * 100).toFixed(1) : 0;
+        const joinRate = passedCount > 0 ? ((joinedCount / passedCount) * 100).toFixed(1) : 0;
+
+        return `
+            <style>
+                #reportPage { padding: 20px; font-family: 'Noto Sans KR', sans-serif; background: white; color: #333; }
+                #reportPage h1, #reportPage h2, #reportPage h3 { color: #334155; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px; }
+                #reportPage h1 { font-size: 1.8rem; text-align: center; border: none; }
+                #reportPage .report-info { color: #64748b; text-align: center; margin-bottom: 25px; }
+                .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+                .kpi-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; text-align: center; border-radius: 8px;}
+                .kpi-box .label { font-size: 1rem; color: #64748b; margin-bottom: 8px; }
+                .kpi-box .value { font-size: 2.2rem; font-weight: 700; color: #818cf8; }
+                .chart-container-report { border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; }
+            </style>
+            <div id="reportPage">
+                <h1>채용 현황 리포트</h1>
+                <p class="report-info">
+                    <strong>조회 기간:</strong> ${periodText} | 
+                    <strong>발행일:</strong> ${now.toLocaleDateString('ko-KR')}
+                </p>
+                <h2>핵심 성과 지표 (KPIs)</h2>
+                <div class="report-grid">
+                    <div class="kpi-box"><div class="label">총 지원자</div><div class="value">${totalApplicants}명</div></div>
+                    <div class="kpi-box"><div class="label">면접 전환율</div><div class="value">${interviewRate}%</div></div>
+                    <div class="kpi-box"><div class="label">면접자 중 합격률</div><div class="value">${passRate}%</div></div>
+                    <div class="kpi-box"><div class="label">합격자 중 입과율</div><div class="value">${joinRate}%</div></div>
+                </div>
+                <h2>시각화 자료</h2>
+                <div class="report-grid">
+                    <div class="chart-container-report">
+                        <h3>지원루트별 분포</h3>
+                        <canvas id="reportRouteChart"></canvas>
+                    </div>
+                    <div class="chart-container-report">
+                        <h3>모집분야별 분포</h3>
+                        <canvas id="reportPositionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    // 리포트 내부에 차트를 그리는 함수
+    renderReportCharts(filteredData) {
+        const chartOptions = { responsive: true, maintainAspectRatio: false };
+        const routeCtx = document.getElementById('reportRouteChart');
+        if (routeCtx) {
+            const routeIndex = this.app.state.data.headers.indexOf('지원루트');
+            const routeData = {};
+            filteredData.forEach(row => {
+                const route = String(row[routeIndex] || '미기입').trim();
+                routeData[route] = (routeData[route] || 0) + 1;
+            });
+            new Chart(routeCtx, {
+                type: 'doughnut',
+                data: { labels: Object.keys(routeData), datasets: [{ data: Object.values(routeData), backgroundColor: Object.values(this.app.config.CHART_COLORS) }] },
+                options: chartOptions
+            });
+        }
+        
+        const positionCtx = document.getElementById('reportPositionChart');
+        if (positionCtx) {
+            const positionIndex = this.app.state.data.headers.indexOf('모집분야');
+            const positionData = {};
+            filteredData.forEach(row => {
+                const position = String(row[positionIndex] || '미기입').trim();
+                positionData[position] = (positionData[position] || 0) + 1;
+            });
+            new Chart(positionCtx, {
+                type: 'pie',
+                data: { labels: Object.keys(positionData), datasets: [{ data: Object.values(positionData), backgroundColor: Object.values(this.app.config.CHART_COLORS).reverse() }] },
+                options: chartOptions
+            });
         }
     },
 
-    async save(appInstance, data, isUpdate = false, gubun = null) {
-        const action = isUpdate ? 'update' : 'create';
-        const payload = isUpdate ? { action, gubun, data } : { action, data };
-        const response = await fetch(appInstance.config.APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-        const result = await response.json();
-        if (result.status !== 'success') throw new Error(result.message || '저장에 실패했습니다.');
-        return result;
-    },
-
-    async delete(appInstance, gubun) {
-        const response = await fetch(appInstance.config.APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', gubun: gubun }) });
-        const result = await response.json();
-        if (result.status !== 'success') throw new Error(result.message || '삭제에 실패했습니다.');
-        return result;
+    // 리포트 상단에 표시될 기간 텍스트를 생성하는 함수
+    getPeriodText(options) {
+        if (options.dateMode === 'range') return `${options.startDate} ~ ${options.endDate}`;
+        return '전체 기간';
     }
 };
