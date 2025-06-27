@@ -1,44 +1,13 @@
-// js/report.js (AI 분석 기능이 통합된 최종 버전)
+// js/report.js (함수 위치 오류 해결 및 AI 기능 통합 최종 버전)
 
-/**
- * 리포트 종류별 구성요소를 정의하는 템플릿 객체입니다.
- */
 const ReportTemplates = {
-    executive: {
-        name: '경영진용 요약',
-        title: '경영진용 요약 리포트',
-        sections: ['kpi', 'charts']
-    },
-    detailed: {
-        name: '상세 분석 리포트',
-        title: '상세 분석 리포트',
-        sections: ['table']
-    },
-    recruiter: {
-        name: '채용담당자용 리포트',
-        title: '채용담당자용 리포트',
-        sections: ['placeholder']
-    },
-    weekly: {
-        name: '주간 채용 현황',
-        title: '주간 채용 현황',
-        sections: ['placeholder']
-    },
-    monthly: {
-        name: '월간 채용 성과',
-        title: '월간 채용 성과',
-        sections: ['placeholder']
-    },
-    comparison: {
-        name: '기간별 비교 리포트',
-        title: '기간별 비교 리포트',
-        sections: ['placeholder']
-    },
-    ai: {
-        name: 'AI 분석',
-        title: 'Gemini AI 분석 리포트',
-        sections: [] // AI 탭은 동적으로 내용을 채웁니다.
-    }
+    executive: { name: '경영진용 요약', title: '경영진용 요약 리포트', sections: ['kpi', 'charts'] },
+    detailed: { name: '상세 분석 리포트', title: '상세 분석 리포트', sections: ['table'] },
+    recruiter: { name: '채용담당자용 리포트', title: '채용담당자용 리포트', sections: ['placeholder'] },
+    weekly: { name: '주간 채용 현황', title: '주간 채용 현황', sections: ['placeholder'] },
+    monthly: { name: '월간 채용 성과', title: '월간 채용 성과', sections: ['placeholder'] },
+    comparison: { name: '기간별 비교 리포트', title: '기간별 비교 리포트', sections: ['placeholder'] },
+    ai: { name: 'AI 분석', title: 'Gemini AI 분석 리포트', sections: [] }
 };
 
 export const ReportModule = {
@@ -50,7 +19,6 @@ export const ReportModule = {
         this.app = appInstance;
         this.populateFilters();
         this.setupTabEvents();
-        // 페이지가 처음 로드될 때 기본 리포트를 생성합니다.
         this.generateReport();
     },
 
@@ -60,15 +28,13 @@ export const ReportModule = {
             tabContainer.addEventListener('click', (e) => {
                 const target = e.target.closest('.report-tab-btn');
                 if (target) {
-                    const reportType = target.dataset.reportType;
-                    this.state.currentReportType = reportType;
+                    this.state.currentReportType = target.dataset.reportType;
                     document.querySelectorAll('.report-tab-btn').forEach(btn => btn.classList.remove('active'));
                     target.classList.add('active');
-                    this.handleGenerateButtonClick(); // 탭 클릭 시 리포트 생성
+                    this.handleGenerateButtonClick();
                 }
             });
         }
-        // '리포트 생성하기' 버튼에도 이벤트 리스너를 설정합니다.
         const generateBtn = document.querySelector('#report .page-header .primary-btn');
         if(generateBtn){
             generateBtn.onclick = () => this.handleGenerateButtonClick();
@@ -76,8 +42,7 @@ export const ReportModule = {
     },
 
     handleGenerateButtonClick() {
-        const reportType = this.state.currentReportType;
-        if (reportType === 'ai') {
+        if (this.state.currentReportType === 'ai') {
             this.requestAiAnalysis();
         } else {
             this.generateTemplateReport();
@@ -93,7 +58,6 @@ export const ReportModule = {
             this.generateTemplateReport();
         }
     },
-
 
     generateTemplateReport() {
         const previewContainer = document.getElementById('reportPreviewContainer');
@@ -140,15 +104,10 @@ export const ReportModule = {
                 })
             });
 
-            if (!response.ok) {
-                throw new Error(`서버 오류: ${response.statusText}`);
-            }
-
+            if (!response.ok) throw new Error(`서버 오류: ${response.statusText}`);
+            
             const result = await response.json();
-
-            if (result.status !== 'success') {
-                throw new Error(result.message);
-            }
+            if (result.status !== 'success') throw new Error(result.message);
 
             const reportHtml = this.buildAiReport(result.analysis, options);
             previewContainer.innerHTML = reportHtml;
@@ -163,6 +122,59 @@ export const ReportModule = {
         }
     },
     
+    // ▼▼▼▼▼ [수정된 부분] 모든 헬퍼 함수들을 ReportModule 객체 안으로 이동 ▼▼▼▼▼
+
+    populateFilters() {
+        const reportFilterBar = document.getElementById('reportFilterBar');
+        if (!reportFilterBar) return;
+        if (!this.app || !this.app.state.data.all.length) {
+            reportFilterBar.innerHTML = `<p style="color: var(--text-secondary);">전체 지원자 데이터를 불러오는 중입니다...</p>`;
+            setTimeout(() => this.populateFilters(), 1000);
+            return;
+        }
+
+        const { headers, all } = this.app.state.data;
+        const indices = {
+            interviewer: headers.indexOf('면접관'),
+            company: headers.indexOf('회사명'),
+            route: headers.indexOf('지원루트'),
+            position: headers.indexOf('모집분야')
+        };
+        reportFilterBar.innerHTML = `
+            <div class="filter-group search-input">
+                <label for="reportSearch">통합 검색</label>
+                <div style="position: relative;">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="reportSearch" placeholder="이름, 비고 등 검색..." />
+                </div>
+            </div>
+            <div class="filter-group"><label for="reportRouteFilter">지원루트</label><select id="reportRouteFilter"></select></div>
+            <div class="filter-group"><label for="reportPositionFilter">모집분야</label><select id="reportPositionFilter"></select></div>
+            <div class="filter-group"><label for="reportInterviewerFilter">면접관</label><select id="reportInterviewerFilter"></select></div>
+            <div class="filter-group"><label for="reportCompanyFilter">회사명</label><select id="reportCompanyFilter"></select></div>
+            <div class="filter-group date-filter-group"><label>조회 기간</label><div class="date-filter-container" id="reportDateFilterContainer"></div></div>
+            <div class="filter-group reset-group"><button class="secondary-btn reset-btn" onclick="globalThis.App.report.resetFilters()"><i class="fas fa-undo"></i> 초기화</button></div>
+        `;
+
+        const populate = (selector, index) => {
+            const selectElement = document.getElementById(selector);
+            if (selectElement && index !== -1) {
+                const options = [...new Set(all.map(row => (row[index] || '').trim()).filter(Boolean))];
+                selectElement.innerHTML = `<option value="all">전체</option>`;
+                options.sort().forEach(name => {
+                    selectElement.innerHTML += `<option value="${name}">${name}</option>`;
+                });
+            }
+        };
+        populate('reportInterviewerFilter', indices.interviewer);
+        populate('reportCompanyFilter', indices.company);
+        populate('reportRouteFilter', indices.route);
+        populate('reportPositionFilter', indices.position);
+        
+        // 여기에서 호출되어야 합니다.
+        this.setInitialDateRange();
+    },
+
     buildAiReport(result, options) {
         const periodText = this.getPeriodText(options);
         return `
@@ -257,16 +269,16 @@ export const ReportModule = {
         }).join('');
         return `
             <style>
-                #reportPage { padding: 20px; font-family: 'Noto Sans KR', sans-serif; background: white; color: #333; }
-                #reportPage h1, #reportPage h2, #reportPage h3 { color: #334155; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px; }
+                #reportPage { padding: 20px; font-family: 'Noto Sans KR', sans-serif; background: var(--content-bg, white); color: var(--text-primary, #333); }
+                #reportPage h1, #reportPage h2, #reportPage h3 { color: var(--text-primary, #334155); border-bottom: 1px solid var(--border-color, #e2e8f0); padding-bottom: 10px; margin-bottom: 15px; }
                 #reportPage h1 { font-size: 1.8rem; text-align: center; border: none; }
-                #reportPage .report-info { color: #64748b; text-align: center; margin-bottom: 25px; }
+                #reportPage .report-info { color: var(--text-secondary, #64748b); text-align: center; margin-bottom: 25px; }
                 .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-                .kpi-box { background: var(--main-bg, #f8fafc); border: 1px solid #e2e8f0; padding: 20px; text-align: center; border-radius: 8px;}
-                .kpi-box .label { font-size: 1rem; color: #64748b; margin-bottom: 8px; }
+                .kpi-box { background: var(--main-bg, #f8fafc); border: 1px solid var(--border-color, #e2e8f0); padding: 20px; text-align: center; border-radius: 8px;}
+                .kpi-box .label { font-size: 1rem; color: var(--text-secondary, #64748b); margin-bottom: 8px; }
                 .kpi-box .value { font-size: 2.2rem; font-weight: 700; color: #818cf8; }
-                .chart-container-report { position: relative; height: 400px; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; }
-                .report-placeholder { text-align: center; padding: 40px; background-color: var(--main-bg, #f8fafc); border: 2px dashed #e2e8f0; border-radius: 8px; color: var(--text-secondary); }
+                .chart-container-report { position: relative; height: 400px; border: 1px solid var(--border-color, #e2e8f0); padding: 15px; border-radius: 8px; }
+                .report-placeholder { text-align: center; padding: 40px; background-color: var(--main-bg, #f8fafc); border: 2px dashed var(--border-color, #e2e8f0); border-radius: 8px; color: var(--text-secondary); }
             </style>
             <div id="reportPage">
                 <h1>${template.title}</h1>
@@ -369,53 +381,5 @@ export const ReportModule = {
             return `${options.startDate} ~ ${options.endDate}`;
         }
         return '전체 기간';
-    },
-
-    populateFilters: function() {
-        const reportFilterBar = document.getElementById('reportFilterBar');
-        if (!reportFilterBar) return;
-        if (!this.app || !this.app.state.data.all.length) {
-            reportFilterBar.innerHTML = `<p style="color: var(--text-secondary);">전체 지원자 데이터를 불러오는 중입니다...</p>`;
-            setTimeout(() => this.populateFilters(), 1000);
-            return;
-        }
-        console.log('✅ 데이터 로드 확인! 리포트 필터를 생성합니다.');
-        const { headers, all } = this.app.state.data;
-        const indices = {
-            interviewer: headers.indexOf('면접관'),
-            company: headers.indexOf('회사명'),
-            route: headers.indexOf('지원루트'),
-            position: headers.indexOf('모집분야')
-        };
-        reportFilterBar.innerHTML = `
-            <div class="filter-group search-input">
-                <label for="reportSearch">통합 검색</label>
-                <div style="position: relative;">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="reportSearch" placeholder="이름, 비고 등 검색..." />
-                </div>
-            </div>
-            <div class="filter-group"><label for="reportRouteFilter">지원루트</label><select id="reportRouteFilter"></select></div>
-            <div class="filter-group"><label for="reportPositionFilter">모집분야</label><select id="reportPositionFilter"></select></div>
-            <div class="filter-group"><label for="reportInterviewerFilter">면접관</label><select id="reportInterviewerFilter"></select></div>
-            <div class="filter-group"><label for="reportCompanyFilter">회사명</label><select id="reportCompanyFilter"></select></div>
-            <div class="filter-group date-filter-group"><label>조회 기간</label><div class="date-filter-container" id="reportDateFilterContainer"></div></div>
-            <div class="filter-group reset-group"><button class="secondary-btn reset-btn" onclick="globalThis.App.report.resetFilters()"><i class="fas fa-undo"></i> 초기화</button></div>
-        `;
-        const populate = (selector, index) => {
-            const selectElement = document.getElementById(selector);
-            if (selectElement && index !== -1) {
-                const options = [...new Set(all.map(row => (row[index] || '').trim()).filter(Boolean))];
-                selectElement.innerHTML = `<option value="all">전체</option>`;
-                options.sort().forEach(name => {
-                    selectElement.innerHTML += `<option value="${name}">${name}</option>`;
-                });
-            }
-        };
-        populate('reportInterviewerFilter', indices.interviewer);
-        populate('reportCompanyFilter', indices.company);
-        populate('reportRouteFilter', indices.route);
-        populate('reportPositionFilter', indices.position);
-        this.setInitialDateRange();
     }
 };
