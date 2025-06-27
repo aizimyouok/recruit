@@ -9,6 +9,7 @@ export const ReportModule = {
     },
 
     // 리포트 조건 필터(드롭다운)에 옵션을 채워 넣는 함수
+    // 이 함수 전체를 복사해서 기존 populateFilters 함수와 교체해주세요.
     populateFilters() {
         if (!this.app || !this.app.state.data.all.length) return;
 
@@ -46,7 +47,7 @@ export const ReportModule = {
         const interviewerIndex = headers.indexOf('면접관');
         const routeIndex = headers.indexOf('지원루트');
 
-        // ▼▼▼▼▼ [오류 수정된 부분] ▼▼▼▼▼
+        // ▼▼▼▼▼ [오류가 수정된 최종 버전입니다] ▼▼▼▼▼
         if (interviewerIndex !== -1) {
             const options = [...new Set(all.map(row => (row[interviewerIndex] || '').trim()).filter(Boolean))];
             const select = document.getElementById('reportInterviewer');
@@ -61,7 +62,7 @@ export const ReportModule = {
                 select.innerHTML += \`<option value="\${name}">\${name}</option>\`;
             });
         }
-        // ▲▲▲▲▲ [오류 수정된 부분] ▲▲▲▲▲
+        // ▲▲▲▲▲ [오류가 수정된 최종 버전입니다] ▲▲▲▲▲
 
         // 기간 선택 '직접입력' 핸들러
         this.handlePeriodChange('month');
