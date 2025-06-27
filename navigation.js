@@ -1,6 +1,4 @@
-// =========================
-// navigation.js - 네비게이션 관련 모듈 (리포트 페이지 추가 버전)
-// =========================
+// js/navigation.js (리포트 페이지 초기화 로직 추가 버전)
 
 export const NavigationModule = {
     switchPage(appInstance, pageId) {
@@ -26,7 +24,7 @@ export const NavigationModule = {
             stats: '채용 통계 분석',
             efficiency: '효율성 분석',
             interviewSchedule: '면접관별 상세 일정',
-            report: '리포트 발행' // 추가된 부분
+            report: '리포트 발행'
         };
         
         const titleElement = document.getElementById('pageTitle');
@@ -61,7 +59,7 @@ export const NavigationModule = {
         } else if (pageId === 'efficiency') {
             setTimeout(() => {
                 if (window.Chart && appInstance.state.data.all.length > 0) {
-                    if (!appInstance.state.charts.instances.radar || !app.state.charts.instances.scatter) {
+                    if (!appInstance.state.charts.instances.radar || !appInstance.state.charts.instances.scatter) {
                         appInstance.charts.initializeEfficiency();
                     }
                     appInstance.efficiency.updateAll();
@@ -73,14 +71,15 @@ export const NavigationModule = {
                     appInstance.interviewSchedule.initialize(appInstance);
                 }
             }, 100);
-        } else if (pageId === 'report') { // ▼▼▼▼▼ 추가된 부분 ▼▼▼▼▼
+        } else if (pageId === 'report') { // ▼▼▼▼▼ [수정된 부분] ▼▼▼▼▼
             setTimeout(() => {
-                // appInstance.report.initialize() 와 같이
-                // 리포트 페이지가 처음 열릴 때 실행할 함수를 여기에 추가할 수 있습니다.
-                // (이 함수는 다음 단계에서 만들 예정입니다.)
-                console.log('리포트 발행 페이지가 열렸습니다.');
+                // 리포트 페이지로 전환될 때, ReportModule의 initialize 함수를 호출합니다.
+                // 이 함수가 필터와 탭을 화면에 그리는 역할을 합니다.
+                if (appInstance.report && typeof appInstance.report.initialize === 'function') {
+                    appInstance.report.initialize(appInstance);
+                }
             }, 100);
-        } else if (pageId === 'dashboard') { // ▲▲▲▲▲ 여기까지 ▲▲▲▲▲
+        } else if (pageId === 'dashboard') { // ▲▲▲▲▲ [수정된 부분] ▲▲▲▲▲
             if (appInstance.state.data.all.length > 0) {
                 appInstance.data.updateInterviewSchedule();
                 appInstance.sidebar.updateWidgets();
@@ -134,7 +133,7 @@ export const NavigationModule = {
 
         const urlParams = new URLSearchParams(window.location.search);
         const initialPage = urlParams.get('page');
-        const validPages = ['dashboard', 'stats', 'efficiency', 'interviewSchedule', 'report']; // 'report' 추가
+        const validPages = ['dashboard', 'stats', 'efficiency', 'interviewSchedule', 'report'];
         if (initialPage && validPages.includes(initialPage)) {
             setTimeout(() => {
                 NavigationModule.switchPageWithoutHistory(appInstance, initialPage);
@@ -161,7 +160,7 @@ export const NavigationModule = {
             stats: '채용 통계 분석',
             efficiency: '효율성 분석',
             interviewSchedule: '면접관별 상세 일정',
-            report: '리포트 발행' // 추가된 부분
+            report: '리포트 발행'
         };
         
         const titleElement = document.getElementById('pageTitle');
