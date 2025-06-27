@@ -1,4 +1,4 @@
-// js/report.js (차트 컨테이너 높이 문제 해결 버전)
+// js/report.js (모든 리포트 탭 기능 구현 버전)
 
 export const ReportModule = {
     // 모듈의 상태를 관리할 state 객체
@@ -25,6 +25,9 @@ export const ReportModule = {
 
                     document.querySelectorAll('.report-tab-btn').forEach(btn => btn.classList.remove('active'));
                     e.target.classList.add('active');
+
+                    // 탭 클릭 시 바로 리포트 생성 (사용자 경험 향상)
+                    this.generateReport();
                 }
             });
         }
@@ -118,7 +121,7 @@ export const ReportModule = {
         this.updateDateInputs();
 
         const toggleGroup = container.querySelector('#reportDateModeToggle');
-        if(toggleGroup) {
+        if (toggleGroup) {
             toggleGroup.addEventListener('click', (e) => {
                 if (e.target.tagName === 'BUTTON') {
                     this.state.dateMode = e.target.dataset.mode;
@@ -139,13 +142,13 @@ export const ReportModule = {
                 <input type="date" class="date-input" id="reportEndDate" value="${this.state.endDate}">
             `;
         } else {
-             container.innerHTML = `<span style="padding: 0 10px; color: var(--text-secondary);">전체 기간</span>`;
+            container.innerHTML = `<span style="padding: 0 10px; color: var(--text-secondary);">전체 기간</span>`;
         }
     },
 
     resetFilters() {
         const searchInput = document.getElementById('reportSearch');
-        if(searchInput) searchInput.value = '';
+        if (searchInput) searchInput.value = '';
 
         document.getElementById('reportRouteFilter').value = 'all';
         document.getElementById('reportPositionFilter').value = 'all';
@@ -182,13 +185,25 @@ export const ReportModule = {
                     case 'detailed':
                         reportHtml = this.buildDetailedReport(filteredData, options);
                         break;
+                    case 'recruiter':
+                        reportHtml = this.buildRecruiterReport(filteredData, options);
+                        break;
+                    case 'weekly':
+                        reportHtml = this.buildWeeklyReport(filteredData, options);
+                        break;
+                    case 'monthly':
+                        reportHtml = this.buildMonthlyReport(filteredData, options);
+                        break;
+                    case 'comparison':
+                        reportHtml = this.buildComparisonReport(filteredData, options);
+                        break;
                     default:
                         reportHtml = this.buildExecutiveReport(filteredData, options);
                 }
 
                 previewContainer.innerHTML = reportHtml;
-                
-                if (reportType === 'executive' || reportType === 'detailed') {
+
+                if (reportType === 'executive') {
                     this.renderReportCharts(filteredData);
                 }
 
@@ -221,8 +236,8 @@ export const ReportModule = {
             });
         }
 
-        if (options.interviewer !== 'all' && indices.interviewer !==-1) data = data.filter(row => (row[indices.interviewer] || '').includes(options.interviewer));
-        if (options.company !== 'all' && indices.company !==-1) data = data.filter(row => row[indices.company] === options.company);
+        if (options.interviewer !== 'all' && indices.interviewer !== -1) data = data.filter(row => (row[indices.interviewer] || '').includes(options.interviewer));
+        if (options.company !== 'all' && indices.company !== -1) data = data.filter(row => row[indices.company] === options.company);
         if (options.route !== 'all' && indices.route !== -1) data = data.filter(row => row[indices.route] === options.route);
         if (options.position !== 'all' && indices.position !== -1) data = data.filter(row => row[indices.position] === options.position);
 
@@ -255,15 +270,21 @@ export const ReportModule = {
                 .kpi-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; text-align: center; border-radius: 8px;}
                 .kpi-box .label { font-size: 1rem; color: #64748b; margin-bottom: 8px; }
                 .kpi-box .value { font-size: 2.2rem; font-weight: 700; color: #818cf8; }
-                /* ▼▼▼▼▼ [수정된 부분] ▼▼▼▼▼ */
                 .chart-container-report { 
-                    position: relative; /* 차트의 기준점 설정 */
-                    height: 400px; /* 차트 컨테이너의 높이 고정 */
+                    position: relative;
+                    height: 400px;
                     border: 1px solid #e2e8f0; 
                     padding: 15px; 
                     border-radius: 8px; 
                 }
-                /* ▲▲▲▲▲ [수정된 부분] ▲▲▲▲▲ */
+                 .report-placeholder {
+                    text-align: center;
+                    padding: 40px;
+                    background-color: #f8fafc;
+                    border: 2px dashed #e2e8f0;
+                    border-radius: 8px;
+                    color: var(--text-secondary);
+                }
             </style>
             <div id="reportPage">
                 <h1>경영진용 요약 리포트</h1>
@@ -294,17 +315,8 @@ export const ReportModule = {
     },
 
     buildDetailedReport(data, options) {
-        console.log("상세 분석 리포트 생성");
-        const now = new Date();
         const periodText = this.getPeriodText(options);
-
         return `
-             <style>
-                #reportPage { padding: 20px; font-family: 'Noto Sans KR', sans-serif; background: white; color: #333; }
-                #reportPage h1, #reportPage h2, #reportPage h3 { color: #334155; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px; }
-                #reportPage h1 { font-size: 1.8rem; text-align: center; border: none; }
-                #reportPage .report-info { color: #64748b; text-align: center; margin-bottom: 25px; }
-            </style>
             <div id="reportPage">
                 <h1>상세 분석 리포트</h1>
                 <p class="report-info"><strong>조회 기간:</strong> ${periodText}</p>
@@ -312,6 +324,50 @@ export const ReportModule = {
                 <div class="table-container" style="max-height: 500px; overflow-y: auto;">
                     ${this.createDetailedTable(data)}
                 </div>
+            </div>
+        `;
+    },
+
+    buildRecruiterReport(data, options) {
+        const periodText = this.getPeriodText(options);
+        return `
+            <div id="reportPage">
+                <h1>채용담당자용 리포트</h1>
+                <p class="report-info"><strong>조회 기간:</strong> ${periodText}</p>
+                <div class="report-placeholder">채용담당자용 리포트 내용이 여기에 표시됩니다. (예: 면접 확정자 목록, 컨택 필요 지원자 등)</div>
+            </div>
+        `;
+    },
+
+    buildWeeklyReport(data, options) {
+        const periodText = this.getPeriodText(options);
+        return `
+            <div id="reportPage">
+                <h1>주간 채용 현황</h1>
+                <p class="report-info"><strong>조회 기간:</strong> ${periodText}</p>
+                <div class="report-placeholder">선택된 기간의 주간 채용 현황 데이터가 여기에 표시됩니다.</div>
+            </div>
+        `;
+    },
+
+    buildMonthlyReport(data, options) {
+        const periodText = this.getPeriodText(options);
+        return `
+            <div id="reportPage">
+                <h1>월간 채용 성과</h1>
+                <p class="report-info"><strong>조회 기간:</strong> ${periodText}</p>
+                <div class="report-placeholder">선택된 기간의 월간 채용 성과 데이터가 여기에 표시됩니다.</div>
+            </div>
+        `;
+    },
+
+    buildComparisonReport(data, options) {
+        const periodText = this.getPeriodText(options);
+        return `
+            <div id="reportPage">
+                <h1>기간별 비교 리포트</h1>
+                <p class="report-info"><strong>조회 기간:</strong> ${periodText}</p>
+                <div class="report-placeholder">기간별 비교 리포트 기능은 개발 예정입니다. (예: 기준 기간과 비교 기간 설정 UI 필요)</div>
             </div>
         `;
     },
