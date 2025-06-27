@@ -1,4 +1,4 @@
-// js/report.js (오타 최종 수정 버전)
+// js/report.js (모든 오류 수정 완료된 최종 버전)
 
 export const ReportModule = {
     // 페이지가 처음 열릴 때 실행되는 초기화 함수
@@ -9,15 +9,8 @@ export const ReportModule = {
     },
 
     // 리포트 조건 필터(드롭다운)에 옵션을 채워 넣는 함수
-    populateFilters() {
-    if (!this.app || !this.app.state.data.all.length) return;
-
-    const { headers, all } = this.app.state.data;
-    const reportFilterBar = document.getElementById('reportFilterBar');
-    if (!reportFilterBar) return;
-
-    // 필터 HTML 구조 생성
-    populateFilters() {
+    // 이 함수 전체를 복사해서 기존 populateFilters 함수와 교체해주세요.
+populateFilters() {
     if (!this.app || !this.app.state.data.all.length) return;
 
     const { headers, all } = this.app.state.data;
@@ -103,7 +96,6 @@ export const ReportModule = {
         // 0.5초 후 리포트 생성 (로딩 애니메이션을 보여주기 위함)
         setTimeout(() => {
             try {
-                // 1. 선택된 필터 값 가져오기
                 const options = {
                     period: document.getElementById('reportPeriod').value,
                     startDate: document.getElementById('reportStartDate').value,
@@ -112,14 +104,9 @@ export const ReportModule = {
                     route: document.getElementById('reportRoute').value
                 };
 
-                // 2. 필터에 맞는 데이터 추출
                 const filteredData = this.getFilteredData(options);
-
-                // 3. 리포트 HTML 생성 및 표시
                 const reportHtml = this.buildReportHtml(filteredData, options);
                 previewContainer.innerHTML = reportHtml;
-
-                // 4. 리포트 내 차트 그리기
                 this.renderReportCharts(filteredData);
             } catch (error) {
                 console.error("리포트 생성 중 오류 발생:", error);
@@ -139,7 +126,6 @@ export const ReportModule = {
         const { all, headers } = this.app.state.data;
         let data = [...all];
 
-        // 기간 필터링
         const applyDateIndex = headers.indexOf('지원일');
         if (applyDateIndex !== -1 && options.period !== 'all') {
             if (options.period === 'custom') {
@@ -159,13 +145,11 @@ export const ReportModule = {
             }
         }
 
-        // 면접관 필터링
         const interviewerIndex = headers.indexOf('면접관');
         if (interviewerIndex !== -1 && options.interviewer !== 'all') {
             data = data.filter(row => (row[interviewerIndex] || '').includes(options.interviewer));
         }
 
-        // 지원루트 필터링
         const routeIndex = headers.indexOf('지원루트');
         if (routeIndex !== -1 && options.route !== 'all') {
             data = data.filter(row => row[routeIndex] === options.route);
@@ -181,17 +165,13 @@ export const ReportModule = {
         const headers = this.app.state.data.headers;
 
         const totalApplicants = data.length;
-        
         const interviewConfirmedCount = data.filter(row => (row[headers.indexOf('1차 컨택 결과')] || '') === '면접확정').length;
-        
         const passedCount = data.filter(row => (row[headers.indexOf('면접결과')] || '') === '합격').length;
-        
         const joinedCount = data.filter(row => (row[headers.indexOf('입과일')] || '').trim() !== '').length;
 
         const interviewRate = totalApplicants > 0 ? ((interviewConfirmedCount / totalApplicants) * 100).toFixed(1) : 0;
         const passRate = interviewConfirmedCount > 0 ? ((passedCount / interviewConfirmedCount) * 100).toFixed(1) : 0;
         const joinRate = passedCount > 0 ? ((joinedCount / passedCount) * 100).toFixed(1) : 0;
-
 
         return \`
             <style>
@@ -209,8 +189,8 @@ export const ReportModule = {
                 th { background: #f8fafc; font-weight: 600; }
                 @media print {
                     body, .main-content, .content-area { background: white !important; }
-                    .sidebar, .main-header, .stats-fixed-header { display: none !important; }
-                    #report, #reportPreviewContainer { display: block !important; padding: 0 !important; margin: 0 !important; }
+                    .sidebar, .main-header, #report .stats-fixed-header { display: none !important; }
+                    #report, #reportPreviewContainer { display: block !important; padding: 0 !important; margin: 0 !important; box-shadow: none !important; }
                     #reportPage { box-shadow: none; border: none; }
                 }
             </style>
@@ -246,6 +226,7 @@ export const ReportModule = {
 
     // 리포트 내부에 차트를 그리는 함수
     renderReportCharts(filteredData) {
+        const chartOptions = { responsive: true, maintainAspectRatio: false };
         // 지원루트 차트
         const routeCtx = document.getElementById('reportRouteChart');
         if (routeCtx) {
@@ -259,12 +240,9 @@ export const ReportModule = {
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(routeData),
-                    datasets: [{
-                        data: Object.values(routeData),
-                        backgroundColor: Object.values(this.app.config.CHART_COLORS)
-                    }]
+                    datasets: [{ data: Object.values(routeData), backgroundColor: Object.values(this.app.config.CHART_COLORS) }]
                 },
-                options: { responsive: true, maintainAspectRatio: false }
+                options: chartOptions
             });
         }
         
@@ -281,21 +259,15 @@ export const ReportModule = {
                 type: 'pie',
                 data: {
                     labels: Object.keys(positionData),
-                    datasets: [{
-                        data: Object.values(positionData),
-                        backgroundColor: Object.values(this.app.config.CHART_COLORS).reverse()
-                    }]
+                    datasets: [{ data: Object.values(positionData), backgroundColor: Object.values(this.app.config.CHART_COLORS).reverse() }]
                 },
-                options: { responsive: true, maintainAspectRatio: false }
+                options: chartOptions
             });
         }
     },
 
     getPeriodText(options) {
-        const periodMap = {
-            'all': '전체 기간', 'year': '올해',
-            'month': '이번 달', 'week': '이번 주'
-        };
+        const periodMap = { 'all': '전체 기간', 'year': '올해', 'month': '이번 달', 'week': '이번 주' };
         if (options.period === 'custom') return \`\${options.startDate} ~ \${options.endDate}\`;
         return periodMap[options.period] || 'N/A';
     },
@@ -305,16 +277,18 @@ export const ReportModule = {
         const generateBtn = document.querySelector('#report .primary-btn');
         const originalBtnHtml = generateBtn.innerHTML;
 
+        generateBtn.disabled = true;
+        generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 리포트 생성 중...';
+        
         try {
             // 1. 리포트 생성
             this.generateReport();
             
-            // 로딩 애니메이션을 위해 잠시 대기
+            // 리포트 렌더링을 위해 잠시 대기
             await new Promise(resolve => setTimeout(resolve, 1000));
             
             // 2. PDF 다운로드
-            generateBtn.disabled = true;
-            generateBtn.innerHTML = '<i class="fas fa-file-pdf"></i> PDF 생성 중...';
+            generateBtn.innerHTML = '<i class="fas fa-file-pdf"></i> PDF 변환 중...';
 
             const reportElement = document.getElementById('reportPage');
             if (!reportElement) {
@@ -322,19 +296,33 @@ export const ReportModule = {
                 return;
             }
 
-            const canvas = await html2canvas(reportElement, { scale: 2 });
+            // html2canvas와 jsPDF 라이브러리가 로드되었는지 확인
+            if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
+                alert('PDF 생성 라이브러리를 로드하지 못했습니다. index.html 파일을 확인해주세요.');
+                return;
+            }
+
+            const canvas = await html2canvas(reportElement, { scale: 2, useCORS: true });
             const imgData = canvas.toDataURL('image/png');
             
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF('p', 'mm', 'a4');
             
             const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
             const canvasWidth = canvas.width;
             const canvasHeight = canvas.height;
             const ratio = canvasWidth / canvasHeight;
+            
+            let imgWidth = pdfWidth;
             let imgHeight = pdfWidth / ratio;
             
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
+            if (imgHeight > pdfHeight) {
+                imgHeight = pdfHeight;
+                imgWidth = pdfHeight * ratio;
+            }
+            
+            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
             pdf.save(\`채용현황-리포트-\${new Date().toISOString().slice(0,10)}.pdf\`);
 
         } catch (error) {
