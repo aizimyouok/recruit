@@ -17,6 +17,14 @@ export const ReportModule = {
     if (!reportFilterBar) return;
 
     // 필터 HTML 구조 생성
+    populateFilters() {
+    if (!this.app || !this.app.state.data.all.length) return;
+
+    const { headers, all } = this.app.state.data;
+    const reportFilterBar = document.getElementById('reportFilterBar');
+    if (!reportFilterBar) return;
+
+    // 필터 HTML 구조 생성
     reportFilterBar.innerHTML = `
         <div class="filter-group" style="flex-grow: 2; min-width: 300px;">
             <label for="reportPeriod">기간</label>
@@ -46,27 +54,26 @@ export const ReportModule = {
     const interviewerIndex = headers.indexOf('면접관');
     const routeIndex = headers.indexOf('지원루트');
 
-    // ▼▼▼▼▼ [ # 기호가 완전히 제거된 최종 코드입니다 ] ▼▼▼▼▼
+    // ▼▼▼▼▼ [ \ 기호가 완벽히 제거된 최종 코드입니다 ] ▼▼▼▼▼
     if (interviewerIndex !== -1) {
         const options = [...new Set(all.map(row => (row[interviewerIndex] || '').trim()).filter(Boolean))];
         const select = document.getElementById('reportInterviewer');
         options.sort().forEach(name => {
-            select.innerHTML += \`<option value="\${name}">\${name}</option>\`;
+            select.innerHTML += `<option value="${name}">${name}</option>`;
         });
     }
     if (routeIndex !== -1) {
         const options = [...new Set(all.map(row => (row[routeIndex] || '').trim()).filter(Boolean))];
         const select = document.getElementById('reportRoute');
         options.sort().forEach(name => {
-            select.innerHTML += \`<option value="\${name}">\${name}</option>\`;
+            select.innerHTML += `<option value="${name}">${name}</option>`;
         });
     }
-    // ▲▲▲▲▲ [ # 기호가 완전히 제거된 최종 코드입니다 ] ▲▲▲▲▲
+    // ▲▲▲▲▲ [ \ 기호가 완벽히 제거된 최종 코드입니다 ] ▲▲▲▲▲
 
     // 기간 선택 '직접입력' 핸들러
     this.handlePeriodChange('month');
 },
-
     // 기간 선택 변경 시, 직접입력 필드를 보여주거나 숨기는 함수
     handlePeriodChange(value) {
         const customRange = document.getElementById('reportCustomDateRange');
