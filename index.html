@@ -418,39 +418,34 @@
                 </div>
 
                 <div id="report" class="page">
-                    <div class="page-header">
-                        <h2 class="page-title">리포트 발행</h2>
-                        <div class="header-actions">
-                            <button class="primary-btn" onclick="globalThis.App.report.generateReport()">
-                                <i class="fas fa-file-download"></i> 리포트 생성하기
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="report-tabs">
-                        <button class="report-tab-btn active" data-report-type="executive">경영진용 요약</button>
-                        <button class="report-tab-btn" data-report-type="detailed">상세 분석</button>
-                        <button class="report-tab-btn" data-report-type="recruiter">채용담당자용</button>
-                        <button class="report-tab-btn" data-report-type="weekly">주간 현황</button>
-                        <button class="report-tab-btn" data-report-type="monthly">월간 성과</button>
-                        <button class="report-tab-btn" data-report-type="comparison">기간별 비교</button>
-                         <button class="report-tab-btn" data-report-type="ai">
-                            <i class="fas fa-magic" style="margin-right: 5px;"></i> AI 분석
-                        </button>
-                    </div>
-                    <div class="filter-bar-wrapper">
-                        <div class="filter-bar" id="reportFilterBar" role="search" aria-label="리포트 필터링">
-                            </div>
-                    </div>
+    <div class="page-header">
+        <h2 class="page-title">리포트 발행</h2>
+        <div class="header-actions">
+            <button class="primary-btn" id="reportActionBtn">
+                <i class="fas fa-file-download"></i> 리포트 생성하기
+            </button>
+        </div>
+    </div>
+    
+    <div class="report-tabs">
+        <button class="report-tab-btn active" data-report-type="executive">경영진용 요약</button>
+        <button class="report-tab-btn" data-report-type="detailed">상세 분석</button>
+        <button class="report-tab-btn" data-report-type="ai">
+            <i class="fas fa-magic" style="margin-right: 5px;"></i> AI 분석 가이드
+        </button>
+    </div>
 
-                    <div class="content-container" id="reportPreviewContainer" style="margin-top: 20px;">
-                        <div class="no-interviews" style="padding: 50px 0; text-align: center;">
-                            <i class="fas fa-file-medical" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 15px;"></i>
-                            <p>위 조건 설정 후 '리포트 생성하기' 버튼을 눌러주세요.</p>
-                        </div>
-                    </div>
-                </div>
+    <div class="filter-bar-wrapper">
+        <div class="filter-bar" id="reportFilterBar" role="search" aria-label="리포트 필터링">
+            </div>
+    </div>
+    
+    <div id="aiAnalysisGuide" style="display: none;">
+        </div>
 
+    <div class="content-container" id="reportPreviewContainer" style="margin-top: 20px;">
+        </div>
+</div>
             </div>
         </main>
     </div>
