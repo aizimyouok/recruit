@@ -8,17 +8,13 @@ export const DataModule = {
             const loadedFromCache = await appInstance.dataCache.loadFromCache(appInstance);
             if (loadedFromCache) {
                 console.log('✅ 캐시에서 로딩 완료 - 서버 호출 생략');
-                // ▼▼▼▼▼ [캐시 로딩 시에도 리포트 페이지 업데이트를 위한 코드 추가] ▼▼▼▼▼
-                if (appInstance.navigation.getCurrentPage() === 'report') {
-                    if (appInstance.report && appInstance.report.populateFilters) {
-                        appInstance.report.populateFilters();
-                    }
+                if (appInstance.navigation.getCurrentPage() === 'report' && appInstance.report) {
+                    appInstance.report.populateFilters();
                 }
-                // ▲▲▲▲▲ [캐시 로딩 시에도 리포트 페이지 업데이트를 위한 코드 추가] ▲▲▲▲▲
                 return;
             }
         }
-        const tableContainer = document.querySelector('.table-container');
+        const tableContainer = document.querySelector('#dashboard .table-container');
 
         try {
             if (tableContainer) {
@@ -101,13 +97,9 @@ export const DataModule = {
             }
 
             // ▼▼▼▼▼ [바로 이 부분이 핵심입니다!] ▼▼▼▼▼
-            // 데이터 로딩이 끝난 시점에, 만약 현재 페이지가 '리포트 발행' 페이지라면,
-            // 필터를 다시 그려주도록 신호를 보냅니다.
-            if (appInstance.navigation.getCurrentPage() === 'report') {
-                if (appInstance.report && appInstance.report.populateFilters) {
-                    console.log('🔄 데이터 로드 완료. 리포트 필터를 다시 그립니다.');
-                    appInstance.report.populateFilters();
-                }
+            if (appInstance.navigation.getCurrentPage() === 'report' && appInstance.report) {
+                console.log('🔄 데이터 로드 완료. 리포트 필터를 다시 그립니다.');
+                appInstance.report.populateFilters();
             }
             // ▲▲▲▲▲ [바로 이 부분이 핵심입니다!] ▲▲▲▲▲
 
@@ -142,9 +134,7 @@ export const DataModule = {
         const interviewerIndex = appInstance.state.data.headers.indexOf('면접관');
         const scheduleContainer = document.getElementById('interviewScheduleList');
         
-        if (!scheduleContainer) {
-            return;
-        }
+        if (!scheduleContainer) return;
         if (interviewDateIndex === -1) {
             scheduleContainer.innerHTML = '<div class="no-interviews">면접 날짜 컬럼을 찾을 수 없습니다.</div>';
             return;
@@ -159,26 +149,16 @@ export const DataModule = {
                 if (!interviewDate) return false;
                 try {
                     const date = new Date(interviewDate);
-                    
                     if (interviewTime) {
                         const timeStr = String(interviewTime).replace(/'/g, '').trim();
                         const timeMatch = timeStr.match(/(\d{1,2})[시:]?\s*(\d{0,2})/);
-                        
                         if (timeMatch) {
                             const hour = parseInt(timeMatch[1]);
                             const minute = parseInt(timeMatch[2] || '0');
-                            if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) {
-                                date.setHours(hour, minute, 0, 0);
-                            } else {
-                                date.setHours(23, 59, 59, 999);
-                            }
-                        } else {
-                            date.setHours(23, 59, 59, 999);
-                        }
-                    } else {
-                        date.setHours(23, 59, 59, 999);
-                    }
-                    
+                            if (hour >= 0 && hour <= 23 && minute >= 0 && minute <= 59) date.setHours(hour, minute, 0, 0);
+                            else date.setHours(23, 59, 59, 999);
+                        } else date.setHours(23, 59, 59, 999);
+                    } else date.setHours(23, 59, 59, 999);
                     return date >= today && date <= threeDaysLater;
                 } catch (e) { return false; }
             })
@@ -186,7 +166,6 @@ export const DataModule = {
                 try {
                     const dateA = new Date(a[interviewDateIndex]);
                     const dateB = new Date(b[interviewDateIndex]);
-                    
                     const timeA = a[interviewTimeIndex];
                     if (timeA) {
                         const timeStrA = String(timeA).replace(/'/g, '').trim();
@@ -194,12 +173,9 @@ export const DataModule = {
                         if (timeMatchA) {
                             const hourA = parseInt(timeMatchA[1]);
                             const minuteA = parseInt(timeMatchA[2] || '0');
-                            if (hourA >= 0 && hourA <= 23 && minuteA >= 0 && minuteA <= 59) {
-                                dateA.setHours(hourA, minuteA, 0, 0);
-                            }
+                            if (hourA >= 0 && hourA <= 23 && minuteA >= 0 && minuteA <= 59) dateA.setHours(hourA, minuteA, 0, 0);
                         }
                     }
-                    
                     const timeB = b[interviewTimeIndex];
                     if (timeB) {
                         const timeStrB = String(timeB).replace(/'/g, '').trim();
@@ -207,16 +183,11 @@ export const DataModule = {
                         if (timeMatchB) {
                             const hourB = parseInt(timeMatchB[1]);
                             const minuteB = parseInt(timeMatchB[2] || '0');
-                            if (hourB >= 0 && hourB <= 23 && minuteB >= 0 && minuteB <= 59) {
-                                dateB.setHours(hourB, minuteB, 0, 0);
-                            }
+                            if (hourB >= 0 && hourB <= 23 && minuteB >= 0 && minuteB <= 59) dateB.setHours(hourB, minuteB, 0, 0);
                         }
                     }
-                    
                     return dateA - dateB;
-                } catch (e) {
-                    return 0;
-                }
+                } catch (e) { return 0; }
             })
             .slice(0, 7);
 
@@ -228,16 +199,7 @@ export const DataModule = {
         let tableHtml = `
             <table class="interview-schedule-table">
                 <thead>
-                    <tr>
-                        <th>이름</th>
-                        <th>지원루트</th>
-                        ${companyIndex !== -1 ? '<th>회사명</th>' : ''}
-                        <th>증원자</th>
-                        <th>모집분야</th>
-                        <th>면접관</th>
-                        <th>면접날짜</th>
-                        <th>면접시간</th>
-                    </tr>
+                    <tr><th>이름</th><th>지원루트</th>${companyIndex !== -1 ? '<th>회사명</th>' : ''}<th>증원자</th><th>모집분야</th><th>면접관</th><th>면접날짜</th><th>면접시간</th></tr>
                 </thead>
                 <tbody>
         `;
@@ -246,50 +208,28 @@ export const DataModule = {
             const interviewDate = row[interviewDateIndex];
             let dateDisplay = '';
             const formattedTime = appInstance.utils.formatInterviewTime(row[interviewTimeIndex]);
-            
             try {
                 const date = new Date(interviewDate);
                 const dateForDday = new Date(interviewDate);
                 dateForDday.setHours(0, 0, 0, 0);
-                
                 const todayForDday = new Date(today);
                 todayForDday.setHours(0, 0, 0, 0);
-                
                 const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
                 const weekday = weekdays[date.getDay()];
-                
                 const diffTime = dateForDday.getTime() - todayForDday.getTime();
                 const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-                
                 let dayDiff = `D-${diffDays}`;
                 let ddayClass = '';
-                if (diffDays === 0) { 
-                    dayDiff = 'D-Day'; 
-                    ddayClass = 'today'; 
-                }
-                
+                if (diffDays === 0) { dayDiff = 'D-Day'; ddayClass = 'today'; }
                 const dateText = `${date.getMonth() + 1}/${date.getDate()}(${weekday})`;
                 dateDisplay = `<span class="interview-dday ${ddayClass}">${dayDiff}</span><span class="interview-date-text">${dateText}</span>`;
-            } catch (e) { 
-                dateDisplay = '날짜 오류'; 
-            }
+            } catch (e) { dateDisplay = '날짜 오류'; }
 
             const name = String(row[nameIndex] || '');
             const route = String(row[routeIndex] || '');
             const companyName = companyIndex !== -1 ? (row[companyIndex] || '-') : '';
 
-            tableHtml += `
-                <tr class="interview-row" data-name="${name}" data-route="${route}" style="cursor: pointer;">
-                    <td class="interview-name-cell" title="${name}">${name || '-'}</td>
-                    <td class="interview-route-cell" title="${route}">${route || '-'}</td>
-                    ${companyIndex !== -1 ? `<td class="interview-company-cell" title="${companyName}">${companyName}</td>` : ''}
-                    <td class="interview-recruiter-cell" title="${row[recruiterIndex] || ''}">${row[recruiterIndex] || '-'}</td>
-                    <td class="interview-position-cell" title="${row[positionIndex] || ''}">${row[positionIndex] || '-'}</td>
-                    <td class="interview-interviewer-cell" title="${row[interviewerIndex] || ''}">${row[interviewerIndex] || '-'}</td>
-                    <td class="interview-date-cell" title="${dateDisplay.replace(/<[^>]*>/g, '')}">${dateDisplay}</td>
-                    <td class="interview-time-cell" title="${formattedTime}">${formattedTime}</td>
-                </tr>
-            `;
+            tableHtml += `<tr class="interview-row" data-name="${name}" data-route="${route}" style="cursor: pointer;"><td class="interview-name-cell" title="${name}">${name || '-'}</td><td class="interview-route-cell" title="${route}">${route || '-'}</td>${companyIndex !== -1 ? `<td class="interview-company-cell" title="${companyName}">${companyName}</td>` : ''}<td class="interview-recruiter-cell" title="${row[recruiterIndex] || ''}">${row[recruiterIndex] || '-'}</td><td class="interview-position-cell" title="${row[positionIndex] || ''}">${row[positionIndex] || '-'}</td><td class="interview-interviewer-cell" title="${row[interviewerIndex] || ''}">${row[interviewerIndex] || '-'}</td><td class="interview-date-cell" title="${dateDisplay.replace(/<[^>]*>/g, '')}">${dateDisplay}</td><td class="interview-time-cell" title="${formattedTime}">${formattedTime}</td></tr>`;
         });
 
         tableHtml += `</tbody></table>`;
@@ -298,24 +238,17 @@ export const DataModule = {
         const scheduleTable = scheduleContainer.querySelector('.interview-schedule-table');
         if (scheduleTable) {
             scheduleTable.removeEventListener('click', DataModule._handleTableClick);
-            
             DataModule._handleTableClick = function(event) {
                 const row = event.target.closest('.interview-row');
                 if (row) {
                     const name = row.getAttribute('data-name');
                     const route = row.getAttribute('data-route');
                     if (name && route) {
-                        if (typeof globalThis !== 'undefined' && globalThis.App) {
-                            DataModule.showInterviewDetails(globalThis.App, name, route);
-                        } else if (typeof window !== 'undefined' && window.App) {
-                            DataModule.showInterviewDetails(window.App, name, route);
-                        } else {
-                            console.error('App 객체를 찾을 수 없습니다.');
-                        }
+                        const app = typeof globalThis !== 'undefined' ? globalThis.App : window.App;
+                        if(app) DataModule.showInterviewDetails(app, name, route);
                     }
                 }
             };
-            
             scheduleTable.addEventListener('click', DataModule._handleTableClick);
         }
     },
@@ -326,16 +259,8 @@ export const DataModule = {
         try {
             const nameIndex = appInstance.state.data.headers.indexOf('이름');
             const routeIndex = appInstance.state.data.headers.indexOf('지원루트');
-
-            const targetRow = appInstance.state.data.all.find(row => {
-                const nameMatch = String(row[nameIndex] || '') === name;
-                const routeMatch = String(row[routeIndex] || '') === route;
-                return nameMatch && routeMatch;
-            });
-
-            if (targetRow && appInstance.modal && appInstance.modal.openDetail) {
-                appInstance.modal.openDetail(targetRow);
-            }
+            const targetRow = appInstance.state.data.all.find(row => String(row[nameIndex] || '') === name && String(row[routeIndex] || '') === route);
+            if (targetRow && appInstance.modal) appInstance.modal.openDetail(targetRow);
         } catch (error) {
             console.error('면접 상세 정보 표시 실패:', error);
         }
@@ -344,34 +269,16 @@ export const DataModule = {
     async save(appInstance, data, isUpdate = false, gubun = null) {
         const action = isUpdate ? 'update' : 'create';
         const payload = isUpdate ? { action, gubun, data } : { action, data };
-
-        const response = await fetch(appInstance.config.APPS_SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        });
-
+        const response = await fetch(appInstance.config.APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
         const result = await response.json();
-        if (result.status !== 'success') {
-            throw new Error(result.message || '저장에 실패했습니다.');
-        }
-
+        if (result.status !== 'success') throw new Error(result.message || '저장에 실패했습니다.');
         return result;
     },
 
     async delete(appInstance, gubun) {
-        const response = await fetch(appInstance.config.APPS_SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify({
-                action: 'delete',
-                gubun: gubun
-            })
-        });
-
+        const response = await fetch(appInstance.config.APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', gubun: gubun }) });
         const result = await response.json();
-        if (result.status !== 'success') {
-            throw new Error(result.message || '삭제에 실패했습니다.');
-        }
-
+        if (result.status !== 'success') throw new Error(result.message || '삭제에 실패했습니다.');
         return result;
     }
 };
