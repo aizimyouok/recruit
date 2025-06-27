@@ -13,6 +13,7 @@ import { CacheModule } from './js/cache.js';
 import { DataCacheModule } from './js/dataCache.js';
 import { SmartSyncModule } from './js/smartSync.js';
 import { InterviewScheduleModule } from './js/interviewSchedule.js';
+import { ReportModule } from './js/report.js';
 
 // =========================
 // 애플리케이션 메인 객체
@@ -447,7 +448,8 @@ const App = {
     cache: CacheModule,
     dataCache: DataCacheModule,
     smartSync: SmartSyncModule,
-    interviewSchedule: InterviewScheduleModule, // 모듈 등록
+    interviewSchedule: InterviewScheduleModule,
+    report: ReportModule,
     // =========================
     // 🔥 성능 개선 유틸리티들 (상단으로 이동)
     // =========================
