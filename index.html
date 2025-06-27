@@ -15,7 +15,7 @@
 </head>
 <body>
 <div class="mobile-overlay" onclick="globalThis.App.ui.toggleMobileMenu()"></div>
-    
+
     <div class="app-container">
         <nav class="sidebar" id="sidebar" role="navigation" aria-label="주 메뉴 네비게이션">
             <div class="sidebar-header">
@@ -29,7 +29,7 @@
                 <button class="nav-item" onclick="globalThis.App.navigation.switchPage('interviewSchedule')"><i class="fas fa-calendar-alt icon"></i> 면접일정</button>
                 <button class="nav-item" onclick="globalThis.App.navigation.switchPage('report')"><i class="fas fa-file-signature icon"></i> 리포트 발행</button>
             </div>
-            
+
             <div class="sidebar-widgets">
                 <div class="sidebar-widget interview-pending-widget" style="border-left: 3px solid #f59e0b; margin-bottom: 20px;">
                     <div class="interview-widget-header" onclick="globalThis.App && globalThis.App.sidebar && globalThis.App.sidebar.toggleInterviewWidget()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
@@ -109,7 +109,7 @@
                 </div>
             </div>
         </nav>
-        
+
         <main class="main-content">
             <header class="main-header" role="banner" aria-label="메인 헤더 영역">
                 <div style="display: flex; align-items: center; gap: 15px;">
@@ -134,9 +134,9 @@
                     </button>
                 </div>
             </header>
-            
+
             <div class="content-area" role="main" aria-label="메인 콘텐츠 영역" id="main-content">
-                
+
                 <div id="dashboard" class="page active">
                     <div class="interview-schedule-card">
                         <div class="interview-schedule-header">
@@ -147,7 +147,7 @@
                             <div class="no-interviews">예정된 면접이 없습니다.</div>
                         </div>
                     </div>
-                    
+
                     <div class="page-header">
                         <h2 class="page-title">전체 지원자 목록</h2>
                         <div class="header-actions">
@@ -171,7 +171,7 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="filter-bar" role="search" aria-label="지원자 필터링 도구">
                         <div class="filter-group search-input">
                             <label for="globalSearch">통합 검색</label>
@@ -203,9 +203,9 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="filter-summary" id="filterSummary"></div>
-                    
+
                     <div class="content-container">
                         <div class="table-container" id="tableView">
                             <table class="data-table" role="table" aria-label="지원자 목록 테이블"></table>
@@ -357,7 +357,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div id="interviewSchedule" class="page">
                     <div class="page-header">
                          <div class="interviewer-summary-card" id="interviewerCountsContainer">
@@ -372,7 +372,7 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="filter-bar-wrapper">
                         <div class="filter-bar" role="search" aria-label="면접일정 필터링">
                             <div class="filter-group search-input">
@@ -429,8 +429,7 @@
 
                     <div class="filter-bar-wrapper">
                         <div class="filter-bar" id="reportFilterBar" role="search" aria-label="리포트 필터링">
-                            <!-- 필터 내용은 JavaScript에서 동적으로 생성됩니다 -->
-                        </div>
+                            </div>
                     </div>
 
                     <div class="content-container" id="reportPreviewContainer" style="margin-top: 20px;">
@@ -444,7 +443,7 @@
             </div>
         </main>
     </div>
-    
+
     <div id="applicantModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
