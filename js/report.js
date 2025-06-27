@@ -2,13 +2,36 @@
 
 export const ReportModule = {
     // 모듈의 상태를 관리할 state 객체
-    state: {},
+    state: {
+        currentReportType: 'executive' // 현재 선택된 리포트 타입을 저장할 상태 추가
+    },
 
     // 페이지가 처음 열릴 때 실행되는 초기화 함수
     initialize(appInstance) {
         this.app = appInstance;
         console.log('📊 리포트 모듈 초기화 시작...');
-        this.populateFilters(); // 필터 생성을 시작합니다.
+        this.populateFilters();
+        this.setupTabEvents(); // 탭 이벤트 리스너 설정 함수 호출 추가
+    },
+
+    // 탭 클릭 이벤트를 설정하는 새 함수 추가
+    setupTabEvents() {
+        const tabContainer = document.querySelector('.report-tabs');
+        if (tabContainer) {
+            tabContainer.addEventListener('click', (e) => {
+                if (e.target.matches('.report-tab-btn')) {
+                    const reportType = e.target.dataset.reportType;
+                    this.state.currentReportType = reportType; // 현재 리포트 타입 상태 업데이트
+
+                    // 모든 탭의 active 클래스 제거 후, 클릭된 탭에만 추가
+                    document.querySelectorAll('.report-tab-btn').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+
+                    // 탭을 누르면 바로 리포트가 생성되도록 하려면 아래 주석을 해제하세요.
+                    // this.generateReport();
+                }
+            });
+        }
     },
 
     // 리포트 조건 필터(드롭다운)에 옵션을 채워 넣는 함수
@@ -69,10 +92,10 @@ export const ReportModule = {
 
         this.setInitialDateRange(); // 날짜 필터 초기화
     },
-    
-    // 이 아래의 함수들은 이전과 거의 동일합니다.
+
     setInitialDateRange() {
         this.state = {
+            ...this.state, // 기존의 currentReportType을 유지하기 위해 ...this.state 사용
             dateMode: 'range',
             startDate: this.formatDateForInput(new Date(new Date().getFullYear(), 0, 1)),
             endDate: this.formatDateForInput(new Date())
@@ -112,11 +135,11 @@ export const ReportModule = {
             });
         }
     },
-    
+
     updateDateInputs() {
         const container = document.getElementById('reportDateInputsContainer');
         if (!container) return;
-        
+
         if (this.state.dateMode === 'range') {
             container.innerHTML = `
                 <input type="date" class="date-input" id="reportStartDate" value="${this.state.startDate}">
@@ -131,7 +154,7 @@ export const ReportModule = {
     resetFilters() {
         const searchInput = document.getElementById('reportSearch');
         if(searchInput) searchInput.value = '';
-        
+
         document.getElementById('reportRouteFilter').value = 'all';
         document.getElementById('reportPositionFilter').value = 'all';
         document.getElementById('reportInterviewerFilter').value = 'all';
@@ -157,11 +180,36 @@ export const ReportModule = {
                     startDate: document.getElementById('reportStartDate')?.value,
                     endDate: document.getElementById('reportEndDate')?.value,
                 };
-                
+
                 const filteredData = this.getFilteredData(options);
-                const reportHtml = this.buildReportHtml(filteredData, options);
+                
+                // 선택된 리포트 타입에 따라 다른 HTML 생성 함수를 호출
+                const reportType = this.state.currentReportType;
+                let reportHtml = '';
+
+                switch (reportType) {
+                    case 'executive':
+                        reportHtml = this.buildExecutiveReport(filteredData, options);
+                        break;
+                    case 'detailed':
+                        reportHtml = this.buildDetailedReport(filteredData, options);
+                        break;
+                    // 다른 리포트 타입에 대한 케이스를 여기에 추가할 수 있습니다.
+                    // case 'recruiter':
+                    //     reportHtml = this.buildRecruiterReport(filteredData, options);
+                    //     break;
+                    default:
+                        // 기본값으로 경영진 리포트 표시
+                        reportHtml = this.buildExecutiveReport(filteredData, options);
+                }
+
                 previewContainer.innerHTML = reportHtml;
-                this.renderReportCharts(filteredData);
+                
+                // 리포트 타입에 맞는 차트를 그리도록 수정
+                if (reportType === 'executive' || reportType === 'detailed') {
+                    this.renderReportCharts(filteredData);
+                }
+
             } catch (error) {
                 console.error("리포트 생성 중 오류 발생:", error);
                 previewContainer.innerHTML = `<div class="error-container"><i class="fas fa-exclamation-triangle error-icon"></i><h3 class="error-title">리포트 생성 실패</h3><p class="error-message">리포트를 만드는 중 문제가 발생했습니다. 콘솔을 확인해주세요.</p></div>`;
@@ -191,33 +239,22 @@ export const ReportModule = {
                 return date >= start && date <= end;
             });
         }
-        
+
         if (options.interviewer !== 'all' && indices.interviewer !==-1) data = data.filter(row => (row[indices.interviewer] || '').includes(options.interviewer));
         if (options.company !== 'all' && indices.company !==-1) data = data.filter(row => row[indices.company] === options.company);
         if (options.route !== 'all' && indices.route !== -1) data = data.filter(row => row[indices.route] === options.route);
         if (options.position !== 'all' && indices.position !== -1) data = data.filter(row => row[indices.position] === options.position);
-        
+
         if (options.searchTerm) {
             data = data.filter(row => row.some(cell => String(cell).toLowerCase().includes(options.searchTerm)));
         }
-        
+
         return data;
     },
-    
-    // '초기화' 버튼 클릭 시 필터를 기본값으로 되돌리는 함수
-    resetFilters() {
-        const searchInput = document.getElementById('reportSearch');
-        if(searchInput) searchInput.value = '';
-        
-        document.getElementById('reportRouteFilter').value = 'all';
-        document.getElementById('reportPositionFilter').value = 'all';
-        document.getElementById('reportInterviewerFilter').value = 'all';
-        document.getElementById('reportCompanyFilter').value = 'all';
-        this.setInitialDateRange();
-    },
 
-    // 필터링된 데이터로 리포트의 HTML 구조를 만드는 함수
-    buildReportHtml(data, options) {
+    // 경영진용 요약 리포트 HTML 생성
+    buildExecutiveReport(data, options) {
+        console.log("경영진용 요약 리포트 생성");
         const now = new Date();
         const periodText = this.getPeriodText(options);
         const headers = this.app.state.data.headers;
@@ -242,9 +279,9 @@ export const ReportModule = {
                 .chart-container-report { border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; }
             </style>
             <div id="reportPage">
-                <h1>채용 현황 리포트</h1>
+                <h1>경영진용 요약 리포트</h1>
                 <p class="report-info">
-                    <strong>조회 기간:</strong> ${periodText} | 
+                    <strong>조회 기간:</strong> ${periodText} |
                     <strong>발행일:</strong> ${now.toLocaleDateString('ko-KR')}
                 </p>
                 <h2>핵심 성과 지표 (KPIs)</h2>
@@ -269,10 +306,50 @@ export const ReportModule = {
         `;
     },
 
+    // 상세 분석 리포트 HTML 생성
+    buildDetailedReport(data, options) {
+        console.log("상세 분석 리포트 생성");
+        const now = new Date();
+        const periodText = this.getPeriodText(options);
+
+        return `
+            <div id="reportPage">
+                <h1>상세 분석 리포트</h1>
+                <p class="report-info"><strong>조회 기간:</strong> ${periodText}</p>
+                <h2>지원자 전체 목록</h2>
+                <div class="table-container" style="max-height: 500px; overflow-y: auto;">
+                    ${this.createDetailedTable(data)}
+                </div>
+                </div>
+        `;
+    },
+
+    // 상세 테이블 HTML 생성 헬퍼 함수
+    createDetailedTable(data) {
+        if (!data || data.length === 0) return '<p style="text-align: center; padding: 20px;">해당 조건의 데이터가 없습니다.</p>';
+        const headers = this.app.state.data.headers;
+        let table = '<table class="data-table"><thead><tr>';
+        headers.forEach(h => table += `<th>${h}</th>`);
+        table += '</tr></thead><tbody>';
+        data.forEach(row => {
+            table += '<tr>';
+            row.forEach(cell => table += `<td>${cell || '-'}</td>`);
+            table += '</tr>';
+        });
+        table += '</tbody></table>';
+        return table;
+    },
+
     // 리포트 내부에 차트를 그리는 함수
     renderReportCharts(filteredData) {
+        // Chart.js가 로드되었는지 확인
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js is not loaded.');
+            return;
+        }
+
         const chartOptions = { responsive: true, maintainAspectRatio: false };
-        const routeCtx = document.getElementById('reportRouteChart');
+        const routeCtx = document.getElementById('reportRouteChart')?.getContext('2d');
         if (routeCtx) {
             const routeIndex = this.app.state.data.headers.indexOf('지원루트');
             const routeData = {};
@@ -286,8 +363,8 @@ export const ReportModule = {
                 options: chartOptions
             });
         }
-        
-        const positionCtx = document.getElementById('reportPositionChart');
+
+        const positionCtx = document.getElementById('reportPositionChart')?.getContext('2d');
         if (positionCtx) {
             const positionIndex = this.app.state.data.headers.indexOf('모집분야');
             const positionData = {};
@@ -305,7 +382,9 @@ export const ReportModule = {
 
     // 리포트 상단에 표시될 기간 텍스트를 생성하는 함수
     getPeriodText(options) {
-        if (options.dateMode === 'range') return `${options.startDate} ~ ${options.endDate}`;
+        if (options.dateMode === 'range' && options.startDate && options.endDate) {
+            return `${options.startDate} ~ ${options.endDate}`;
+        }
         return '전체 기간';
     }
 };
