@@ -1,9 +1,9 @@
-// js/report.js (데이터를 스스로 확인하는 최종 버전)
+// js/report.js (차트 컨테이너 높이 문제 해결 버전)
 
 export const ReportModule = {
     // 모듈의 상태를 관리할 state 객체
     state: {
-        currentReportType: 'executive' // 현재 선택된 리포트 타입을 저장할 상태 추가
+        currentReportType: 'executive'
     },
 
     // 페이지가 처음 열릴 때 실행되는 초기화 함수
@@ -11,24 +11,20 @@ export const ReportModule = {
         this.app = appInstance;
         console.log('📊 리포트 모듈 초기화 시작...');
         this.populateFilters();
-        this.setupTabEvents(); // 탭 이벤트 리스너 설정 함수 호출 추가
+        this.setupTabEvents();
     },
 
-    // 탭 클릭 이벤트를 설정하는 새 함수 추가
+    // 탭 클릭 이벤트를 설정하는 함수
     setupTabEvents() {
         const tabContainer = document.querySelector('.report-tabs');
         if (tabContainer) {
             tabContainer.addEventListener('click', (e) => {
                 if (e.target.matches('.report-tab-btn')) {
                     const reportType = e.target.dataset.reportType;
-                    this.state.currentReportType = reportType; // 현재 리포트 타입 상태 업데이트
+                    this.state.currentReportType = reportType;
 
-                    // 모든 탭의 active 클래스 제거 후, 클릭된 탭에만 추가
                     document.querySelectorAll('.report-tab-btn').forEach(btn => btn.classList.remove('active'));
                     e.target.classList.add('active');
-
-                    // 탭을 누르면 바로 리포트가 생성되도록 하려면 아래 주석을 해제하세요.
-                    // this.generateReport();
                 }
             });
         }
@@ -39,15 +35,12 @@ export const ReportModule = {
         const reportFilterBar = document.getElementById('reportFilterBar');
         if (!reportFilterBar) return;
 
-        // 데이터가 아직 준비되지 않았다면,
         if (!this.app || !this.app.state.data.all.length) {
             reportFilterBar.innerHTML = `<p style="color: var(--text-secondary);">전체 지원자 데이터를 불러오는 중입니다...</p>`;
-            // 1초 뒤에 다시 이 함수를 실행하여 데이터가 준비되었는지 확인합니다.
             setTimeout(() => this.populateFilters(), 1000);
-            return; // 데이터가 없으므로 여기서 함수를 중단합니다.
+            return;
         }
 
-        // --- 이 아래 코드는 데이터가 성공적으로 로드되었을 때만 실행됩니다 ---
         console.log('✅ 데이터 로드 확인! 리포트 필터를 생성합니다.');
         const { headers, all } = this.app.state.data;
         const indices = {
@@ -57,7 +50,6 @@ export const ReportModule = {
             position: headers.indexOf('모집분야')
         };
 
-        // 면접일정 페이지의 필터 UI를 그대로 가져옵니다.
         reportFilterBar.innerHTML = `
             <div class="filter-group search-input">
                 <label for="reportSearch">통합 검색</label>
@@ -90,12 +82,12 @@ export const ReportModule = {
         populate('reportRouteFilter', indices.route);
         populate('reportPositionFilter', indices.position);
 
-        this.setInitialDateRange(); // 날짜 필터 초기화
+        this.setInitialDateRange();
     },
 
     setInitialDateRange() {
         this.state = {
-            ...this.state, // 기존의 currentReportType을 유지하기 위해 ...this.state 사용
+            ...this.state,
             dateMode: 'range',
             startDate: this.formatDateForInput(new Date(new Date().getFullYear(), 0, 1)),
             endDate: this.formatDateForInput(new Date())
@@ -162,14 +154,12 @@ export const ReportModule = {
         this.setInitialDateRange();
     },
 
-    // '리포트 생성하기' 버튼 클릭 시 실행되는 메인 함수
     generateReport() {
         const previewContainer = document.getElementById('reportPreviewContainer');
         previewContainer.innerHTML = `<div class="smooth-loading-container"><div class="advanced-loading-spinner"></div><p class="loading-text">리포트를 생성 중입니다...</p></div>`;
 
         setTimeout(() => {
             try {
-                // UI에서 현재 필터 값들을 가져옴
                 const options = {
                     interviewer: document.getElementById('reportInterviewerFilter').value,
                     company: document.getElementById('reportCompanyFilter').value,
@@ -182,8 +172,6 @@ export const ReportModule = {
                 };
 
                 const filteredData = this.getFilteredData(options);
-                
-                // 선택된 리포트 타입에 따라 다른 HTML 생성 함수를 호출
                 const reportType = this.state.currentReportType;
                 let reportHtml = '';
 
@@ -194,18 +182,12 @@ export const ReportModule = {
                     case 'detailed':
                         reportHtml = this.buildDetailedReport(filteredData, options);
                         break;
-                    // 다른 리포트 타입에 대한 케이스를 여기에 추가할 수 있습니다.
-                    // case 'recruiter':
-                    //     reportHtml = this.buildRecruiterReport(filteredData, options);
-                    //     break;
                     default:
-                        // 기본값으로 경영진 리포트 표시
                         reportHtml = this.buildExecutiveReport(filteredData, options);
                 }
 
                 previewContainer.innerHTML = reportHtml;
                 
-                // 리포트 타입에 맞는 차트를 그리도록 수정
                 if (reportType === 'executive' || reportType === 'detailed') {
                     this.renderReportCharts(filteredData);
                 }
@@ -217,7 +199,6 @@ export const ReportModule = {
         }, 500);
     },
 
-    // 선택된 옵션에 따라 데이터를 필터링하는 함수
     getFilteredData(options) {
         const { all, headers } = this.app.state.data;
         let data = [...all];
@@ -252,9 +233,7 @@ export const ReportModule = {
         return data;
     },
 
-    // 경영진용 요약 리포트 HTML 생성
     buildExecutiveReport(data, options) {
-        console.log("경영진용 요약 리포트 생성");
         const now = new Date();
         const periodText = this.getPeriodText(options);
         const headers = this.app.state.data.headers;
@@ -276,12 +255,20 @@ export const ReportModule = {
                 .kpi-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; text-align: center; border-radius: 8px;}
                 .kpi-box .label { font-size: 1rem; color: #64748b; margin-bottom: 8px; }
                 .kpi-box .value { font-size: 2.2rem; font-weight: 700; color: #818cf8; }
-                .chart-container-report { border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; }
+                /* ▼▼▼▼▼ [수정된 부분] ▼▼▼▼▼ */
+                .chart-container-report { 
+                    position: relative; /* 차트의 기준점 설정 */
+                    height: 400px; /* 차트 컨테이너의 높이 고정 */
+                    border: 1px solid #e2e8f0; 
+                    padding: 15px; 
+                    border-radius: 8px; 
+                }
+                /* ▲▲▲▲▲ [수정된 부분] ▲▲▲▲▲ */
             </style>
             <div id="reportPage">
                 <h1>경영진용 요약 리포트</h1>
                 <p class="report-info">
-                    <strong>조회 기간:</strong> ${periodText} |
+                    <strong>조회 기간:</strong> ${periodText} | 
                     <strong>발행일:</strong> ${now.toLocaleDateString('ko-KR')}
                 </p>
                 <h2>핵심 성과 지표 (KPIs)</h2>
@@ -306,13 +293,18 @@ export const ReportModule = {
         `;
     },
 
-    // 상세 분석 리포트 HTML 생성
     buildDetailedReport(data, options) {
         console.log("상세 분석 리포트 생성");
         const now = new Date();
         const periodText = this.getPeriodText(options);
 
         return `
+             <style>
+                #reportPage { padding: 20px; font-family: 'Noto Sans KR', sans-serif; background: white; color: #333; }
+                #reportPage h1, #reportPage h2, #reportPage h3 { color: #334155; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px; }
+                #reportPage h1 { font-size: 1.8rem; text-align: center; border: none; }
+                #reportPage .report-info { color: #64748b; text-align: center; margin-bottom: 25px; }
+            </style>
             <div id="reportPage">
                 <h1>상세 분석 리포트</h1>
                 <p class="report-info"><strong>조회 기간:</strong> ${periodText}</p>
@@ -320,11 +312,10 @@ export const ReportModule = {
                 <div class="table-container" style="max-height: 500px; overflow-y: auto;">
                     ${this.createDetailedTable(data)}
                 </div>
-                </div>
+            </div>
         `;
     },
 
-    // 상세 테이블 HTML 생성 헬퍼 함수
     createDetailedTable(data) {
         if (!data || data.length === 0) return '<p style="text-align: center; padding: 20px;">해당 조건의 데이터가 없습니다.</p>';
         const headers = this.app.state.data.headers;
@@ -340,9 +331,7 @@ export const ReportModule = {
         return table;
     },
 
-    // 리포트 내부에 차트를 그리는 함수
     renderReportCharts(filteredData) {
-        // Chart.js가 로드되었는지 확인
         if (typeof Chart === 'undefined') {
             console.error('Chart.js is not loaded.');
             return;
@@ -380,7 +369,6 @@ export const ReportModule = {
         }
     },
 
-    // 리포트 상단에 표시될 기간 텍스트를 생성하는 함수
     getPeriodText(options) {
         if (options.dateMode === 'range' && options.startDate && options.endDate) {
             return `${options.startDate} ~ ${options.endDate}`;
