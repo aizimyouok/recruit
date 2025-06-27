@@ -4167,3 +4167,36 @@ div[style*="grid-template-columns"] {
         min-width: 700px; /* 모바일 환경에 맞는 최소 너비 조정 */
     }
 }
+/* styles.css */
+
+/* =========================
+   면접 결과 상태별 색상
+   ========================= */
+
+/* 합격 (초록색) */
+.status-badge.interview-pass {
+    background-color: var(--success) !important;
+    color: white !important;
+    font-weight: 700;
+}
+
+/* 불합격 (빨간색) */
+.status-badge.interview-fail {
+    background-color: var(--danger) !important;
+    color: white !important;
+    font-weight: 700;
+}
+
+/* 미참석 (검정색) */
+.status-badge.interview-noshow {
+    background-color: #333 !important; /* 어두운 회색/검정 */
+    color: white !important;
+    font-weight: 700;
+}
+
+/* 그 외 (주황색) */
+.status-badge.interview-other {
+    background-color: var(--warning) !important;
+    color: white !important;
+    font-weight: 700;
+}
