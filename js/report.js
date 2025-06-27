@@ -1,4 +1,4 @@
-// js/report.js (모든 오류 수정 완료된 최종 버전)
+// js/report.js (모든 오타, 문법 오류 최종 수정 완료)
 
 export const ReportModule = {
     // 페이지가 처음 열릴 때 실행되는 초기화 함수
@@ -9,64 +9,61 @@ export const ReportModule = {
     },
 
     // 리포트 조건 필터(드롭다운)에 옵션을 채워 넣는 함수
-    // 이 함수 전체를 복사해서 기존 populateFilters 함수와 교체해주세요.
-populateFilters() {
-    if (!this.app || !this.app.state.data.all.length) return;
+    populateFilters() {
+        if (!this.app || !this.app.state.data.all.length) return;
 
-    const { headers, all } = this.app.state.data;
-    const reportFilterBar = document.getElementById('reportFilterBar');
-    if (!reportFilterBar) return;
+        const { headers, all } = this.app.state.data;
+        const reportFilterBar = document.getElementById('reportFilterBar');
+        if (!reportFilterBar) return;
 
-    // 필터 HTML 구조 생성
-    reportFilterBar.innerHTML = `
-        <div class="filter-group" style="flex-grow: 2; min-width: 300px;">
-            <label for="reportPeriod">기간</label>
-            <select id="reportPeriod" onchange="ReportModule.handlePeriodChange(this.value)">
-                <option value="all">전체</option>
-                <option value="year">올해</option>
-                <option value="month" selected>이번 달</option>
-                <option value="week">이번 주</option>
-                <option value="custom">기간 직접 선택</option>
-            </select>
-            <div id="reportCustomDateRange" style="display: none; margin-top: 5px; display: flex; gap: 10px;">
-                <input type="date" id="reportStartDate">
-                <input type="date" id="reportEndDate">
+        // 필터 HTML 구조 생성
+        reportFilterBar.innerHTML = `
+            <div class="filter-group" style="flex-grow: 2; min-width: 300px;">
+                <label for="reportPeriod">기간</label>
+                <select id="reportPeriod" onchange="ReportModule.handlePeriodChange(this.value)">
+                    <option value="all">전체</option>
+                    <option value="year">올해</option>
+                    <option value="month" selected>이번 달</option>
+                    <option value="week">이번 주</option>
+                    <option value="custom">기간 직접 선택</option>
+                </select>
+                <div id="reportCustomDateRange" style="display: none; margin-top: 5px; display: flex; gap: 10px;">
+                    <input type="date" id="reportStartDate">
+                    <input type="date" id="reportEndDate">
+                </div>
             </div>
-        </div>
-        <div class="filter-group">
-            <label for="reportInterviewer">면접관</label>
-            <select id="reportInterviewer"><option value="all">전체</option></select>
-        </div>
-        <div class="filter-group">
-            <label for="reportRoute">지원 루트</label>
-            <select id="reportRoute"><option value="all">전체</option></select>
-        </div>
-    `;
+            <div class="filter-group">
+                <label for="reportInterviewer">면접관</label>
+                <select id="reportInterviewer"><option value="all">전체</option></select>
+            </div>
+            <div class="filter-group">
+                <label for="reportRoute">지원 루트</label>
+                <select id="reportRoute"><option value="all">전체</option></select>
+            </div>
+        `;
 
-    // 드롭다운 옵션 채우기
-    const interviewerIndex = headers.indexOf('면접관');
-    const routeIndex = headers.indexOf('지원루트');
+        // 드롭다운 옵션 채우기
+        const interviewerIndex = headers.indexOf('면접관');
+        const routeIndex = headers.indexOf('지원루트');
 
-    // ▼▼▼▼▼ [ \ 기호가 완벽히 제거된 최종 코드입니다 ] ▼▼▼▼▼
-    if (interviewerIndex !== -1) {
-        const options = [...new Set(all.map(row => (row[interviewerIndex] || '').trim()).filter(Boolean))];
-        const select = document.getElementById('reportInterviewer');
-        options.sort().forEach(name => {
-            select.innerHTML += `<option value="${name}">${name}</option>`;
-        });
-    }
-    if (routeIndex !== -1) {
-        const options = [...new Set(all.map(row => (row[routeIndex] || '').trim()).filter(Boolean))];
-        const select = document.getElementById('reportRoute');
-        options.sort().forEach(name => {
-            select.innerHTML += `<option value="${name}">${name}</option>`;
-        });
-    }
-    // ▲▲▲▲▲ [ \ 기호가 완벽히 제거된 최종 코드입니다 ] ▲▲▲▲▲
+        if (interviewerIndex !== -1) {
+            const options = [...new Set(all.map(row => (row[interviewerIndex] || '').trim()).filter(Boolean))];
+            const select = document.getElementById('reportInterviewer');
+            options.sort().forEach(name => {
+                select.innerHTML += `<option value="${name}">${name}</option>`;
+            });
+        }
+        if (routeIndex !== -1) {
+            const options = [...new Set(all.map(row => (row[routeIndex] || '').trim()).filter(Boolean))];
+            const select = document.getElementById('reportRoute');
+            options.sort().forEach(name => {
+                select.innerHTML += `<option value="${name}">${name}</option>`;
+            });
+        }
 
-    // 기간 선택 '직접입력' 핸들러
-    this.handlePeriodChange('month');
-},
+        this.handlePeriodChange('month');
+    },
+
     // 기간 선택 변경 시, 직접입력 필드를 보여주거나 숨기는 함수
     handlePeriodChange(value) {
         const customRange = document.getElementById('reportCustomDateRange');
@@ -86,14 +83,13 @@ populateFilters() {
     generateReport() {
         const previewContainer = document.getElementById('reportPreviewContainer');
 
-        previewContainer.innerHTML = \`
+        previewContainer.innerHTML = `
             <div class="smooth-loading-container">
                 <div class="advanced-loading-spinner"></div>
                 <p class="loading-text">리포트를 생성 중입니다...</p>
             </div>
-        \`;
+        `;
 
-        // 0.5초 후 리포트 생성 (로딩 애니메이션을 보여주기 위함)
         setTimeout(() => {
             try {
                 const options = {
@@ -110,13 +106,13 @@ populateFilters() {
                 this.renderReportCharts(filteredData);
             } catch (error) {
                 console.error("리포트 생성 중 오류 발생:", error);
-                previewContainer.innerHTML = \`
+                previewContainer.innerHTML = `
                     <div class="error-container">
                         <i class="fas fa-exclamation-triangle error-icon"></i>
                         <h3 class="error-title">리포트 생성 실패</h3>
                         <p class="error-message">리포트를 만드는 중 문제가 발생했습니다. 다시 시도해주세요.</p>
                     </div>
-                \`;
+                `;
             }
         }, 500);
     },
@@ -173,7 +169,7 @@ populateFilters() {
         const passRate = interviewConfirmedCount > 0 ? ((passedCount / interviewConfirmedCount) * 100).toFixed(1) : 0;
         const joinRate = passedCount > 0 ? ((joinedCount / passedCount) * 100).toFixed(1) : 0;
 
-        return \`
+        return `
             <style>
                 #reportPage { padding: 20px; font-family: 'Noto Sans KR', sans-serif; background: white; color: #333; }
                 #reportPage h1, #reportPage h2, #reportPage h3 { color: #334155; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px; }
@@ -197,16 +193,16 @@ populateFilters() {
             <div id="reportPage">
                 <h1>채용 현황 리포트</h1>
                 <p>
-                    <strong>조회 기간:</strong> \${periodText} | 
-                    <strong>발행일:</strong> \${now.toLocaleDateString('ko-KR')}
+                    <strong>조회 기간:</strong> ${periodText} | 
+                    <strong>발행일:</strong> ${now.toLocaleDateString('ko-KR')}
                 </p>
 
                 <h2>핵심 성과 지표 (KPIs)</h2>
                 <div class="report-grid">
-                    <div class="kpi-box"><div class="label">총 지원자</div><div class="value">\${totalApplicants}명</div></div>
-                    <div class="kpi-box"><div class="label">면접 전환율</div><div class="value">\${interviewRate}%</div></div>
-                    <div class="kpi-box"><div class="label">면접자 중 합격률</div><div class="value">\${passRate}%</div></div>
-                    <div class="kpi-box"><div class="label">합격자 중 입과율</div><div class="value">\${joinRate}%</div></div>
+                    <div class="kpi-box"><div class="label">총 지원자</div><div class="value">${totalApplicants}명</div></div>
+                    <div class="kpi-box"><div class="label">면접 전환율</div><div class="value">${interviewRate}%</div></div>
+                    <div class="kpi-box"><div class="label">면접자 중 합격률</div><div class="value">${passRate}%</div></div>
+                    <div class="kpi-box"><div class="label">합격자 중 입과율</div><div class="value">${joinRate}%</div></div>
                 </div>
 
                 <h2>시각화 자료</h2>
@@ -221,7 +217,7 @@ populateFilters() {
                     </div>
                 </div>
             </div>
-        \`;
+        `;
     },
 
     // 리포트 내부에 차트를 그리는 함수
@@ -268,7 +264,7 @@ populateFilters() {
 
     getPeriodText(options) {
         const periodMap = { 'all': '전체 기간', 'year': '올해', 'month': '이번 달', 'week': '이번 주' };
-        if (options.period === 'custom') return \`\${options.startDate} ~ \${options.endDate}\`;
+        if (options.period === 'custom') return `${options.startDate} ~ ${options.endDate}`;
         return periodMap[options.period] || 'N/A';
     },
 
@@ -296,7 +292,6 @@ populateFilters() {
                 return;
             }
 
-            // html2canvas와 jsPDF 라이브러리가 로드되었는지 확인
             if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
                 alert('PDF 생성 라이브러리를 로드하지 못했습니다. index.html 파일을 확인해주세요.');
                 return;
@@ -323,7 +318,7 @@ populateFilters() {
             }
             
             pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-            pdf.save(\`채용현황-리포트-\${new Date().toISOString().slice(0,10)}.pdf\`);
+            pdf.save(`채용현황-리포트-${new Date().toISOString().slice(0,10)}.pdf`);
 
         } catch (error) {
             console.error('리포트 생성/다운로드 실패:', error);
