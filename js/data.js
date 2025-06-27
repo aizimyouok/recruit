@@ -94,7 +94,7 @@ export const DataModule = {
                 console.log('🔄 새 데이터 로드 - 캐시 초기화됨');
             }
 
-            // ▼▼▼▼▼ [이전 단계에서 추가된 부분입니다] ▼▼▼▼▼
+            // ▼▼▼▼▼ [바로 이 부분이 핵심입니다!] ▼▼▼▼▼
             // 데이터 로딩이 끝난 시점에, 만약 현재 페이지가 '리포트 발행' 페이지라면,
             // 필터를 다시 그려주도록 신호를 보냅니다.
             if (appInstance.navigation.getCurrentPage() === 'report') {
@@ -103,7 +103,7 @@ export const DataModule = {
                     appInstance.report.populateFilters();
                 }
             }
-            // ▲▲▲▲▲ [이전 단계에서 추가된 부분입니다] ▲▲▲▲▲
+            // ▲▲▲▲▲ [바로 이 부분이 핵심입니다!] ▲▲▲▲▲
 
         } catch (error) {
             console.error("데이터 불러오기 실패:", error);
