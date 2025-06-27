@@ -1,24 +1,31 @@
-// js/report.js (초기화 오류 수정된 최종 버전)
+// js/report.js (데이터를 스스로 확인하는 최종 버전)
 
 export const ReportModule = {
-    // 모듈의 상태를 관리할 state 객체 추가 (이 부분이 누락되어 오류 발생)
+    // 모듈의 상태를 관리할 state 객체
     state: {},
 
     // 페이지가 처음 열릴 때 실행되는 초기화 함수
     initialize(appInstance) {
         this.app = appInstance;
-        console.log('📊 리포트 모듈 초기화');
-        this.populateFilters();
-        this.setInitialDateRange();
+        console.log('📊 리포트 모듈 초기화 시작...');
+        this.populateFilters(); // 필터 생성을 시작합니다.
     },
 
-    // 필터 드롭다운 목록을 데이터로 채우는 함수
+    // 리포트 조건 필터(드롭다운)에 옵션을 채워 넣는 함수
     populateFilters() {
+        const reportFilterBar = document.getElementById('reportFilterBar');
+        if (!reportFilterBar) return;
+
+        // 데이터가 아직 준비되지 않았다면,
         if (!this.app || !this.app.state.data.all.length) {
-            console.log('리포트 필터 생성 대기: 데이터가 아직 로드되지 않았습니다.');
-            return;
+            reportFilterBar.innerHTML = `<p style="color: var(--text-secondary);">전체 지원자 데이터를 불러오는 중입니다...</p>`;
+            // 1초 뒤에 다시 이 함수를 실행하여 데이터가 준비되었는지 확인합니다.
+            setTimeout(() => this.populateFilters(), 1000);
+            return; // 데이터가 없으므로 여기서 함수를 중단합니다.
         }
 
+        // --- 이 아래 코드는 데이터가 성공적으로 로드되었을 때만 실행됩니다 ---
+        console.log('✅ 데이터 로드 확인! 리포트 필터를 생성합니다.');
         const { headers, all } = this.app.state.data;
         const indices = {
             interviewer: headers.indexOf('면접관'),
@@ -26,6 +33,23 @@ export const ReportModule = {
             route: headers.indexOf('지원루트'),
             position: headers.indexOf('모집분야')
         };
+
+        // 면접일정 페이지의 필터 UI를 그대로 가져옵니다.
+        reportFilterBar.innerHTML = `
+            <div class="filter-group search-input">
+                <label for="reportSearch">통합 검색</label>
+                <div style="position: relative;">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="reportSearch" placeholder="이름, 비고 등 검색..." />
+                </div>
+            </div>
+            <div class="filter-group"><label for="reportRouteFilter">지원루트</label><select id="reportRouteFilter"></select></div>
+            <div class="filter-group"><label for="reportPositionFilter">모집분야</label><select id="reportPositionFilter"></select></div>
+            <div class="filter-group"><label for="reportInterviewerFilter">면접관</label><select id="reportInterviewerFilter"></select></div>
+            <div class="filter-group"><label for="reportCompanyFilter">회사명</label><select id="reportCompanyFilter"></select></div>
+            <div class="filter-group date-filter-group"><label>조회 기간</label><div class="date-filter-container" id="reportDateFilterContainer"></div></div>
+            <div class="filter-group reset-group"><button class="secondary-btn reset-btn" onclick="globalThis.App.report.resetFilters()"><i class="fas fa-undo"></i> 초기화</button></div>
+        `;
 
         const populate = (selector, index) => {
             const selectElement = document.getElementById(selector);
@@ -42,20 +66,20 @@ export const ReportModule = {
         populate('reportCompanyFilter', indices.company);
         populate('reportRouteFilter', indices.route);
         populate('reportPositionFilter', indices.position);
+
+        this.setInitialDateRange(); // 날짜 필터 초기화
     },
     
-    // 페이지 로드 시 기본 날짜 범위를 설정하는 함수
+    // 이 아래의 함수들은 이전과 거의 동일합니다.
     setInitialDateRange() {
-        // 모듈의 state를 초기화 (기존 코드에서는 이 부분이 잘못되어 있었음)
         this.state = {
             dateMode: 'range',
-            startDate: this.formatDateForInput(new Date(new Date().getFullYear(), 0, 1)), // 올해 1월 1일
-            endDate: this.formatDateForInput(new Date()) // 오늘
+            startDate: this.formatDateForInput(new Date(new Date().getFullYear(), 0, 1)),
+            endDate: this.formatDateForInput(new Date())
         };
         this.updateDateFilterUI();
     },
 
-    // 날짜를 YYYY-MM-DD 형식으로 변환하는 헬퍼 함수
     formatDateForInput(date) {
         if (!date || !(date instanceof Date)) return '';
         const year = date.getFullYear();
@@ -64,7 +88,6 @@ export const ReportModule = {
         return `${year}-${month}-${day}`;
     },
 
-    // 날짜 필터 UI를 현재 상태에 맞게 업데이트하는 함수
     updateDateFilterUI() {
         const container = document.getElementById('reportDateFilterContainer');
         if (!container) return;
@@ -90,7 +113,6 @@ export const ReportModule = {
         }
     },
     
-    // 날짜 입력 필드를 업데이트하는 함수
     updateDateInputs() {
         const container = document.getElementById('reportDateInputsContainer');
         if (!container) return;
@@ -102,8 +124,19 @@ export const ReportModule = {
                 <input type="date" class="date-input" id="reportEndDate" value="${this.state.endDate}">
             `;
         } else {
-             container.innerHTML = `<span class="date-input-text">전체 기간</span>`;
+             container.innerHTML = `<span style="padding: 0 10px; color: var(--text-secondary);">전체 기간</span>`;
         }
+    },
+
+    resetFilters() {
+        const searchInput = document.getElementById('reportSearch');
+        if(searchInput) searchInput.value = '';
+        
+        document.getElementById('reportRouteFilter').value = 'all';
+        document.getElementById('reportPositionFilter').value = 'all';
+        document.getElementById('reportInterviewerFilter').value = 'all';
+        document.getElementById('reportCompanyFilter').value = 'all';
+        this.setInitialDateRange();
     },
 
     // '리포트 생성하기' 버튼 클릭 시 실행되는 메인 함수
