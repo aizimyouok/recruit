@@ -10,7 +10,7 @@
 const ReportTemplates = {
     executive: { name: '경영진용 요약', title: '경영진용 요약 리포트', sections: ['kpi', 'charts'] },
     detailed: { name: '상세 분석', title: '채용 퍼널 분석 리포트', sections: ['funnel'] },
-    ai: { name: 'AI 분석 가이드', title: 'CFC AI 분석 리포트', sections: [] }
+    ai: { name: 'AI 분석 가이드', title: 'Gemini AI 분석 리포트', sections: [] }
 };
 
 // AI 분석 가이드 항목 정의
@@ -174,7 +174,7 @@ export const ReportModule = {
         const previewContainer = document.getElementById('reportPreviewContainer');
         guideContainer.style.display = 'none';
         previewContainer.style.display = 'block';
-        previewContainer.innerHTML = `<div class="smooth-loading-container"><div class="advanced-loading-spinner"></div><p class="loading-text">CFC AI가 선택된 항목들을 분석 중입니다...</p></div>`;
+        previewContainer.innerHTML = `<div class="smooth-loading-container"><div class="advanced-loading-spinner"></div><p class="loading-text">Gemini AI가 선택된 항목들을 분석 중입니다...</p></div>`;
 
         try {
             const options = this.getFilterOptions();
@@ -304,7 +304,7 @@ export const ReportModule = {
     },
 
     // =================================================
-    // 필터링 및 데이터 처리 헬퍼 함수
+    // 필터링 및 UI 렌더링 헬퍼 함수
     // =================================================
     populateFilters() {
         const reportFilterBar = document.getElementById('reportFilterBar');
