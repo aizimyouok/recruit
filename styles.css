@@ -4485,3 +4485,79 @@ div[style*="grid-template-columns"] {
     font-size: 0.8rem;
     font-weight: 700;
 }
+/* =========================
+   채용 퍼널 분석 스타일
+   ========================= */
+.funnel-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background: var(--main-bg, #f8fafc);
+    padding: 25px;
+    border-radius: var(--border-radius);
+}
+
+.funnel-stage {
+    padding-bottom: 15px;
+    border-bottom: 1px dashed var(--border-color, #e2e8f0);
+}
+
+.funnel-stage:last-child {
+    border-bottom: none;
+}
+
+.funnel-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.funnel-stage-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.funnel-stage-count {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--sidebar-accent);
+}
+
+.funnel-bar-wrapper {
+    width: 100%;
+    background-color: var(--border-color, #e2e8f0);
+    border-radius: 5px;
+    height: 25px;
+    overflow: hidden;
+}
+
+.funnel-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--sidebar-accent), #a78bfa);
+    border-radius: 5px;
+    transition: width 0.5s ease-in-out;
+    text-align: right;
+    color: white;
+    font-size: 0.8rem;
+    line-height: 25px;
+    padding-right: 8px;
+}
+
+.funnel-conversion-rate {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.funnel-conversion-rate i {
+    color: var(--success);
+    margin-right: 5px;
+}
+
+.funnel-conversion-rate strong {
+    color: var(--success);
+    font-size: 1rem;
+}
