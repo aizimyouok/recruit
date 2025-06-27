@@ -4341,3 +4341,147 @@ div[style*="grid-template-columns"] {
     line-height: 1.4;
     margin-top: 5px;
 }
+/* =========================
+   고급 AI 리포트 스타일
+   ========================= */
+
+#advancedReportPage {
+    background: var(--main-bg);
+    padding: 20px;
+}
+
+.report-main-header {
+    background: linear-gradient(135deg, var(--sidebar-accent), #4f46e5);
+    color: white;
+    border-radius: var(--border-radius);
+    padding: 30px;
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.report-main-header h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.report-main-header p {
+    margin: 5px 0 0;
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.report-section {
+    background: var(--content-bg);
+    border-radius: var(--border-radius);
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: var(--shadow-sm);
+}
+
+.report-section h2 {
+    font-size: 1.3rem;
+    margin-top: 0;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 15px;
+}
+
+.report-grid {
+    display: grid;
+    gap: 20px;
+}
+
+.kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.kpi-card {
+    background: var(--content-bg);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+.kpi-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+}
+
+.kpi-header {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+}
+.kpi-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+}
+.kpi-change {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 10px;
+}
+.kpi-change.positive { color: var(--success); }
+.kpi-change.negative { color: var(--danger); }
+
+.insight-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.insight-card {
+    background: var(--main-bg);
+    border-left: 4px solid var(--sidebar-accent);
+    padding: 20px;
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+}
+
+.insight-title {
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+.insight-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.action-item-list {
+    list-style: none;
+    padding-left: 0;
+}
+.action-item {
+    background: var(--main-bg);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    position: relative;
+    padding-left: 40px;
+    font-weight: 500;
+}
+.action-item::before {
+    counter-increment: list-item;
+    content: counter(list-item);
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--sidebar-accent);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
