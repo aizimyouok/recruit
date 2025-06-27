@@ -1,4 +1,4 @@
-// js/report.js (신규 파일)
+// js/report.js (오타 수정된 버전)
 
 export const ReportModule = {
     // 페이지가 처음 열릴 때 실행되는 초기화 함수
@@ -18,7 +18,7 @@ export const ReportModule = {
 
         // 필터 HTML 구조 생성
         reportFilterBar.innerHTML = `
-            <div class="filter-group">
+            <div class="filter-group" style="flex-grow: 2; min-width: 300px;">
                 <label for="reportPeriod">기간</label>
                 <select id="reportPeriod" onchange="ReportModule.handlePeriodChange(this.value)">
                     <option value="all">전체</option>
@@ -46,6 +46,7 @@ export const ReportModule = {
         const interviewerIndex = headers.indexOf('면접관');
         const routeIndex = headers.indexOf('지원루트');
 
+        // ▼▼▼▼▼ [수정된 부분 1] ▼▼▼▼▼
         if (interviewerIndex !== -1) {
             const options = [...new Set(all.map(row => (row[interviewerIndex] || '').trim()).filter(Boolean))];
             const select = document.getElementById('reportInterviewer');
@@ -56,6 +57,7 @@ export const ReportModule = {
             const select = document.getElementById('reportRoute');
             options.sort().forEach(name => select.innerHTML += \`<option value="\${name}">\${name}</option>\`);
         }
+        // ▲▲▲▲▲ [수정된 부분 1] ▲▲▲▲▲
 
         // 기간 선택 '직접입력' 핸들러
         this.handlePeriodChange('month');
@@ -79,33 +81,53 @@ export const ReportModule = {
     // '리포트 생성' 버튼 클릭 시 실행되는 메인 함수
     generateReport() {
         const previewContainer = document.getElementById('reportPreviewContainer');
+        const generateBtn = document.querySelector('#report .primary-btn');
+        const originalBtnHtml = generateBtn.innerHTML;
+
         previewContainer.innerHTML = \`
             <div class="smooth-loading-container">
                 <div class="advanced-loading-spinner"></div>
-                <p>리포트를 생성 중입니다...</p>
+                <p class="loading-text">리포트를 생성 중입니다...</p>
             </div>
         \`;
+        generateBtn.disabled = true;
+        generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 생성 중...';
+
 
         // 0.5초 후 리포트 생성 (로딩 애니메이션을 보여주기 위함)
         setTimeout(() => {
-            // 1. 선택된 필터 값 가져오기
-            const options = {
-                period: document.getElementById('reportPeriod').value,
-                startDate: document.getElementById('reportStartDate').value,
-                endDate: document.getElementById('reportEndDate').value,
-                interviewer: document.getElementById('reportInterviewer').value,
-                route: document.getElementById('reportRoute').value
-            };
+            try {
+                // 1. 선택된 필터 값 가져오기
+                const options = {
+                    period: document.getElementById('reportPeriod').value,
+                    startDate: document.getElementById('reportStartDate').value,
+                    endDate: document.getElementById('reportEndDate').value,
+                    interviewer: document.getElementById('reportInterviewer').value,
+                    route: document.getElementById('reportRoute').value
+                };
 
-            // 2. 필터에 맞는 데이터 추출
-            const filteredData = this.getFilteredData(options);
+                // 2. 필터에 맞는 데이터 추출
+                const filteredData = this.getFilteredData(options);
 
-            // 3. 리포트 HTML 생성 및 표시
-            const reportHtml = this.buildReportHtml(filteredData, options);
-            previewContainer.innerHTML = reportHtml;
+                // 3. 리포트 HTML 생성 및 표시
+                const reportHtml = this.buildReportHtml(filteredData, options);
+                previewContainer.innerHTML = reportHtml;
 
-            // 4. 리포트 내 차트 그리기
-            this.renderReportCharts(filteredData);
+                // 4. 리포트 내 차트 그리기
+                this.renderReportCharts(filteredData);
+            } catch (error) {
+                console.error("리포트 생성 중 오류 발생:", error);
+                previewContainer.innerHTML = \`
+                    <div class="error-container">
+                        <i class="fas fa-exclamation-triangle error-icon"></i>
+                        <h3 class="error-title">리포트 생성 실패</h3>
+                        <p class="error-message">리포트를 만드는 중 문제가 발생했습니다. 다시 시도해주세요.</p>
+                    </div>
+                \`;
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = originalBtnHtml;
+            }
         }, 500);
     },
 
@@ -123,7 +145,9 @@ export const ReportModule = {
                     const end = new Date(options.endDate);
                     end.setHours(23, 59, 59, 999);
                     data = data.filter(row => {
-                        const date = new Date(row[applyDateIndex]);
+                        const dateValue = row[applyDateIndex];
+                        if (!dateValue) return false;
+                        const date = new Date(dateValue);
                         return date >= start && date <= end;
                     });
                  }
@@ -149,54 +173,65 @@ export const ReportModule = {
 
     // 필터링된 데이터로 리포트의 전체 HTML 구조를 만드는 함수
     buildReportHtml(data, options) {
-        // ... (KPI, 차트, 테이블 등 리포트 내용 구성)
-        // 이 부분은 다음 단계에서 더 상세하게 채워나갈 예정입니다.
-        // 지금은 기본적인 틀만 만듭니다.
         const now = new Date();
         const periodText = this.getPeriodText(options);
+        const headers = this.app.state.data.headers;
 
         const totalApplicants = data.length;
-        const passedCount = data.filter(row => (row[this.app.state.data.headers.indexOf('면접결과')] || '') === '합격').length;
-        const passRate = totalApplicants > 0 ? ((passedCount / totalApplicants) * 100).toFixed(1) : 0;
+        
+        const interviewConfirmedCount = data.filter(row => (row[headers.indexOf('1차 컨택 결과')] || '') === '면접확정').length;
+        
+        const passedCount = data.filter(row => (row[headers.indexOf('면접결과')] || '') === '합격').length;
+        
+        const joinedCount = data.filter(row => (row[headers.indexOf('입과일')] || '').trim() !== '').length;
+
+        const interviewRate = totalApplicants > 0 ? ((interviewConfirmedCount / totalApplicants) * 100).toFixed(1) : 0;
+        const passRate = interviewConfirmedCount > 0 ? ((passedCount / interviewConfirmedCount) * 100).toFixed(1) : 0;
+        const joinRate = passedCount > 0 ? ((joinedCount / passedCount) * 100).toFixed(1) : 0;
+
 
         return \`
             <style>
-                /* PDF 출력 시 깔끔하게 보이도록 스타일 지정 */
-                #reportPage { padding: 20px; font-family: 'Noto Sans KR', sans-serif; }
-                h1, h2, h3 { color: #333; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
-                .report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-                .kpi-box { background: #f9f9f9; border: 1px solid #ddd; padding: 15px; text-align: center; border-radius: 8px;}
-                .kpi-box .label { font-size: 1rem; color: #666; }
-                .kpi-box .value { font-size: 2rem; font-weight: 700; color: #818cf8; }
+                #reportPage { padding: 20px; font-family: 'Noto Sans KR', sans-serif; background: white; color: #333; }
+                #reportPage h1, #reportPage h2, #reportPage h3 { color: #334155; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px; }
+                #reportPage h1 { font-size: 1.8rem; text-align: center; border: none; }
+                #reportPage p { color: #64748b; text-align: center; margin-bottom: 25px; }
+                .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+                .kpi-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; text-align: center; border-radius: 8px;}
+                .kpi-box .label { font-size: 1rem; color: #64748b; margin-bottom: 8px; }
+                .kpi-box .value { font-size: 2.2rem; font-weight: 700; color: #818cf8; }
+                .chart-container-report { border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; }
                 table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                th, td { border: 1px solid #ddd; padding: 8px; text-align: center; font-size: 0.8rem; }
-                th { background: #f2f2f2; }
+                th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: center; font-size: 0.85rem; }
+                th { background: #f8fafc; font-weight: 600; }
+                @media print {
+                    body * { visibility: hidden; }
+                    #reportPage, #reportPage * { visibility: visible; }
+                    #reportPage { position: absolute; left: 0; top: 0; width: 100%; }
+                }
             </style>
             <div id="reportPage">
                 <h1>채용 현황 리포트</h1>
-                <p><strong>조회 기간:</strong> \${periodText}</p>
-                <p><strong>발행일:</strong> \${now.toLocaleDateString('ko-KR')}</p>
-                <hr style="margin: 20px 0;">
+                <p>
+                    <strong>조회 기간:</strong> \${periodText} | 
+                    <strong>발행일:</strong> \${now.toLocaleDateString('ko-KR')}
+                </p>
 
                 <h2>핵심 성과 지표 (KPIs)</h2>
                 <div class="report-grid">
-                    <div class="kpi-box">
-                        <div class="label">총 지원자</div>
-                        <div class="value">\${totalApplicants}명</div>
-                    </div>
-                    <div class="kpi-box">
-                        <div class="label">최종 합격률</div>
-                        <div class="value">\${passRate}%</div>
-                    </div>
+                    <div class="kpi-box"><div class="label">총 지원자</div><div class="value">\${totalApplicants}명</div></div>
+                    <div class="kpi-box"><div class="label">면접 전환율</div><div class="value">\${interviewRate}%</div></div>
+                    <div class="kpi-box"><div class="label">면접자 중 합격률</div><div class="value">\${passRate}%</div></div>
+                    <div class="kpi-box"><div class="label">합격자 중 입과율</div><div class="value">\${joinRate}%</div></div>
                 </div>
 
                 <h2>시각화 자료</h2>
                 <div class="report-grid">
-                    <div>
+                    <div class="chart-container-report">
                         <h3>지원루트별 분포</h3>
                         <canvas id="reportRouteChart"></canvas>
                     </div>
-                    <div>
+                    <div class="chart-container-report">
                         <h3>모집분야별 분포</h3>
                         <canvas id="reportPositionChart"></canvas>
                     </div>
@@ -224,21 +259,94 @@ export const ReportModule = {
                         data: Object.values(routeData),
                         backgroundColor: Object.values(this.app.config.CHART_COLORS)
                     }]
-                }
+                },
+                options: { responsive: true }
             });
         }
-        // 모집분야 차트도 동일한 방식으로 생성
+        
+        // 모집분야 차트
+        const positionCtx = document.getElementById('reportPositionChart');
+        if (positionCtx) {
+            const positionIndex = this.app.state.data.headers.indexOf('모집분야');
+            const positionData = {};
+            filteredData.forEach(row => {
+                const position = String(row[positionIndex] || '미기입').trim();
+                positionData[position] = (positionData[position] || 0) + 1;
+            });
+            new Chart(positionCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(positionData),
+                    datasets: [{
+                        data: Object.values(positionData),
+                        backgroundColor: Object.values(this.app.config.CHART_COLORS).reverse()
+                    }]
+                },
+                options: { responsive: true }
+            });
+        }
     },
 
+    // ▼▼▼▼▼ [수정된 부분 2] ▼▼▼▼▼
+    // getPeriodText와 generateReport 버튼 로직을 수정하여 PDF 생성 기능을 호출하도록 변경
     getPeriodText(options) {
         // 리포트 상단에 표시될 기간 텍스트를 생성하는 헬퍼 함수
-        switch(options.period) {
-            case 'all': return '전체 기간';
-            case 'year': return '올해';
-            case 'month': return '이번 달';
-            case 'week': return '이번 주';
-            case 'custom': return \`\${options.startDate} ~ \${options.endDate}\`;
-            default: return 'N/A';
+        const periodMap = {
+            'all': '전체 기간',
+            'year': '올해',
+            'month': '이번 달',
+            'week': '이번 주'
+        };
+        if(options.period === 'custom') return \`\${options.startDate} ~ \${options.endDate}\`;
+        return periodMap[options.period] || 'N/A';
+    },
+
+    // '리포트 생성' 버튼 클릭 시, 이제 PDF 생성/인쇄도 함께 처리
+    async createPdf() {
+        const generateBtn = document.querySelector('#report .primary-btn');
+        const originalBtnHtml = generateBtn.innerHTML;
+        generateBtn.disabled = true;
+        generateBtn.innerHTML = '<i class="fas fa-file-pdf"></i> PDF 생성 중...';
+
+        const reportElement = document.getElementById('reportPage');
+        if (!reportElement) {
+            alert('리포트 내용이 없습니다. 먼저 리포트를 생성해주세요.');
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = originalBtnHtml;
+            return;
+        }
+
+        try {
+            const canvas = await html2canvas(reportElement, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
+            
+            // 전역 window 객체에서 jsPDF를 찾습니다.
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+            const ratio = canvasWidth / canvasHeight;
+            
+            let imgWidth = pdfWidth;
+            let imgHeight = pdfWidth / ratio;
+            
+            if (imgHeight > pdfHeight) {
+                imgHeight = pdfHeight;
+                imgWidth = pdfHeight * ratio;
+            }
+            
+            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+            pdf.save(\`채용현황-리포트-\${new Date().toISOString().slice(0,10)}.pdf\`);
+        } catch (error) {
+            console.error('PDF 생성 실패:', error);
+            alert('PDF 생성에 실패했습니다. 콘솔을 확인해주세요.');
+        } finally {
+            generateBtn.disabled = false;
+            generateBtn.innerHTML = originalBtnHtml;
         }
     }
 };
+// ▲▲▲▲▲ [수정된 부분 2] ▲▲▲▲▲
