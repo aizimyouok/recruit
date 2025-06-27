@@ -1,5 +1,5 @@
 // =========================
-// navigation.js - 네비게이션 관련 모듈 (완전한 통합 버전)
+// navigation.js - 네비게이션 관련 모듈 (리포트 페이지 추가 버전)
 // =========================
 
 export const NavigationModule = {
@@ -25,7 +25,8 @@ export const NavigationModule = {
             dashboard: '지원자 현황', 
             stats: '채용 통계 분석',
             efficiency: '효율성 분석',
-            interviewSchedule: '면접관별 상세 일정' 
+            interviewSchedule: '면접관별 상세 일정',
+            report: '리포트 발행' // 추가된 부분
         };
         
         const titleElement = document.getElementById('pageTitle');
@@ -49,34 +50,37 @@ export const NavigationModule = {
         if (pageId === 'stats') {
             setTimeout(() => {
                 if (window.Chart && appInstance.state.data.all.length > 0) {
-                    // 차트가 없다면 먼저 초기화
                     if (Object.keys(appInstance.state.charts.instances).length === 0) {
                         appInstance.charts.initialize();
                     }
                     appInstance.stats.update();
                     appInstance.trend.update();
-                    // 🔥 새로운 인구통계 시스템 초기화
                     appInstance.demographics.initialize();
                 }
             }, 100);
         } else if (pageId === 'efficiency') {
             setTimeout(() => {
                 if (window.Chart && appInstance.state.data.all.length > 0) {
-                    // 효율성 차트가 없다면 먼저 초기화
-                    if (!appInstance.state.charts.instances.radar || !appInstance.state.charts.instances.scatter) {
+                    if (!appInstance.state.charts.instances.radar || !app.state.charts.instances.scatter) {
                         appInstance.charts.initializeEfficiency();
                     }
                     appInstance.efficiency.updateAll();
                 }
             }, 100);
-        } else if (pageId === 'interviewSchedule') { // 추가된 부분
+        } else if (pageId === 'interviewSchedule') {
             setTimeout(() => {
                 if (appInstance.interviewSchedule && appInstance.state.data.all.length > 0) {
                     appInstance.interviewSchedule.initialize(appInstance);
                 }
             }, 100);
-        } else if (pageId === 'dashboard') {
-            // 대시보드 페이지로 돌아올 때 필요한 처리
+        } else if (pageId === 'report') { // ▼▼▼▼▼ 추가된 부분 ▼▼▼▼▼
+            setTimeout(() => {
+                // appInstance.report.initialize() 와 같이
+                // 리포트 페이지가 처음 열릴 때 실행할 함수를 여기에 추가할 수 있습니다.
+                // (이 함수는 다음 단계에서 만들 예정입니다.)
+                console.log('리포트 발행 페이지가 열렸습니다.');
+            }, 100);
+        } else if (pageId === 'dashboard') { // ▲▲▲▲▲ 여기까지 ▲▲▲▲▲
             if (appInstance.state.data.all.length > 0) {
                 appInstance.data.updateInterviewSchedule();
                 appInstance.sidebar.updateWidgets();
@@ -97,20 +101,17 @@ export const NavigationModule = {
         }
     },
 
-    // 현재 활성 페이지 ID 반환
     getCurrentPage() {
         const activePage = document.querySelector('.page.active');
         return activePage ? activePage.id : 'dashboard';
     },
 
-    // 페이지 히스토리 관리
     updateHistory(pageId) {
         try {
             if (history.pushState) {
                 const newUrl = window.location.origin + window.location.pathname + '?page=' + pageId;
                 const currentUrl = window.location.href;
                 
-                // URL이 실제로 변경되는 경우에만 히스토리에 추가
                 if (currentUrl !== newUrl) {
                     history.pushState({ page: pageId }, '', newUrl);
                 }
@@ -120,55 +121,47 @@ export const NavigationModule = {
         }
     },
 
-    // 브라우저 뒤로가기/앞으로가기 이벤트 처리
     initializeHistoryHandling(appInstance) {
         window.addEventListener('popstate', (event) => {
             const urlParams = new URLSearchParams(window.location.search);
             const pageFromUrl = urlParams.get('page') || 'dashboard';
             
-            // 현재 활성 페이지와 다른 경우에만 페이지 전환
             const currentPage = NavigationModule.getCurrentPage();
             if (currentPage !== pageFromUrl) {
                 NavigationModule.switchPage(appInstance, pageFromUrl);
             }
         });
 
-        // 초기 페이지 로드 시 URL에서 페이지 정보 읽기
         const urlParams = new URLSearchParams(window.location.search);
         const initialPage = urlParams.get('page');
-        const validPages = ['dashboard', 'stats', 'efficiency', 'interviewSchedule']; // 추가된 부분
+        const validPages = ['dashboard', 'stats', 'efficiency', 'interviewSchedule', 'report']; // 'report' 추가
         if (initialPage && validPages.includes(initialPage)) {
-            // 초기 로드이므로 히스토리 추가 없이 페이지만 전환
             setTimeout(() => {
                 NavigationModule.switchPageWithoutHistory(appInstance, initialPage);
             }, 100);
         }
     },
 
-    // 히스토리 업데이트 없이 페이지 전환 (초기 로드용)
     switchPageWithoutHistory(appInstance, pageId) {
-        // 모든 페이지 숨기기
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         
-        // 선택된 페이지 표시
         const targetPage = document.getElementById(pageId);
         if (targetPage) {
             targetPage.classList.add('active');
         }
         
-        // 네비게이션 버튼 상태 업데이트
         document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
         const targetNavBtn = document.querySelector(`.nav-item[onclick*="'${pageId}'"]`);
         if (targetNavBtn) {
             targetNavBtn.classList.add('active');
         }
 
-        // 페이지 제목 업데이트
         const titles = { 
             dashboard: '지원자 현황', 
             stats: '채용 통계 분석',
             efficiency: '효율성 분석',
-            interviewSchedule: '면접관별 상세 일정'
+            interviewSchedule: '면접관별 상세 일정',
+            report: '리포트 발행' // 추가된 부분
         };
         
         const titleElement = document.getElementById('pageTitle');
@@ -176,11 +169,9 @@ export const NavigationModule = {
             titleElement.textContent = titles[pageId];
         }
 
-        // 페이지별 특수 처리
         NavigationModule.handlePageSpecificActions(appInstance, pageId);
     },
 
-    // 페이지 전환 애니메이션 효과 추가
     addPageTransitionEffects() {
         const style = document.createElement('style');
         style.textContent = `
@@ -188,9 +179,11 @@ export const NavigationModule = {
                 transition: opacity 0.3s ease, transform 0.3s ease;
                 opacity: 0;
                 transform: translateY(10px);
+                display: none; /* 기본적으로 숨김 처리 */
             }
             
             .page.active {
+                display: block; /* active 클래스가 있을 때만 보이도록 */
                 opacity: 1;
                 transform: translateY(0);
             }
