@@ -26,6 +26,7 @@
                 <button class="nav-item" onclick="globalThis.App.navigation.switchPage('stats')" aria-label="통계 분석 페이지로 이동"><i class="fas fa-chart-pie icon"></i> 통계</button>
                 <button class="nav-item" onclick="globalThis.App.navigation.switchPage('efficiency')" aria-label="효율성 분석 페이지로 이동"><i class="fas fa-chart-line icon"></i> 효율성 분석</button>
                 <button class="nav-item" onclick="globalThis.App.navigation.switchPage('interviewSchedule')" aria-label="면접 일정 페이지로 이동"><i class="fas fa-calendar-alt icon"></i> 면접일정</button>
+                <button class="nav-item" onclick="globalThis.App.navigation.switchPage('report')" aria-label="리포트 발행 페이지로 이동"><i class="fas fa-file-signature icon"></i> 리포트 발행</button>
             </div>
             
             <div class="sidebar-widgets">
@@ -426,6 +427,36 @@
             <div class="modal-body"><form id="applicantForm"></form></div>
             <div class="modal-footer"></div>
         </div>
+    </div>
+
+    <div id="report" class="page">
+                    <div class="stats-fixed-header">
+                        <div class="page-header">
+                            <h2 class="page-title">리포트 발행</h2>
+                            <div class="header-actions">
+                                <button class="primary-btn" onclick="globalThis.App.report.generateReport()">
+                                    <i class="fas fa-file-download"></i> 리포트 생성 및 PDF 다운로드
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stats-scrollable-content">
+                        <div class="content-container" style="padding: 25px; margin-bottom: 20px;">
+                            <h3 style="margin-bottom: 20px;">리포트 조건 설정</h3>
+                            <div class="filter-bar" id="reportFilterBar" style="background: transparent; box-shadow: none; padding: 0;">
+                                </div>
+                        </div>
+
+                        <div class="content-container" id="reportPreviewContainer" style="padding: 25px;">
+                            <div class="no-interviews" style="padding: 50px 0;">
+                                <i class="fas fa-file-medical" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 15px;"></i>
+                                <p>위 조건 설정 후 '리포트 생성' 버튼을 눌러주세요.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div> </main>
     </div>
 
     <script type="module" src="js/interviewSchedule.js"></script>
