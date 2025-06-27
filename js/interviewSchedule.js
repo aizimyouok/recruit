@@ -453,12 +453,12 @@ export const InterviewScheduleModule = {
     },
 
     setupColumnToggles() {
-        const allHeaders = ['이름', '지원일', '지원루트', '회사명', '모집분야', '면접관', '면접일', '면접 시간', '비고', '면접결과', '면접리뷰'];
+        const allHeaders = ['이름', '지원일', '지원루트', '회사명', '모집분야', '증원자', '면접관', '면접일', '면접 시간', '비고', '면접결과', '면접리뷰'];
         
         this.state.visibleColumns = {};
         allHeaders.forEach(h => {
-            // 기본적으로 '면접리뷰'는 숨김 처리
-            const defaultHidden = ['면접리뷰'];
+            // 기본적으로 '증원자'는 숨김 처리
+            const defaultHidden = ['증원자'];
             this.state.visibleColumns[h] = !defaultHidden.includes(h); 
         }); 
         
