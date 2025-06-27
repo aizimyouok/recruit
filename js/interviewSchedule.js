@@ -1,3 +1,5 @@
+// js/interviewSchedule.js (전체 코드)
+
 // =================================
 // js/interviewSchedule.js - 면접 일정 페이지 모듈 (최종 수정 버전)
 // =================================
@@ -338,6 +340,13 @@ export const InterviewScheduleModule = {
             let cellContent = '-';
             const originalValue = getValue(header);
             
+            // ▼▼▼▼▼ [수정된 코드] '비고'와 '면접리뷰'에 클래스 추가 ▼▼▼▼▼
+            let tdClass = '';
+            if (header === '비고' || header === '면접리뷰') {
+                tdClass = 'class="wrap-text"';
+            }
+            // ▲▲▲▲▲ [수정된 코드] '비고'와 '면접리뷰'에 클래스 추가 ▲▲▲▲▲
+            
             if (header === '면접결과') {
                 const value = (originalValue || '').trim();
                 let statusClass = '';
@@ -372,7 +381,9 @@ export const InterviewScheduleModule = {
                     cellContent = originalValue; // 오류 시 원본 데이터 표시
                 }
             }
-            rowHtml += `<td title="${String(originalValue || '').replace(/<[^>]*>/g, '')}">${cellContent}</td>`;
+            // ▼▼▼▼▼ [수정된 코드] td 태그에 클래스 속성 추가 ▼▼▼▼▼
+            rowHtml += `<td ${tdClass} title="${String(originalValue || '').replace(/<[^>]*>/g, '')}">${cellContent}</td>`;
+            // ▲▲▲▲▲ [수정된 코드] td 태그에 클래스 속성 추가 ▲▲▲▲▲
         });
         
         const rowDataEncoded = encodeURIComponent(JSON.stringify(row));
