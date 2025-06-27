@@ -9,8 +9,8 @@
 // 리포트 종류별 구성요소를 정의하는 템플릿 객체
 const ReportTemplates = {
     executive: { name: '경영진용 요약', title: '경영진용 요약 리포트', sections: ['kpi', 'charts'] },
-    detailed: { name: '상세 분석', title: '채용 퍼널 분석 리포트', sections: ['funnel'] }, // '상세 분석'을 '퍼널 분석'으로 개편
-    ai: { name: 'AI 분석 가이드', title: 'AI 분석 리포트', sections: [] } // AI 탭은 동적으로 내용을 채움
+    detailed: { name: '상세 분석', title: '채용 퍼널 분석 리포트', sections: ['funnel'] },
+    ai: { name: 'AI 분석 가이드', title: 'Gemini AI 분석 리포트', sections: [] }
 };
 
 // AI 분석 가이드 항목 정의
@@ -306,63 +306,6 @@ export const ReportModule = {
     // =================================================
     // 필터링 및 데이터 처리 헬퍼 함수
     // =================================================
-    getFilterOptions() {
-        return {
-            interviewer: document.getElementById('reportInterviewerFilter')?.value || 'all',
-            company: document.getElementById('reportCompanyFilter')?.value || 'all',
-            route: document.getElementById('reportRouteFilter')?.value || 'all',
-            position: document.getElementById('reportPositionFilter')?.value || 'all',
-            searchTerm: (document.getElementById('reportSearch')?.value || '').toLowerCase(),
-            dateMode: this.state.dateMode,
-            dateValue: document.getElementById('reportDateValue')?.value,
-            startDate: document.getElementById('reportStartDate')?.value,
-            endDate: document.getElementById('reportEndDate')?.value,
-        };
-    },
-    
-    getFilteredData(options) {
-        const { all, headers } = this.app.state.data;
-        let data = [...all];
-        const applyDateIndex = headers.indexOf('지원일');
-
-        if (options.dateMode !== 'all' && applyDateIndex !== -1) {
-            data = data.filter(row => {
-                const dateStr = row[applyDateIndex];
-                if (!dateStr) return false;
-                
-                try {
-                    switch (options.dateMode) {
-                        case 'year':
-                            return dateStr.startsWith(options.dateValue);
-                        case 'month':
-                            return dateStr.slice(0, 7) === options.dateValue;
-                        case 'range':
-                            if (!options.startDate || !options.endDate) return true;
-                            const date = new Date(dateStr);
-                            const start = new Date(options.startDate);
-                            const end = new Date(options.endDate);
-                            end.setHours(23, 59, 59, 999);
-                            return date >= start && date <= end;
-                        default:
-                            return true;
-                    }
-                } catch(e) { return false; }
-            });
-        }
-        
-        if (options.interviewer !== 'all' && headers.includes('면접관')) data = data.filter(row => (row[headers.indexOf('면접관')] || '').includes(options.interviewer));
-        if (options.company !== 'all' && headers.includes('회사명')) data = data.filter(row => row[headers.indexOf('회사명')] === options.company);
-        if (options.route !== 'all' && headers.includes('지원루트')) data = data.filter(row => row[headers.indexOf('지원루트')] === options.route);
-        if (options.position !== 'all' && headers.includes('모집분야')) data = data.filter(row => row[headers.indexOf('모집분야')] === options.position);
-        if (options.searchTerm) {
-            data = data.filter(row => row.some(cell => String(cell).toLowerCase().includes(options.searchTerm)));
-        }
-        return data;
-    },
-    
-    // =================================================
-    // UI 렌더링 헬퍼 함수
-    // =================================================
     populateFilters() {
         const reportFilterBar = document.getElementById('reportFilterBar');
         if (!reportFilterBar) return;
@@ -467,7 +410,61 @@ export const ReportModule = {
         this.state.dateValue = new Date().toISOString().slice(0, 7);
         this.updateDateFilterUI();
     },
+    
+    getFilterOptions() {
+        return {
+            interviewer: document.getElementById('reportInterviewerFilter')?.value || 'all',
+            company: document.getElementById('reportCompanyFilter')?.value || 'all',
+            route: document.getElementById('reportRouteFilter')?.value || 'all',
+            position: document.getElementById('reportPositionFilter')?.value || 'all',
+            searchTerm: (document.getElementById('reportSearch')?.value || '').toLowerCase(),
+            dateMode: this.state.dateMode,
+            dateValue: this.state.dateValue,
+            startDate: document.getElementById('reportStartDate')?.value,
+            endDate: document.getElementById('reportEndDate')?.value,
+        };
+    },
 
+    getFilteredData(options) {
+        const { all, headers } = this.app.state.data;
+        let data = [...all];
+        const applyDateIndex = headers.indexOf('지원일');
+
+        if (options.dateMode !== 'all' && applyDateIndex !== -1) {
+            data = data.filter(row => {
+                const dateStr = row[applyDateIndex];
+                if (!dateStr) return false;
+                
+                try {
+                    switch (options.dateMode) {
+                        case 'year':
+                            return dateStr.startsWith(options.dateValue);
+                        case 'month':
+                            return dateStr.slice(0, 7) === options.dateValue;
+                        case 'range':
+                            if (!options.startDate || !options.endDate) return true;
+                            const date = new Date(dateStr);
+                            const start = new Date(options.startDate);
+                            const end = new Date(options.endDate);
+                            end.setHours(23, 59, 59, 999);
+                            return date >= start && date <= end;
+                        default:
+                            return true;
+                    }
+                } catch(e) { return false; }
+            });
+        }
+        
+        if (options.interviewer !== 'all' && headers.includes('면접관')) data = data.filter(row => (row[headers.indexOf('면접관')] || '').includes(options.interviewer));
+        if (options.company !== 'all' && headers.includes('회사명')) data = data.filter(row => row[headers.indexOf('회사명')] === options.company);
+        if (options.route !== 'all' && headers.includes('지원루트')) data = data.filter(row => row[headers.indexOf('지원루트')] === options.route);
+        if (options.position !== 'all' && headers.includes('모집분야')) data = data.filter(row => row[headers.indexOf('모집분야')] === options.position);
+        if (options.searchTerm) {
+            data = data.filter(row => row.some(cell => String(cell).toLowerCase().includes(options.searchTerm)));
+        }
+        return data;
+    },
+    
     buildReportFromTemplate(template, data, options) {
         const now = new Date();
         const periodText = this.getPeriodText(options);
@@ -513,7 +510,7 @@ export const ReportModule = {
         const joinedCount = data.filter(row => (row[headers.indexOf('입과일')] || '').trim() !== '').length;
         const interviewRate = totalApplicants > 0 ? ((interviewConfirmedCount / totalApplicants) * 100).toFixed(1) : 0;
         const passRate = interviewConfirmedCount > 0 ? ((passedCount / interviewConfirmedCount) * 100).toFixed(1) : 0;
-        const joinRate = passedCount > 0 ? ((joinedCount / passedCount) * 100).toFixed(1) : 0;505506507508509510511512513514515516517518519520521522523524525526527528529530531532533534535536537538539540541542543544545546547$0
+        const joinRate = passedCount > 0 ? ((joinedCount / passedCount) * 100).toFixed(1) : 0;
         return `
             <h2>핵심 성과 지표 (KPIs)</h2>
             <div class="report-grid">
@@ -631,5 +628,13 @@ export const ReportModule = {
             return options.dateValue;
         }
         return '전체 기간';
+    },
+
+    formatDateForInput(date) {
+        if (!date || !(date instanceof Date)) return '';
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 };
