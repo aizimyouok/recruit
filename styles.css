@@ -4249,3 +4249,95 @@ div[style*="grid-template-columns"] {
     box-shadow: 0 4px 12px rgba(129, 140, 248, 0.3);
     transform: translateY(-2px);
 }
+/* =========================
+   AI 분석 가이드 스타일
+   ========================= */
+
+#aiAnalysisGuide {
+    background: var(--content-bg);
+    border-radius: var(--border-radius);
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+    animation: fadeIn 0.5s ease;
+}
+
+.ai-guide-header {
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.ai-guide-header h3 {
+    font-size: 1.5rem;
+    color: var(--text-primary);
+    margin: 0 0 10px 0;
+}
+
+.ai-guide-header p {
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
+.ai-guide-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.ai-guide-category {
+    background: var(--main-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.ai-guide-category:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+}
+
+.ai-guide-category h4 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 0;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 1.1rem;
+    color: var(--sidebar-accent);
+}
+
+.ai-guide-item {
+    display: block;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.ai-guide-item label {
+    display: flex;
+    align-items: flex-start;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.ai-guide-item input[type="checkbox"] {
+    margin-right: 12px;
+    margin-top: 3px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    accent-color: var(--sidebar-accent);
+}
+
+.ai-guide-item small {
+    display: block;
+    margin-left: 30px; /* checkbox + margin */
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin-top: 5px;
+}
