@@ -1,4 +1,4 @@
-// modal.js - 개선된 빠른 처리 버전 (시간 표시 버그 수정)
+// modal.js - 개선된 빠른 처리 버전 (시간 표시 버그 수정 및 나이 계산 기능 추가)
 
 export const ModalModule = {
     get element() {
@@ -95,10 +95,55 @@ export const ModalModule = {
             formGroup.innerHTML = `<label for="modal-form-${header}">${header}${isRequired ? ' *' : ''}</label>${inputHtml}`;
             form.appendChild(formGroup);
         });
+
+        // ▼▼▼▼▼ [수정된 코드] 나이 계산 로직 ▼▼▼▼▼
+        const birthYearInput = document.getElementById('modal-form-출생년도');
+        const ageInput = document.getElementById('modal-form-나이');
+
+        if (birthYearInput && ageInput) {
+            // 나이 필드는 항상 비활성화하고, 읽기 전용처럼 보이게 스타일링
+            ageInput.readOnly = true;
+            ageInput.style.backgroundColor = '#f1f5f9';
+            ageInput.style.cursor = 'not-allowed';
+
+
+            const calculateAge = () => {
+                const birthYearValue = birthYearInput.value.trim();
+                if (birthYearValue && (birthYearValue.length === 2 || birthYearValue.length === 4)) {
+                    let year = parseInt(birthYearValue, 10);
+                    if (!isNaN(year)) {
+                        if (birthYearValue.length === 2) {
+                            // 2자리 입력 시 19xx 또는 20xx으로 변환
+                            // 현재 연도의 뒷 2자리보다 크면 19xx, 작거나 같으면 20xx
+                            const currentYearLastTwoDigits = new Date().getFullYear() % 100;
+                            year += (year > currentYearLastTwoDigits) ? 1900 : 2000;
+                        }
+                        const currentYear = new Date().getFullYear();
+                        const age = currentYear - year + 1;
+                        ageInput.value = age > 0 ? age : '';
+                    } else {
+                         ageInput.value = '';
+                    }
+                } else {
+                    ageInput.value = '';
+                }
+            };
+
+            // 출생년도 입력 시 나이 계산 (input 이벤트 사용)
+            birthYearInput.addEventListener('input', calculateAge);
+            
+            // 모달이 열릴 때 기존 값으로 나이 계산
+            if (birthYearInput.value) {
+                calculateAge();
+            }
+        }
+        // ▲▲▲▲▲ [수정된 코드] 나이 계산 로직 ▲▲▲▲▲
     },
 
     createInput(appInstance, header, value, isRequired, isDisabled) {
-        const isDisabledOrReadOnly = isDisabled || header === '구분';
+        // '나이' 필드는 항상 비활성화되도록 수정
+        const isAgeField = header === '나이';
+        const isDisabledOrReadOnly = isDisabled || header === '구분' || isAgeField;
 
         if (header === '연락처') {
             return `<input type="tel" id="modal-form-${header}" value="${value}" oninput="globalThis.App.utils.formatPhoneNumber(this)" ${isRequired ? 'required' : ''} ${isDisabledOrReadOnly ? 'disabled' : ''}>`;
