@@ -1,35 +1,19 @@
 /**
  * @file report.js
  * @description 리포트 발행 페이지의 모든 UI 및 데이터 로직을 관리합니다.
- * - 템플릿 기반 리포트 생성
- * - AI 분석 가이드 UI 생성
- * - AI 분석 요청 및 결과 시각화
+ * - 날짜 필터 개선 (년/월 단위 추가, 기본값 설정)
+ * - 템플릿 기반 리포트 생성 (경영진, 상세 퍼널 분석)
+ * - AI 분석 가이드 UI 생성 및 분석 요청 처리
  */
 
-/**
- * 리포트 종류별 구성요소를 정의하는 템플릿 객체
- */
+// 리포트 종류별 구성요소를 정의하는 템플릿 객체
 const ReportTemplates = {
-    executive: {
-        name: '경영진용 요약',
-        title: '경영진용 요약 리포트',
-        sections: ['kpi', 'charts']
-    },
-    detailed: {
-        name: '상세 분석 리포트',
-        title: '상세 분석 리포트',
-        sections: ['table']
-    },
-    ai: {
-        name: 'AI 분석 가이드',
-        title: 'Gemini AI 분석 리포트',
-        sections: [] // AI 탭은 동적으로 내용을 채움
-    }
+    executive: { name: '경영진용 요약', title: '경영진용 요약 리포트', sections: ['kpi', 'charts'] },
+    detailed: { name: '상세 분석', title: '채용 퍼널 분석 리포트', sections: ['funnel'] }, // '상세 분석'을 '퍼널 분석'으로 개편
+    ai: { name: 'AI 분석 가이드', title: 'AI 분석 리포트', sections: [] } // AI 탭은 동적으로 내용을 채움
 };
 
-/**
- * AI 분석 가이드 항목 정의
- */
+// AI 분석 가이드 항목 정의
 const AiAnalysisGuideItems = {
     '유입 분석': [
         { id: 'source_efficiency', label: '가장 효율적인 지원 경로는?', description: '어떤 지원루트가 가장 많은 최종 입사자를 만들어내는지 분석합니다.' },
@@ -53,7 +37,11 @@ const AiAnalysisGuideItems = {
 
 export const ReportModule = {
     state: {
-        currentReportType: 'executive'
+        currentReportType: 'executive',
+        dateMode: 'month', 
+        dateValue: new Date().toISOString().slice(0, 7),
+        startDate: '',
+        endDate: ''
     },
 
     // =================================================
@@ -316,7 +304,64 @@ export const ReportModule = {
     },
 
     // =================================================
-    // 모든 헬퍼 함수들 (필터, UI, 데이터 처리 등)
+    // 필터링 및 데이터 처리 헬퍼 함수
+    // =================================================
+    getFilterOptions() {
+        return {
+            interviewer: document.getElementById('reportInterviewerFilter')?.value || 'all',
+            company: document.getElementById('reportCompanyFilter')?.value || 'all',
+            route: document.getElementById('reportRouteFilter')?.value || 'all',
+            position: document.getElementById('reportPositionFilter')?.value || 'all',
+            searchTerm: (document.getElementById('reportSearch')?.value || '').toLowerCase(),
+            dateMode: this.state.dateMode,
+            dateValue: document.getElementById('reportDateValue')?.value,
+            startDate: document.getElementById('reportStartDate')?.value,
+            endDate: document.getElementById('reportEndDate')?.value,
+        };
+    },
+    
+    getFilteredData(options) {
+        const { all, headers } = this.app.state.data;
+        let data = [...all];
+        const applyDateIndex = headers.indexOf('지원일');
+
+        if (options.dateMode !== 'all' && applyDateIndex !== -1) {
+            data = data.filter(row => {
+                const dateStr = row[applyDateIndex];
+                if (!dateStr) return false;
+                
+                try {
+                    switch (options.dateMode) {
+                        case 'year':
+                            return dateStr.startsWith(options.dateValue);
+                        case 'month':
+                            return dateStr.slice(0, 7) === options.dateValue;
+                        case 'range':
+                            if (!options.startDate || !options.endDate) return true;
+                            const date = new Date(dateStr);
+                            const start = new Date(options.startDate);
+                            const end = new Date(options.endDate);
+                            end.setHours(23, 59, 59, 999);
+                            return date >= start && date <= end;
+                        default:
+                            return true;
+                    }
+                } catch(e) { return false; }
+            });
+        }
+        
+        if (options.interviewer !== 'all' && headers.includes('면접관')) data = data.filter(row => (row[headers.indexOf('면접관')] || '').includes(options.interviewer));
+        if (options.company !== 'all' && headers.includes('회사명')) data = data.filter(row => row[headers.indexOf('회사명')] === options.company);
+        if (options.route !== 'all' && headers.includes('지원루트')) data = data.filter(row => row[headers.indexOf('지원루트')] === options.route);
+        if (options.position !== 'all' && headers.includes('모집분야')) data = data.filter(row => row[headers.indexOf('모집분야')] === options.position);
+        if (options.searchTerm) {
+            data = data.filter(row => row.some(cell => String(cell).toLowerCase().includes(options.searchTerm)));
+        }
+        return data;
+    },
+    
+    // =================================================
+    // UI 렌더링 헬퍼 함수
     // =================================================
     populateFilters() {
         const reportFilterBar = document.getElementById('reportFilterBar');
@@ -357,35 +402,22 @@ export const ReportModule = {
         populate('reportRouteFilter', indices.route);
         populate('reportPositionFilter', indices.position);
         
-        this.setInitialDateRange();
-    },
-
-    setInitialDateRange() {
-        if (!this.state) { this.state = {}; }
-        this.state.dateMode = 'range';
-        this.state.startDate = this.formatDateForInput(new Date(new Date().getFullYear(), 0, 1));
-        this.state.endDate = this.formatDateForInput(new Date());
         this.updateDateFilterUI();
-    },
-
-    formatDateForInput(date) {
-        if (!date || !(date instanceof Date)) return '';
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
     },
 
     updateDateFilterUI() {
         const container = document.getElementById('reportDateFilterContainer');
         if (!container) return;
-        container.innerHTML = `<div id="reportDateModeToggle" class="date-mode-toggle-group"><button class="date-mode-btn ${this.state.dateMode === 'all' ? 'active' : ''}" data-mode="all">전체</button><button class="date-mode-btn ${this.state.dateMode === 'range' ? 'active' : ''}" data-mode="range">기간</button></div><div id="reportDateInputsContainer" class="date-inputs-group"></div>`;
+        container.innerHTML = `<div id="reportDateModeToggle" class="date-mode-toggle-group"><button class="date-mode-btn ${this.state.dateMode === 'all' ? 'active' : ''}" data-mode="all">전체</button><button class="date-mode-btn ${this.state.dateMode === 'year' ? 'active' : ''}" data-mode="year">년</button><button class="date-mode-btn ${this.state.dateMode === 'month' ? 'active' : ''}" data-mode="month">월</button><button class="date-mode-btn ${this.state.dateMode === 'range' ? 'active' : ''}" data-mode="range">기간</button></div><div id="reportDateInputsContainer" class="date-inputs-group"></div>`;
         this.updateDateInputs();
         const toggleGroup = container.querySelector('#reportDateModeToggle');
         if (toggleGroup) {
             toggleGroup.addEventListener('click', (e) => {
                 if (e.target.tagName === 'BUTTON') {
                     this.state.dateMode = e.target.dataset.mode;
+                    const now = new Date();
+                    if (this.state.dateMode === 'year') { this.state.dateValue = now.getFullYear().toString(); } 
+                    else if (this.state.dateMode === 'month') { this.state.dateValue = now.toISOString().slice(0, 7); }
                     this.updateDateFilterUI();
                 }
             });
@@ -395,10 +427,32 @@ export const ReportModule = {
     updateDateInputs() {
         const container = document.getElementById('reportDateInputsContainer');
         if (!container) return;
-        if (this.state.dateMode === 'range') {
-            container.innerHTML = `<input type="date" class="date-input" id="reportStartDate" value="${this.state.startDate}"><span style="margin: 0 5px;">-</span><input type="date" class="date-input" id="reportEndDate" value="${this.state.endDate}">`;
-        } else {
-            container.innerHTML = `<span style="padding: 0 10px; color: var(--text-secondary);">전체 기간</span>`;
+        let html = '';
+        const now = new Date();
+        const yearValue = this.state.dateValue || now.getFullYear().toString();
+        const monthValue = this.state.dateValue || now.toISOString().slice(0, 7);
+
+        switch (this.state.dateMode) {
+            case 'year':
+                html = `<input type="number" class="date-input" id="reportDateValue" value="${yearValue}" style="width: 100px;">`;
+                break;
+            case 'month':
+                html = `<input type="month" class="date-input" id="reportDateValue" value="${monthValue}">`;
+                break;
+            case 'range':
+                const startDate = this.state.startDate || this.formatDateForInput(new Date(now.getFullYear(), 0, 1));
+                const endDate = this.state.endDate || this.formatDateForInput(now);
+                html = `<input type="date" class="date-input" id="reportStartDate" value="${startDate}"><span style="margin: 0 5px;">-</span><input type="date" class="date-input" id="reportEndDate" value="${endDate}">`;
+                break;
+            default:
+                html = `<span style="padding: 0 10px; color: var(--text-secondary);">전체 기간</span>`;
+                break;
+        }
+        container.innerHTML = html;
+        
+        const input = container.querySelector('#reportDateValue');
+        if (input) {
+            input.onchange = (e) => { this.state.dateValue = e.target.value; };
         }
     },
 
@@ -409,52 +463,11 @@ export const ReportModule = {
         document.getElementById('reportPositionFilter').value = 'all';
         document.getElementById('reportInterviewerFilter').value = 'all';
         document.getElementById('reportCompanyFilter').value = 'all';
-        this.setInitialDateRange();
+        this.state.dateMode = 'month';
+        this.state.dateValue = new Date().toISOString().slice(0, 7);
+        this.updateDateFilterUI();
     },
 
-    getFilterOptions() {
-        return {
-            interviewer: document.getElementById('reportInterviewerFilter')?.value || 'all',
-            company: document.getElementById('reportCompanyFilter')?.value || 'all',
-            route: document.getElementById('reportRouteFilter')?.value || 'all',
-            position: document.getElementById('reportPositionFilter')?.value || 'all',
-            searchTerm: (document.getElementById('reportSearch')?.value || '').toLowerCase(),
-            dateMode: this.state.dateMode,
-            startDate: document.getElementById('reportStartDate')?.value,
-            endDate: document.getElementById('reportEndDate')?.value,
-        };
-    },
-
-    getFilteredData(options) {
-        const { all, headers } = this.app.state.data;
-        let data = [...all];
-        const indices = {
-            applyDate: headers.indexOf('지원일'),
-            interviewer: headers.indexOf('면접관'),
-            company: headers.indexOf('회사명'),
-            route: headers.indexOf('지원루트'),
-            position: headers.indexOf('모집분야')
-        };
-        if (options.dateMode === 'range' && indices.applyDate !== -1) {
-            data = data.filter(row => {
-                const dateStr = row[indices.applyDate];
-                if (!dateStr || !options.startDate || !options.endDate) return true;
-                const date = new Date(dateStr);
-                const start = new Date(options.startDate);
-                const end = new Date(options.endDate);
-                return date >= start && date <= end;
-            });
-        }
-        if (options.interviewer !== 'all' && indices.interviewer !==-1) data = data.filter(row => (row[indices.interviewer] || '').includes(options.interviewer));
-        if (options.company !== 'all' && indices.company !==-1) data = data.filter(row => row[indices.company] === options.company);
-        if (options.route !== 'all' && indices.route !== -1) data = data.filter(row => row[indices.route] === options.route);
-        if (options.position !== 'all' && indices.position !== -1) data = data.filter(row => row[indices.position] === options.position);
-        if (options.searchTerm) {
-            data = data.filter(row => row.some(cell => String(cell).toLowerCase().includes(options.searchTerm)));
-        }
-        return data;
-    },
-    
     buildReportFromTemplate(template, data, options) {
         const now = new Date();
         const periodText = this.getPeriodText(options);
@@ -463,6 +476,7 @@ export const ReportModule = {
                 case 'kpi': return this.renderKpiSection(data);
                 case 'charts': return this.renderChartsSection();
                 case 'table': return this.renderTableSection(data);
+                case 'funnel': return this.renderFunnelSection(data);
                 case 'placeholder': return `<div class="report-placeholder">${template.name} 리포트는 현재 개발 중입니다.</div>`;
                 default: return '';
             }
@@ -499,7 +513,7 @@ export const ReportModule = {
         const joinedCount = data.filter(row => (row[headers.indexOf('입과일')] || '').trim() !== '').length;
         const interviewRate = totalApplicants > 0 ? ((interviewConfirmedCount / totalApplicants) * 100).toFixed(1) : 0;
         const passRate = interviewConfirmedCount > 0 ? ((passedCount / interviewConfirmedCount) * 100).toFixed(1) : 0;
-        const joinRate = passedCount > 0 ? ((joinedCount / passedCount) * 100).toFixed(1) : 0;
+        const joinRate = passedCount > 0 ? ((joinedCount / passedCount) * 100).toFixed(1) : 0;505506507508509510511512513514515516517518519520521522523524525526527528529530531532533534535536537538539540541542543544545546547$0
         return `
             <h2>핵심 성과 지표 (KPIs)</h2>
             <div class="report-grid">
@@ -536,6 +550,40 @@ export const ReportModule = {
         `;
     },
     
+    renderFunnelSection(data) {
+        const headers = this.app.state.data.headers;
+        const indices = {
+            contactResult: headers.indexOf('1차 컨택 결과'),
+            interviewResult: headers.indexOf('면접결과'),
+            joinDate: headers.indexOf('입과일')
+        };
+        const total = data.length;
+        if (total === 0) return `<div class="report-placeholder">해당 기간에 지원자가 없습니다.</div>`;
+
+        const contacted = data.filter(row => (row[indices.contactResult] || '').trim() !== '' && (row[indices.contactResult] || '').trim() !== '파기').length;
+        const confirmed = data.filter(row => (row[indices.contactResult] || '').trim() === '면접확정').length;
+        const passed = data.filter(row => (row[indices.interviewResult] || '').trim() === '합격').length;
+        const hired = data.filter(row => (row[indices.joinDate] || '').trim() !== '').length;
+
+        const getRate = (current, prev) => prev > 0 ? ((current / prev) * 100).toFixed(1) : 0;
+        
+        const stages = [
+            { name: '총 지원', count: total, rate: 100, prevCount: total },
+            { name: '1차 컨택 성공', count: contacted, rate: getRate(contacted, total), prevCount: total },
+            { name: '면접 확정', count: confirmed, rate: getRate(confirmed, contacted), prevCount: contacted },
+            { name: '최종 합격', count: passed, rate: getRate(passed, confirmed), prevCount: confirmed },
+            { name: '최종 입과', count: hired, rate: getRate(hired, passed), prevCount: passed }
+        ];
+
+        let funnelHtml = '<h2>채용 단계별 전환율 분석</h2><div class="funnel-container">';
+        stages.forEach((stage, index) => {
+            const width = getRate(stage.count, total);
+            funnelHtml += `<div class="funnel-stage"><div class="funnel-info"><div class="funnel-stage-name">${index + 1}. ${stage.name}</div><div class="funnel-stage-count">${stage.count}명</div></div><div class="funnel-bar-wrapper"><div class="funnel-bar" style="width: ${width}%;"></div></div>${index > 0 ? `<div class="funnel-conversion-rate"><i class="fas fa-arrow-down"></i><span>이전 단계 대비 <strong>${stage.rate}%</strong> 전환</span></div>` : ''}</div>`;
+        });
+        funnelHtml += '</div>';
+        return funnelHtml;
+    },
+
     createDetailedTable(data) {
         if (!data || data.length === 0) return '<p style="text-align: center; padding: 20px;">해당 조건의 데이터가 없습니다.</p>';
         const headers = this.app.state.data.headers;
@@ -577,8 +625,10 @@ export const ReportModule = {
     },
     
     getPeriodText(options) {
-        if (options.dateMode === 'range' && options.startDate && options.endDate) {
+        if (options.dateMode === 'range') {
             return `${options.startDate} ~ ${options.endDate}`;
+        } else if (options.dateMode === 'year' || options.dateMode === 'month') {
+            return options.dateValue;
         }
         return '전체 기간';
     }
