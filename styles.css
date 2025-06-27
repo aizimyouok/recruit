@@ -1572,7 +1572,8 @@ body {
     border-bottom: 1px solid var(--border-color); 
     text-align: center; 
     white-space: nowrap; 
-    font-size: 0.95rem; 
+    font-size: 1rem; 
+    font-weight: 500;
 }
 
 .data-table thead th { 
