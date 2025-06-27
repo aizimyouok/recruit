@@ -418,62 +418,30 @@
                 </div>
 
                 <div id="report" class="page">
-    <div id="report" class="page">
-    <div class="page-header">
-        <h2 class="page-title">리포트 발행</h2>
-        <div class="header-actions">
-             <button class="primary-btn" onclick="globalThis.App.report.generateReport()">
-                <i class="fas fa-file-download"></i> 리포트 생성하기
-            </button>
-        </div>
-    </div>
-
-    <div class="filter-bar-wrapper">
-        <div class="filter-bar" role="search" aria-label="리포트 필터링">
-            <div class="filter-group search-input">
-                <label for="reportSearch">통합 검색</label>
-                <div style="position: relative;">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="reportSearch" placeholder="이름, 비고 등 검색..." />
-                </div>
-            </div>
-            <div class="filter-group">
-                <label for="reportRouteFilter">지원루트</label>
-                <select id="reportRouteFilter"></select>
-            </div>
-            <div class="filter-group">
-                <label for="reportPositionFilter">모집분야</label>
-                <select id="reportPositionFilter"></select>
-            </div>
-            <div class="filter-group">
-                <label for="reportInterviewerFilter">면접관</label>
-                <select id="reportInterviewerFilter"></select>
-            </div>
-            <div class="filter-group">
-                <label for="reportCompanyFilter">회사명</label>
-                <select id="reportCompanyFilter"></select>
-            </div>
-            <div class="filter-group date-filter-group">
-                <label>조회 기간</label>
-                <div class="date-filter-container" id="reportDateFilterContainer">
+                    <div class="page-header">
+                        <h2 class="page-title">리포트 발행</h2>
+                        <div class="header-actions">
+                            <button class="primary-btn" onclick="globalThis.App.report.generateReport()">
+                                <i class="fas fa-file-download"></i> 리포트 생성하기
+                            </button>
+                        </div>
                     </div>
-            </div>
-            <div class="filter-group reset-group">
-                <button class="secondary-btn reset-btn" onclick="globalThis.App.report.resetFilters()">
-                    <i class="fas fa-undo"></i> 초기화
-                </button>
-            </div>
-        </div>
-    </div>
 
-    <div class="content-container" id="reportPreviewContainer" style="margin-top: 20px;">
-        <div class="no-interviews" style="padding: 50px 0; text-align: center;">
-            <i class="fas fa-file-medical" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 15px;"></i>
-            <p>위 조건 설정 후 '리포트 생성하기' 버튼을 눌러주세요.</p>
-        </div>
-    </div>
-</div>
+                    <div class="filter-bar-wrapper">
+                        <div class="filter-bar" id="reportFilterBar" role="search" aria-label="리포트 필터링">
+                            <!-- 필터 내용은 JavaScript에서 동적으로 생성됩니다 -->
+                        </div>
+                    </div>
+
+                    <div class="content-container" id="reportPreviewContainer" style="margin-top: 20px;">
+                        <div class="no-interviews" style="padding: 50px 0; text-align: center;">
+                            <i class="fas fa-file-medical" style="font-size: 3rem; color: var(--text-secondary); margin-bottom: 15px;"></i>
+                            <p>위 조건 설정 후 '리포트 생성하기' 버튼을 눌러주세요.</p>
+                        </div>
+                    </div>
                 </div>
+
+            </div>
         </main>
     </div>
     
