@@ -421,7 +421,7 @@ export const InterviewScheduleModule = {
 
     setupColumnToggles() {
         // 수정: '시간' -> '면접 시간'
-        const allHeaders = ['이름', '지원일', '지원루트', '회사명', '모집분야', '면접관', '면접일', '면접 시간', '비고'];
+        const allHeaders = ['이름', '지원일', '지원루트', '회사명', '모집분야', '면접관', '면접일', '면접 시간', '비고', '면접결과', '면접리뷰'];
         
         this.state.visibleColumns = {};
         allHeaders.forEach(h => {
