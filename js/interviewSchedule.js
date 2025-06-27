@@ -337,18 +337,40 @@ export const InterviewScheduleModule = {
         visibleHeaders.forEach(header => {
             let cellContent = '-';
             const originalValue = getValue(header);
-            try {
-                if (header === '면접일') {
-                    cellContent = `${dDayHtml} ${dateDisplayHtml || originalValue}`;
-                } else if (header === '면접 시간') { // 수정: '시간' -> '면접 시간'
-                    cellContent = this.app.utils.formatInterviewTime(originalValue);
-                } else if (header === '지원일') {
-                     cellContent = this.app.utils.formatDate(originalValue);
-                } else {
-                    cellContent = originalValue;
+            
+            if (header === '면접결과') {
+                const value = (originalValue || '').trim();
+                let statusClass = '';
+
+                if (value === '합격') {
+                    statusClass = 'interview-pass';
+                } else if (value === '불합격') {
+                    statusClass = 'interview-fail';
+                } else if (value === '미참석') {
+                    statusClass = 'interview-noshow';
+                } else if (value && value !== '-') {
+                    statusClass = 'interview-other';
                 }
-            } catch (e) {
-                cellContent = originalValue; // 오류 시 원본 데이터 표시
+
+                if (statusClass) {
+                    cellContent = `<span class="status-badge ${statusClass}">${value}</span>`;
+                } else {
+                    cellContent = value || '-';
+                }
+            } else {
+                try {
+                    if (header === '면접일') {
+                        cellContent = `${dDayHtml} ${dateDisplayHtml || originalValue}`;
+                    } else if (header === '면접 시간') {
+                        cellContent = this.app.utils.formatInterviewTime(originalValue);
+                    } else if (header === '지원일') {
+                        cellContent = this.app.utils.formatDate(originalValue);
+                    } else {
+                        cellContent = originalValue;
+                    }
+                } catch (e) {
+                    cellContent = originalValue; // 오류 시 원본 데이터 표시
+                }
             }
             rowHtml += `<td title="${String(originalValue || '').replace(/<[^>]*>/g, '')}">${cellContent}</td>`;
         });
@@ -409,53 +431,4 @@ export const InterviewScheduleModule = {
         document.getElementById('scheduleRouteFilter').value = 'all';
         document.getElementById('schedulePositionFilter').value = 'all';
         document.getElementById('scheduleInterviewerFilter').value = 'all';
-        document.getElementById('scheduleCompanyFilter').value = 'all';
-        this.setInitialDateRange();
-        this.applyFilters();
-    },
-    
-    refresh() {
-        this.populateFilters();
-        this.applyFilters();
-    },
-
-    setupColumnToggles() {
-        // 수정: '시간' -> '면접 시간'
-        const allHeaders = ['이름', '지원일', '지원루트', '회사명', '모집분야', '면접관', '면접일', '면접 시간', '비고', '면접결과', '면접리뷰'];
-        
-        this.state.visibleColumns = {};
-        allHeaders.forEach(h => {
-            this.state.visibleColumns[h] = true; 
-        }); 
-        
-        const dropdown = document.getElementById('scheduleColumnToggleDropdown');
-        if (!dropdown) return;
-        
-        dropdown.innerHTML = '';
-        allHeaders.forEach(header => {
-            const item = document.createElement('div');
-            item.className = 'column-toggle-item';
-            item.innerHTML = `
-                <input type="checkbox" id="toggle-schedule-${header.replace(/\s/g, '-')}" ${this.state.visibleColumns[header] ? 'checked' : ''} />
-                <label for="toggle-schedule-${header.replace(/\s/g, '-')}">${header}</label>
-            `;
-            const input = item.querySelector('input');
-            if (input) {
-                input.onchange = (e) => this.handleColumnToggle(e, header);
-            }
-            dropdown.appendChild(item);
-        });
-    },
-
-    handleColumnToggle(event, columnName) {
-        this.state.visibleColumns[columnName] = event.target.checked;
-        this.renderTable();
-    },
-
-    toggleColumnDropdown() {
-        const dropdown = document.getElementById('scheduleColumnToggleDropdown');
-        if (dropdown) {
-            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-        }
-    }
-};
+        document.
