@@ -8,7 +8,14 @@ export const DataModule = {
             const loadedFromCache = await appInstance.dataCache.loadFromCache(appInstance);
             if (loadedFromCache) {
                 console.log('✅ 캐시에서 로딩 완료 - 서버 호출 생략');
-                return; // 캐시에서 로딩했으면 여기서 종료
+                // ▼▼▼▼▼ [캐시 로딩 시에도 리포트 페이지 업데이트를 위한 코드 추가] ▼▼▼▼▼
+                if (appInstance.navigation.getCurrentPage() === 'report') {
+                    if (appInstance.report && appInstance.report.populateFilters) {
+                        appInstance.report.populateFilters();
+                    }
+                }
+                // ▲▲▲▲▲ [캐시 로딩 시에도 리포트 페이지 업데이트를 위한 코드 추가] ▲▲▲▲▲
+                return;
             }
         }
         const tableContainer = document.querySelector('.table-container');
@@ -68,7 +75,6 @@ export const DataModule = {
                 appInstance.filter.reset(true);
             }
 
-            // DOM이 완전히 준비된 후 컬럼 토글 설정
             setTimeout(() => {
                 if (appInstance.ui && appInstance.ui.setupColumnToggles) {
                     appInstance.ui.setupColumnToggles();
@@ -137,7 +143,6 @@ export const DataModule = {
         const scheduleContainer = document.getElementById('interviewScheduleList');
         
         if (!scheduleContainer) {
-            console.warn('interviewScheduleList 요소를 찾을 수 없습니다.');
             return;
         }
         if (interviewDateIndex === -1) {
