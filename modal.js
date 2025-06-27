@@ -140,6 +140,8 @@ export const ModalModule = {
         // ▲▲▲▲▲ [수정된 코드] 나이 계산 로직 ▲▲▲▲▲
     },
 
+    // modal.js
+
     createInput(appInstance, header, value, isRequired, isDisabled) {
         // '나이' 필드는 항상 비활성화되도록 수정
         const isAgeField = header === '나이';
@@ -151,6 +153,12 @@ export const ModalModule = {
             return `<input type="date" id="modal-form-${header}" value="${value}" ${isRequired ? 'required' : ''} ${isDisabledOrReadOnly ? 'disabled' : ''}>`;
         } else if (appInstance.config.TIME_FIELDS.includes(header)) {
             return `<input type="text" id="modal-form-${header}" value="${value}" placeholder="예: 14시 30분" ${isRequired ? 'required' : ''} ${isDisabledOrReadOnly ? 'disabled' : ''}>`;
+        
+        // ▼▼▼▼▼ [추가된 코드] 출생년도 placeholder 추가 ▼▼▼▼▼
+        } else if (header === '출생년도') {
+            return `<input type="text" id="modal-form-${header}" value="${value}" placeholder="출생년도 뒷 2자리만 입력" ${isRequired ? 'required' : ''} ${isDisabledOrReadOnly ? 'disabled' : ''}>`;
+        // ▲▲▲▲▲ [추가된 코드] 출생년도 placeholder 추가 ▲▲▲▲▲
+            
         } else if (appInstance.config.DROPDOWN_OPTIONS[header]) {
             return ModalModule.createDropdownInput(appInstance, header, value, isRequired, isDisabledOrReadOnly);
         } else if (header === '비고' || header === '면접리뷰') {
@@ -159,7 +167,6 @@ export const ModalModule = {
             return `<input type="text" id="modal-form-${header}" value="${value}" ${isRequired ? 'required' : ''} ${isDisabledOrReadOnly ? 'disabled' : ''} ${header === '구분' ? 'style="background-color: #f1f5f9;"' : ''}>`;
         }
     },
-
     createDropdownInput(appInstance, header, value, isRequired, isDisabled) {
         const options = appInstance.config.DROPDOWN_OPTIONS[header];
         const hasDirectInput = options.includes('직접입력');
