@@ -1,6 +1,3 @@
-// js/interviewSchedule.js (전체 코드)
-
-// =================================
 // js/interviewSchedule.js - 면접 일정 페이지 모듈 (최종 수정 버전)
 // =================================
 
@@ -11,11 +8,11 @@ export const InterviewScheduleModule = {
         route: 'all',
         position: 'all',
         searchTerm: '',
-        dateMode: 'range', 
+        dateMode: 'range',
         dateValue: '',
         startDate: '',
         endDate: '',
-        sortBy: '면접일', 
+        sortBy: '면접일',
         sortOrder: 'asc',
         interviews: [],
         visibleColumns: {}
@@ -25,7 +22,7 @@ export const InterviewScheduleModule = {
         console.log('📅 면접일정 페이지 초기화');
         this.app = appInstance;
         this.populateFilters();
-        this.setInitialDateRange(); 
+        this.setInitialDateRange();
         this.setupColumnToggles();
         this.applyFilters();
 
@@ -62,16 +59,16 @@ export const InterviewScheduleModule = {
         populate('scheduleRouteFilter', indices.route);
         populate('schedulePositionFilter', indices.position);
     },
-    
+
     setInitialDateRange() {
         this.state.dateMode = 'range';
         const today = new Date();
         const oneMonthLater = new Date();
         oneMonthLater.setMonth(today.getMonth() + 1);
-        
+
         this.state.startDate = this.formatDateForInput(today);
         this.state.endDate = this.formatDateForInput(oneMonthLater);
-        
+
         this.updateDateFilterUI();
     },
 
@@ -106,7 +103,7 @@ export const InterviewScheduleModule = {
                 if (e.target.tagName === 'BUTTON') {
                     this.state.dateMode = e.target.dataset.mode;
                     if (['year', 'month', 'day'].includes(this.state.dateMode)) {
-                        this.state.dateValue = ''; 
+                        this.state.dateValue = '';
                     }
                     this.updateDateFilterUI();
                     this.applyFilters();
@@ -170,7 +167,7 @@ export const InterviewScheduleModule = {
         this.state.route = document.getElementById('scheduleRouteFilter')?.value || 'all';
         this.state.position = document.getElementById('schedulePositionFilter')?.value || 'all';
         this.state.searchTerm = (document.getElementById('scheduleSearch')?.value || '').toLowerCase();
-        
+
         if (this.state.dateMode === 'range') {
             this.state.startDate = document.getElementById('scheduleStartDate')?.value || '';
             this.state.endDate = document.getElementById('scheduleEndDate')?.value || '';
@@ -189,7 +186,7 @@ export const InterviewScheduleModule = {
         };
 
         let filtered = all.filter(row => (row[indices.contactResult] || '').trim() === '면접확정' && (row[indices.interviewDate] || '').trim());
-        
+
         if (this.state.dateMode !== 'all') {
             filtered = filtered.filter(row => {
                 const dateStr = row[indices.interviewDate];
@@ -197,7 +194,7 @@ export const InterviewScheduleModule = {
 
                 try {
                     const interviewDate = this.formatDateForInput(new Date(dateStr));
-                    
+
                     switch (this.state.dateMode) {
                         case 'year':
                             return interviewDate.startsWith(this.state.dateValue);
@@ -215,7 +212,7 @@ export const InterviewScheduleModule = {
                 return true;
             });
         }
-        
+
         if (this.state.interviewer !== 'all') filtered = filtered.filter(row => (row[indices.interviewer] || '').includes(this.state.interviewer));
         if (this.state.company !== 'all') filtered = filtered.filter(row => row[indices.company] === this.state.company);
         if (this.state.route !== 'all') filtered = filtered.filter(row => row[indices.route] === this.state.route);
@@ -241,7 +238,7 @@ export const InterviewScheduleModule = {
 
             if(isNaN(dateA.getTime())) return 1;
             if(isNaN(dateB.getTime())) return -1;
-            
+
             const timeAStr = a[interviewTimeIndex] || '00:00';
             const timeBStr = b[interviewTimeIndex] || '00:00';
 
@@ -250,7 +247,7 @@ export const InterviewScheduleModule = {
 
             const hourA = timeAMatch ? parseInt(timeAMatch[1], 10) : 0;
             const hourB = timeBMatch ? parseInt(timeBMatch[1], 10) : 0;
-            
+
             dateA.setHours(hourA, 0, 0, 0);
             dateB.setHours(hourB, 0, 0, 0);
 
@@ -258,7 +255,7 @@ export const InterviewScheduleModule = {
             return (dateA - dateB) * order;
         });
     },
-    
+
     setSortBy(header) {
         if(header === '면접일' || header === '면접 시간') {
             this.state.sortBy = '면접일';
@@ -266,7 +263,7 @@ export const InterviewScheduleModule = {
             this.applyFilters();
         }
     },
-    
+
     renderTable() {
         const container = document.getElementById('scheduleListContainer');
         if (!container) return;
@@ -302,7 +299,7 @@ export const InterviewScheduleModule = {
 
     createRowHtml(row, headers, visibleHeaders) {
         const getValue = (headerName) => row[headers.indexOf(headerName)] || '-';
-        
+
         const interviewDateIndex = headers.indexOf('면접 날짜') !== -1 ? headers.indexOf('면접 날짜') : headers.indexOf('면접 날자');
         const interviewDateStr = row[interviewDateIndex];
 
@@ -314,7 +311,7 @@ export const InterviewScheduleModule = {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
                 const iDate = new Date(interviewDateStr);
-                
+
                 const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
                 const weekday = weekdays[iDate.getDay()];
                 dateDisplayHtml = `${iDate.getMonth() + 1}/${iDate.getDate()}(${weekday})`;
@@ -324,7 +321,7 @@ export const InterviewScheduleModule = {
 
                 const diffTime = iDateForDiff.getTime() - today.getTime();
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                
+
                 if (diffDays === 0) {
                     dDayHtml = `<span class="status-badge d-day">D-Day</span>`;
                 } else if (diffDays > 0) {
@@ -339,14 +336,12 @@ export const InterviewScheduleModule = {
         visibleHeaders.forEach(header => {
             let cellContent = '-';
             const originalValue = getValue(header);
-            
-            // ▼▼▼▼▼ [수정된 코드] '비고'와 '면접리뷰'에 클래스 추가 ▼▼▼▼▼
+
             let tdClass = '';
             if (header === '비고' || header === '면접리뷰') {
                 tdClass = 'class="wrap-text"';
             }
-            // ▲▲▲▲▲ [수정된 코드] '비고'와 '면접리뷰'에 클래스 추가 ▲▲▲▲▲
-            
+
             if (header === '면접결과') {
                 const value = (originalValue || '').trim();
                 let statusClass = '';
@@ -370,10 +365,22 @@ export const InterviewScheduleModule = {
                 try {
                     if (header === '면접일') {
                         cellContent = `${dDayHtml} ${dateDisplayHtml || originalValue}`;
+                    // ▼▼▼▼▼ [수정된 코드] '지원일' 포맷 변경 ▼▼▼▼▼
+                    } else if (header === '지원일') {
+                        if (originalValue && originalValue !== '-') {
+                            const date = new Date(originalValue);
+                            const year = date.getFullYear().toString().slice(-2);
+                            const month = date.getMonth() + 1;
+                            const day = date.getDate();
+                            const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+                            const weekday = weekdays[date.getDay()];
+                            cellContent = `${year}/${month}/${day}`;
+                        } else {
+                            cellContent = '-';
+                        }
+                    // ▲▲▲▲▲ [수정된 코드] '지원일' 포맷 변경 ▲▲▲▲▲
                     } else if (header === '면접 시간') {
                         cellContent = this.app.utils.formatInterviewTime(originalValue);
-                    } else if (header === '지원일') {
-                        cellContent = this.app.utils.formatDate(originalValue);
                     } else {
                         cellContent = originalValue;
                     }
@@ -381,11 +388,9 @@ export const InterviewScheduleModule = {
                     cellContent = originalValue; // 오류 시 원본 데이터 표시
                 }
             }
-            // ▼▼▼▼▼ [수정된 코드] td 태그에 클래스 속성 추가 ▼▼▼▼▼
             rowHtml += `<td ${tdClass} title="${String(originalValue || '').replace(/<[^>]*>/g, '')}">${cellContent}</td>`;
-            // ▲▲▲▲▲ [수정된 코드] td 태그에 클래스 속성 추가 ▲▲▲▲▲
         });
-        
+
         const rowDataEncoded = encodeURIComponent(JSON.stringify(row));
         return `<tr onclick="globalThis.App.modal.openDetail(JSON.parse(decodeURIComponent('${rowDataEncoded}')))">${rowHtml}</tr>`;
     },
@@ -393,9 +398,9 @@ export const InterviewScheduleModule = {
     renderInterviewerCounts(filteredData, interviewerIndex) {
         const container = document.getElementById('interviewerCountsContainer');
         if (!container || interviewerIndex === -1) return;
-        
-        container.innerHTML = ''; 
-        
+
+        container.innerHTML = '';
+
         const counts = {};
         let totalCount = 0;
         filteredData.forEach(row => {
@@ -411,7 +416,7 @@ export const InterviewScheduleModule = {
         const header = document.createElement('div');
         header.className = 'interviewer-summary-header';
         header.innerHTML = `
-            <span><i class="fas fa-user-tie"></i> 면접 예정 건수</span>
+            <span><i class="fas fa-user-tie"></i> 면접 일정</span>
             <span class="total-count">총 <span class="badge">${totalCount}</span></span>
         `;
         container.appendChild(header);
@@ -436,7 +441,7 @@ export const InterviewScheduleModule = {
         }
         container.appendChild(list);
     },
-    
+
     resetFilters() {
         document.getElementById('scheduleSearch').value = '';
         document.getElementById('scheduleRouteFilter').value = 'all';
@@ -446,7 +451,7 @@ export const InterviewScheduleModule = {
         this.setInitialDateRange();
         this.applyFilters();
     },
-    
+
     refresh() {
         this.populateFilters();
         this.applyFilters();
@@ -459,12 +464,12 @@ export const InterviewScheduleModule = {
         allHeaders.forEach(h => {
             // 기본적으로 '증원자'는 숨김 처리
             const defaultHidden = ['증원자'];
-            this.state.visibleColumns[h] = !defaultHidden.includes(h); 
-        }); 
-        
+            this.state.visibleColumns[h] = !defaultHidden.includes(h);
+        });
+
         const dropdown = document.getElementById('scheduleColumnToggleDropdown');
         if (!dropdown) return;
-        
+
         dropdown.innerHTML = '';
         allHeaders.forEach(header => {
             const item = document.createElement('div');
