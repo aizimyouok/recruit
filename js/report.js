@@ -1,24 +1,23 @@
-// js/report.js (중복 선언 오류 해결 및 AI 기능 통합 최종 버전)
+// js/report.js (AI 분석 기능이 통합된 최종 버전)
 
 /**
  * 리포트 종류별 구성요소를 정의하는 템플릿 객체입니다.
- * 이 객체는 파일 내에서 단 한 번만 선언되어야 합니다.
  */
 const ReportTemplates = {
     executive: {
         name: '경영진용 요약',
         title: '경영진용 요약 리포트',
-        sections: ['kpi', 'charts'] // 'kpi'와 'charts' 섹션을 포함
+        sections: ['kpi', 'charts']
     },
     detailed: {
         name: '상세 분석 리포트',
         title: '상세 분석 리포트',
-        sections: ['table'] // 'table' 섹션만 포함
+        sections: ['table']
     },
     recruiter: {
         name: '채용담당자용 리포트',
         title: '채용담당자용 리포트',
-        sections: ['placeholder'] // 아직 구현되지 않은 섹션
+        sections: ['placeholder']
     },
     weekly: {
         name: '주간 채용 현황',
@@ -38,7 +37,7 @@ const ReportTemplates = {
     ai: {
         name: 'AI 분석',
         title: 'Gemini AI 분석 리포트',
-        sections: [] // AI 탭은 동적으로 내용을 채우므로 비워둡니다.
+        sections: [] // AI 탭은 동적으로 내용을 채웁니다.
     }
 };
 
@@ -51,7 +50,7 @@ export const ReportModule = {
         this.app = appInstance;
         this.populateFilters();
         this.setupTabEvents();
-        // 페이지가 처음 로드될 때 기본 리포트 생성
+        // 페이지가 처음 로드될 때 기본 리포트를 생성합니다.
         this.generateReport();
     },
 
@@ -65,40 +64,36 @@ export const ReportModule = {
                     this.state.currentReportType = reportType;
                     document.querySelectorAll('.report-tab-btn').forEach(btn => btn.classList.remove('active'));
                     target.classList.add('active');
-                    this.generateReport();
+                    this.handleGenerateButtonClick(); // 탭 클릭 시 리포트 생성
                 }
             });
         }
-    },
-    
-    // 리포트 생성 버튼 클릭 시 호출 (HTML의 onclick에서 사용)
-    handleGenerateButtonClick() {
-        this.generateReport();
+        // '리포트 생성하기' 버튼에도 이벤트 리스너를 설정합니다.
+        const generateBtn = document.querySelector('#report .page-header .primary-btn');
+        if(generateBtn){
+            generateBtn.onclick = () => this.handleGenerateButtonClick();
+        }
     },
 
-    generateReport() {
+    handleGenerateButtonClick() {
         const reportType = this.state.currentReportType;
-        
-        // '리포트 생성하기' 버튼은 AI 분석 탭에서는 다른 역할을 하도록 분기
-        const generateBtn = document.querySelector('.page-header .primary-btn');
-        if (generateBtn) {
-            if (reportType === 'ai') {
-                generateBtn.innerHTML = `<i class="fas fa-magic"></i> AI 분석 실행`;
-                generateBtn.onclick = () => this.requestAiAnalysis();
-            } else {
-                generateBtn.innerHTML = `<i class="fas fa-file-download"></i> 리포트 생성하기`;
-                generateBtn.onclick = () => this.generateTemplateReport();
-            }
-        }
-        
-        if (reportType !== 'ai') {
-            this.generateTemplateReport();
+        if (reportType === 'ai') {
+            this.requestAiAnalysis();
         } else {
-            // AI 탭은 초기에 플레이스홀더를 보여줌
-            const previewContainer = document.getElementById('reportPreviewContainer');
-            previewContainer.innerHTML = `<div class="report-placeholder">상단 필터로 분석할 데이터 범위를 설정한 후, 'AI 분석 실행' 버튼을 눌러주세요.</div>`;
+            this.generateTemplateReport();
         }
     },
+    
+    generateReport() {
+        const reportType = this.state.currentReportType;
+        if (reportType === 'ai') {
+            const previewContainer = document.getElementById('reportPreviewContainer');
+            previewContainer.innerHTML = `<div class="report-placeholder">상단 필터로 분석할 데이터 범위를 설정한 후, '리포트 생성하기' 버튼을 눌러주세요.</div>`;
+        } else {
+            this.generateTemplateReport();
+        }
+    },
+
 
     generateTemplateReport() {
         const previewContainer = document.getElementById('reportPreviewContainer');
@@ -136,43 +131,36 @@ export const ReportModule = {
                 return;
             }
 
-            console.log("AI 분석 요청 데이터:", dataForAnalysis);
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            const response = await fetch(this.app.config.APPS_SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: 'analyzeData',
+                    data: dataForAnalysis,
+                    headers: this.app.state.data.headers
+                })
+            });
 
-            const analysisResult = this.createMockAnalysis(dataForAnalysis, options);
-            const reportHtml = this.buildAiReport(analysisResult, options);
+            if (!response.ok) {
+                throw new Error(`서버 오류: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+
+            if (result.status !== 'success') {
+                throw new Error(result.message);
+            }
+
+            const reportHtml = this.buildAiReport(result.analysis, options);
             previewContainer.innerHTML = reportHtml;
 
-            if (analysisResult.chartData) {
-                this.renderAiChart(analysisResult.chartData);
+            if (result.analysis.chartData) {
+                this.renderAiChart(result.analysis.chartData);
             }
+
         } catch (error) {
             console.error("AI 분석 요청 실패:", error);
-            previewContainer.innerHTML = `<div class="error-container"><h3>AI 분석 실패</h3><p>분석 중 오류가 발생했습니다.</p></div>`;
+            previewContainer.innerHTML = `<div class="error-container"><h3>AI 분석 실패</h3><p>${error.message}</p></div>`;
         }
-    },
-    
-    createMockAnalysis(data, options) {
-        const headers = this.app.state.data.headers;
-        const total = data.length;
-        const routeIndex = headers.indexOf('지원루트');
-        const routeCounts = {};
-        data.forEach(row => {
-            const route = row[routeIndex] || '미기입';
-            routeCounts[route] = (routeCounts[route] || 0) + 1;
-        });
-        const topRoute = Object.entries(routeCounts).sort((a,b) => b[1] - a[1])[0] || ['N/A', 0];
-
-        return {
-            summary: `설정된 필터 조건에 따라 총 ${total}명의 지원자 데이터가 분석되었습니다. 이 중 **'${topRoute[0]}'** 경로를 통한 지원이 ${topRoute[1]}명으로 가장 많았습니다.`,
-            recommendation: `가장 많은 지원자가 유입된 **'${topRoute[0]}'** 채널의 효율성을 상세 분석하여, 해당 채널에 대한 마케팅 전략을 강화하는 것을 추천합니다.`,
-            chartData: {
-                type: 'bar',
-                labels: Object.keys(routeCounts),
-                values: Object.values(routeCounts),
-                title: '지원 경로별 지원자 수'
-            }
-        };
     },
     
     buildAiReport(result, options) {
@@ -182,9 +170,9 @@ export const ReportModule = {
                 <h1>${ReportTemplates.ai.title}</h1>
                 <p class="report-info"><strong>분석 기간:</strong> ${periodText}</p>
                 <h2><i class="fas fa-search"></i> 분석 요약</h2>
-                <p class="ai-summary" style="padding: 15px; background: #f8fafc; border-radius: 8px;">${result.summary}</p>
+                <p class="ai-summary" style="padding: 15px; background: var(--main-bg, #f8fafc); border-radius: 8px;">${result.summary}</p>
                 <h2><i class="fas fa-lightbulb"></i> 추천 액션</h2>
-                <p class="ai-recommendation" style="padding: 15px; background: #f8fafc; border-radius: 8px;">${result.recommendation}</p>
+                <p class="ai-recommendation" style="padding: 15px; background: var(--main-bg, #f8fafc); border-radius: 8px;">${result.recommendation}</p>
                 ${result.chartData ? `
                 <h2><i class="fas fa-chart-bar"></i> 데이터 시각화: ${result.chartData.title}</h2>
                 <div class="chart-container-report">
@@ -214,17 +202,17 @@ export const ReportModule = {
 
     getFilterOptions() {
         return {
-            interviewer: document.getElementById('reportInterviewerFilter').value,
-            company: document.getElementById('reportCompanyFilter').value,
-            route: document.getElementById('reportRouteFilter').value,
-            position: document.getElementById('reportPositionFilter').value,
+            interviewer: document.getElementById('reportInterviewerFilter')?.value || 'all',
+            company: document.getElementById('reportCompanyFilter')?.value || 'all',
+            route: document.getElementById('reportRouteFilter')?.value || 'all',
+            position: document.getElementById('reportPositionFilter')?.value || 'all',
             searchTerm: (document.getElementById('reportSearch')?.value || '').toLowerCase(),
             dateMode: this.state.dateMode,
             startDate: document.getElementById('reportStartDate')?.value,
             endDate: document.getElementById('reportEndDate')?.value,
         };
     },
-
+    
     getFilteredData(options) {
         const { all, headers } = this.app.state.data;
         let data = [...all];
@@ -245,8 +233,8 @@ export const ReportModule = {
                 return date >= start && date <= end;
             });
         }
-        if (options.interviewer !== 'all' && indices.interviewer !== -1) data = data.filter(row => (row[indices.interviewer] || '').includes(options.interviewer));
-        if (options.company !== 'all' && indices.company !== -1) data = data.filter(row => row[indices.company] === options.company);
+        if (options.interviewer !== 'all' && indices.interviewer !==-1) data = data.filter(row => (row[indices.interviewer] || '').includes(options.interviewer));
+        if (options.company !== 'all' && indices.company !==-1) data = data.filter(row => row[indices.company] === options.company);
         if (options.route !== 'all' && indices.route !== -1) data = data.filter(row => row[indices.route] === options.route);
         if (options.position !== 'all' && indices.position !== -1) data = data.filter(row => row[indices.position] === options.position);
         if (options.searchTerm) {
@@ -274,11 +262,11 @@ export const ReportModule = {
                 #reportPage h1 { font-size: 1.8rem; text-align: center; border: none; }
                 #reportPage .report-info { color: #64748b; text-align: center; margin-bottom: 25px; }
                 .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-                .kpi-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; text-align: center; border-radius: 8px;}
+                .kpi-box { background: var(--main-bg, #f8fafc); border: 1px solid #e2e8f0; padding: 20px; text-align: center; border-radius: 8px;}
                 .kpi-box .label { font-size: 1rem; color: #64748b; margin-bottom: 8px; }
                 .kpi-box .value { font-size: 2.2rem; font-weight: 700; color: #818cf8; }
                 .chart-container-report { position: relative; height: 400px; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; }
-                .report-placeholder { text-align: center; padding: 40px; background-color: #f8fafc; border: 2px dashed #e2e8f0; border-radius: 8px; color: var(--text-secondary); }
+                .report-placeholder { text-align: center; padding: 40px; background-color: var(--main-bg, #f8fafc); border: 2px dashed #e2e8f0; border-radius: 8px; color: var(--text-secondary); }
             </style>
             <div id="reportPage">
                 <h1>${template.title}</h1>
@@ -383,9 +371,6 @@ export const ReportModule = {
         return '전체 기간';
     },
 
-    // populateFilters, setInitialDateRange 등 나머지 함수들은 여기에 위치합니다.
-    // (이전 답변의 전체 코드를 참고하여 이 아래에 붙여넣으시면 됩니다.)
-    
     populateFilters: function() {
         const reportFilterBar = document.getElementById('reportFilterBar');
         if (!reportFilterBar) return;
