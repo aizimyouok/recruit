@@ -431,4 +431,54 @@ export const InterviewScheduleModule = {
         document.getElementById('scheduleRouteFilter').value = 'all';
         document.getElementById('schedulePositionFilter').value = 'all';
         document.getElementById('scheduleInterviewerFilter').value = 'all';
-        document.
+        document.getElementById('scheduleCompanyFilter').value = 'all';
+        this.setInitialDateRange();
+        this.applyFilters();
+    },
+    
+    refresh() {
+        this.populateFilters();
+        this.applyFilters();
+    },
+
+    setupColumnToggles() {
+        const allHeaders = ['이름', '지원일', '지원루트', '회사명', '모집분야', '면접관', '면접일', '면접 시간', '비고', '면접결과', '면접리뷰'];
+        
+        this.state.visibleColumns = {};
+        allHeaders.forEach(h => {
+            // 기본적으로 '면접리뷰'는 숨김 처리
+            const defaultHidden = ['면접리뷰'];
+            this.state.visibleColumns[h] = !defaultHidden.includes(h); 
+        }); 
+        
+        const dropdown = document.getElementById('scheduleColumnToggleDropdown');
+        if (!dropdown) return;
+        
+        dropdown.innerHTML = '';
+        allHeaders.forEach(header => {
+            const item = document.createElement('div');
+            item.className = 'column-toggle-item';
+            item.innerHTML = `
+                <input type="checkbox" id="toggle-schedule-${header.replace(/\s/g, '-')}" ${this.state.visibleColumns[header] ? 'checked' : ''} />
+                <label for="toggle-schedule-${header.replace(/\s/g, '-')}">${header}</label>
+            `;
+            const input = item.querySelector('input');
+            if (input) {
+                input.onchange = (e) => this.handleColumnToggle(e, header);
+            }
+            dropdown.appendChild(item);
+        });
+    },
+
+    handleColumnToggle(event, columnName) {
+        this.state.visibleColumns[columnName] = event.target.checked;
+        this.renderTable();
+    },
+
+    toggleColumnDropdown() {
+        const dropdown = document.getElementById('scheduleColumnToggleDropdown');
+        if (dropdown) {
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+    }
+};
