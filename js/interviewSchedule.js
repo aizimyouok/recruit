@@ -462,8 +462,8 @@ export const InterviewScheduleModule = {
         
         this.state.visibleColumns = {};
         allHeaders.forEach(h => {
-            // 기본적으로 '증원자'는 숨김 처리
-            const defaultHidden = ['증원자'];
+            // 기본적으로 '증원자'는 숨김 처리하려고 했으나 그냥 다 나오는걸로 수정
+            const defaultHidden = [];
             this.state.visibleColumns[h] = !defaultHidden.includes(h);
         });
 
