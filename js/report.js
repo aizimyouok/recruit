@@ -1,4 +1,4 @@
-// js/report.js (오타 수정된 버전)
+// js/report.js (오타 최종 수정 버전)
 
 export const ReportModule = {
     // 페이지가 처음 열릴 때 실행되는 초기화 함수
@@ -46,18 +46,22 @@ export const ReportModule = {
         const interviewerIndex = headers.indexOf('면접관');
         const routeIndex = headers.indexOf('지원루트');
 
-        // ▼▼▼▼▼ [수정된 부분 1] ▼▼▼▼▼
+        // ▼▼▼▼▼ [오류 수정된 부분] ▼▼▼▼▼
         if (interviewerIndex !== -1) {
             const options = [...new Set(all.map(row => (row[interviewerIndex] || '').trim()).filter(Boolean))];
             const select = document.getElementById('reportInterviewer');
-            options.sort().forEach(name => select.innerHTML += \`<option value="\${name}">\${name}</option>\`);
+            options.sort().forEach(name => {
+                select.innerHTML += \`<option value="\${name}">\${name}</option>\`;
+            });
         }
         if (routeIndex !== -1) {
             const options = [...new Set(all.map(row => (row[routeIndex] || '').trim()).filter(Boolean))];
             const select = document.getElementById('reportRoute');
-            options.sort().forEach(name => select.innerHTML += \`<option value="\${name}">\${name}</option>\`);
+            options.sort().forEach(name => {
+                select.innerHTML += \`<option value="\${name}">\${name}</option>\`;
+            });
         }
-        // ▲▲▲▲▲ [수정된 부분 1] ▲▲▲▲▲
+        // ▲▲▲▲▲ [오류 수정된 부분] ▲▲▲▲▲
 
         // 기간 선택 '직접입력' 핸들러
         this.handlePeriodChange('month');
@@ -81,8 +85,6 @@ export const ReportModule = {
     // '리포트 생성' 버튼 클릭 시 실행되는 메인 함수
     generateReport() {
         const previewContainer = document.getElementById('reportPreviewContainer');
-        const generateBtn = document.querySelector('#report .primary-btn');
-        const originalBtnHtml = generateBtn.innerHTML;
 
         previewContainer.innerHTML = \`
             <div class="smooth-loading-container">
@@ -90,9 +92,6 @@ export const ReportModule = {
                 <p class="loading-text">리포트를 생성 중입니다...</p>
             </div>
         \`;
-        generateBtn.disabled = true;
-        generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 생성 중...';
-
 
         // 0.5초 후 리포트 생성 (로딩 애니메이션을 보여주기 위함)
         setTimeout(() => {
@@ -124,9 +123,6 @@ export const ReportModule = {
                         <p class="error-message">리포트를 만드는 중 문제가 발생했습니다. 다시 시도해주세요.</p>
                     </div>
                 \`;
-            } finally {
-                generateBtn.disabled = false;
-                generateBtn.innerHTML = originalBtnHtml;
             }
         }, 500);
     },
@@ -205,9 +201,10 @@ export const ReportModule = {
                 th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: center; font-size: 0.85rem; }
                 th { background: #f8fafc; font-weight: 600; }
                 @media print {
-                    body * { visibility: hidden; }
-                    #reportPage, #reportPage * { visibility: visible; }
-                    #reportPage { position: absolute; left: 0; top: 0; width: 100%; }
+                    body, .main-content, .content-area { background: white !important; }
+                    .sidebar, .main-header, .stats-fixed-header { display: none !important; }
+                    #report, #reportPreviewContainer { display: block !important; padding: 0 !important; margin: 0 !important; }
+                    #reportPage { box-shadow: none; border: none; }
                 }
             </style>
             <div id="reportPage">
@@ -260,7 +257,7 @@ export const ReportModule = {
                         backgroundColor: Object.values(this.app.config.CHART_COLORS)
                     }]
                 },
-                options: { responsive: true }
+                options: { responsive: true, maintainAspectRatio: false }
             });
         }
         
@@ -282,71 +279,63 @@ export const ReportModule = {
                         backgroundColor: Object.values(this.app.config.CHART_COLORS).reverse()
                     }]
                 },
-                options: { responsive: true }
+                options: { responsive: true, maintainAspectRatio: false }
             });
         }
     },
 
-    // ▼▼▼▼▼ [수정된 부분 2] ▼▼▼▼▼
-    // getPeriodText와 generateReport 버튼 로직을 수정하여 PDF 생성 기능을 호출하도록 변경
     getPeriodText(options) {
-        // 리포트 상단에 표시될 기간 텍스트를 생성하는 헬퍼 함수
         const periodMap = {
-            'all': '전체 기간',
-            'year': '올해',
-            'month': '이번 달',
-            'week': '이번 주'
+            'all': '전체 기간', 'year': '올해',
+            'month': '이번 달', 'week': '이번 주'
         };
-        if(options.period === 'custom') return \`\${options.startDate} ~ \${options.endDate}\`;
+        if (options.period === 'custom') return \`\${options.startDate} ~ \${options.endDate}\`;
         return periodMap[options.period] || 'N/A';
     },
 
-    // '리포트 생성' 버튼 클릭 시, 이제 PDF 생성/인쇄도 함께 처리
-    async createPdf() {
+    // PDF 다운로드 또는 인쇄를 처리하는 최종 함수
+    async createAndDownloadReport() {
         const generateBtn = document.querySelector('#report .primary-btn');
         const originalBtnHtml = generateBtn.innerHTML;
-        generateBtn.disabled = true;
-        generateBtn.innerHTML = '<i class="fas fa-file-pdf"></i> PDF 생성 중...';
-
-        const reportElement = document.getElementById('reportPage');
-        if (!reportElement) {
-            alert('리포트 내용이 없습니다. 먼저 리포트를 생성해주세요.');
-            generateBtn.disabled = false;
-            generateBtn.innerHTML = originalBtnHtml;
-            return;
-        }
 
         try {
+            // 1. 리포트 생성
+            this.generateReport();
+            
+            // 로딩 애니메이션을 위해 잠시 대기
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // 2. PDF 다운로드
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = '<i class="fas fa-file-pdf"></i> PDF 생성 중...';
+
+            const reportElement = document.getElementById('reportPage');
+            if (!reportElement) {
+                alert('리포트 내용이 없습니다.');
+                return;
+            }
+
             const canvas = await html2canvas(reportElement, { scale: 2 });
             const imgData = canvas.toDataURL('image/png');
             
-            // 전역 window 객체에서 jsPDF를 찾습니다.
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF('p', 'mm', 'a4');
             
             const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
             const canvasWidth = canvas.width;
             const canvasHeight = canvas.height;
             const ratio = canvasWidth / canvasHeight;
-            
-            let imgWidth = pdfWidth;
             let imgHeight = pdfWidth / ratio;
             
-            if (imgHeight > pdfHeight) {
-                imgHeight = pdfHeight;
-                imgWidth = pdfHeight * ratio;
-            }
-            
-            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
             pdf.save(\`채용현황-리포트-\${new Date().toISOString().slice(0,10)}.pdf\`);
+
         } catch (error) {
-            console.error('PDF 생성 실패:', error);
-            alert('PDF 생성에 실패했습니다. 콘솔을 확인해주세요.');
+            console.error('리포트 생성/다운로드 실패:', error);
+            alert('리포트 생성 또는 PDF 다운로드에 실패했습니다.');
         } finally {
             generateBtn.disabled = false;
             generateBtn.innerHTML = originalBtnHtml;
         }
     }
 };
-// ▲▲▲▲▲ [수정된 부분 2] ▲▲▲▲▲
