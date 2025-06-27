@@ -1,4 +1,4 @@
-// js/report.js (모든 오류 최종 수정 완료된 버전)
+// js/report.js (최종 수정 완료된 버전)
 
 export const ReportModule = {
     // 페이지가 처음 열릴 때 실행되는 초기화 함수
@@ -10,64 +10,47 @@ export const ReportModule = {
 
     // 리포트 조건 필터(드롭다운)에 옵션을 채워 넣는 함수
     populateFilters() {
-        const reportFilterBar = document.getElementById('reportFilterBar');
-        if (!reportFilterBar) return;
-
         // 데이터가 로드되었는지 먼저 확인합니다.
         if (!this.app || !this.app.state.data.all.length) {
-            // 데이터가 없으면 로딩 메시지를 표시합니다.
-            reportFilterBar.innerHTML = `<p style="color: var(--text-secondary);">전체 지원자 데이터를 불러오는 중입니다. 잠시 후 다시 시도해주세요...</p>`;
-            return; // 함수 종료
+            console.log('리포트 필터 생성 대기: 데이터 로딩 중...');
+            return; // 데이터가 없으면 일단 중단
         }
 
         const { headers, all } = this.app.state.data;
 
-        // 필터 HTML 구조 생성
-        reportFilterBar.innerHTML = `
-            <div class="filter-group" style="flex-grow: 2; min-width: 300px;">
-                <label for="reportPeriod">기간</label>
-                <select id="reportPeriod" onchange="ReportModule.handlePeriodChange(this.value)">
-                    <option value="all">전체</option>
-                    <option value="year">올해</option>
-                    <option value="month" selected>이번 달</option>
-                    <option value="week">이번 주</option>
-                    <option value="custom">기간 직접 선택</option>
-                </select>
-                <div id="reportCustomDateRange" style="display: none; margin-top: 5px; display: flex; gap: 10px;">
-                    <input type="date" id="reportStartDate">
-                    <input type="date" id="reportEndDate">
-                </div>
-            </div>
-            <div class="filter-group">
-                <label for="reportInterviewer">면접관</label>
-                <select id="reportInterviewer"><option value="all">전체</option></select>
-            </div>
-            <div class="filter-group">
-                <label for="reportRoute">지원 루트</label>
-                <select id="reportRoute"><option value="all">전체</option></select>
-            </div>
-        `;
-
         // 드롭다운 옵션 채우기
+        const interviewerSelect = document.getElementById('reportInterviewer');
+        const routeSelect = document.getElementById('reportRoute');
+
+        if (!interviewerSelect || !routeSelect) {
+            console.error('리포트 필터 요소를 찾을 수 없습니다.');
+            return;
+        }
+
         const interviewerIndex = headers.indexOf('면접관');
         const routeIndex = headers.indexOf('지원루트');
 
+        // 면접관 목록 채우기
         if (interviewerIndex !== -1) {
             const options = [...new Set(all.map(row => (row[interviewerIndex] || '').trim()).filter(Boolean))];
-            const select = document.getElementById('reportInterviewer');
+            // 기존 옵션 초기화 (전체 제외)
+            interviewerSelect.innerHTML = '<option value="all">전체</option>';
             options.sort().forEach(name => {
-                select.innerHTML += `<option value="${name}">${name}</option>`;
-            });
-        }
-        if (routeIndex !== -1) {
-            const options = [...new Set(all.map(row => (row[routeIndex] || '').trim()).filter(Boolean))];
-            const select = document.getElementById('reportRoute');
-            options.sort().forEach(name => {
-                select.innerHTML += `<option value="${name}">${name}</option>`;
+                interviewerSelect.innerHTML += `<option value="${name}">${name}</option>`;
             });
         }
 
-        // 기간 선택 '직접입력' 핸들러
+        // 지원루트 목록 채우기
+        if (routeIndex !== -1) {
+            const options = [...new Set(all.map(row => (row[routeIndex] || '').trim()).filter(Boolean))];
+            // 기존 옵션 초기화 (전체 제외)
+            routeSelect.innerHTML = '<option value="all">전체</option>';
+            options.sort().forEach(name => {
+                routeSelect.innerHTML += `<option value="${name}">${name}</option>`;
+            });
+        }
+
+        console.log('✅ 리포트 필터 목록 생성 완료');
         this.handlePeriodChange('month');
     },
 
@@ -97,10 +80,8 @@ export const ReportModule = {
             </div>
         `;
 
-        // 0.5초 후 리포트 생성 (로딩 애니메이션을 보여주기 위함)
         setTimeout(() => {
             try {
-                // 1. 선택된 필터 값 가져오기
                 const options = {
                     period: document.getElementById('reportPeriod').value,
                     startDate: document.getElementById('reportStartDate').value,
@@ -109,14 +90,9 @@ export const ReportModule = {
                     route: document.getElementById('reportRoute').value
                 };
 
-                // 2. 필터에 맞는 데이터 추출
                 const filteredData = this.getFilteredData(options);
-
-                // 3. 리포트 HTML 생성 및 표시
                 const reportHtml = this.buildReportHtml(filteredData, options);
                 previewContainer.innerHTML = reportHtml;
-
-                // 4. 리포트 내 차트 그리기
                 this.renderReportCharts(filteredData);
             } catch (error) {
                 console.error("리포트 생성 중 오류 발생:", error);
@@ -168,17 +144,14 @@ export const ReportModule = {
         return data;
     },
 
-    // 필터링된 데이터로 리포트의 전체 HTML 구조를 만드는 함수
     buildReportHtml(data, options) {
         const now = new Date();
         const periodText = this.getPeriodText(options);
         const headers = this.app.state.data.headers;
-
         const totalApplicants = data.length;
         const interviewConfirmedCount = data.filter(row => (row[headers.indexOf('1차 컨택 결과')] || '') === '면접확정').length;
         const passedCount = data.filter(row => (row[headers.indexOf('면접결과')] || '') === '합격').length;
         const joinedCount = data.filter(row => (row[headers.indexOf('입과일')] || '').trim() !== '').length;
-
         const interviewRate = totalApplicants > 0 ? ((interviewConfirmedCount / totalApplicants) * 100).toFixed(1) : 0;
         const passRate = interviewConfirmedCount > 0 ? ((passedCount / interviewConfirmedCount) * 100).toFixed(1) : 0;
         const joinRate = passedCount > 0 ? ((joinedCount / passedCount) * 100).toFixed(1) : 0;
@@ -196,7 +169,7 @@ export const ReportModule = {
                 .chart-container-report { border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; }
                 @media print {
                     body, .main-content, .content-area { background: white !important; }
-                    .sidebar, .main-header, #report .stats-fixed-header { display: none !important; }
+                    .sidebar, .main-header, #report .page-header, #report .filter-bar { display: none !important; }
                     #report, #reportPreviewContainer { display: block !important; padding: 0 !important; margin: 0 !important; box-shadow: none !important; }
                     #reportPage { box-shadow: none; border: none; }
                 }
@@ -207,7 +180,6 @@ export const ReportModule = {
                     <strong>조회 기간:</strong> ${periodText} | 
                     <strong>발행일:</strong> ${now.toLocaleDateString('ko-KR')}
                 </p>
-
                 <h2>핵심 성과 지표 (KPIs)</h2>
                 <div class="report-grid">
                     <div class="kpi-box"><div class="label">총 지원자</div><div class="value">${totalApplicants}명</div></div>
@@ -215,7 +187,6 @@ export const ReportModule = {
                     <div class="kpi-box"><div class="label">면접자 중 합격률</div><div class="value">${passRate}%</div></div>
                     <div class="kpi-box"><div class="label">합격자 중 입과율</div><div class="value">${joinRate}%</div></div>
                 </div>
-
                 <h2>시각화 자료</h2>
                 <div class="report-grid">
                     <div class="chart-container-report">
@@ -231,10 +202,8 @@ export const ReportModule = {
         `;
     },
 
-    // 리포트 내부에 차트를 그리는 함수
     renderReportCharts(filteredData) {
         const chartOptions = { responsive: true, maintainAspectRatio: false };
-        // 지원루트 차트
         const routeCtx = document.getElementById('reportRouteChart');
         if (routeCtx) {
             const routeIndex = this.app.state.data.headers.indexOf('지원루트');
@@ -245,15 +214,11 @@ export const ReportModule = {
             });
             new Chart(routeCtx, {
                 type: 'doughnut',
-                data: {
-                    labels: Object.keys(routeData),
-                    datasets: [{ data: Object.values(routeData), backgroundColor: Object.values(this.app.config.CHART_COLORS) }]
-                },
+                data: { labels: Object.keys(routeData), datasets: [{ data: Object.values(routeData), backgroundColor: Object.values(this.app.config.CHART_COLORS) }] },
                 options: chartOptions
             });
         }
         
-        // 모집분야 차트
         const positionCtx = document.getElementById('reportPositionChart');
         if (positionCtx) {
             const positionIndex = this.app.state.data.headers.indexOf('모집분야');
@@ -264,10 +229,7 @@ export const ReportModule = {
             });
             new Chart(positionCtx, {
                 type: 'pie',
-                data: {
-                    labels: Object.keys(positionData),
-                    datasets: [{ data: Object.values(positionData), backgroundColor: Object.values(this.app.config.CHART_COLORS).reverse() }]
-                },
+                data: { labels: Object.keys(positionData), datasets: [{ data: Object.values(positionData), backgroundColor: Object.values(this.app.config.CHART_COLORS).reverse() }] },
                 options: chartOptions
             });
         }
