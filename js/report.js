@@ -1,4 +1,4 @@
-// js/report.js (모든 오타, 문법 오류 최종 수정 완료)
+// js/report.js (모든 오류 최종 수정 완료된 버전)
 
 export const ReportModule = {
     // 페이지가 처음 열릴 때 실행되는 초기화 함수
@@ -10,11 +10,17 @@ export const ReportModule = {
 
     // 리포트 조건 필터(드롭다운)에 옵션을 채워 넣는 함수
     populateFilters() {
-        if (!this.app || !this.app.state.data.all.length) return;
-
-        const { headers, all } = this.app.state.data;
         const reportFilterBar = document.getElementById('reportFilterBar');
         if (!reportFilterBar) return;
+
+        // 데이터가 로드되었는지 먼저 확인합니다.
+        if (!this.app || !this.app.state.data.all.length) {
+            // 데이터가 없으면 로딩 메시지를 표시합니다.
+            reportFilterBar.innerHTML = `<p style="color: var(--text-secondary);">전체 지원자 데이터를 불러오는 중입니다. 잠시 후 다시 시도해주세요...</p>`;
+            return; // 함수 종료
+        }
+
+        const { headers, all } = this.app.state.data;
 
         // 필터 HTML 구조 생성
         reportFilterBar.innerHTML = `
@@ -61,6 +67,7 @@ export const ReportModule = {
             });
         }
 
+        // 기간 선택 '직접입력' 핸들러
         this.handlePeriodChange('month');
     },
 
@@ -90,8 +97,10 @@ export const ReportModule = {
             </div>
         `;
 
+        // 0.5초 후 리포트 생성 (로딩 애니메이션을 보여주기 위함)
         setTimeout(() => {
             try {
+                // 1. 선택된 필터 값 가져오기
                 const options = {
                     period: document.getElementById('reportPeriod').value,
                     startDate: document.getElementById('reportStartDate').value,
@@ -100,9 +109,14 @@ export const ReportModule = {
                     route: document.getElementById('reportRoute').value
                 };
 
+                // 2. 필터에 맞는 데이터 추출
                 const filteredData = this.getFilteredData(options);
+
+                // 3. 리포트 HTML 생성 및 표시
                 const reportHtml = this.buildReportHtml(filteredData, options);
                 previewContainer.innerHTML = reportHtml;
+
+                // 4. 리포트 내 차트 그리기
                 this.renderReportCharts(filteredData);
             } catch (error) {
                 console.error("리포트 생성 중 오류 발생:", error);
@@ -174,15 +188,12 @@ export const ReportModule = {
                 #reportPage { padding: 20px; font-family: 'Noto Sans KR', sans-serif; background: white; color: #333; }
                 #reportPage h1, #reportPage h2, #reportPage h3 { color: #334155; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 15px; }
                 #reportPage h1 { font-size: 1.8rem; text-align: center; border: none; }
-                #reportPage p { color: #64748b; text-align: center; margin-bottom: 25px; }
+                #reportPage .report-info { color: #64748b; text-align: center; margin-bottom: 25px; }
                 .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
                 .kpi-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; text-align: center; border-radius: 8px;}
                 .kpi-box .label { font-size: 1rem; color: #64748b; margin-bottom: 8px; }
                 .kpi-box .value { font-size: 2.2rem; font-weight: 700; color: #818cf8; }
                 .chart-container-report { border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; }
-                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                th, td { border: 1px solid #e2e8f0; padding: 10px; text-align: center; font-size: 0.85rem; }
-                th { background: #f8fafc; font-weight: 600; }
                 @media print {
                     body, .main-content, .content-area { background: white !important; }
                     .sidebar, .main-header, #report .stats-fixed-header { display: none !important; }
@@ -192,7 +203,7 @@ export const ReportModule = {
             </style>
             <div id="reportPage">
                 <h1>채용 현황 리포트</h1>
-                <p>
+                <p class="report-info">
                     <strong>조회 기간:</strong> ${periodText} | 
                     <strong>발행일:</strong> ${now.toLocaleDateString('ko-KR')}
                 </p>
@@ -266,66 +277,5 @@ export const ReportModule = {
         const periodMap = { 'all': '전체 기간', 'year': '올해', 'month': '이번 달', 'week': '이번 주' };
         if (options.period === 'custom') return `${options.startDate} ~ ${options.endDate}`;
         return periodMap[options.period] || 'N/A';
-    },
-
-    // PDF 다운로드 또는 인쇄를 처리하는 최종 함수
-    async createAndDownloadReport() {
-        const generateBtn = document.querySelector('#report .primary-btn');
-        const originalBtnHtml = generateBtn.innerHTML;
-
-        generateBtn.disabled = true;
-        generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 리포트 생성 중...';
-        
-        try {
-            // 1. 리포트 생성
-            this.generateReport();
-            
-            // 리포트 렌더링을 위해 잠시 대기
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // 2. PDF 다운로드
-            generateBtn.innerHTML = '<i class="fas fa-file-pdf"></i> PDF 변환 중...';
-
-            const reportElement = document.getElementById('reportPage');
-            if (!reportElement) {
-                alert('리포트 내용이 없습니다.');
-                return;
-            }
-
-            if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
-                alert('PDF 생성 라이브러리를 로드하지 못했습니다. index.html 파일을 확인해주세요.');
-                return;
-            }
-
-            const canvas = await html2canvas(reportElement, { scale: 2, useCORS: true });
-            const imgData = canvas.toDataURL('image/png');
-            
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            const canvasWidth = canvas.width;
-            const canvasHeight = canvas.height;
-            const ratio = canvasWidth / canvasHeight;
-            
-            let imgWidth = pdfWidth;
-            let imgHeight = pdfWidth / ratio;
-            
-            if (imgHeight > pdfHeight) {
-                imgHeight = pdfHeight;
-                imgWidth = pdfHeight * ratio;
-            }
-            
-            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-            pdf.save(`채용현황-리포트-${new Date().toISOString().slice(0,10)}.pdf`);
-
-        } catch (error) {
-            console.error('리포트 생성/다운로드 실패:', error);
-            alert('리포트 생성 또는 PDF 다운로드에 실패했습니다.');
-        } finally {
-            generateBtn.disabled = false;
-            generateBtn.innerHTML = originalBtnHtml;
-        }
     }
 };
