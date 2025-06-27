@@ -200,12 +200,8 @@ export const ReportModule = {
             const result = await response.json();
             if (result.status !== 'success') throw new Error(result.message);
 
-            const reportHtml = this.buildAiReport(result.analysis, options);
+            const reportHtml = this.buildAiReportFromMarkdown(result.analysis, options);
             previewContainer.innerHTML = reportHtml;
-
-            if (result.analysis.trendChartData) {
-                this.renderAiChart(result.analysis.trendChartData);
-            }
 
         } catch (error) {
             console.error("AI 분석 요청 실패:", error);
@@ -213,45 +209,42 @@ export const ReportModule = {
         }
     },
     
-    buildAiReport(result, options) {
+    buildAiReportFromMarkdown(markdownText, options) {
         const periodText = this.getPeriodText(options);
-        const kpis = result.kpis || {};
-        const insights = result.insights || [];
-        const actionItems = result.actionItems || [];
+
+        const parseSection = (title) => {
+            const regex = new RegExp(`### ${title}\\s*([\\s\\S]*?)(?:###|$)`);
+            const match = markdownText.match(regex);
+            return match ? match[1].trim().split('\n').map(line => line.replace(/^- /, '').replace(/\* /g, '').trim()).filter(line => line) : [];
+        };
+
+        const kpiLines = parseSection('KPI 요약');
+        const trendLines = parseSection('트렌드 분석');
+        const insightLines = parseSection('핵심 인사이트');
+        const actionLines = parseSection('다음 달 액션 아이템');
+
+        const kpis = {};
+        kpiLines.forEach(line => {
+            const parts = line.split(':');
+            if (parts.length === 2) {
+                const key = parts[0].trim();
+                const value = parts[1].trim();
+                if (key.includes('총 지원자')) kpis.totalApplicants = { value: value };
+                else if (key.includes('면접 전환율')) kpis.interviewRate = { value: value };
+                else if (key.includes('최종 합격률')) kpis.passRate = { value: value };
+                else if (key.includes('입사 전환율')) kpis.hireRate = { value: value };
+            }
+        });
 
         const kpiHtml = `
-            <div class="kpi-card">
-                <div class="kpi-header"><i class="fas fa-users"></i> 총 지원자</div>
-                <div class="kpi-value">${kpis.totalApplicants?.value || 'N/A'}</div>
-                <div class="kpi-change positive">${kpis.totalApplicants?.change || ''}</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-header"><i class="fas fa-comments"></i> 면접 전환율</div>
-                <div class="kpi-value">${kpis.interviewRate?.value || 'N/A'}</div>
-                <div class="kpi-change positive">${kpis.interviewRate?.change || ''}</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-header"><i class="fas fa-check-circle"></i> 최종 합격률</div>
-                <div class="kpi-value">${kpis.passRate?.value || 'N/A'}</div>
-                <div class="kpi-change negative">${kpis.passRate?.change || ''}</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-header"><i class="fas fa-rocket"></i> 입사 전환율</div>
-                <div class="kpi-value">${kpis.hireRate?.value || 'N/A'}</div>
-                <div class="kpi-change positive">${kpis.hireRate?.change || ''}</div>
-            </div>
+            <div class="kpi-card"><div class="kpi-header"><i class="fas fa-users"></i> 총 지원자</div><div class="kpi-value">${kpis.totalApplicants?.value || 'N/A'}</div></div>
+            <div class="kpi-card"><div class="kpi-header"><i class="fas fa-comments"></i> 면접 전환율</div><div class="kpi-value">${kpis.interviewRate?.value || 'N/A'}</div></div>
+            <div class="kpi-card"><div class="kpi-header"><i class="fas fa-check-circle"></i> 최종 합격률</div><div class="kpi-value">${kpis.passRate?.value || 'N/A'}</div></div>
+            <div class="kpi-card"><div class="kpi-header"><i class="fas fa-rocket"></i> 입사 전환율</div><div class="kpi-value">${kpis.hireRate?.value || 'N/A'}</div></div>
         `;
 
-        const insightsHtml = insights.map(item => `
-            <div class="insight-card">
-                <div class="insight-title">${item.title || '핵심 발견'}</div>
-                <p class="insight-text">${item.text || '내용 없음'}</p>
-            </div>
-        `).join('');
-
-        const actionItemsHtml = actionItems.map(item => `
-            <li class="action-item">${item}</li>
-        `).join('');
+        const insightsHtml = insightLines.map(text => `<div class="insight-card"><p class="insight-text">${text}</p></div>`).join('');
+        const actionItemsHtml = actionLines.map(text => `<li class="action-item">${text}</li>`).join('');
 
         return `
             <div id="advancedReportPage">
@@ -259,52 +252,16 @@ export const ReportModule = {
                     <h1>채용 성과 리포트</h1>
                     <p>${periodText} 종합 분석 보고서</p>
                 </div>
-                <div class="report-grid kpi-grid">${kpiHtml}</div>
-                
-                ${result.trendChartData ? `
-                <div class="report-section">
-                    <h2><i class="fas fa-chart-line"></i> 트렌드 분석</h2>
-                    <div class="chart-container-report">
-                        <canvas id="aiTrendChart"></canvas>
-                    </div>
-                </div>
-                ` : ''}
-
-                <div class="report-section">
-                    <h2><i class="fas fa-lightbulb"></i> 핵심 인사이트</h2>
-                    <div class="report-grid insight-grid">${insightsHtml}</div>
-                </div>
-
-                <div class="report-section">
-                    <h2><i class="fas fa-tasks"></i> 다음 달 액션 아이템</h2>
-                    <ol class="action-item-list">${actionItemsHtml}</ol>
-                </div>
+                <div class="report-section"><h2><i class="fas fa-tachometer-alt"></i> KPI 요약</h2><div class="report-grid kpi-grid">${kpiHtml}</div></div>
+                <div class="report-section"><h2><i class="fas fa-chart-line"></i> 트렌드 분석</h2><p class="insight-text">${trendLines.join('<br>') || '분석 내용 없음'}</p></div>
+                <div class="report-section"><h2><i class="fas fa-lightbulb"></i> 핵심 인사이트</h2><div class="report-grid insight-grid">${insightsHtml}</div></div>
+                <div class="report-section"><h2><i class="fas fa-tasks"></i> 다음 달 액션 아이템</h2><ol class="action-item-list">${actionItemsHtml}</ol></div>
             </div>
         `;
     },
 
-    renderAiChart(chartData) {
-        const ctx = document.getElementById('aiTrendChart')?.getContext('2d');
-        if (!ctx || !chartData) return;
-
-        new Chart(ctx, {
-            type: chartData.type || 'line',
-            data: {
-                labels: chartData.labels,
-                datasets: chartData.datasets.map((ds, index) => ({
-                    ...ds,
-                    borderColor: Object.values(this.app.config.CHART_COLORS)[index],
-                    backgroundColor: `${Object.values(this.app.config.CHART_COLORS)[index]}33`,
-                    fill: true,
-                    tension: 0.4
-                }))
-            },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-    },
-
     // =================================================
-    // 필터링 및 UI 렌더링 헬퍼 함수
+    // 모든 헬퍼 함수들
     // =================================================
     populateFilters() {
         const reportFilterBar = document.getElementById('reportFilterBar');
