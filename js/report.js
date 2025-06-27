@@ -9,64 +9,63 @@ export const ReportModule = {
     },
 
     // 리포트 조건 필터(드롭다운)에 옵션을 채워 넣는 함수
-    // 이 함수 전체를 복사해서 기존 populateFilters 함수와 교체해주세요.
     populateFilters() {
-        if (!this.app || !this.app.state.data.all.length) return;
+    if (!this.app || !this.app.state.data.all.length) return;
 
-        const { headers, all } = this.app.state.data;
-        const reportFilterBar = document.getElementById('reportFilterBar');
-        if (!reportFilterBar) return;
+    const { headers, all } = this.app.state.data;
+    const reportFilterBar = document.getElementById('reportFilterBar');
+    if (!reportFilterBar) return;
 
-        // 필터 HTML 구조 생성
-        reportFilterBar.innerHTML = `
-            <div class="filter-group" style="flex-grow: 2; min-width: 300px;">
-                <label for="reportPeriod">기간</label>
-                <select id="reportPeriod" onchange="ReportModule.handlePeriodChange(this.value)">
-                    <option value="all">전체</option>
-                    <option value="year">올해</option>
-                    <option value="month" selected>이번 달</option>
-                    <option value="week">이번 주</option>
-                    <option value="custom">기간 직접 선택</option>
-                </select>
-                <div id="reportCustomDateRange" style="display: none; margin-top: 5px; display: flex; gap: 10px;">
-                    <input type="date" id="reportStartDate">
-                    <input type="date" id="reportEndDate">
-                </div>
+    // 필터 HTML 구조 생성
+    reportFilterBar.innerHTML = `
+        <div class="filter-group" style="flex-grow: 2; min-width: 300px;">
+            <label for="reportPeriod">기간</label>
+            <select id="reportPeriod" onchange="ReportModule.handlePeriodChange(this.value)">
+                <option value="all">전체</option>
+                <option value="year">올해</option>
+                <option value="month" selected>이번 달</option>
+                <option value="week">이번 주</option>
+                <option value="custom">기간 직접 선택</option>
+            </select>
+            <div id="reportCustomDateRange" style="display: none; margin-top: 5px; display: flex; gap: 10px;">
+                <input type="date" id="reportStartDate">
+                <input type="date" id="reportEndDate">
             </div>
-            <div class="filter-group">
-                <label for="reportInterviewer">면접관</label>
-                <select id="reportInterviewer"><option value="all">전체</option></select>
-            </div>
-            <div class="filter-group">
-                <label for="reportRoute">지원 루트</label>
-                <select id="reportRoute"><option value="all">전체</option></select>
-            </div>
-        `;
+        </div>
+        <div class="filter-group">
+            <label for="reportInterviewer">면접관</label>
+            <select id="reportInterviewer"><option value="all">전체</option></select>
+        </div>
+        <div class="filter-group">
+            <label for="reportRoute">지원 루트</label>
+            <select id="reportRoute"><option value="all">전체</option></select>
+        </div>
+    `;
 
-        // 드롭다운 옵션 채우기
-        const interviewerIndex = headers.indexOf('면접관');
-        const routeIndex = headers.indexOf('지원루트');
+    // 드롭다운 옵션 채우기
+    const interviewerIndex = headers.indexOf('면접관');
+    const routeIndex = headers.indexOf('지원루트');
 
-        // ▼▼▼▼▼ [오류가 수정된 최종 버전입니다] ▼▼▼▼▼
-        if (interviewerIndex !== -1) {
-            const options = [...new Set(all.map(row => (row[interviewerIndex] || '').trim()).filter(Boolean))];
-            const select = document.getElementById('reportInterviewer');
-            options.sort().forEach(name => {
-                select.innerHTML += \`<option value="\${name}">\${name}</option>\`;
-            });
-        }
-        if (routeIndex !== -1) {
-            const options = [...new Set(all.map(row => (row[routeIndex] || '').trim()).filter(Boolean))];
-            const select = document.getElementById('reportRoute');
-            options.sort().forEach(name => {
-                select.innerHTML += \`<option value="\${name}">\${name}</option>\`;
-            });
-        }
-        // ▲▲▲▲▲ [오류가 수정된 최종 버전입니다] ▲▲▲▲▲
+    // ▼▼▼▼▼ [ # 기호가 완전히 제거된 최종 코드입니다 ] ▼▼▼▼▼
+    if (interviewerIndex !== -1) {
+        const options = [...new Set(all.map(row => (row[interviewerIndex] || '').trim()).filter(Boolean))];
+        const select = document.getElementById('reportInterviewer');
+        options.sort().forEach(name => {
+            select.innerHTML += \`<option value="\${name}">\${name}</option>\`;
+        });
+    }
+    if (routeIndex !== -1) {
+        const options = [...new Set(all.map(row => (row[routeIndex] || '').trim()).filter(Boolean))];
+        const select = document.getElementById('reportRoute');
+        options.sort().forEach(name => {
+            select.innerHTML += \`<option value="\${name}">\${name}</option>\`;
+        });
+    }
+    // ▲▲▲▲▲ [ # 기호가 완전히 제거된 최종 코드입니다 ] ▲▲▲▲▲
 
-        // 기간 선택 '직접입력' 핸들러
-        this.handlePeriodChange('month');
-    },
+    // 기간 선택 '직접입력' 핸들러
+    this.handlePeriodChange('month');
+},
 
     // 기간 선택 변경 시, 직접입력 필드를 보여주거나 숨기는 함수
     handlePeriodChange(value) {
