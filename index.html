@@ -612,22 +612,9 @@
                                     <button class="btn btn-primary"><i class="fas fa-magic"></i> 리포트 생성</button>
                                 </div>
                             </div>
-                            <div class="report-preview">
-                                <div class="preview-header">
-                                    <div class="preview-title">리포트 미리보기</div>
-                                    <div class="preview-actions">
-                                        <button class="preview-btn"><i class="fas fa-expand"></i></button>
-                                        <button class="preview-btn"><i class="fas fa-download"></i></button>
-                                    </div>
-                                </div>
-                                <div class="preview-content">
-                                    </div>
-                            </div>
-                        </div>
+                     </div>       
                     </div>
                 </div>
-                <!-- ================== [수정된 부분 끝] ================== -->
-
             </div>
         </main>
     </div>
@@ -643,7 +630,20 @@
         </div>
     </div>
 
-    <!-- 모든 스크립트 모듈은 여기서 한 번에 로드합니다 -->
+   <div id="reportModal" class="report-modal">
+        <div class="report-modal-content">
+            <div class="report-modal-header">
+                <h3 class="report-modal-title">리포트 미리보기</h3>
+                <div class="report-modal-actions">
+                    <button class="btn btn-secondary" id="printReportBtn"><i class="fas fa-print"></i> 인쇄</button>
+                    <button class="close-btn" id="closeReportModalBtn">&times;</button>
+                </div>
+            </div>
+            <div class="report-modal-body" id="reportModalBody">
+                </div>
+        </div>
+    </div>
+
     <script type="module" src="js/interviewSchedule.js"></script>
     <script type="module" src="js/report.js"></script>
     <script type="module" src="script.js"></script>
