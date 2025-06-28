@@ -3977,10 +3977,11 @@ div[style*="grid-template-columns"] {
 }
 
 .interviewer-summary-list {
-    /* [수정] 가로 배치 (Flexbox 사용) */
-    display: flex;
-    flex-wrap: wrap; /* 공간이 부족하면 자동으로 줄바꿈 */
+    display: flex; /* Flexbox 레이아웃으로 강제 가로 정렬 */
     gap: 12px;
+    overflow-x: auto; /* 내용이 넘칠 경우 가로 스크롤바 생성 */
+    padding-bottom: 10px; /* 스크롤바를 위한 하단 여백 */
+    -webkit-overflow-scrolling: touch; /* 모바일에서 부드러운 스크롤 효과 */
 }
 
 .interviewer-summary-item {
@@ -3992,8 +3993,9 @@ div[style*="grid-template-columns"] {
     border-radius: 10px;
     border: 1px solid var(--border-color);
     transition: all 0.2s ease;
-    /* [수정] flex-grow를 주어 가변적으로 너비를 차지하게 함 */
-    flex: 1 1 160px; /* 기본 너비 160px, 늘어나고 줄어들 수 있음 */
+    /* 각 항목이 줄어들지 않고 고유 너비를 가지도록 설정 */
+    flex: 0 0 auto; 
+    width: 170px; /* 각 항목의 너비를 고정 */
 }
 
 .interviewer-summary-item:hover {
