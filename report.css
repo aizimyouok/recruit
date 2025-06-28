@@ -851,4 +851,77 @@
     margin-top: -5px; /* 기간 선택 필드와의 간격을 미세 조정 */
     padding-bottom: 5px; /* 다른 필드와의 간격을 확보 */
 }
+/* =========================
+   리포트 콘텐츠 스타일 (3단계 추가)
+   ========================= */
 
+#report .report-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+#report .report-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+#report .stat-card {
+    background: var(--main-bg);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+}
+
+#report .stat-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+}
+
+#report .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--sidebar-accent);
+}
+
+#report .report-chart-container {
+    width: 100%;
+    height: 400px; /* 차트 높이 지정 */
+    position: relative;
+}
+
+#report .report-table-container {
+    width: 100%;
+    max-height: 500px; /* 테이블 최대 높이 지정 */
+    overflow: auto; /* 내용이 많으면 스크롤바 생성 */
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+#report .report-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#report .report-table th,
+#report .report-table td {
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+#report .report-table th {
+    background-color: var(--main-bg);
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+}
