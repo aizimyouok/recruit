@@ -13,6 +13,8 @@ export const ReportModule = {
         if (reportPage && !reportPage.dataset.initialized) {
             console.log('📊 [ReportModule] Initializing...');
             this.setupEventListeners();
+            // 페이지 로드 시에는 미리보기 요약만 업데이트
+            this.updatePreviewSummary();
             this.toggleDateRangePicker(document.getElementById('report-filter-period')?.value || 'all');
             reportPage.dataset.initialized = 'true';
         }
@@ -55,7 +57,6 @@ export const ReportModule = {
                     if (target.id === 'report-filter-period') {
                         this.toggleDateRangePicker(target.value);
                     }
-                    // 필터 변경 시에는 미리보기 요약만 업데이트합니다.
                     this.updatePreviewSummary();
                 }
             };
@@ -65,26 +66,39 @@ export const ReportModule = {
     
     _handleEvent(event) {
         const target = event.target;
-        const handlers = {
-            '.report-tab': (el) => this.switchTab(el),
-            '.template-card': (el) => this.selectCard(el, '.template-card'),
-            '.format-option': (el) => this.selectCard(el, '.format-option'),
-            '#report-reset-filters': () => this.resetFilters(),
-            '.btn-primary': (el) => {
-                // 클릭된 버튼이 리포트 페이지 내에 있을 때만 generateReport 실행
-                if (el.closest('#report')) this.generateReport();
-            },
+        
+        // Report 페이지 내에서 발생하는 이벤트 처리
+        const reportPage = target.closest('#report');
+        if (reportPage) {
+            const handlers = {
+                '.report-tab': (el) => this.switchTab(el),
+                '.template-card': (el) => this.selectCard(el, '.template-card'),
+                '.format-option': (el) => this.selectCard(el, '.format-option'),
+                '#report-reset-filters': () => this.resetFilters(),
+                '.btn-primary': () => this.generateReport(),
+            };
+
+            for (const selector in handlers) {
+                const element = target.closest(selector);
+                if (element) {
+                    handlers[selector](element);
+                    return;
+                }
+            }
+        }
+        
+        // 모달 관련 이벤트 처리 (페이지와 무관하게 작동)
+        const modalHandlers = {
             '#closeReportModalBtn': () => this.closeReportModal(),
             '#printReportBtn': () => window.print(),
         };
-
-        for (const selector in handlers) {
-            const element = target.closest(selector);
-            if (element) {
-                handlers[selector](element);
+        for (const selector in modalHandlers) {
+            if (target.closest(selector)) {
+                modalHandlers[selector]();
                 return;
             }
         }
+        
         // 모달 외부 클릭 시 닫기
         if (target.matches('.report-modal')) {
             this.closeReportModal();
@@ -120,11 +134,11 @@ export const ReportModule = {
             select.selectedIndex = 0;
         });
         this.toggleDateRangePicker('all');
-        this.updatePreviewSummary(); // 리셋 후 요약 업데이트
+        this.updatePreviewSummary();
     },
 
     switchTab(clickedTab) {
-        const reportPage = document.getElementById('report');
+        const reportPage = clickedTab.closest('#report');
         if (!reportPage) return;
         reportPage.querySelectorAll('.report-tab').forEach(t => t.classList.remove('active'));
         reportPage.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -142,7 +156,7 @@ export const ReportModule = {
 
     populateFilters() {
         const app = globalThis.App;
-        if (!app || !app.state.data.all.length) return;
+        if (!app || !app.state.data.all.length) { return; }
         const { headers, all } = app.state.data;
         const filtersToPopulate = {
             '지원루트': 'report-filter-route', '모집분야': 'report-filter-position',
@@ -161,7 +175,7 @@ export const ReportModule = {
                 });
             }
         }
-        this.updatePreviewSummary(); // 필터 채운 후 초기 요약 업데이트
+        this.updatePreviewSummary();
     },
     
     getFilteredReportData() {
@@ -214,7 +228,7 @@ export const ReportModule = {
         const totalCount = this.getFilteredReportData().length;
         const button = document.querySelector('#report .btn-primary');
         if (button) {
-            button.innerHTML = `<i class="fas fa-magic"></i> ${totalCount}명 리포트 생성`;
+            button.innerHTML = `<i class="fas fa-magic"></i> ${totalCount}명 리포트 생성 및 확인`;
         }
     },
     
@@ -292,7 +306,7 @@ export const ReportModule = {
         const total = data.length;
         const interviewConfirmed = data.filter(r => (r[indices.contactResult] || '') === '면접확정').length;
         const passed = data.filter(r => (r[indices.interviewResult] || '') === '합격').length;
-        const joined = data.filter(r => (r[indices.joinDate] || '').trim()).length;
+        const joined = data.filter(r => (r[indices.joinDate] || '').trim() && (r[indices.joinDate] || '').trim() !== '-').length;
         return [
             { stage: '총 지원', count: total, conversion: 100 },
             { stage: '면접 확정', count: interviewConfirmed, conversion: total > 0 ? (interviewConfirmed / total * 100) : 0 },
@@ -304,7 +318,8 @@ export const ReportModule = {
     generateFunnelHtml(funnelData) {
         let html = '<h3 class="report-subtitle">채용 퍼널 분석</h3><div class="report-funnel">';
         funnelData.forEach((step, index) => {
-            const widthPercentage = index === 0 ? 100 : funnelData[index-1].count > 0 ? (step.count / funnelData[index-1].count * 100) : 0;
+            const prevCount = index > 0 ? funnelData[index - 1].count : step.count;
+            const widthPercentage = prevCount > 0 ? (step.count / prevCount) * 100 : 100;
             html += `
                 <div class="funnel-step" style="--step-color: var(--funnel-color-${index + 1});">
                     <div class="funnel-info">
@@ -330,7 +345,7 @@ export const ReportModule = {
             const route = row[indices.route] || '미지정';
             if (!sourceStats[route]) sourceStats[route] = { total: 0, joined: 0 };
             sourceStats[route].total++;
-            if ((row[indices.joinDate] || '').trim()) sourceStats[route].joined++;
+            if ((row[indices.joinDate] || '').trim() && (row[indices.joinDate] || '').trim() !== '-') sourceStats[route].joined++;
         });
         return Object.entries(sourceStats).map(([name, stats]) => ({
             name, total: stats.total, joined: stats.joined,
@@ -340,7 +355,7 @@ export const ReportModule = {
 
     generateTopSourcesTableHtml(topSourcesData) {
         let tableHtml = '<table class="report-table mini"><thead><tr><th>지원루트</th><th>총지원</th><th>최종입과</th><th>입과율</th></tr></thead><tbody>';
-        if (topSourcesData.length === 0) return '<p>데이터 부족</p>';
+        if (topSourcesData.length === 0) return '<p>데이터가 부족하여 우수 채용 경로를 분석할 수 없습니다.</p>';
         topSourcesData.forEach(source => {
             tableHtml += `<tr><td>${source.name}</td><td>${source.total}명</td><td>${source.joined}명</td><td><strong>${source.joinRate.toFixed(1)}%</strong></td></tr>`;
         });
@@ -392,8 +407,11 @@ export const ReportModule = {
     showCustomAlert(message) {
         const overlay = document.createElement('div');
         overlay.className = 'custom-alert-overlay';
-        overlay.innerHTML = `<div class="custom-alert-box"><p>${message}</p><button>확인</button></div>`;
+        overlay.innerHTML = `<div class="custom-alert-box" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-align: center; max-width: 320px;"><p style="margin: 0 0 20px; font-size: 1rem; color: #333;">${message}</p><button style="padding: 10px 20px; border: none; background: #4f46e5; color: white; border-radius: 8px; cursor: pointer; font-weight: 600;">확인</button></div>`;
         document.body.appendChild(overlay);
         overlay.querySelector('button').onclick = () => overlay.remove();
+        overlay.onclick = (e) => {
+            if (e.target === overlay) overlay.remove();
+        };
     }
 };
