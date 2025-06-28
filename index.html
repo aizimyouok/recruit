@@ -542,9 +542,71 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div id="custom-tab" class="tab-content">...</div>
-                                <div id="ai-tab" class="tab-content">...</div>
-                                <div id="history-tab" class="tab-content">...</div>
+                                <div id="custom-tab" class="tab-content">
+                                    <div class="option-group">
+                                        <div class="option-title"><i class="fas fa-puzzle-piece"></i> 포함할 섹션 선택</div>
+                                        <div class="checkbox-group">
+                                            <div class="checkbox-item"><input type="checkbox" id="kpi" checked><label for="kpi">핵심 성과 지표 (KPI)<small>총 지원자, 전환율, 입과율 등 주요 지표</small></label></div>
+                                            <div class="checkbox-item"><input type="checkbox" id="charts" checked><label for="charts">시각화 차트<small>지원루트별, 모집분야별 분포도</small></label></div>
+                                            <div class="checkbox-item"><input type="checkbox" id="trends"><label for="trends">트렌드 분석<small>시간별 지원자 추이 및 패턴 분석</small></label></div>
+                                            <div class="checkbox-item"><input type="checkbox" id="efficiency"><label for="efficiency">효율성 분석<small>채용 경로별 효율성 비교</small></label></div>
+                                            <div class="checkbox-item"><input type="checkbox" id="demographics"><label for="demographics">인구통계 분석<small>연령대, 성별, 지역별 분포</small></label></div>
+                                            <div class="checkbox-item"><input type="checkbox" id="interviews"><label for="interviews">면접 현황<small>면접 일정 및 결과 분석</small></label></div>
+                                        </div>
+                                    </div>
+                                    <div class="option-group">
+                                        <div class="option-title"><i class="fas fa-palette"></i> 차트 스타일</div>
+                                        <div class="format-selector">
+                                            <div class="format-option selected"><i class="fas fa-paint-brush"></i><span>모던</span></div>
+                                            <div class="format-option"><i class="fas fa-chart-bar"></i><span>클래식</span></div>
+                                            <div class="format-option"><i class="fas fa-magic"></i><span>미니멀</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="ai-tab" class="tab-content">
+                                    <div class="ai-analysis-grid">
+                                        <div class="analysis-category">
+                                            <div class="category-title"><i class="fas fa-funnel-dollar"></i> 유입 분석</div>
+                                            <div class="analysis-item"><label><input type="checkbox"><div><div class="analysis-title">가장 효율적인 지원 경로는?</div><div class="analysis-description">어떤 지원루트가 가장 많은 최종 입사자를 만들어내는지 분석합니다.</div></div></label></div>
+                                            <div class="analysis-item"><label><input type="checkbox"><div><div class="analysis-title">최고의 증원자는 누구인가?</div><div class="analysis-description">어떤 증원자가 추천한 지원자들이 면접 합격률이 높은지 분석합니다.</div></div></label></div>
+                                        </div>
+                                        <div class="analysis-category">
+                                            <div class="category-title"><i class="fas fa-users"></i> 지원자 특징 분석</div>
+                                            <div class="analysis-item"><label><input type="checkbox"><div><div class="analysis-title">최종 합격자들의 공통점은?</div><div class="analysis-description">합격자들의 주요 나이대, 성별, 지역 등 인구통계학적 특징을 파악합니다.</div></div></label></div>
+                                            <div class="analysis-item"><label><input type="checkbox"><div><div class="analysis-title">면접 전환율이 높은 지원자 유형은?</div><div class="analysis-description">서류 통과 후 면접까지 잘 이어지는 지원자들의 특징을 분석합니다.</div></div></label></div>
+                                        </div>
+                                        <div class="analysis-category">
+                                            <div class="category-title"><i class="fas fa-chart-line"></i> 채용 과정 분석</div>
+                                            <div class="analysis-item"><label><input type="checkbox"><div><div class="analysis-title">이탈이 가장 많은 구간은?</div><div class="analysis-description">지원부터 입과까지 단계별 전환율을 계산하고 병목 구간을 찾아냅니다.</div></div></label></div>
+                                            <div class="analysis-item"><label><input type="checkbox"><div><div class="analysis-title">면접관별 합격률 차이는?</div><div class="analysis-description">면접관별 평균 합격률과 평가 성향을 비교 분석합니다.</div></div></label></div>
+                                        </div>
+                                        <div class="analysis-category">
+                                            <div class="category-title"><i class="fas fa-brain"></i> 예측 분석</div>
+                                            <div class="analysis-item"><label><input type="checkbox"><div><div class="analysis-title">다음 달 지원자 수 예측</div><div class="analysis-description">과거 트렌드를 바탕으로 향후 지원자 수를 예측합니다.</div></div></label></div>
+                                            <div class="analysis-item"><label><input type="checkbox"><div><div class="analysis-title">계절성 분석</div><div class="analysis-description">월별, 계절별 채용 패턴을 분석하여 최적의 채용 시기를 제안합니다.</div></div></label></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="history-tab" class="tab-content">
+                                    <div class="option-group">
+                                        <div class="option-title"><i class="fas fa-clock"></i> 최근 생성된 리포트</div>
+                                        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; text-align: center; color: #6b7280;">
+                                            <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
+                                            <p>아직 생성된 리포트가 없습니다.</p>
+                                            <p style="font-size: 0.9rem; margin-top: 5px;">첫 번째 리포트를 생성해보세요!</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="progress-section" style="display: none;">
+                                    <h4>리포트 생성 진행률</h4>
+                                    <div class="progress-bar"><div class="progress-fill"></div></div>
+                                    <div class="progress-steps">
+                                        <div class="progress-step active"><i class="fas fa-database"></i> 데이터 수집</div>
+                                        <div class="progress-step"><i class="fas fa-chart-bar"></i> 분석 처리</div>
+                                        <div class="progress-step"><i class="fas fa-magic"></i> AI 분석</div>
+                                        <div class="progress-step"><i class="fas fa-file-pdf"></i> 리포트 생성</div>
+                                    </div>
+                                </div>
                                 <div class="action-buttons">
                                     <button class="btn btn-secondary"><i class="fas fa-eye"></i> 미리보기</button>
                                     <button class="btn btn-primary"><i class="fas fa-magic"></i> 리포트 생성</button>
