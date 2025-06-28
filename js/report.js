@@ -397,38 +397,3 @@ export const ReportModule = {
         overlay.querySelector('button').onclick = () => overlay.remove();
     }
 };
-    showCustomAlert(message) {
-        const existingAlert = document.querySelector('.custom-alert-overlay');
-        if (existingAlert) {
-            existingAlert.remove();
-        }
-
-        const overlay = document.createElement('div');
-        overlay.className = 'custom-alert-overlay';
-        overlay.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); z-index: 10000; display: flex; align-items: center; justify-content: center;`;
-
-        const alertBox = document.createElement('div');
-        alertBox.className = 'custom-alert-box';
-        alertBox.style.cssText = `background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-align: center; max-width: 320px;`;
-        
-        const messageP = document.createElement('p');
-        messageP.textContent = message;
-        messageP.style.cssText = 'margin: 0 0 20px; font-size: 1rem; color: #333;';
-
-        const closeButton = document.createElement('button');
-        closeButton.textContent = '확인';
-        closeButton.style.cssText = `padding: 10px 20px; border: none; background: #4f46e5; color: white; border-radius: 8px; cursor: pointer; font-weight: 600;`;
-
-        alertBox.appendChild(messageP);
-        alertBox.appendChild(closeButton);
-        overlay.appendChild(alertBox);
-        document.body.appendChild(overlay);
-
-        closeButton.onclick = () => overlay.remove();
-        overlay.onclick = (e) => {
-            if (e.target === overlay) {
-                overlay.remove();
-            }
-        };
-    }
-};
