@@ -4004,4 +4004,83 @@ div[style*="grid-template-columns"] {
     padding: 4px 10px;
     border-radius: 12px;
     font-size: 0.8rem;
+}.interviewer-summary-card {
+    /* [수정] 연한 분홍색 파스텔 톤 배경 적용 */
+    background: linear-gradient(135deg, #fff0f5, #fde7f3);
+    border: 1px solid #fbcfe8;
+    padding: 25px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 15px rgba(236, 72, 153, 0.08);
+    min-width: 280px;
+}
+
+.interviewer-summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(236, 72, 153, 0.2);
+    /* [수정] 텍스트 크기 확대 */
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #9d174d;
+}
+
+.interviewer-summary-header .total-count {
+    /* [수정] 텍스트 크기 확대 */
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
+.interviewer-summary-header .badge {
+    background-color: var(--sidebar-accent);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 16px;
+    /* [수정] 텍스트 크기 확대 */
+    font-size: 1rem;
+    font-weight: 700;
+    margin-left: 5px;
+}
+
+.interviewer-summary-list {
+    /* [수정] 가로 배치 (Grid 레이아웃 사용) */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+}
+
+.interviewer-summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--content-bg);
+    padding: 12px 15px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+.interviewer-summary-item:hover {
+    transform: translateY(-2px);
+    border-color: var(--sidebar-accent);
+    box-shadow: 0 4px 10px rgba(129, 140, 248, 0.1);
+}
+
+.interviewer-summary-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    /* [수정] 텍스트 크기 확대 */
+    font-size: 1rem;
+}
+
+.interviewer-summary-badge {
+    /* [수정] 총 건수와 동일한 색상 적용 및 텍스트 크기 확대 */
+    background-color: var(--sidebar-accent);
+    color: white;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 16px;
+    font-size: 0.9rem;
 }
