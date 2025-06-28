@@ -1,15 +1,19 @@
 /**
- * @file report.js
- * @description 리포트 발행 페이지의 모든 UI 및 데이터 로직을 관리합니다. (최종 안정화 버전)
+ * @file report.js (수정된 버전)
+ * @description 리포트 발행 페이지의 모든 UI 및 데이터 로직을 관리합니다. (문제 해결 버전)
  */
 
 export const ReportModule = {
     _chartInstance: null,
     _isInitialized: false,
+    _modal: null, // 모달 요소 캐시
 
     initialize() {
         if (this._isInitialized) return;
         console.log('📊 [ReportModule] Initializing...');
+        
+        // 모달 HTML이 없다면 생성
+        this.ensureModalExists();
         
         this.addEventListeners();
         this.populateFilters();
@@ -24,35 +28,233 @@ export const ReportModule = {
         console.log('🧹 [ReportModule] Destroying...');
         
         this.removeEventListeners();
+        
+        // 🔥 스크롤 복원 추가
+        document.body.style.overflow = '';
+        
         if (this._chartInstance) {
             this._chartInstance.destroy();
             this._chartInstance = null;
         }
         
+        // 모달 닫기
+        this.closeReportModal();
+        
         this._isInitialized = false;
+    },
+
+    // 🔥 모달 HTML 존재 확인 및 생성
+    ensureModalExists() {
+        if (document.getElementById('reportModal')) {
+            this._modal = document.getElementById('reportModal');
+            return;
+        }
+
+        // 모달 HTML 생성
+        const modalHtml = `
+            <div id="reportModal" class="report-modal" style="display: none;">
+                <div class="report-modal-content">
+                    <div class="report-modal-header">
+                        <h2>생성된 리포트</h2>
+                        <div class="report-modal-actions">
+                            <button id="printReportBtn" class="btn-secondary">
+                                <i class="fas fa-print"></i> 인쇄
+                            </button>
+                            <button id="closeReportModalBtn" class="btn-close">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="reportModalBody" class="report-modal-body">
+                        <!-- 리포트 내용이 여기에 표시됩니다 -->
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // body에 모달 추가
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        this._modal = document.getElementById('reportModal');
+
+        // 모달 CSS 추가
+        this.addModalStyles();
+    },
+
+    // 🔥 모달 CSS 스타일 추가
+    addModalStyles() {
+        if (document.head.querySelector('#report-modal-styles')) return;
+
+        const style = document.createElement('style');
+        style.id = 'report-modal-styles';
+        style.textContent = `
+            .report-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 9999; /* 🔥 높은 z-index */
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 20px;
+                box-sizing: border-box;
+            }
+
+            .report-modal-content {
+                background: white;
+                border-radius: 12px;
+                max-width: 90vw;
+                max-height: 90vh;
+                overflow-y: auto;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                animation: modalSlideIn 0.3s ease;
+            }
+
+            @keyframes modalSlideIn {
+                from {
+                    opacity: 0;
+                    transform: scale(0.9) translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: scale(1) translateY(0);
+                }
+            }
+
+            .report-modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 20px 24px;
+                border-bottom: 1px solid #e5e7eb;
+                background: #f8fafc;
+                border-radius: 12px 12px 0 0;
+            }
+
+            .report-modal-header h2 {
+                margin: 0;
+                color: #1f2937;
+                font-size: 1.5rem;
+                font-weight: 600;
+            }
+
+            .report-modal-actions {
+                display: flex;
+                gap: 10px;
+            }
+
+            .report-modal-body {
+                padding: 24px;
+                max-height: 70vh;
+                overflow-y: auto;
+            }
+
+            .btn-close {
+                background: none;
+                border: none;
+                font-size: 1.2rem;
+                cursor: pointer;
+                color: #6b7280;
+                padding: 8px;
+                border-radius: 6px;
+                transition: all 0.2s ease;
+            }
+
+            .btn-close:hover {
+                background: #f3f4f6;
+                color: #374151;
+            }
+
+            .btn-secondary {
+                padding: 8px 16px;
+                background: #6b7280;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 0.9rem;
+                transition: all 0.2s ease;
+            }
+
+            .btn-secondary:hover {
+                background: #4b5563;
+                transform: translateY(-1px);
+            }
+
+            /* 리포트 내용 스타일 */
+            .report-title {
+                font-size: 2rem;
+                font-weight: bold;
+                text-align: center;
+                margin-bottom: 2rem;
+                color: #1f2937;
+                padding-bottom: 1rem;
+                border-bottom: 2px solid #e5e7eb;
+            }
+
+            .report-funnel {
+                margin: 2rem 0;
+            }
+
+            .report-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 2rem;
+                margin-top: 2rem;
+            }
+
+            @media (max-width: 768px) {
+                .report-grid {
+                    grid-template-columns: 1fr;
+                }
+                
+                .report-modal-content {
+                    max-width: 95vw;
+                    margin: 10px;
+                }
+            }
+        `;
+        document.head.appendChild(style);
     },
 
     addEventListeners() {
         this._boundHandleClick = this._handleEvents.bind(this);
         this._boundHandleChange = this._handleFilterChange.bind(this);
         
-        document.body.addEventListener('click', this._boundHandleClick);
-        const filterSection = document.querySelector('#report .filter-section');
-        if (filterSection) {
-            filterSection.addEventListener('change', this._boundHandleChange);
+        // 🔥 이벤트를 리포트 페이지로만 한정
+        const reportPage = document.getElementById('report');
+        if (reportPage) {
+            reportPage.addEventListener('click', this._boundHandleClick);
+            const filterSection = reportPage.querySelector('.filter-section');
+            if (filterSection) {
+                filterSection.addEventListener('change', this._boundHandleChange);
+            }
+        }
+
+        // 🔥 모달 클릭 이벤트 (모달 외부 클릭시 닫기)
+        if (this._modal) {
+            this._modal.addEventListener('click', (e) => {
+                if (e.target === this._modal) {
+                    this.closeReportModal();
+                }
+            });
         }
     },
 
     removeEventListeners() {
-        document.body.removeEventListener('click', this._boundHandleClick);
-        const filterSection = document.querySelector('#report .filter-section');
-        if (filterSection) {
-            filterSection.removeEventListener('change', this._boundHandleChange);
+        const reportPage = document.getElementById('report');
+        if (reportPage && this._boundHandleClick) {
+            reportPage.removeEventListener('click', this._boundHandleClick);
+            const filterSection = reportPage.querySelector('.filter-section');
+            if (filterSection && this._boundHandleChange) {
+                filterSection.removeEventListener('change', this._boundHandleChange);
+            }
         }
     },
 
     _handleFilterChange(event) {
-        if (!event.target.closest('#report')) return;
         const target = event.target;
         if (target.tagName === 'SELECT' || target.tagName === 'INPUT') {
             if (target.id === 'report-filter-period') {
@@ -66,39 +268,55 @@ export const ReportModule = {
         const target = event.target;
         const button = target.closest('button, .template-card, .format-option');
         
-        if (target.matches('.report-modal')) { this.closeReportModal(); return; }
         if (!button) return;
 
-        if (button.closest('#report')) {
-            if (button.matches('.report-tab')) this.switchTab(button);
-            else if (button.matches('.template-card')) this.selectCard(button, '.template-card');
-            else if (button.matches('.format-option')) this.selectCard(button, '.format-option');
-            else if (button.matches('#report-reset-filters')) this.resetFilters();
-            else if (button.matches('.btn-primary')) this.generateReport();
+        // 🔥 리포트 페이지 내에서만 처리
+        if (button.matches('.report-tab')) {
+            this.switchTab(button);
+        } else if (button.matches('.template-card')) {
+            this.selectCard(button, '.template-card');
+        } else if (button.matches('.format-option')) {
+            this.selectCard(button, '.format-option');
+        } else if (button.matches('#report-reset-filters')) {
+            this.resetFilters();
+        } else if (button.matches('.btn-primary')) {
+            // 🔥 리포트 페이지의 primary 버튼만 처리
+            if (button.closest('#report')) {
+                this.generateReport();
+            }
         }
 
-        if (button.closest('#reportModal')) {
-            if (button.matches('#closeReportModalBtn')) this.closeReportModal();
-            else if (button.matches('#printReportBtn')) window.print();
+        // 🔥 모달 내 버튼 처리
+        if (button.matches('#closeReportModalBtn')) {
+            this.closeReportModal();
+        } else if (button.matches('#printReportBtn')) {
+            window.print();
         }
     },
-    
-    // (이하 모든 함수는 이전 답변과 동일합니다. 구조적 안정성을 위해 전체 코드를 다시 제공합니다.)
 
     openReportModal() {
-        const modal = document.getElementById('reportModal');
-        if (modal) {
-            modal.style.display = 'flex';
+        if (!this._modal) {
+            this.ensureModalExists();
+        }
+        
+        if (this._modal) {
+            this._modal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
+            
+            // 🔥 포커스 관리
+            const closeBtn = this._modal.querySelector('#closeReportModalBtn');
+            if (closeBtn) {
+                setTimeout(() => closeBtn.focus(), 100);
+            }
         }
     },
 
     closeReportModal() {
-        const modal = document.getElementById('reportModal');
-        if (modal) {
-            modal.style.display = 'none';
+        if (this._modal) {
+            this._modal.style.display = 'none';
             document.body.style.overflow = '';
         }
+        
         if (this._chartInstance) {
             this._chartInstance.destroy();
             this._chartInstance = null;
@@ -217,31 +435,54 @@ export const ReportModule = {
     },
     
     generateReport() {
-        const modalBody = document.getElementById('reportModalBody');
+        console.log('🔥 [ReportModule] 리포트 생성 시작');
+        
         const selectedTemplateEl = document.querySelector('#report .template-card.selected');
-        if (!modalBody || !selectedTemplateEl) {
-            this.showCustomAlert('리포트 템플릿을 먼저 선택해주세요.'); return;
+        if (!selectedTemplateEl) {
+            this.showCustomAlert('리포트 템플릿을 먼저 선택해주세요.');
+            return;
         }
+        
         const templateName = selectedTemplateEl.querySelector('.template-name').textContent;
         const data = this.getFilteredReportData();
+        
         if (data.length === 0) {
-            this.showCustomAlert('리포트를 생성할 데이터가 없습니다. 필터 설정을 확인해주세요.'); return;
+            this.showCustomAlert('리포트를 생성할 데이터가 없습니다. 필터 설정을 확인해주세요.');
+            return;
+        }
+
+        // 🔥 모달 존재 확인 및 생성
+        this.ensureModalExists();
+        
+        const modalBody = document.getElementById('reportModalBody');
+        if (!modalBody) {
+            console.error('reportModalBody 요소를 찾을 수 없습니다.');
+            return;
         }
         
         if (this._chartInstance) this._chartInstance.destroy();
         
         let reportHtml = `<div class="report-title">${templateName}</div>`;
         switch (templateName) {
-            case '경영진 요약': reportHtml += this.generateSummaryContent(data); break;
-            case '상세 분석': reportHtml += this.generateDetailTable(data); break;
-            default: reportHtml += `<p>${templateName} 템플릿은 현재 준비 중입니다.</p>`; break;
+            case '경영진 요약': 
+                reportHtml += this.generateSummaryContent(data); 
+                break;
+            case '상세 분석': 
+                reportHtml += this.generateDetailTable(data); 
+                break;
+            default: 
+                reportHtml += `<p>${templateName} 템플릿은 현재 준비 중입니다.</p>`; 
+                break;
         }
+        
         modalBody.innerHTML = reportHtml;
         this.openReportModal();
 
         if (templateName === '경영진 요약') {
-            const canvas = document.getElementById('report-chart');
-            if (canvas) this.renderReportChart(canvas, data);
+            setTimeout(() => {
+                const canvas = document.getElementById('report-chart');
+                if (canvas) this.renderReportChart(canvas, data);
+            }, 100);
         }
     },
     
@@ -253,7 +494,7 @@ export const ReportModule = {
             <div class="report-grid">
                 <div class="report-chart-container">
                     <h3 class="report-subtitle">지원루트별 지원자 수</h3>
-                    <canvas id="report-chart"></canvas>
+                    <canvas id="report-chart" style="max-height: 400px;"></canvas>
                 </div>
                 <div class="report-table-container">
                     <h3 class="report-subtitle">우수 채용 경로 (Top 5)</h3>
@@ -265,7 +506,11 @@ export const ReportModule = {
 
     calculateFunnelData(data) {
         const { headers } = globalThis.App.state.data;
-        const indices = { contactResult: headers.indexOf('1차 컨택 결과'), interviewResult: headers.indexOf('면접결과'), joinDate: headers.indexOf('입과일') };
+        const indices = { 
+            contactResult: headers.indexOf('1차 컨택 결과'), 
+            interviewResult: headers.indexOf('면접결과'), 
+            joinDate: headers.indexOf('입과일') 
+        };
         const total = data.length;
         const interviewConfirmed = data.filter(r => (r[indices.contactResult] || '') === '면접확정').length;
         const passed = data.filter(r => (r[indices.interviewResult] || '') === '합격').length;
@@ -360,11 +605,28 @@ export const ReportModule = {
     showCustomAlert(message) {
         const overlay = document.createElement('div');
         overlay.className = 'custom-alert-overlay';
-        overlay.innerHTML = `<div class="custom-alert-box" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-align: center; max-width: 320px;"><p style="margin: 0 0 20px; font-size: 1rem; color: #333;">${message}</p><button style="padding: 10px 20px; border: none; background: #4f46e5; color: white; border-radius: 8px; cursor: pointer; font-weight: 600;">확인</button></div>`;
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        `;
+        overlay.innerHTML = `
+            <div class="custom-alert-box" style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-align: center; max-width: 320px;">
+                <p style="margin: 0 0 20px; font-size: 1rem; color: #333;">${message}</p>
+                <button style="padding: 10px 20px; border: none; background: #4f46e5; color: white; border-radius: 8px; cursor: pointer; font-weight: 600;">확인</button>
+            </div>
+        `;
         document.body.appendChild(overlay);
         overlay.querySelector('button').onclick = () => overlay.remove();
         overlay.onclick = (e) => {
-            if (e.target === overlay) this.closeReportModal();
+            if (e.target === overlay) overlay.remove();
         };
     }
 };
