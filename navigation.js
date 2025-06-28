@@ -68,6 +68,10 @@ export const NavigationModule = {
                 if (appInstance.report && typeof appInstance.report.initialize === 'function') {
                     appInstance.report.initialize();
                 }
+                // 데이터가 이미 로드되었다면 여기서 바로 필터를 채울 수도 있습니다.
+                if (appInstance.state.data.all.length > 0 && appInstance.report.populateFilters) {
+                    appInstance.report.populateFilters();
+                }
             }, 10);
         } else if (pageId === 'stats') {
             setTimeout(() => {
