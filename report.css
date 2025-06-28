@@ -1200,3 +1200,184 @@
         grid-template-columns: 1fr;
     }
 }
+/* =========================
+   리포트 모달 최소 스타일 추가 (기존 HTML용)
+   ========================= */
+
+/* 🔥 모달 기본 스타일 강화 */
+#reportModal {
+    display: none !important;
+    position: fixed !important;
+    z-index: 9999 !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-color: rgba(0,0,0,0.6) !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+#reportModal .report-modal-content {
+    background: white !important;
+    border-radius: 12px !important;
+    max-width: 90vw !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+    margin: 0 !important;
+}
+
+#reportModal .report-modal-header {
+    padding: 20px 25px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    background: #f9fafb !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+#reportModal .report-modal-body {
+    padding: 30px !important;
+    color: #111827 !important;
+    background: white !important;
+}
+
+/* 🔥 리포트 콘텐츠 스타일 */
+#reportModal .report-title {
+    font-size: 2rem;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 30px;
+    color: #111827;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+#reportModal .report-subtitle {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #374151;
+    margin: 30px 0 15px 0;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 10px;
+}
+
+#reportModal .report-funnel {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 20px 0;
+    padding: 20px;
+    background: #f8fafc;
+    border-radius: 12px;
+}
+
+#reportModal .funnel-step {
+    position: relative;
+    padding: 10px 0;
+}
+
+#reportModal .funnel-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 1rem;
+}
+
+#reportModal .funnel-stage {
+    font-weight: 600;
+    color: #374151;
+}
+
+#reportModal .funnel-count {
+    font-weight: 700;
+    color: #4f46e5;
+    font-size: 1.1rem;
+}
+
+#reportModal .funnel-bar-bg {
+    width: 100%;
+    background: #e5e7eb;
+    border-radius: 6px;
+    height: 30px;
+    overflow: hidden;
+}
+
+#reportModal .funnel-bar {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.8s ease-out;
+}
+
+#reportModal .funnel-conversion {
+    position: absolute;
+    left: 20px;
+    top: 100%;
+    transform: translateY(-5px);
+    font-size: 0.85rem;
+    color: #6b7280;
+    background: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#reportModal .report-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+#reportModal .report-chart-container,
+#reportModal .report-table-container {
+    padding: 20px;
+    background: #f9fafb;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+#reportModal .report-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#reportModal .report-table th,
+#reportModal .report-table td {
+    padding: 12px 15px;
+    text-align: center;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 0.9rem;
+}
+
+#reportModal .report-table th {
+    background: #4f46e5;
+    color: white;
+    font-weight: 600;
+}
+
+#reportModal .report-table.mini td strong {
+    color: #059669;
+    font-weight: 700;
+}
+
+/* 🔥 반응형 */
+@media (max-width: 768px) {
+    #reportModal .report-modal-content {
+        width: 95% !important;
+        max-height: 95vh !important;
+    }
+    
+    #reportModal .report-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    #reportModal .report-modal-body {
+        padding: 20px !important;
+    }
+}
