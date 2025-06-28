@@ -4566,3 +4566,48 @@ div[style*="grid-template-columns"] {
         grid-template-columns: 1fr;
     }
 }
+/* =========================
+   리포트 미리보기 동적 스타일 (2단계 추가)
+   ========================= */
+
+#report .preview-placeholder-dynamic {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #9ca3af;
+    padding: 20px;
+}
+
+#report .preview-placeholder-dynamic i {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    opacity: 0.5;
+    color: #4f46e5;
+}
+
+#report .preview-summary {
+    padding: 15px;
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.05), rgba(124, 58, 237, 0.05));
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(79, 70, 229, 0.1);
+}
+
+#report .summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#report .summary-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+#report .summary-value.highlight {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #4f46e5;
+}
