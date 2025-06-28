@@ -3933,78 +3933,10 @@ div[style*="grid-template-columns"] {
     /* ... */
 }
 /* =========================
-   면접일정 페이지 - 면접관 요약 카드 스타일
+   면접일정 페이지 - 면접관 요약 카드 스타일 (최종 수정)
    ========================= */
 
 .interviewer-summary-card {
-    background: var(--content-bg);
-    padding: 20px;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-color);
-    min-width: 280px;
-}
-
-.interviewer-summary-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid var(--border-color);
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.interviewer-summary-header .total-count {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-}
-
-.interviewer-summary-header .badge {
-    background-color: var(--sidebar-accent);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 0.9rem;
-    font-weight: 700;
-}
-
-.interviewer-summary-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.interviewer-summary-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--main-bg);
-    padding: 10px 15px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-}
-
-.interviewer-summary-item:hover {
-    transform: translateX(3px);
-    background: rgba(129, 140, 248, 0.1);
-}
-
-.interviewer-summary-name {
-    font-weight: 500;
-    color: var(--text-primary);
-}
-
-.interviewer-summary-badge {
-    background-color: var(--border-color);
-    color: var(--text-secondary);
-    font-weight: 700;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.8rem;
-}.interviewer-summary-card {
     /* [수정] 연한 분홍색 파스텔 톤 배경 적용 */
     background: linear-gradient(135deg, #fff0f5, #fde7f3);
     border: 1px solid #fbcfe8;
@@ -4045,9 +3977,9 @@ div[style*="grid-template-columns"] {
 }
 
 .interviewer-summary-list {
-    /* [수정] 가로 배치 (Grid 레이아웃 사용) */
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    /* [수정] 가로 배치 (Flexbox 사용) */
+    display: flex;
+    flex-wrap: wrap; /* 공간이 부족하면 자동으로 줄바꿈 */
     gap: 12px;
 }
 
@@ -4060,6 +3992,8 @@ div[style*="grid-template-columns"] {
     border-radius: 10px;
     border: 1px solid var(--border-color);
     transition: all 0.2s ease;
+    /* [수정] flex-grow를 주어 가변적으로 너비를 차지하게 함 */
+    flex: 1 1 160px; /* 기본 너비 160px, 늘어나고 줄어들 수 있음 */
 }
 
 .interviewer-summary-item:hover {
@@ -4083,4 +4017,16 @@ div[style*="grid-template-columns"] {
     padding: 5px 12px;
     border-radius: 16px;
     font-size: 0.9rem;
+    white-space: nowrap; /* '건' 글자가 잘리지 않도록 함 */
+}
+
+/* =========================
+   면접일정 테이블 - 텍스트 줄바꿈 스타일
+   ========================= */
+
+.data-table .wrap-text {
+    white-space: normal;      /* 텍스트 줄바꿈 허용 */
+    word-break: break-all;    /* 단어 단위가 아닌 글자 단위로 줄바꿈하여 영역을 벗어나지 않도록 함 */
+    min-width: 150px;         /* 최소 너비 지정 */
+    max-width: 300px;         /* 최대 너비를 지정하여 너무 길어지지 않게 함 */
 }
