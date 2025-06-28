@@ -4611,3 +4611,102 @@ div[style*="grid-template-columns"] {
     font-weight: 700;
     color: #4f46e5;
 }
+/* =========================
+   리포트 필터링 섹션 개선 (2.5단계)
+   ========================= */
+
+#report .filter-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#report .btn-reset-filters {
+    padding: 8px 16px;
+    border: none;
+    background-color: var(--accent-orange);
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+#report .btn-reset-filters:hover {
+    background-color: #f97316; /* 더 진한 주황색 */
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(251, 146, 60, 0.3);
+}
+
+#report .filter-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    align-items: end; /* 요소들을 아래쪽으로 정렬 */
+}
+
+#report .date-range-picker {
+    display: none; /* 기본적으로 숨김 */
+}
+
+#report .date-range-picker .date-range-inputs {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+#report .date-range-picker input[type="date"] {
+    width: 100%;
+}/* =========================
+   리포트 필터링 섹션 개선 (2.5단계)
+   ========================= */
+
+#report .filter-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#report .btn-reset-filters {
+    padding: 8px 16px;
+    border: none;
+    background-color: var(--accent-orange);
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+#report .btn-reset-filters:hover {
+    background-color: #f97316; /* 더 진한 주황색 */
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(251, 146, 60, 0.3);
+}
+
+#report .filter-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    align-items: end; /* 요소들을 아래쪽으로 정렬 */
+}
+
+#report .date-range-picker {
+    display: none; /* 기본적으로 숨김 */
+}
+
+#report .date-range-picker .date-range-inputs {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+#report .date-range-picker input[type="date"] {
+    width: 100%;
+}
