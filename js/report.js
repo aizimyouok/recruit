@@ -1,244 +1,166 @@
 /**
  * @file report.js
  * @description 리포트 발행 페이지의 모든 UI 및 데이터 로직을 관리합니다.
- * - 전체 기능 복원 및 데이터 연동
+ * 페이지에 들어올 때 이벤트 리스너를 추가(initialize)하고,
+ * 페이지를 떠날 때 이벤트 리스너를 제거(destroy)하여 다른 페이지와의 충돌을 방지합니다.
  */
 
 export const ReportModule = {
-    app: null,
+    // _boundEventHandler: this 컨텍스트가 바인딩된 이벤트 핸들러 함수를 저장하는 속성
     _boundEventHandler: null,
 
-    initialize(appInstance) {
-        this.app = appInstance;
+    /**
+     * 모듈을 초기화하고 이벤트 리스너를 설정합니다.
+     * 페이지가 활성화될 때 한 번만 실행되도록 'data-initialized' 속성으로 체크합니다.
+     */
+    initialize() {
         const reportPage = document.getElementById('report');
         if (reportPage && !reportPage.dataset.initialized) {
-            console.log('📊 [ReportModule] Initializing...');
-            this.populateFilters();
+            console.log('📊 [ReportModule] Initializing and adding event listeners...');
             this.setupEventListeners();
-            this.updatePreview(); 
-            reportPage.dataset.initialized = 'true';
+            this.updatePreview(); // 초기 미리보기 설정
+            reportPage.dataset.initialized = 'true'; // 초기화 완료 플래그 설정
         }
     },
 
+    /**
+     * 모듈을 파괴하고 추가했던 이벤트 리스너를 깨끗하게 제거합니다.
+     * 다른 페이지로 이동할 때 호출되어 이벤트 충돌을 방지합니다.
+     */
     destroy() {
         const reportPage = document.getElementById('report');
         if (reportPage && this._boundEventHandler) {
             reportPage.removeEventListener('click', this._boundEventHandler);
-            reportPage.removeEventListener('change', this._boundEventHandler); // 'change' 이벤트도 제거
-            this._boundEventHandler = null;
-            reportPage.removeAttribute('data-initialized');
-            console.log('🧹 [ReportModule] Destroyed.');
+            this._boundEventHandler = null; // 핸들러 참조 제거
+            reportPage.removeAttribute('data-initialized'); // 초기화 플래그 제거
+            console.log('🧹 [ReportModule] Destroyed and removed event listeners.');
         }
     },
 
-    populateFilters() {
-        if (!this.app || !this.app.state.data.all.length) return;
-
-        const { headers, all } = this.app.state.data;
-        const filterConfigs = [
-            { id: 'report-route-filter', headerName: '지원루트' },
-            { id: 'report-position-filter', headerName: '모집분야' },
-            { id: 'report-company-filter', headerName: '회사명' }
-        ];
-
-        filterConfigs.forEach(config => {
-            const select = document.getElementById(config.id);
-            const headerIndex = headers.indexOf(config.headerName);
-            if (select && headerIndex !== -1) {
-                select.innerHTML = '<option value="all">전체</option>';
-                const options = [...new Set(all.map(row => (row[headerIndex] || '').trim()).filter(Boolean))];
-                options.sort().forEach(val => {
-                    select.innerHTML += `<option value="${val}">${val}</option>`;
-                });
-            }
-        });
-    },
-
+    /**
+     * #report 요소에 단일 클릭 이벤트 리스너를 설정합니다(이벤트 위임 방식).
+     */
     setupEventListeners() {
         const reportPage = document.getElementById('report');
         if (!reportPage) return;
 
+        // this 컨텍스트를 바인딩하여 나중에 제거할 수 있도록 핸들러를 저장합니다.
         this._boundEventHandler = this._handleEvent.bind(this);
         reportPage.addEventListener('click', this._boundEventHandler);
-        // 필터 변경 시에도 미리보기 업데이트
-        reportPage.addEventListener('change', this._boundEventHandler);
     },
-
+    
+    /**
+     * #report 내에서 발생하는 모든 클릭 이벤트를 처리합니다.
+     * @param {Event} event - 발생한 클릭 이벤트 객체
+     */
     _handleEvent(event) {
         const target = event.target;
-        const parent = event.target.parentElement;
 
-        if (target.closest('.report-tab')) this.switchTab(target.closest('.report-tab'));
-        else if (target.closest('.template-card')) this.selectCard(target.closest('.template-card'));
-        else if (target.closest('.format-option')) this.selectCard(target.closest('.format-option'));
-        else if (target.closest('.btn-secondary')?.textContent.includes('미리보기')) this.updatePreview(true);
-        else if (target.closest('.btn-primary')?.textContent.includes('리포트 생성')) this.simulateReportGeneration();
-        else if (['report-period-filter', 'report-route-filter', 'report-position-filter', 'report-company-filter'].includes(target.id)) {
-            // 필터 <select> 변경 시 미리보기 업데이트
-            this.updatePreview();
+        const handlers = {
+            '.report-tab': (el) => this.switchTab(el),
+            '.template-card': (el) => {
+                this.selectCard(el, '.template-card');
+                this.updatePreview();
+            },
+            '.format-option': (el) => this.selectCard(el, '.format-option'),
+            '.btn-secondary': (el) => {
+                if (el.textContent.includes('미리보기')) this.updatePreview();
+            },
+            '.btn-primary': (el) => {
+                if (el.textContent.includes('리포트 생성')) this.simulateReportGeneration();
+            }
+        };
+
+        for (const selector in handlers) {
+            const element = target.closest(selector);
+            if (element) {
+                handlers[selector](element);
+                return; // 하나의 이벤트만 처리
+            }
         }
     },
 
+    // 탭 전환 로직
     switchTab(clickedTab) {
         const reportPage = document.getElementById('report');
         if (!reportPage) return;
+
         reportPage.querySelectorAll('.report-tab').forEach(t => t.classList.remove('active'));
         reportPage.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
         clickedTab.classList.add('active');
         const tabId = clickedTab.dataset.tab + '-tab';
         const contentElement = document.getElementById(tabId);
-        if (contentElement) contentElement.classList.add('active');
-    },
-
-    selectCard(clickedCard) {
-        const container = clickedCard.parentElement;
-        container.querySelectorAll('.template-card, .format-option').forEach(c => c.classList.remove('selected'));
-        clickedCard.classList.add('selected');
-        this.updatePreview();
-    },
-
-    getFilteredData() {
-        if (!this.app) return [];
-
-        const { all, headers } = this.app.state.data;
-        
-        const period = document.getElementById('report-period-filter').value;
-        const route = document.getElementById('report-route-filter').value;
-        const position = document.getElementById('report-position-filter').value;
-        const company = document.getElementById('report-company-filter').value;
-
-        const routeIndex = headers.indexOf('지원루트');
-        const positionIndex = headers.indexOf('모집분야');
-        const companyIndex = headers.indexOf('회사명');
-        const dateIndex = headers.indexOf('지원일');
-
-        const now = new Date();
-        let startDate = null;
-        if (period !== 'all') {
-            startDate = new Date(now);
-            if (period === 'monthly') startDate.setDate(now.getDate() - 30);
-            else if (period === 'quarterly') startDate.setMonth(now.getMonth() - 3);
-            else if (period === 'half-yearly') startDate.setMonth(now.getMonth() - 6);
-            else if (period === 'yearly') startDate.setFullYear(now.getFullYear(), 0, 1);
+        if (contentElement) {
+            contentElement.classList.add('active');
         }
-
-        return all.filter(row => {
-            const isRouteMatch = (route === 'all') || (row[routeIndex] === route);
-            const isPositionMatch = (position === 'all') || (row[positionIndex] === position);
-            const isCompanyMatch = (company === 'all') || (row[companyIndex] === company);
-            
-            let isDateMatch = true;
-            if (startDate && dateIndex !== -1) {
-                const rowDate = new Date(row[dateIndex]);
-                isDateMatch = rowDate >= startDate;
-            }
-
-            return isRouteMatch && isPositionMatch && isCompanyMatch && isDateMatch;
-        });
     },
 
-    updatePreview(isButtonClick = false) {
+    // 템플릿/형식 카드 선택 로직
+    selectCard(clickedCard, cardSelector) {
+        const container = clickedCard.parentElement;
+        container.querySelectorAll(cardSelector).forEach(c => c.classList.remove('selected'));
+        clickedCard.classList.add('selected');
+    },
+
+    // 미리보기 업데이트 로직
+    updatePreview() {
         const reportPage = document.getElementById('report');
         if (!reportPage) return;
 
+        const previewContainer = reportPage.querySelector('.report-preview');
         const previewContent = reportPage.querySelector('.preview-content');
-        const selectedTemplateCard = reportPage.querySelector('.template-card.selected');
-        
-        if (!previewContent || !selectedTemplateCard) return;
+        const selectedTemplate = reportPage.querySelector('.template-card.selected .template-name');
 
-        const filteredData = this.getFilteredData();
-        const templateType = selectedTemplateCard.dataset.template;
-        const templateName = selectedTemplateCard.querySelector('.template-name').textContent;
+        if (!previewContent || !selectedTemplate) {
+            // 선택된 템플릿이 없을 경우 플레이스홀더를 보여줍니다.
+            if(previewContent) {
+                 previewContent.innerHTML = `<div class="preview-placeholder">
+                    <i class="fas fa-file-alt"></i>
+                    <h4>리포트 미리보기</h4>
+                    <p>설정을 완료하고 '미리보기' 버튼을 눌러<br>리포트를 확인해보세요.</p>
+                </div>`;
+            }
+            if(previewContainer) {
+                previewContainer.classList.remove('has-content');
+            }
+            return;
+        }
 
-        let contentHtml = `<div style="padding: 15px;">`;
-        contentHtml += `<h3 style="text-align:center; margin-bottom: 20px;">${templateName}</h3>`;
+        const templateName = selectedTemplate.textContent;
 
-        // 데이터 요약 정보
-        contentHtml += `
-            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; text-align:center; margin-bottom: 20px;">
-                <div style="font-size: 1rem; color: #6b7280;">조회된 데이터</div>
-                <div style="font-size: 2.2rem; font-weight: 700; color: #4f46e5;">${filteredData.length}건</div>
+        previewContent.innerHTML = `
+            <div style="text-align: center; padding: 20px;">
+                <h3 style="color: #374151; margin-bottom: 15px;">${templateName} 리포트</h3>
+                <div style="background: #f3f4f6; height: 200px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #6b7280;">
+                    <i class="fas fa-chart-pie" style="font-size: 3rem;"></i>
+                </div>
+                <p style="margin-top: 15px; color: #6b7280; font-size: 0.9rem;">
+                    선택하신 설정으로 ${templateName} 리포트가 생성됩니다.
+                </p>
             </div>
         `;
-        
-        // 템플릿별 내용 추가
-        if (templateType === 'summary') {
-            contentHtml += this.generateKpiHtml(filteredData);
-        } else if (templateType === 'funnel') {
-            contentHtml += this.generateFunnelHtml(filteredData);
-        } else {
-             contentHtml += `<p style="text-align:center; color: #6b7280;">'리포트 생성'을 누르면 상세 내용이 생성됩니다.</p>`;
+
+        if (previewContainer) {
+            previewContainer.classList.add('has-content');
         }
-
-        contentHtml += `</div>`;
-        previewContent.innerHTML = contentHtml;
-
-        reportPage.querySelector('.report-preview').classList.add('has-content');
     },
 
-    generateKpiHtml(data) {
-        if(data.length === 0) return '<p style="text-align:center; color: #9ca3af; padding: 20px;">분석할 데이터가 없습니다.</p>';
-
-        const headers = this.app.state.data.headers;
-        const total = data.length;
-        const confirmed = data.filter(r => r[headers.indexOf('1차 컨택 결과')] === '면접확정').length;
-        const passed = data.filter(r => r[headers.indexOf('면접결과')] === '합격').length;
-        const hired = data.filter(r => r[headers.indexOf('입과일')] && r[headers.indexOf('입과일')].trim() !== '').length;
-
-        const interviewRate = total > 0 ? (confirmed / total * 100).toFixed(1) : 0;
-        const passRate = confirmed > 0 ? (passed / confirmed * 100).toFixed(1) : 0;
-        const hireRate = passed > 0 ? (hired / passed * 100).toFixed(1) : 0;
-        
-        return `
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
-                <div style="padding: 10px; border-radius: 6px; background: #f0f9ff;"><strong>면접 전환율:</strong> ${interviewRate}%</div>
-                <div style="padding: 10px; border-radius: 6px; background: #f0f9ff;"><strong>합격률:</strong> ${passRate}%</div>
-                <div style="padding: 10px; border-radius: 6px; background: #f0f9ff;""><strong>최종 입과율:</strong> ${hireRate}%</div>
-                <div style="padding: 10px; border-radius: 6px; background: #f0f9ff;""><strong>총 입과 인원:</strong> ${hired}명</div>
-            </div>`;
-    },
-
-    generateFunnelHtml(data) {
-        if(data.length === 0) return '<p style="text-align:center; color: #9ca3af; padding: 20px;">분석할 데이터가 없습니다.</p>';
-
-        const headers = this.app.state.data.headers;
-        const stages = [
-            { name: '총 지원', count: data.length },
-            { name: '면접 확정', count: data.filter(r => r[headers.indexOf('1차 컨택 결과')] === '면접확정').length },
-            { name: '최종 합격', count: data.filter(r => r[headers.indexOf('면접결과')] === '합격').length },
-            { name: '최종 입과', count: data.filter(r => r[headers.indexOf('입과일')] && r[headers.indexOf('입과일')].trim() !== '').length }
-        ];
-
-        let funnelHtml = '<div style="display: flex; flex-direction: column; gap: 10px;">';
-        for (let i = 0; i < stages.length; i++) {
-            const width = data.length > 0 ? (stages[i].count / data.length) * 100 : 0;
-            const conversion = (i > 0 && stages[i-1].count > 0) ? (stages[i].count / stages[i-1].count * 100).toFixed(1) : '-';
-            funnelHtml += `
-                <div>
-                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 4px;">
-                        <span>${stages[i].name}</span>
-                        <strong>${stages[i].count}명</strong>
-                    </div>
-                    <div style="background: #e5e7eb; border-radius: 4px; overflow: hidden;">
-                        <div style="width: ${width}%; background: linear-gradient(90deg, #4f46e5, #a855f7); color: white; text-align: right; padding: 2px 5px; font-size:0.75rem; white-space:nowrap;">${width.toFixed(1)}%</div>
-                    </div>
-                    ${i > 0 ? `<div style="text-align:center; font-size:0.8rem; color:#9ca3af;">▼ 전환율: ${conversion}%</div>` : ''}
-                </div>`;
-        }
-        funnelHtml += '</div>';
-        return funnelHtml;
-    },
-    
+    // 리포트 생성 시뮬레이션 로직
     simulateReportGeneration() {
         const reportPage = document.getElementById('report');
         if (!reportPage) return;
+
         const progressSection = reportPage.querySelector('.progress-section');
         const progressFill = reportPage.querySelector('.progress-fill');
         const steps = reportPage.querySelectorAll('.progress-step');
+
         if (!progressSection || !progressFill || steps.length === 0) return;
+
         progressSection.style.display = 'block';
         let currentStep = 0;
         const totalSteps = steps.length;
+
         const interval = setInterval(() => {
             if (currentStep > totalSteps) {
                 clearInterval(interval);
@@ -248,39 +170,56 @@ export const ReportModule = {
                 steps.forEach(step => step.classList.remove('active', 'completed'));
                 return;
             }
+
             const progress = (currentStep / totalSteps) * 100;
             progressFill.style.width = progress + '%';
+
             steps.forEach((step, index) => {
                 step.classList.remove('active', 'completed');
-                if (index < currentStep) step.classList.add('completed');
-                else if (index === currentStep) step.classList.add('active');
+                if (index < currentStep) {
+                    step.classList.add('completed');
+                } else if (index === currentStep) {
+                    step.classList.add('active');
+                }
             });
+
             currentStep++;
         }, 1000);
     },
 
+    // alert()를 대체하는 커스텀 알림 함수
     showCustomAlert(message) {
         const existingAlert = document.querySelector('.custom-alert-overlay');
-        if (existingAlert) existingAlert.remove();
+        if (existingAlert) {
+            existingAlert.remove();
+        }
+
         const overlay = document.createElement('div');
         overlay.className = 'custom-alert-overlay';
         overlay.style.cssText = `position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.4); z-index: 10000; display: flex; align-items: center; justify-content: center;`;
+
         const alertBox = document.createElement('div');
         alertBox.className = 'custom-alert-box';
         alertBox.style.cssText = `background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-align: center; max-width: 320px;`;
+        
         const messageP = document.createElement('p');
         messageP.textContent = message;
         messageP.style.cssText = 'margin: 0 0 20px; font-size: 1rem; color: #333;';
+
         const closeButton = document.createElement('button');
         closeButton.textContent = '확인';
         closeButton.style.cssText = `padding: 10px 20px; border: none; background: #4f46e5; color: white; border-radius: 8px; cursor: pointer; font-weight: 600;`;
+
         alertBox.appendChild(messageP);
         alertBox.appendChild(closeButton);
         overlay.appendChild(alertBox);
         document.body.appendChild(overlay);
+
         closeButton.onclick = () => overlay.remove();
         overlay.onclick = (e) => {
-            if (e.target === overlay) overlay.remove();
+            if (e.target === overlay) {
+                overlay.remove();
+            }
         };
     }
 };
