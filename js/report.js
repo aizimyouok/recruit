@@ -1,38 +1,39 @@
 /**
  * @file report.js
- * @description 리포트 발행 페이지의 모든 UI 및 데이터 로직을 관리합니다.
+ * @description 리포트 발행 페이지의 모든 UI 및 데이터 로직을 관리합니다. (최종 안정화 버전)
  */
 
 export const ReportModule = {
     // 모듈 상태 관리
     _chartInstance: null,
+    _isInitialized: false,
 
     // =========================================================================
     // 초기화 및 파괴
     // =========================================================================
 
     initialize() {
-        const reportPage = document.getElementById('report');
-        if (!reportPage || reportPage.dataset.initialized) return;
-        
+        if (this._isInitialized) return;
         console.log('📊 [ReportModule] Initializing...');
+        
         this.addEventListeners();
         this.updatePreviewSummary();
         this.toggleDateRangePicker(document.getElementById('report-filter-period')?.value || 'all');
-        reportPage.dataset.initialized = 'true';
+        
+        this._isInitialized = true;
     },
 
     destroy() {
+        if (!this._isInitialized) return;
         console.log('🧹 [ReportModule] Destroying...');
+        
         this.removeEventListeners();
         if (this._chartInstance) {
             this._chartInstance.destroy();
             this._chartInstance = null;
         }
-        const reportPage = document.getElementById('report');
-        if (reportPage) {
-            reportPage.removeAttribute('data-initialized');
-        }
+        
+        this._isInitialized = false;
     },
 
     // =========================================================================
@@ -40,7 +41,7 @@ export const ReportModule = {
     // =========================================================================
 
     addEventListeners() {
-        // 이벤트 핸들러에 this 컨텍스트 바인딩
+        // ReportModule의 'this'를 바인딩하여 나중에 제거할 수 있도록 저장
         this._boundHandleClick = this._handleEvents.bind(this);
         this._boundHandleChange = this._handleFilterChange.bind(this);
         
@@ -62,6 +63,9 @@ export const ReportModule = {
     },
 
     _handleFilterChange(event) {
+        // 이벤트가 report 페이지 내에서 발생했는지 확인
+        if (!event.target.closest('#report')) return;
+
         const target = event.target;
         if (target.tagName === 'SELECT' || target.tagName === 'INPUT') {
             if (target.id === 'report-filter-period') {
@@ -81,6 +85,7 @@ export const ReportModule = {
         }
         if (!button) return;
 
+        // 리포트 페이지 내부에서 발생한 클릭만 처리
         if (button.closest('#report')) {
             if (button.matches('.report-tab')) this.switchTab(button);
             else if (button.matches('.template-card')) this.selectCard(button, '.template-card');
@@ -89,6 +94,7 @@ export const ReportModule = {
             else if (button.matches('.btn-primary')) this.generateReport();
         }
 
+        // 모달 내부는 페이지와 상관없이 처리
         if (button.closest('#reportModal')) {
             if (button.matches('#closeReportModalBtn')) this.closeReportModal();
             else if (button.matches('#printReportBtn')) window.print();
@@ -127,7 +133,7 @@ export const ReportModule = {
     },
 
     resetFilters() {
-        const filterSection = document.querySelector('.filter-section');
+        const filterSection = document.querySelector('#report .filter-section');
         if (!filterSection) return;
         filterSection.querySelectorAll('select').forEach(select => {
             select.selectedIndex = 0;
@@ -238,8 +244,7 @@ export const ReportModule = {
     generateReport() {
         const modalBody = document.getElementById('reportModalBody');
         const selectedTemplateEl = document.querySelector('#report .template-card.selected');
-        if (!modalBody) return;
-        if (!selectedTemplateEl) {
+        if (!modalBody || !selectedTemplateEl) {
             this.showCustomAlert('리포트 템플릿을 먼저 선택해주세요.');
             return;
         }
@@ -250,10 +255,8 @@ export const ReportModule = {
             return;
         }
         
-        if (this._chartInstance) {
-            this._chartInstance.destroy();
-            this._chartInstance = null;
-        }
+        if (this._chartInstance) this._chartInstance.destroy();
+        
         let reportHtml = `<div class="report-title">${templateName}</div>`;
         switch (templateName) {
             case '경영진 요약':
@@ -268,6 +271,7 @@ export const ReportModule = {
         }
         modalBody.innerHTML = reportHtml;
         this.openReportModal();
+
         if (templateName === '경영진 요약') {
             const canvas = document.getElementById('report-chart');
             if (canvas) this.renderReportChart(canvas, data);
