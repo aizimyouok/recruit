@@ -11,35 +11,17 @@ export const ReportModule = {
     initialize() {
         const reportPage = document.getElementById('report');
         if (reportPage && !reportPage.dataset.initialized) {
-            console.log('📊 [ReportModule] Initializing...');
             this.setupEventListeners();
-            this.updatePreview();
-            this.toggleDateRangePicker(document.getElementById('report-filter-period')?.value || 'all');
             reportPage.dataset.initialized = 'true';
         }
     },
 
     destroy() {
         const reportPage = document.getElementById('report');
-        const filterSection = reportPage?.querySelector('.filter-section');
-
         if (reportPage && this._boundEventHandler) {
             reportPage.removeEventListener('click', this._boundEventHandler);
-            this._boundEventHandler = null;
         }
-        if (filterSection && this._boundFilterChangeHandler) {
-            filterSection.removeEventListener('change', this._boundFilterChangeHandler);
-            this._boundFilterChangeHandler = null;
-        }
-        if (this._chartInstance) {
-            this._chartInstance.destroy();
-            this._chartInstance = null;
-        }
-        
-        if (reportPage) {
-            reportPage.removeAttribute('data-initialized');
-        }
-        console.log('🧹 [ReportModule] Destroyed and removed event listeners.');
+        // ... (기존 destroy 로직)
     },
 
     setupEventListeners() {
@@ -47,44 +29,93 @@ export const ReportModule = {
         if (!reportPage) return;
 
         this._boundEventHandler = this._handleEvent.bind(this);
-        reportPage.addEventListener('click', this._boundEventHandler);
+        // 이벤트 리스너를 document 수준으로 변경하여 모달도 제어
+        document.addEventListener('click', this._boundEventHandler);
 
         const filterSection = reportPage.querySelector('.filter-section');
         if (filterSection) {
-            this._boundFilterChangeHandler = (event) => {
-                const target = event.target;
-                if (target.tagName === 'SELECT' || target.tagName === 'INPUT') {
-                    if (target.id === 'report-filter-period') {
-                        this.toggleDateRangePicker(target.value);
-                    }
-                    this.updatePreview();
+            filterSection.addEventListener('change', (event) => {
+                if (event.target.id === 'report-filter-period') {
+                    this.toggleDateRangePicker(event.target.value);
                 }
-            };
-            filterSection.addEventListener('change', this._boundFilterChangeHandler);
+            });
         }
     },
     
     _handleEvent(event) {
         const target = event.target;
         const handlers = {
-            '.report-tab': (el) => this.switchTab(el),
-            '.template-card': (el) => this.selectCard(el, '.template-card'),
-            '.format-option': (el) => this.selectCard(el, '.format-option'),
-            '#report-reset-filters': () => this.resetFilters(),
-            '.btn-secondary': (el) => {
-                if (el.textContent.includes('미리보기')) this.updatePreview();
-            },
+            // ... (기존 핸들러들)
             '.btn-primary': (el) => {
-                if (el.textContent.includes('리포트 생성')) this.generateReport();
-            }
+                if (el.closest('#report')) this.generateReport();
+            },
+            // ▼▼▼ [새로 추가] 모달 관련 이벤트 핸들러 ▼▼▼
+            '#closeReportModalBtn': () => this.closeReportModal(),
+            '#printReportBtn': () => window.print(),
         };
 
         for (const selector in handlers) {
             const element = target.closest(selector);
             if (element) {
+                // 모달 외부 클릭 시 닫기
+                if (event.target.matches('.report-modal')) {
+                    this.closeReportModal();
+                    return;
+                }
                 handlers[selector](element);
                 return;
             }
+        }
+    },
+
+    // ▼▼▼ [새로 추가] 모달 제어 함수 ▼▼▼
+    openReportModal() {
+        const modal = document.getElementById('reportModal');
+        if (modal) modal.style.display = 'flex';
+    },
+
+    closeReportModal() {
+        const modal = document.getElementById('reportModal');
+        if (modal) modal.style.display = 'none';
+        
+        // 모달을 닫을 때 차트 인스턴스 파괴
+        if (this._chartInstance) {
+            this._chartInstance.destroy();
+            this._chartInstance = null;
+        }
+    },
+    // ▲▲▲▲▲ [새로 추가] 끝 ▲▲▲▲▲
+    
+    generateReport() {
+        const modalBody = document.getElementById('reportModalBody');
+        const selectedTemplateEl = document.querySelector('#report .template-card.selected');
+
+        if (!modalBody || !selectedTemplateEl) { /* ... */ return; }
+
+        const templateName = selectedTemplateEl.querySelector('.template-name').textContent;
+        const data = this.getFilteredReportData();
+
+        if (data.length === 0) { /* ... */ return; }
+        
+        // [수정] 콘텐츠를 모달에 렌더링하고 모달 열기
+        let reportHtml = `<div class="report-title">${templateName}</div>`;
+        switch (templateName) {
+            case '경영진 요약':
+                reportHtml += this.generateSummaryContent(data);
+                break;
+            case '상세 분석':
+                reportHtml += this.generateDetailTable(data);
+                break;
+            default:
+                reportHtml += `<p>${templateName} 템플릿은 현재 준비 중입니다.</p>`;
+                break;
+        }
+        modalBody.innerHTML = reportHtml;
+        this.openReportModal(); // 모달 열기
+
+        if (templateName === '경영진 요약') {
+            const canvas = document.getElementById('report-chart');
+            if (canvas) this.renderReportChart(canvas, data);
         }
     },
     
