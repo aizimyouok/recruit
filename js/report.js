@@ -1,22 +1,25 @@
 /**
  * @file report.js
- * @description 리포트 발행 페이지의 모든 UI 및 데이터 로직을 관리합니다. (팝업 버그 최종 수정 버전)
+ * @description 리포트 발행 페이지의 모든 UI 및 데이터 로직을 관리합니다.
  */
 
 export const ReportModule = {
-    _boundEventHandler: null,
-    _boundFilterChangeHandler: null,
+    // 모듈 상태 관리
     _chartInstance: null,
+
+    // =========================================================================
+    // 초기화 및 파괴
+    // =========================================================================
 
     initialize() {
         const reportPage = document.getElementById('report');
-        if (reportPage && !reportPage.dataset.initialized) {
-            console.log('📊 [ReportModule] Initializing...');
-            this.addEventListeners();
-            this.updatePreviewSummary();
-            this.toggleDateRangePicker(document.getElementById('report-filter-period')?.value || 'all');
-            reportPage.dataset.initialized = 'true';
-        }
+        if (!reportPage || reportPage.dataset.initialized) return;
+        
+        console.log('📊 [ReportModule] Initializing...');
+        this.addEventListeners();
+        this.updatePreviewSummary();
+        this.toggleDateRangePicker(document.getElementById('report-filter-period')?.value || 'all');
+        reportPage.dataset.initialized = 'true';
     },
 
     destroy() {
@@ -32,24 +35,29 @@ export const ReportModule = {
         }
     },
 
+    // =========================================================================
+    // 이벤트 리스너 관리
+    // =========================================================================
+
     addEventListeners() {
-        this._boundEventHandler = this._handleEvents.bind(this);
-        document.body.addEventListener('click', this._boundEventHandler);
+        // 이벤트 핸들러에 this 컨텍스트 바인딩
+        this._boundHandleClick = this._handleEvents.bind(this);
+        this._boundHandleChange = this._handleFilterChange.bind(this);
         
+        document.body.addEventListener('click', this._boundHandleClick);
         const filterSection = document.querySelector('#report .filter-section');
         if (filterSection) {
-            this._boundFilterChangeHandler = this._handleFilterChange.bind(this);
-            filterSection.addEventListener('change', this._boundFilterChangeHandler);
+            filterSection.addEventListener('change', this._boundHandleChange);
         }
     },
 
     removeEventListeners() {
-        if (this._boundEventHandler) {
-            document.body.removeEventListener('click', this._boundEventHandler);
+        if (this._boundHandleClick) {
+            document.body.removeEventListener('click', this._boundHandleClick);
         }
         const filterSection = document.querySelector('#report .filter-section');
-        if (filterSection && this._boundFilterChangeHandler) {
-            filterSection.removeEventListener('change', this._boundFilterChangeHandler);
+        if (filterSection && this._boundHandleChange) {
+            filterSection.removeEventListener('change', this._boundHandleChange);
         }
     },
 
@@ -65,13 +73,12 @@ export const ReportModule = {
     
     _handleEvents(event) {
         const target = event.target;
-        
+        const button = target.closest('button, .template-card, .format-option');
+
         if (target.matches('.report-modal')) {
             this.closeReportModal();
             return;
         }
-
-        const button = target.closest('button, .template-card, .format-option');
         if (!button) return;
 
         if (button.closest('#report')) {
@@ -88,14 +95,15 @@ export const ReportModule = {
         }
     },
 
+    // =========================================================================
+    // UI 제어 (모달, 탭, 카드 등)
+    // =========================================================================
+
     openReportModal() {
         const modal = document.getElementById('reportModal');
         if (modal) {
             modal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
-            console.log("✅ Report modal opened.");
-        } else {
-            console.error("❌ Report modal element not found!");
         }
     },
 
@@ -145,9 +153,21 @@ export const ReportModule = {
         clickedCard.classList.add('selected');
     },
 
+    updatePreviewSummary() {
+        const totalCount = this.getFilteredReportData().length;
+        const button = document.querySelector('#report .btn-primary');
+        if (button) {
+            button.innerHTML = `<i class="fas fa-magic"></i> ${totalCount}명 리포트 생성 및 확인`;
+        }
+    },
+
+    // =========================================================================
+    // 데이터 처리 및 리포트 생성
+    // =========================================================================
+
     populateFilters() {
         const app = globalThis.App;
-        if (!app || !app.state.data.all.length) { return; }
+        if (!app || !app.state.data.all.length) return;
         const { headers, all } = app.state.data;
         const filtersToPopulate = {
             '지원루트': 'report-filter-route', '모집분야': 'report-filter-position',
@@ -215,31 +235,16 @@ export const ReportModule = {
         });
     },
     
-    updatePreviewSummary() {
-        const totalCount = this.getFilteredReportData().length;
-        const button = document.querySelector('#report .btn-primary');
-        if (button) {
-            button.innerHTML = `<i class="fas fa-magic"></i> ${totalCount}명 리포트 생성 및 확인`;
-        }
-    },
-    
     generateReport() {
         const modalBody = document.getElementById('reportModalBody');
         const selectedTemplateEl = document.querySelector('#report .template-card.selected');
-
-        if (!modalBody) {
-            console.error("❌ Modal body not found!");
-            return;
-        }
-        
+        if (!modalBody) return;
         if (!selectedTemplateEl) {
             this.showCustomAlert('리포트 템플릿을 먼저 선택해주세요.');
             return;
         }
-
         const templateName = selectedTemplateEl.querySelector('.template-name').textContent;
         const data = this.getFilteredReportData();
-
         if (data.length === 0) {
             this.showCustomAlert('리포트를 생성할 데이터가 없습니다. 필터 설정을 확인해주세요.');
             return;
@@ -249,9 +254,7 @@ export const ReportModule = {
             this._chartInstance.destroy();
             this._chartInstance = null;
         }
-
         let reportHtml = `<div class="report-title">${templateName}</div>`;
-
         switch (templateName) {
             case '경영진 요약':
                 reportHtml += this.generateSummaryContent(data);
@@ -264,9 +267,7 @@ export const ReportModule = {
                 break;
         }
         modalBody.innerHTML = reportHtml;
-        
         this.openReportModal();
-
         if (templateName === '경영진 요약') {
             const canvas = document.getElementById('report-chart');
             if (canvas) this.renderReportChart(canvas, data);
@@ -313,7 +314,8 @@ export const ReportModule = {
     generateFunnelHtml(funnelData) {
         let html = '<h3 class="report-subtitle">채용 퍼널 분석</h3><div class="report-funnel">';
         funnelData.forEach((step, index) => {
-            const widthPercentage = index === 0 ? 100 : funnelData[index-1].count > 0 ? (step.count / funnelData[index-1].count * 100) : 0;
+            const prevCount = index > 0 ? funnelData[index - 1].count : step.count;
+            const widthPercentage = prevCount > 0 ? (step.count / prevCount) * 100 : 100;
             html += `
                 <div class="funnel-step" style="--step-color: var(--funnel-color-${index + 1});">
                     <div class="funnel-info">
@@ -408,4 +410,4 @@ export const ReportModule = {
             if (e.target === overlay) overlay.remove();
         };
     }
-});
+};
