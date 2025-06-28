@@ -1,7 +1,7 @@
 /**
  * @file report.js
  * @description 리포트 발행 페이지의 모든 UI 및 데이터 로직을 관리합니다.
- * - 전체 기능 복원 및 데이터 연동
+ * - 전체 기능 복원 및 데이터 연동, 기간 선택 기능 구현
  */
 
 export const ReportModule = {
@@ -24,17 +24,21 @@ export const ReportModule = {
         const reportPage = document.getElementById('report');
         if (reportPage && this._boundEventHandler) {
             reportPage.removeEventListener('click', this._boundEventHandler);
-            reportPage.removeEventListener('change', this._boundEventHandler); // 'change' 이벤트도 제거
+            reportPage.removeEventListener('change', this._boundEventHandler);
             this._boundEventHandler = null;
             reportPage.removeAttribute('data-initialized');
             console.log('🧹 [ReportModule] Destroyed.');
         }
     },
-
+    
     populateFilters() {
-        if (!this.app || !this.app.state.data.all.length) return;
+        if (!this.app || !this.app.state.data.all.length) {
+            console.warn('[ReportModule] 필터를 생성하기 위한 데이터가 없습니다.');
+            return;
+        }
 
         const { headers, all } = this.app.state.data;
+        
         const filterConfigs = [
             { id: 'report-route-filter', headerName: '지원루트' },
             { id: 'report-position-filter', headerName: '모집분야' },
@@ -42,16 +46,21 @@ export const ReportModule = {
         ];
 
         filterConfigs.forEach(config => {
-            const select = document.getElementById(config.id);
+            const selectElement = document.getElementById(config.id);
             const headerIndex = headers.indexOf(config.headerName);
-            if (select && headerIndex !== -1) {
-                select.innerHTML = '<option value="all">전체</option>';
+
+            if (selectElement && headerIndex !== -1) {
+                selectElement.innerHTML = '<option value="all">전체</option>'; 
                 const options = [...new Set(all.map(row => (row[headerIndex] || '').trim()).filter(Boolean))];
-                options.sort().forEach(val => {
-                    select.innerHTML += `<option value="${val}">${val}</option>`;
+                options.sort().forEach(optionValue => {
+                    const option = document.createElement('option');
+                    option.value = optionValue;
+                    option.textContent = optionValue;
+                    selectElement.appendChild(option);
                 });
             }
         });
+        console.log('[ReportModule] 필터 옵션이 동적으로 생성되었습니다.');
     },
 
     setupEventListeners() {
@@ -60,25 +69,38 @@ export const ReportModule = {
 
         this._boundEventHandler = this._handleEvent.bind(this);
         reportPage.addEventListener('click', this._boundEventHandler);
-        // 필터 변경 시에도 미리보기 업데이트
         reportPage.addEventListener('change', this._boundEventHandler);
     },
 
     _handleEvent(event) {
         const target = event.target;
-        const parent = event.target.parentElement;
-
-        if (target.closest('.report-tab')) this.switchTab(target.closest('.report-tab'));
-        else if (target.closest('.template-card')) this.selectCard(target.closest('.template-card'));
-        else if (target.closest('.format-option')) this.selectCard(target.closest('.format-option'));
-        else if (target.closest('.btn-secondary')?.textContent.includes('미리보기')) this.updatePreview(true);
-        else if (target.closest('.btn-primary')?.textContent.includes('리포트 생성')) this.simulateReportGeneration();
-        else if (['report-period-filter', 'report-route-filter', 'report-position-filter', 'report-company-filter'].includes(target.id)) {
-            // 필터 <select> 변경 시 미리보기 업데이트
-            this.updatePreview();
+        
+        // 이벤트 타입에 따라 처리 분기
+        if (event.type === 'click') {
+            if (target.closest('.report-tab')) this.switchTab(target.closest('.report-tab'));
+            else if (target.closest('.template-card')) this.selectCard(target.closest('.template-card'));
+            else if (target.closest('.format-option')) this.selectCard(target.closest('.format-option'));
+            else if (target.closest('.btn-secondary')?.textContent.includes('미리보기')) this.updatePreview();
+            else if (target.closest('.btn-primary')?.textContent.includes('리포트 생성')) this.simulateReportGeneration();
+        } else if (event.type === 'change') {
+            if (target.id === 'report-period-filter') this.handlePeriodChange(event);
+            else if (target.closest('.filter-grid select')) this.updatePreview();
         }
     },
 
+    handlePeriodChange(event) {
+        const period = event.target.value;
+        const customDateContainer = document.getElementById('report-custom-date-container');
+        if (!customDateContainer) return;
+
+        if (period === 'custom') {
+            customDateContainer.style.display = 'flex';
+        } else {
+            customDateContainer.style.display = 'none';
+        }
+        this.updatePreview();
+    },
+    
     switchTab(clickedTab) {
         const reportPage = document.getElementById('report');
         if (!reportPage) return;
@@ -100,13 +122,12 @@ export const ReportModule = {
     getFilteredData() {
         if (!this.app) return [];
 
-        const { all, headers } = this.app.state.data;
-        
         const period = document.getElementById('report-period-filter').value;
         const route = document.getElementById('report-route-filter').value;
         const position = document.getElementById('report-position-filter').value;
         const company = document.getElementById('report-company-filter').value;
 
+        const { all, headers } = this.app.state.data;
         const routeIndex = headers.indexOf('지원루트');
         const positionIndex = headers.indexOf('모집분야');
         const companyIndex = headers.indexOf('회사명');
@@ -114,13 +135,21 @@ export const ReportModule = {
 
         const now = new Date();
         let startDate = null;
+        let endDate = new Date(now); 
+
         if (period !== 'all') {
             startDate = new Date(now);
-            if (period === 'monthly') startDate.setDate(now.getDate() - 30);
-            else if (period === 'quarterly') startDate.setMonth(now.getMonth() - 3);
-            else if (period === 'half-yearly') startDate.setMonth(now.getMonth() - 6);
-            else if (period === 'yearly') startDate.setFullYear(now.getFullYear(), 0, 1);
+            if (period === 'this-month') startDate.setDate(1);
+            else if (period === 'last-30-days') startDate.setDate(now.getDate() - 30);
+            else if (period === 'last-3-months') startDate.setMonth(now.getMonth() - 3);
+            else if (period === 'this-year') startDate.setFullYear(now.getFullYear(), 0, 1);
+            else if (period === 'custom') {
+                 startDate = new Date(document.getElementById('report-start-date').value || '1970-01-01');
+                 endDate = new Date(document.getElementById('report-end-date').value || new Date());
+            }
         }
+        
+        endDate.setHours(23, 59, 59, 999); // 끝나는 날의 마지막 시간까지 포함
 
         return all.filter(row => {
             const isRouteMatch = (route === 'all') || (row[routeIndex] === route);
@@ -128,16 +157,16 @@ export const ReportModule = {
             const isCompanyMatch = (company === 'all') || (row[companyIndex] === company);
             
             let isDateMatch = true;
-            if (startDate && dateIndex !== -1) {
+            if (startDate && dateIndex !== -1 && row[dateIndex]) {
                 const rowDate = new Date(row[dateIndex]);
-                isDateMatch = rowDate >= startDate;
+                isDateMatch = rowDate >= startDate && rowDate <= endDate;
             }
 
             return isRouteMatch && isPositionMatch && isCompanyMatch && isDateMatch;
         });
     },
 
-    updatePreview(isButtonClick = false) {
+    updatePreview() {
         const reportPage = document.getElementById('report');
         if (!reportPage) return;
 
@@ -153,15 +182,8 @@ export const ReportModule = {
         let contentHtml = `<div style="padding: 15px;">`;
         contentHtml += `<h3 style="text-align:center; margin-bottom: 20px;">${templateName}</h3>`;
 
-        // 데이터 요약 정보
-        contentHtml += `
-            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; text-align:center; margin-bottom: 20px;">
-                <div style="font-size: 1rem; color: #6b7280;">조회된 데이터</div>
-                <div style="font-size: 2.2rem; font-weight: 700; color: #4f46e5;">${filteredData.length}건</div>
-            </div>
-        `;
+        contentHtml += `<div style="background: #f8fafc; padding: 15px; border-radius: 8px; text-align:center; margin-bottom: 20px;"><div style="font-size: 1rem; color: #6b7280;">조회된 데이터</div><div style="font-size: 2.2rem; font-weight: 700; color: #4f46e5;">${filteredData.length}건</div></div>`;
         
-        // 템플릿별 내용 추가
         if (templateType === 'summary') {
             contentHtml += this.generateKpiHtml(filteredData);
         } else if (templateType === 'funnel') {
@@ -172,35 +194,24 @@ export const ReportModule = {
 
         contentHtml += `</div>`;
         previewContent.innerHTML = contentHtml;
-
         reportPage.querySelector('.report-preview').classList.add('has-content');
     },
 
     generateKpiHtml(data) {
         if(data.length === 0) return '<p style="text-align:center; color: #9ca3af; padding: 20px;">분석할 데이터가 없습니다.</p>';
-
         const headers = this.app.state.data.headers;
         const total = data.length;
         const confirmed = data.filter(r => r[headers.indexOf('1차 컨택 결과')] === '면접확정').length;
         const passed = data.filter(r => r[headers.indexOf('면접결과')] === '합격').length;
         const hired = data.filter(r => r[headers.indexOf('입과일')] && r[headers.indexOf('입과일')].trim() !== '').length;
-
         const interviewRate = total > 0 ? (confirmed / total * 100).toFixed(1) : 0;
         const passRate = confirmed > 0 ? (passed / confirmed * 100).toFixed(1) : 0;
         const hireRate = passed > 0 ? (hired / passed * 100).toFixed(1) : 0;
-        
-        return `
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;">
-                <div style="padding: 10px; border-radius: 6px; background: #f0f9ff;"><strong>면접 전환율:</strong> ${interviewRate}%</div>
-                <div style="padding: 10px; border-radius: 6px; background: #f0f9ff;"><strong>합격률:</strong> ${passRate}%</div>
-                <div style="padding: 10px; border-radius: 6px; background: #f0f9ff;""><strong>최종 입과율:</strong> ${hireRate}%</div>
-                <div style="padding: 10px; border-radius: 6px; background: #f0f9ff;""><strong>총 입과 인원:</strong> ${hired}명</div>
-            </div>`;
+        return `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 0.9rem;"><div style="padding: 10px; border-radius: 6px; background: #f0f9ff;"><strong>면접 전환율:</strong> ${interviewRate}%</div><div style="padding: 10px; border-radius: 6px; background: #f0f9ff;"><strong>합격률:</strong> ${passRate}%</div><div style="padding: 10px; border-radius: 6px; background: #f0f9ff;""><strong>최종 입과율:</strong> ${hireRate}%</div><div style="padding: 10px; border-radius: 6px; background: #f0f9ff;""><strong>총 입과 인원:</strong> ${hired}명</div></div>`;
     },
 
     generateFunnelHtml(data) {
         if(data.length === 0) return '<p style="text-align:center; color: #9ca3af; padding: 20px;">분석할 데이터가 없습니다.</p>';
-
         const headers = this.app.state.data.headers;
         const stages = [
             { name: '총 지원', count: data.length },
@@ -208,22 +219,11 @@ export const ReportModule = {
             { name: '최종 합격', count: data.filter(r => r[headers.indexOf('면접결과')] === '합격').length },
             { name: '최종 입과', count: data.filter(r => r[headers.indexOf('입과일')] && r[headers.indexOf('입과일')].trim() !== '').length }
         ];
-
         let funnelHtml = '<div style="display: flex; flex-direction: column; gap: 10px;">';
         for (let i = 0; i < stages.length; i++) {
             const width = data.length > 0 ? (stages[i].count / data.length) * 100 : 0;
             const conversion = (i > 0 && stages[i-1].count > 0) ? (stages[i].count / stages[i-1].count * 100).toFixed(1) : '-';
-            funnelHtml += `
-                <div>
-                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 4px;">
-                        <span>${stages[i].name}</span>
-                        <strong>${stages[i].count}명</strong>
-                    </div>
-                    <div style="background: #e5e7eb; border-radius: 4px; overflow: hidden;">
-                        <div style="width: ${width}%; background: linear-gradient(90deg, #4f46e5, #a855f7); color: white; text-align: right; padding: 2px 5px; font-size:0.75rem; white-space:nowrap;">${width.toFixed(1)}%</div>
-                    </div>
-                    ${i > 0 ? `<div style="text-align:center; font-size:0.8rem; color:#9ca3af;">▼ 전환율: ${conversion}%</div>` : ''}
-                </div>`;
+            funnelHtml += `<div><div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 4px;"><span>${stages[i].name}</span><strong>${stages[i].count}명</strong></div><div style="background: #e5e7eb; border-radius: 4px; overflow: hidden;"><div style="width: ${width}%; background: linear-gradient(90deg, #4f46e5, #a855f7); color: white; text-align: right; padding: 2px 5px; font-size:0.75rem; white-space:nowrap;">${width.toFixed(1)}%</div></div>${i > 0 ? `<div style="text-align:center; font-size:0.8rem; color:#9ca3af;">▼ 전환율: ${conversion}%</div>` : ''}</div>`;
         }
         funnelHtml += '</div>';
         return funnelHtml;
