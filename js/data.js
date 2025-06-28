@@ -8,9 +8,11 @@ export const DataModule = {
             const loadedFromCache = await appInstance.dataCache.loadFromCache(appInstance);
             if (loadedFromCache) {
                 console.log('✅ 캐시에서 로딩 완료 - 서버 호출 생략');
+                // ▼▼▼▼▼ [수정된 부분] 캐시 로딩 후에도 리포트 필터 채우기 ▼▼▼▼▼
                 if (appInstance.navigation.getCurrentPage() === 'report' && appInstance.report) {
                     appInstance.report.populateFilters();
                 }
+                // ▲▲▲▲▲ [수정된 부분] 끝 ▲▲▲▲▲
                 return;
             }
         }
@@ -96,12 +98,14 @@ export const DataModule = {
                 console.log('🔄 새 데이터 로드 - 캐시 초기화됨');
             }
 
-            // ▼▼▼▼▼ [바로 이 부분이 핵심입니다!] ▼▼▼▼▼
+            // ▼▼▼▼▼ [수정된 부분] fetch 성공 후, 리포트 페이지 필터 채우기 로직 추가 ▼▼▼▼▼
+            // 데이터 로드가 성공적으로 완료된 후, 현재 페이지가 리포트 페이지인지 확인합니다.
             if (appInstance.navigation.getCurrentPage() === 'report' && appInstance.report) {
-                console.log('🔄 데이터 로드 완료. 리포트 필터를 다시 그립니다.');
+                console.log('🔄 Data loaded. Populating report filters now.');
+                // ReportModule의 populateFilters 함수를 호출하여 필터 UI를 채웁니다.
                 appInstance.report.populateFilters();
             }
-            // ▲▲▲▲▲ [바로 이 부분이 핵심입니다!] ▲▲▲▲▲
+            // ▲▲▲▲▲ [수정된 부분] 끝 ▲▲▲▲▲
 
         } catch (error) {
             console.error("데이터 불러오기 실패:", error);
