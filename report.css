@@ -925,3 +925,113 @@
     position: sticky;
     top: 0;
 }
+/* =========================
+   리포트 콘텐츠 업그레이드 스타일 (3.5단계 추가)
+   ========================= */
+
+#report .report-subtitle {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-top: 30px;
+    margin-bottom: 15px;
+}
+
+/* 채용 퍼널 스타일 */
+.report-funnel {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    border: 1px solid var(--border-color);
+    padding: 20px;
+    border-radius: 12px;
+    background-color: var(--main-bg);
+}
+
+.funnel-step {
+    --funnel-color-1: #4f46e5;
+    --funnel-color-2: #7c3aed;
+    --funnel-color-3: #059669;
+    --funnel-color-4: #fb923c;
+    position: relative;
+    padding: 10px 0;
+}
+
+.funnel-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.funnel-stage {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.funnel-count {
+    font-weight: 700;
+    color: var(--step-color);
+}
+
+.funnel-bar-bg {
+    width: 100%;
+    background-color: var(--border-color);
+    border-radius: 4px;
+    height: 25px;
+}
+
+.funnel-bar {
+    height: 100%;
+    background: var(--step-color);
+    border-radius: 4px;
+    transition: width 0.5s ease-out;
+}
+
+.funnel-conversion {
+    position: absolute;
+    left: 20px;
+    top: 100%;
+    transform: translateY(-5px);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    background-color: var(--content-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    z-index: 1;
+}
+
+/* 리포트 그리드 레이아웃 */
+.report-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 20px;
+}
+
+/* 테이블 컨테이너 내부의 서브타이틀 */
+.report-table-container .report-subtitle {
+    margin-top: 0;
+}
+
+/* 미니 테이블 스타일 */
+.report-table.mini {
+    font-size: 0.85rem;
+}
+.report-table.mini th,
+.report-table.mini td {
+    padding: 10px 12px;
+}
+
+.report-table.mini td strong {
+    color: var(--success);
+    font-size: 1.1em;
+}
+
+/* 반응형 */
+@media (max-width: 1200px) {
+    .report-grid {
+        grid-template-columns: 1fr;
+    }
+}
