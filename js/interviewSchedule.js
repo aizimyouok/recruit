@@ -415,10 +415,12 @@ export const InterviewScheduleModule = {
 
         const header = document.createElement('div');
         header.className = 'interviewer-summary-header';
+        // ▼▼▼▼▼ [수정] totalCount 뒤에 '건'을 추가합니다. ▼▼▼▼▼
         header.innerHTML = `
             <span><i class="fas fa-user-tie"></i> 면접 일정</span>
-            <span class="total-count">총 <span class="badge">${totalCount}</span></span>
+            <span class="total-count">총 <span class="badge">${totalCount}건</span></span>
         `;
+        // ▲▲▲▲▲ [수정] 끝 ▲▲▲▲▲
         container.appendChild(header);
 
         const list = document.createElement('div');
@@ -437,11 +439,10 @@ export const InterviewScheduleModule = {
                 list.appendChild(item);
             });
         } else {
-            list.innerHTML = '<div style="text-align:center; font-size: 0.85rem; color: var(--text-secondary); padding: 10px;">데이터 없음</div>';
+            list.innerHTML = '<div style="text-align:center; font-size: 0.9rem; color: var(--text-secondary); padding: 10px;">데이터 없음</div>';
         }
         container.appendChild(list);
     },
-
     resetFilters() {
         document.getElementById('scheduleSearch').value = '';
         document.getElementById('scheduleRouteFilter').value = 'all';
