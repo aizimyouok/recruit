@@ -145,18 +145,77 @@
     margin-bottom: 30px;
 }
 
-#report .filter-section h3 {
+#report .filter-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 20px;
+}
+
+#report .filter-section h3 {
+    margin: 0;
     color: var(--text-primary, #374151);
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
+#report .btn-reset-filters {
+    padding: 8px 16px;
+    border: none;
+    background-color: var(--accent-orange);
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+#report .btn-reset-filters:hover {
+    background-color: #f97316; /* 더 진한 주황색 */
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(251, 146, 60, 0.3);
+}
+
 #report .filter-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    /* auto-fit 대신 auto-fill을 사용하여 공간이 남아도 컬럼 크기를 유지하도록 합니다. */
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    align-items: end;
+    gap: 20px 15px; /* 세로 간격, 가로 간격 */
+}
+
+/* ▼▼▼▼▼ 핵심 수정 부분 ▼▼▼▼▼ */
+/* 기간 필터를 감싸는 새로운 컨테이너 스타일 */
+#report .period-filter-container {
+    /* 그리드 한 줄을 모두 차지하도록 설정 */
+    grid-column: 1 / -1;
+    display: flex; /* 내부 요소들을 가로로 배열 */
+    align-items: flex-end; /* 내부 요소들을 아래쪽으로 정렬 */
     gap: 15px;
+    flex-wrap: wrap; /* 창이 좁아지면 줄바꿈 */
+}
+
+/* 날짜 범위 선택기 자체는 이제 그리드 아이템이 아니므로 grid-column 속성 제거 */
+#report .date-range-picker {
+    display: none; /* JS로 토글될 기본 상태 */
+    flex-grow: 1; /* 남는 공간을 모두 차지하도록 설정 */
+}
+/* ▲▲▲▲▲ 핵심 수정 부분 ▲▲▲▲▲ */
+
+
+#report .date-range-picker .date-range-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#report .date-range-picker input[type="date"] {
+    width: 100%;
 }
 
 #report .filter-group {
@@ -180,6 +239,7 @@
     transition: all 0.3s ease;
     background: var(--content-bg, white);
     color: var(--text-primary);
+    height: 48px; /* 모든 필터의 높이를 통일 */
 }
 
 #report .filter-group select:focus,
