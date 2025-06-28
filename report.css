@@ -1025,7 +1025,172 @@
 }
 
 .report-table.mini td strong {
-    color: var(--success);
+    color: var(--success);/* =========================
+   리포트 발행 페이지 전용 스타일 (모달 팝업 버전)
+   ========================= */
+
+#report .report-container {
+    width: 100%;
+    max-width: 2000px; 
+    margin: 0 auto;
+    background: var(--content-bg, white);
+    border-radius: var(--border-radius, 8px);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    color: var(--text-primary);
+}
+
+/* 헤더 */
+#report .report-header {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: white;
+    padding: 30px;
+    text-align: center;
+}
+
+/* 탭 시스템 */
+#report .report-tabs-container {
+    padding: 20px 30px 0;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+#report .report-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: -1px;
+}
+#report .report-tab {
+    padding: 15px 25px;
+    border: 1px solid transparent;
+    border-bottom: none;
+    background: transparent;
+    color: var(--text-secondary, #6b7280);
+    font-weight: 600;
+    border-radius: 12px 12px 0 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+#report .report-tab.active {
+    background: var(--content-bg, white);
+    color: #4f46e5;
+    border-color: var(--border-color, #e5e7eb);
+}
+
+/* [수정] 메인 콘텐츠 레이아웃 */
+#report .report-content-full {
+    padding: 30px;
+}
+
+#report .report-builder {
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    background: var(--main-bg);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* 필터 섹션 */
+#report .filter-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+#report .filter-section h3 { margin: 0; display: flex; align-items: center; gap: 10px; }
+#report .btn-reset-filters { padding: 8px 16px; border: none; background-color: var(--accent-orange); color: white; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
+#report .filter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); align-items: end; gap: 20px 15px; }
+#report .period-filter-container { grid-column: 1 / -1; display: flex; align-items: flex-end; gap: 15px; flex-wrap: wrap; }
+#report .date-range-picker { display: none; flex-grow: 1; }
+#report .date-range-picker .date-range-inputs { display: flex; align-items: center; gap: 10px; }
+#report .date-range-picker input[type="date"] { width: 100%; }
+#report .filter-group { display: flex; flex-direction: column; }
+#report .filter-group label { font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; }
+#report .filter-group select, #report .filter-group input { padding: 12px 16px; border: 2px solid var(--border-color, #e5e7eb); border-radius: 10px; font-size: 0.95rem; height: 48px; }
+
+/* 액션 버튼 */
+#report .action-buttons { margin-top: 30px; }
+#report .btn.full-width { width: 100%; }
+#report .btn { flex: 1; padding: 15px 25px; border: none; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+#report .btn-primary { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; }
+
+/* ▼▼▼▼▼ [새로 추가] 리포트 모달 스타일 ▼▼▼▼▼ */
+.report-modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease;
+}
+.report-modal-content {
+    background-color: #ffffff; /* 인쇄를 위해 흰색 배경 강제 */
+    margin: 30px auto;
+    padding: 0;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    width: 90%;
+    max-width: 800px; /* A4 용지 비율과 유사하게 */
+    animation: modalSlideIn 0.3s ease;
+}
+.report-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    border-bottom: 1px solid #e5e7eb;
+    background-color: #f9fafb;
+    border-radius: 8px 8px 0 0;
+}
+.report-modal-title { font-size: 1.2rem; color: #111827; }
+.report-modal-actions { display: flex; gap: 15px; }
+.report-modal-body {
+    padding: 30px;
+    color: #111827; /* 인쇄를 위해 검은색 텍스트 강제 */
+}
+/* ▲▲▲▲▲ [새로 추가] 리포트 모달 스타일 끝 ▲▲▲▲▲ */
+
+/* 리포트 콘텐츠 스타일 (모달 내부) */
+.report-title { font-size: 2rem; font-weight: 800; text-align: center; margin-bottom: 30px; }
+.report-subtitle { font-size: 1.3rem; font-weight: 700; color: #374151; margin-top: 30px; margin-bottom: 15px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
+.report-funnel { display: flex; flex-direction: column; gap: 15px; }
+.funnel-step { position: relative; padding: 10px 0; }
+.funnel-info { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.funnel-stage { font-weight: 600; }
+.funnel-count { font-weight: 700; }
+.funnel-bar-bg { width: 100%; background-color: #e5e7eb; border-radius: 4px; height: 30px; }
+.funnel-bar { height: 100%; border-radius: 4px; transition: width 0.5s ease-out; }
+.funnel-step:nth-child(1) .funnel-bar { background-color: #4f46e5; }
+.funnel-step:nth-child(2) .funnel-bar { background-color: #7c3aed; }
+.funnel-step:nth-child(3) .funnel-bar { background-color: #059669; }
+.funnel-step:nth-child(4) .funnel-bar { background-color: #fb923c; }
+.funnel-conversion { position: absolute; left: 10px; top: 100%; transform: translateY(-10px); font-size: 0.85rem; background-color: white; padding: 2px 6px; z-index: 1; }
+.report-grid { display: grid; grid-template-columns: 1fr; gap: 30px; margin-top: 20px; }
+.report-chart-container { width: 100%; height: 350px; }
+.report-table-container { width: 100%; overflow-x: auto; }
+.report-table { width: 100%; border-collapse: collapse; }
+.report-table th, .report-table td { padding: 12px; border: 1px solid #e5e7eb; text-align: center; }
+.report-table th { background-color: #f9fafb; font-weight: 600; }
+.report-table.mini td strong { color: #059669; }
+
+/* 인쇄용 스타일 */
+@media print {
+    body * { visibility: hidden; }
+    .report-modal-body, .report-modal-body * { visibility: visible; }
+    .report-modal-content {
+        position: absolute;
+        left: 0;
+        top: 0;
+        margin: 0;
+        border: none;
+        box-shadow: none;
+        width: 100%;
+        max-width: 100%;
+        border-radius: 0;
+    }
+    .report-modal-header { display: none; }
+}
     font-size: 1.1em;
 }
 
