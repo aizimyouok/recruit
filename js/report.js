@@ -1,6 +1,6 @@
 /**
  * @file report.js
- * @description 리포트 발행 페이지의 모든 UI 및 데이터 로직을 관리합니다.
+ * @description 리포트 발행 페이지의 모든 UI 및 데이터 로직을 관리합니다. (팝업 미리보기 버전)
  */
 
 export const ReportModule = {
@@ -11,45 +11,69 @@ export const ReportModule = {
     initialize() {
         const reportPage = document.getElementById('report');
         if (reportPage && !reportPage.dataset.initialized) {
+            console.log('📊 [ReportModule] Initializing...');
             this.setupEventListeners();
+            this.toggleDateRangePicker(document.getElementById('report-filter-period')?.value || 'all');
             reportPage.dataset.initialized = 'true';
         }
     },
 
     destroy() {
-        const reportPage = document.getElementById('report');
-        if (reportPage && this._boundEventHandler) {
-            reportPage.removeEventListener('click', this._boundEventHandler);
+        // document에 등록된 이벤트 리스너를 제거합니다.
+        if (this._boundEventHandler) {
+            document.removeEventListener('click', this._boundEventHandler);
+            this._boundEventHandler = null;
         }
-        // ... (기존 destroy 로직)
+        
+        const reportPage = document.getElementById('report');
+        if (reportPage) {
+            const filterSection = reportPage.querySelector('.filter-section');
+            if (filterSection && this._boundFilterChangeHandler) {
+                filterSection.removeEventListener('change', this._boundFilterChangeHandler);
+                this._boundFilterChangeHandler = null;
+            }
+            reportPage.removeAttribute('data-initialized');
+        }
+
+        if (this._chartInstance) {
+            this._chartInstance.destroy();
+            this._chartInstance = null;
+        }
+        console.log('🧹 [ReportModule] Destroyed and removed event listeners.');
     },
 
     setupEventListeners() {
-        const reportPage = document.getElementById('report');
-        if (!reportPage) return;
-
+        // 모달과 페이지 전체의 이벤트를 잡기 위해 document에 리스너를 등록합니다.
         this._boundEventHandler = this._handleEvent.bind(this);
-        // 이벤트 리스너를 document 수준으로 변경하여 모달도 제어
         document.addEventListener('click', this._boundEventHandler);
 
-        const filterSection = reportPage.querySelector('.filter-section');
+        const filterSection = document.querySelector('#report .filter-section');
         if (filterSection) {
-            filterSection.addEventListener('change', (event) => {
-                if (event.target.id === 'report-filter-period') {
-                    this.toggleDateRangePicker(event.target.value);
+            this._boundFilterChangeHandler = (event) => {
+                const target = event.target;
+                if (target.tagName === 'SELECT' || target.tagName === 'INPUT') {
+                    if (target.id === 'report-filter-period') {
+                        this.toggleDateRangePicker(target.value);
+                    }
+                    // 필터 변경 시에는 미리보기 요약만 업데이트합니다.
+                    this.updatePreviewSummary();
                 }
-            });
+            };
+            filterSection.addEventListener('change', this._boundFilterChangeHandler);
         }
     },
     
     _handleEvent(event) {
         const target = event.target;
         const handlers = {
-            // ... (기존 핸들러들)
+            '.report-tab': (el) => this.switchTab(el),
+            '.template-card': (el) => this.selectCard(el, '.template-card'),
+            '.format-option': (el) => this.selectCard(el, '.format-option'),
+            '#report-reset-filters': () => this.resetFilters(),
             '.btn-primary': (el) => {
+                // 클릭된 버튼이 리포트 페이지 내에 있을 때만 generateReport 실행
                 if (el.closest('#report')) this.generateReport();
             },
-            // ▼▼▼ [새로 추가] 모달 관련 이벤트 핸들러 ▼▼▼
             '#closeReportModalBtn': () => this.closeReportModal(),
             '#printReportBtn': () => window.print(),
         };
@@ -57,18 +81,16 @@ export const ReportModule = {
         for (const selector in handlers) {
             const element = target.closest(selector);
             if (element) {
-                // 모달 외부 클릭 시 닫기
-                if (event.target.matches('.report-modal')) {
-                    this.closeReportModal();
-                    return;
-                }
                 handlers[selector](element);
                 return;
             }
         }
+        // 모달 외부 클릭 시 닫기
+        if (target.matches('.report-modal')) {
+            this.closeReportModal();
+        }
     },
 
-    // ▼▼▼ [새로 추가] 모달 제어 함수 ▼▼▼
     openReportModal() {
         const modal = document.getElementById('reportModal');
         if (modal) modal.style.display = 'flex';
@@ -78,44 +100,9 @@ export const ReportModule = {
         const modal = document.getElementById('reportModal');
         if (modal) modal.style.display = 'none';
         
-        // 모달을 닫을 때 차트 인스턴스 파괴
         if (this._chartInstance) {
             this._chartInstance.destroy();
             this._chartInstance = null;
-        }
-    },
-    // ▲▲▲▲▲ [새로 추가] 끝 ▲▲▲▲▲
-    
-    generateReport() {
-        const modalBody = document.getElementById('reportModalBody');
-        const selectedTemplateEl = document.querySelector('#report .template-card.selected');
-
-        if (!modalBody || !selectedTemplateEl) { /* ... */ return; }
-
-        const templateName = selectedTemplateEl.querySelector('.template-name').textContent;
-        const data = this.getFilteredReportData();
-
-        if (data.length === 0) { /* ... */ return; }
-        
-        // [수정] 콘텐츠를 모달에 렌더링하고 모달 열기
-        let reportHtml = `<div class="report-title">${templateName}</div>`;
-        switch (templateName) {
-            case '경영진 요약':
-                reportHtml += this.generateSummaryContent(data);
-                break;
-            case '상세 분석':
-                reportHtml += this.generateDetailTable(data);
-                break;
-            default:
-                reportHtml += `<p>${templateName} 템플릿은 현재 준비 중입니다.</p>`;
-                break;
-        }
-        modalBody.innerHTML = reportHtml;
-        this.openReportModal(); // 모달 열기
-
-        if (templateName === '경영진 요약') {
-            const canvas = document.getElementById('report-chart');
-            if (canvas) this.renderReportChart(canvas, data);
         }
     },
     
@@ -133,8 +120,7 @@ export const ReportModule = {
             select.selectedIndex = 0;
         });
         this.toggleDateRangePicker('all');
-        this.updatePreview();
-        console.log('🔄 [ReportModule] Filters have been reset.');
+        this.updatePreviewSummary(); // 리셋 후 요약 업데이트
     },
 
     switchTab(clickedTab) {
@@ -145,9 +131,7 @@ export const ReportModule = {
         clickedTab.classList.add('active');
         const tabId = clickedTab.dataset.tab + '-tab';
         const contentElement = document.getElementById(tabId);
-        if (contentElement) {
-            contentElement.classList.add('active');
-        }
+        if (contentElement) contentElement.classList.add('active');
     },
 
     selectCard(clickedCard, cardSelector) {
@@ -158,7 +142,7 @@ export const ReportModule = {
 
     populateFilters() {
         const app = globalThis.App;
-        if (!app || !app.state.data.all.length) { return; }
+        if (!app || !app.state.data.all.length) return;
         const { headers, all } = app.state.data;
         const filtersToPopulate = {
             '지원루트': 'report-filter-route', '모집분야': 'report-filter-position',
@@ -177,6 +161,7 @@ export const ReportModule = {
                 });
             }
         }
+        this.updatePreviewSummary(); // 필터 채운 후 초기 요약 업데이트
     },
     
     getFilteredReportData() {
@@ -225,44 +210,40 @@ export const ReportModule = {
         });
     },
     
-    updatePreview() {
+    updatePreviewSummary() {
         const totalCount = this.getFilteredReportData().length;
-        const previewContent = document.querySelector('#report .preview-content');
-        if (previewContent) {
-            previewContent.innerHTML = `
-                <div class="preview-summary">
-                    <div class="summary-item">
-                        <span class="summary-label">분석 대상</span>
-                        <span class="summary-value highlight">${totalCount}명</span>
-                    </div>
-                </div>
-                <div class="preview-placeholder-dynamic">
-                    <i class="fas fa-file-invoice"></i>
-                    <h4>리포트 요약</h4>
-                    <p>현재 설정으로 <strong>${totalCount}명</strong>의 지원자 데이터에 대한 리포트를 생성합니다.</p>
-                </div>
-            `;
+        const button = document.querySelector('#report .btn-primary');
+        if (button) {
+            button.innerHTML = `<i class="fas fa-magic"></i> ${totalCount}명 리포트 생성`;
         }
     },
     
     generateReport() {
-        const previewContent = document.querySelector('#report .preview-content');
+        const modalBody = document.getElementById('reportModalBody');
         const selectedTemplateEl = document.querySelector('#report .template-card.selected');
-        if (!previewContent || !selectedTemplateEl) {
+
+        if (!modalBody) return;
+        
+        if (!selectedTemplateEl) {
             this.showCustomAlert('리포트 템플릿을 먼저 선택해주세요.');
             return;
         }
+
         const templateName = selectedTemplateEl.querySelector('.template-name').textContent;
         const data = this.getFilteredReportData();
+
         if (data.length === 0) {
             this.showCustomAlert('리포트를 생성할 데이터가 없습니다. 필터 설정을 확인해주세요.');
             return;
         }
+        
         if (this._chartInstance) {
             this._chartInstance.destroy();
             this._chartInstance = null;
         }
+
         let reportHtml = `<div class="report-title">${templateName}</div>`;
+
         switch (templateName) {
             case '경영진 요약':
                 reportHtml += this.generateSummaryContent(data);
@@ -274,20 +255,18 @@ export const ReportModule = {
                 reportHtml += `<p>${templateName} 템플릿은 현재 준비 중입니다.</p>`;
                 break;
         }
-        previewContent.innerHTML = reportHtml;
+        modalBody.innerHTML = reportHtml;
+        this.openReportModal();
+
         if (templateName === '경영진 요약') {
             const canvas = document.getElementById('report-chart');
             if (canvas) this.renderReportChart(canvas, data);
         }
     },
     
-    // ▼▼▼▼▼ [3단계 업그레이드] ▼▼▼▼▼
     generateSummaryContent(data) {
-        // 채용 퍼널 데이터 계산
         const funnelData = this.calculateFunnelData(data);
-        // 우수 지원루트 데이터 계산
         const topSourcesData = this.calculateTopSources(data);
-
         return `
             ${this.generateFunnelHtml(funnelData)}
             <div class="report-grid">
@@ -304,17 +283,16 @@ export const ReportModule = {
     },
 
     calculateFunnelData(data) {
-        const app = globalThis.App;
-        const headers = app.state.data.headers;
-        const contactResultIndex = headers.indexOf('1차 컨택 결과');
-        const interviewResultIndex = headers.indexOf('면접결과');
-        const joinDateIndex = headers.indexOf('입과일');
-
+        const { headers } = globalThis.App.state.data;
+        const indices = {
+            contactResult: headers.indexOf('1차 컨택 결과'),
+            interviewResult: headers.indexOf('면접결과'),
+            joinDate: headers.indexOf('입과일'),
+        };
         const total = data.length;
-        const interviewConfirmed = data.filter(row => (row[contactResultIndex] || '').trim() === '면접확정').length;
-        const passed = data.filter(row => (row[interviewResultIndex] || '').trim() === '합격').length;
-        const joined = data.filter(row => (row[joinDateIndex] || '').trim() && (row[joinDateIndex] || '').trim() !== '-').length;
-
+        const interviewConfirmed = data.filter(r => (r[indices.contactResult] || '') === '면접확정').length;
+        const passed = data.filter(r => (r[indices.interviewResult] || '') === '합격').length;
+        const joined = data.filter(r => (r[indices.joinDate] || '').trim()).length;
         return [
             { stage: '총 지원', count: total, conversion: 100 },
             { stage: '면접 확정', count: interviewConfirmed, conversion: total > 0 ? (interviewConfirmed / total * 100) : 0 },
@@ -326,8 +304,7 @@ export const ReportModule = {
     generateFunnelHtml(funnelData) {
         let html = '<h3 class="report-subtitle">채용 퍼널 분석</h3><div class="report-funnel">';
         funnelData.forEach((step, index) => {
-            const prevCount = index > 0 ? funnelData[index - 1].count : step.count;
-            const widthPercentage = prevCount > 0 ? (step.count / prevCount) * 100 : 100;
+            const widthPercentage = index === 0 ? 100 : funnelData[index-1].count > 0 ? (step.count / funnelData[index-1].count * 100) : 0;
             html += `
                 <div class="funnel-step" style="--step-color: var(--funnel-color-${index + 1});">
                     <div class="funnel-info">
@@ -337,9 +314,7 @@ export const ReportModule = {
                     <div class="funnel-bar-bg">
                         <div class="funnel-bar" style="width: ${widthPercentage}%;"></div>
                     </div>
-                    ${index > 0 ? `<span class="funnel-conversion">
-                        <i class="fas fa-arrow-down"></i> ${step.conversion.toFixed(1)}%
-                    </span>` : ''}
+                    ${index > 0 ? `<span class="funnel-conversion"><i class="fas fa-arrow-down"></i> ${step.conversion.toFixed(1)}%</span>` : ''}
                 </div>
             `;
         });
@@ -348,62 +323,40 @@ export const ReportModule = {
     },
 
     calculateTopSources(data) {
-        const app = globalThis.App;
-        const headers = app.state.data.headers;
-        const routeIndex = headers.indexOf('지원루트');
-        const joinDateIndex = headers.indexOf('입과일');
-
+        const { headers } = globalThis.App.state.data;
+        const indices = { route: headers.indexOf('지원루트'), joinDate: headers.indexOf('입과일') };
         const sourceStats = {};
         data.forEach(row => {
-            const route = row[routeIndex] || '미지정';
-            if (!sourceStats[route]) {
-                sourceStats[route] = { total: 0, joined: 0 };
-            }
+            const route = row[indices.route] || '미지정';
+            if (!sourceStats[route]) sourceStats[route] = { total: 0, joined: 0 };
             sourceStats[route].total++;
-            if ((row[joinDateIndex] || '').trim() && (row[joinDateIndex] || '').trim() !== '-') {
-                sourceStats[route].joined++;
-            }
+            if ((row[indices.joinDate] || '').trim()) sourceStats[route].joined++;
         });
-
         return Object.entries(sourceStats).map(([name, stats]) => ({
-            name,
-            total: stats.total,
-            joined: stats.joined,
+            name, total: stats.total, joined: stats.joined,
             joinRate: stats.total > 0 ? (stats.joined / stats.total * 100) : 0
         })).sort((a, b) => b.joinRate - a.joinRate).slice(0, 5);
     },
 
     generateTopSourcesTableHtml(topSourcesData) {
         let tableHtml = '<table class="report-table mini"><thead><tr><th>지원루트</th><th>총지원</th><th>최종입과</th><th>입과율</th></tr></thead><tbody>';
-        if (topSourcesData.length === 0) {
-            return '<p>데이터가 부족하여 우수 채용 경로를 분석할 수 없습니다.</p>';
-        }
+        if (topSourcesData.length === 0) return '<p>데이터 부족</p>';
         topSourcesData.forEach(source => {
-            tableHtml += `
-                <tr>
-                    <td>${source.name}</td>
-                    <td>${source.total}명</td>
-                    <td>${source.joined}명</td>
-                    <td><strong>${source.joinRate.toFixed(1)}%</strong></td>
-                </tr>
-            `;
+            tableHtml += `<tr><td>${source.name}</td><td>${source.total}명</td><td>${source.joined}명</td><td><strong>${source.joinRate.toFixed(1)}%</strong></td></tr>`;
         });
         tableHtml += '</tbody></table>';
         return tableHtml;
     },
-    // ▲▲▲▲▲ [3단계 업그레이드] 끝 ▲▲▲▲▲
     
     generateDetailTable(data) {
-        const headers = globalThis.App.state.data.headers;
+        const { headers } = globalThis.App.state.data;
         const visibleHeaders = headers.filter(h => !['비고', '면접리뷰'].includes(h));
         let tableHtml = '<div class="report-table-container"><table class="report-table"><thead><tr>';
-        visibleHeaders.forEach(header => { tableHtml += `<th>${header}</th>`; });
+        visibleHeaders.forEach(h => { tableHtml += `<th>${h}</th>`; });
         tableHtml += '</tr></thead><tbody>';
         data.forEach(row => {
             tableHtml += '<tr>';
-            visibleHeaders.forEach(header => {
-                tableHtml += `<td>${row[headers.indexOf(header)] || '-'}</td>`;
-            });
+            visibleHeaders.forEach(h => { tableHtml += `<td>${row[headers.indexOf(h)] || '-'}</td>`; });
             tableHtml += '</tr>';
         });
         tableHtml += '</tbody></table></div>';
@@ -411,8 +364,7 @@ export const ReportModule = {
     },
     
     renderReportChart(canvas, data) {
-        const app = globalThis.App;
-        const routeIndex = app.state.data.headers.indexOf('지원루트');
+        const routeIndex = globalThis.App.state.data.headers.indexOf('지원루트');
         if (routeIndex === -1) return;
         const routeData = {};
         data.forEach(row => {
@@ -424,10 +376,8 @@ export const ReportModule = {
             data: {
                 labels: Object.keys(routeData),
                 datasets: [{
-                    label: '지원자 수',
-                    data: Object.values(routeData),
-                    backgroundColor: 'rgba(167, 139, 250, 0.6)',
-                    borderColor: 'rgba(139, 92, 246, 1)',
+                    label: '지원자 수', data: Object.values(routeData),
+                    backgroundColor: 'rgba(167, 139, 250, 0.6)', borderColor: 'rgba(139, 92, 246, 1)',
                     borderWidth: 1
                 }]
             },
@@ -439,6 +389,14 @@ export const ReportModule = {
         });
     },
 
+    showCustomAlert(message) {
+        const overlay = document.createElement('div');
+        overlay.className = 'custom-alert-overlay';
+        overlay.innerHTML = `<div class="custom-alert-box"><p>${message}</p><button>확인</button></div>`;
+        document.body.appendChild(overlay);
+        overlay.querySelector('button').onclick = () => overlay.remove();
+    }
+};
     showCustomAlert(message) {
         const existingAlert = document.querySelector('.custom-alert-overlay');
         if (existingAlert) {
