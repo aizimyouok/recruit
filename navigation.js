@@ -1,36 +1,41 @@
-// js/navigation.js (리포트 페이지 초기화 로직 추가 버전)
+// js/navigation.js (리포트 페이지 정리 로직 추가 버전)
 
 export const NavigationModule = {
+    /**
+     * 페이지를 전환하는 메인 함수
+     * @param {object} appInstance - 메인 App 객체
+     * @param {string} pageId - 전환할 페이지의 ID
+     */
     switchPage(appInstance, pageId) {
-        // ▼▼▼▼▼ [여기부터 추가] ▼▼▼▼▼
-        // 페이지를 전환하기 전에, 현재 활성화된 페이지를 찾아서 정리(destroy) 함수를 호출합니다.
+        // --- [수정된 부분 시작] ---
+        // 1. 현재 활성화된 페이지를 찾아, 해당 페이지의 정리(destroy) 함수를 먼저 호출합니다.
+        //    이것이 다른 페이지와의 스크립트 충돌을 막는 가장 중요한 부분입니다.
         const currentPageElement = document.querySelector('.page.active');
         if (currentPageElement) {
             const currentPageId = currentPageElement.id;
-            // 만약 현재 페이지가 'report'라면, report 모듈의 destroy 함수를 실행합니다.
+            // 만약 현재 페이지가 'report'였다면, ReportModule의 destroy 함수를 실행합니다.
             if (currentPageId === 'report' && appInstance.report && typeof appInstance.report.destroy === 'function') {
                 appInstance.report.destroy();
             }
-            // 다른 페이지들도 정리 로직이 필요하다면 여기에 추가할 수 있습니다.
+            // (나중에 다른 페이지에도 정리 로직이 필요하면 여기에 추가할 수 있습니다.)
         }
-        // ▲▲▲▲▲ [여기까지 추가] ▲▲▲▲▲
-        // 모든 페이지 숨기기
+        // --- [수정된 부분 끝] ---
+
+        // 2. 모든 페이지를 숨기고, 목표한 페이지만 활성화합니다.
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        
-        // 선택된 페이지 표시
         const targetPage = document.getElementById(pageId);
         if (targetPage) {
             targetPage.classList.add('active');
         }
         
-        // 네비게이션 버튼 상태 업데이트
+        // 3. 네비게이션 메뉴의 활성 상태를 업데이트합니다.
         document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
         const targetNavBtn = document.querySelector(`.nav-item[onclick*="'${pageId}'"]`);
         if (targetNavBtn) {
             targetNavBtn.classList.add('active');
         }
 
-        // 페이지 제목 업데이트
+        // 4. 페이지 제목을 업데이트합니다.
         const titles = { 
             dashboard: '지원자 현황', 
             stats: '채용 통계 분석',
@@ -38,26 +43,33 @@ export const NavigationModule = {
             interviewSchedule: '면접관별 상세 일정',
             report: '리포트 발행'
         };
-        
         const titleElement = document.getElementById('pageTitle');
         if (titleElement && titles[pageId]) {
             titleElement.textContent = titles[pageId];
         }
 
-        // 페이지별 특수 처리
+        // 5. 새로 활성화된 페이지에 필요한 초기화 스크립트를 실행합니다.
         NavigationModule.handlePageSpecificActions(appInstance, pageId);
 
-        // 모바일에서 사이드바 닫기
+        // 6. 기타 UI 처리를 합니다.
         NavigationModule.closeMobileSidebarIfOpen();
-
-        // 히스토리 업데이트 (선택사항)
-        if (window.history && window.history.pushState) {
-            NavigationModule.updateHistory(pageId);
-        }
+        NavigationModule.updateHistory(pageId);
     },
 
+    /**
+     * 각 페이지에 맞는 초기화 함수를 호출합니다.
+     * @param {object} appInstance - 메인 App 객체
+     * @param {string} pageId - 활성화된 페이지의 ID
+     */
     handlePageSpecificActions(appInstance, pageId) {
-        if (pageId === 'stats') {
+        // 'report' 페이지로 전환될 때, ReportModule의 initialize 함수를 호출합니다.
+        if (pageId === 'report') {
+            setTimeout(() => {
+                if (appInstance.report && typeof appInstance.report.initialize === 'function') {
+                    appInstance.report.initialize();
+                }
+            }, 10);
+        } else if (pageId === 'stats') {
             setTimeout(() => {
                 if (window.Chart && appInstance.state.data.all.length > 0) {
                     if (Object.keys(appInstance.state.charts.instances).length === 0) {
@@ -83,15 +95,7 @@ export const NavigationModule = {
                     appInstance.interviewSchedule.initialize(appInstance);
                 }
             }, 100);
-        } else if (pageId === 'report') { // ▼▼▼▼▼ [수정된 부분] ▼▼▼▼▼
-            setTimeout(() => {
-                // 리포트 페이지로 전환될 때, ReportModule의 initialize 함수를 호출합니다.
-                // 이 함수가 필터와 탭을 화면에 그리는 역할을 합니다.
-                if (appInstance.report && typeof appInstance.report.initialize === 'function') {
-                    appInstance.report.initialize(appInstance);
-                }
-            }, 100);
-        } else if (pageId === 'dashboard') { // ▲▲▲▲▲ [수정된 부분] ▲▲▲▲▲
+        } else if (pageId === 'dashboard') {
             if (appInstance.state.data.all.length > 0) {
                 appInstance.data.updateInterviewSchedule();
                 appInstance.sidebar.updateWidgets();
@@ -99,6 +103,7 @@ export const NavigationModule = {
         }
     },
 
+    // (이하 나머지 코드는 기존과 동일합니다)
     closeMobileSidebarIfOpen() {
         if (window.innerWidth <= 768) {
             const sidebar = document.getElementById('sidebar');
