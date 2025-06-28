@@ -236,8 +236,9 @@ export const InterviewScheduleModule = {
             const dateA = new Date(a[interviewDateIndex]);
             const dateB = new Date(b[interviewDateIndex]);
 
-            if(isNaN(dateA.getTime())) return 1;
-            if(isNaN(dateB.getTime())) return -1;
+            // 유효하지 않은 날짜를 뒤로 보내는 처리
+            if (isNaN(dateA.getTime())) return 1;
+            if (isNaN(dateB.getTime())) return -1;
 
             const timeAStr = a[interviewTimeIndex] || '00:00';
             const timeBStr = b[interviewTimeIndex] || '00:00';
@@ -250,9 +251,13 @@ export const InterviewScheduleModule = {
 
             dateA.setHours(hourA, 0, 0, 0);
             dateB.setHours(hourB, 0, 0, 0);
-
-            const order = sortOrder === 'asc' ? 1 : -1;
-            return (dateA - dateB) * order;
+            
+            // sortOrder가 'asc'일 때 오름차순(임박한 순), 'desc'일 때 내림차순(오래된 순) 정렬
+            if (sortOrder === 'asc') {
+                return dateA - dateB;
+            } else {
+                return dateB - dateA;
+            }
         });
     },
 
