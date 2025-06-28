@@ -1,5 +1,5 @@
-// js/interviewSchedule.js - 면접 일정 페이지 모듈 (최종 수정 버전)
-// =================================
+// js/interviewSchedule.js 파일의 전체 코드입니다.
+// createRowHtml 함수 부분이 수정되었습니다.
 
 export const InterviewScheduleModule = {
     state: {
@@ -297,6 +297,7 @@ export const InterviewScheduleModule = {
         `;
     },
 
+    // ▼▼▼▼▼ [수정된 함수] ▼▼▼▼▼
     createRowHtml(row, headers, visibleHeaders) {
         const getValue = (headerName) => row[headers.indexOf(headerName)] || '-';
 
@@ -336,7 +337,8 @@ export const InterviewScheduleModule = {
         visibleHeaders.forEach(header => {
             let cellContent = '-';
             const originalValue = getValue(header);
-
+            
+            // '비고'와 '면접리뷰' 컬럼에만 특정 클래스를 추가하기 위한 변수
             let tdClass = '';
             if (header === '비고' || header === '면접리뷰') {
                 tdClass = 'class="wrap-text"';
@@ -346,54 +348,41 @@ export const InterviewScheduleModule = {
                 const value = (originalValue || '').trim();
                 let statusClass = '';
 
-                if (value === '합격') {
-                    statusClass = 'interview-pass';
-                } else if (value === '불합격') {
-                    statusClass = 'interview-fail';
-                } else if (value === '미참석') {
-                    statusClass = 'interview-noshow';
-                } else if (value && value !== '-') {
-                    statusClass = 'interview-other';
-                }
+                if (value === '합격') statusClass = 'interview-pass';
+                else if (value === '불합격') statusClass = 'interview-fail';
+                else if (value === '미참석') statusClass = 'interview-noshow';
+                else if (value && value !== '-') statusClass = 'interview-other';
+                
+                cellContent = statusClass ? `<span class="status-badge ${statusClass}">${value}</span>` : (value || '-');
 
-                if (statusClass) {
-                    cellContent = `<span class="status-badge ${statusClass}">${value}</span>`;
-                } else {
-                    cellContent = value || '-';
-                }
             } else {
                 try {
                     if (header === '면접일') {
                         cellContent = `${dDayHtml} ${dateDisplayHtml || originalValue}`;
-                    // ▼▼▼▼▼ [수정된 코드] '지원일' 포맷 변경 ▼▼▼▼▼
                     } else if (header === '지원일') {
                         if (originalValue && originalValue !== '-') {
                             const date = new Date(originalValue);
-                            const year = date.getFullYear().toString().slice(-2);
-                            const month = date.getMonth() + 1;
-                            const day = date.getDate();
-                            const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
-                            const weekday = weekdays[date.getDay()];
-                            cellContent = `${year}/${month}/${day}`;
+                            cellContent = `${date.getFullYear().toString().slice(-2)}/${date.getMonth() + 1}/${date.getDate()}`;
                         } else {
                             cellContent = '-';
                         }
-                    // ▲▲▲▲▲ [수정된 코드] '지원일' 포맷 변경 ▲▲▲▲▲
                     } else if (header === '면접 시간') {
                         cellContent = this.app.utils.formatInterviewTime(originalValue);
                     } else {
                         cellContent = originalValue;
                     }
                 } catch (e) {
-                    cellContent = originalValue; // 오류 시 원본 데이터 표시
+                    cellContent = originalValue;
                 }
             }
+            // td 태그에 클래스를 포함하여 생성
             rowHtml += `<td ${tdClass} title="${String(originalValue || '').replace(/<[^>]*>/g, '')}">${cellContent}</td>`;
         });
 
         const rowDataEncoded = encodeURIComponent(JSON.stringify(row));
         return `<tr onclick="globalThis.App.modal.openDetail(JSON.parse(decodeURIComponent('${rowDataEncoded}')))">${rowHtml}</tr>`;
     },
+    // ▲▲▲▲▲ [수정된 함수] ▲▲▲▲▲
 
     renderInterviewerCounts(filteredData, interviewerIndex) {
         const container = document.getElementById('interviewerCountsContainer');
@@ -415,12 +404,10 @@ export const InterviewScheduleModule = {
 
         const header = document.createElement('div');
         header.className = 'interviewer-summary-header';
-        // ▼▼▼▼▼ [수정] totalCount 뒤에 '건'을 추가합니다. ▼▼▼▼▼
         header.innerHTML = `
             <span><i class="fas fa-user-tie"></i> 면접 일정</span>
             <span class="total-count">총 <span class="badge">${totalCount}건</span></span>
         `;
-        // ▲▲▲▲▲ [수정] 끝 ▲▲▲▲▲
         container.appendChild(header);
 
         const list = document.createElement('div');
@@ -443,6 +430,7 @@ export const InterviewScheduleModule = {
         }
         container.appendChild(list);
     },
+
     resetFilters() {
         document.getElementById('scheduleSearch').value = '';
         document.getElementById('scheduleRouteFilter').value = 'all';
@@ -463,9 +451,7 @@ export const InterviewScheduleModule = {
         
         this.state.visibleColumns = {};
         allHeaders.forEach(h => {
-            // 기본적으로 '증원자'는 숨김 처리하려고 했으나 그냥 다 나오는걸로 수정
-            const defaultHidden = [];
-            this.state.visibleColumns[h] = !defaultHidden.includes(h);
+            this.state.visibleColumns[h] = true;
         });
 
         const dropdown = document.getElementById('scheduleColumnToggleDropdown');
