@@ -438,39 +438,36 @@
                                     <div class="filter-section">
                                         <h3><i class="fas fa-filter"></i> 데이터 필터링</h3>
                                         <div class="filter-grid">
-                                            <!-- 기간 선택 필터 -->
                                             <div class="filter-group">
                                                 <label for="report-period-filter">기간 선택</label>
                                                 <select id="report-period-filter">
                                                     <option value="monthly">최근 30일</option>
                                                     <option value="quarterly">최근 3개월</option>
+                                                    <option value="half-yearly">최근 6개월</option>
                                                     <option value="yearly">올해</option>
-                                                    <option value="all">전체 기간</option>
+                                                    <option value="all" selected>전체 기간</option>
                                                 </select>
                                             </div>
-                                            <!-- 지원루트 필터 (JS로 채워짐) -->
                                             <div class="filter-group">
                                                 <label for="report-route-filter">지원루트</label>
-                                                <select id="report-route-filter"></select>
+                                                <select id="report-route-filter"><option value="all">전체</option></select>
                                             </div>
-                                            <!-- 모집분야 필터 (JS로 채워짐) -->
                                             <div class="filter-group">
                                                 <label for="report-position-filter">모집분야</label>
-                                                <select id="report-position-filter"></select>
+                                                <select id="report-position-filter"><option value="all">전체</option></select>
                                             </div>
-                                            <!-- 회사명 필터 (JS로 채워짐) -->
                                             <div class="filter-group">
                                                 <label for="report-company-filter">회사명</label>
-                                                <select id="report-company-filter"></select>
+                                                <select id="report-company-filter"><option value="all">전체</option></select>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="option-group">
                                         <div class="option-title"><i class="fas fa-file-alt"></i> 리포트 템플릿 선택</div>
                                         <div class="template-gallery">
-                                            <div class="template-card selected"><div class="template-icon"><i class="fas fa-chart-pie"></i></div><div class="template-name">경영진 요약</div><div class="template-description">핵심 KPI와 트렌드 분석</div></div>
-                                            <div class="template-card"><div class="template-icon"><i class="fas fa-chart-bar"></i></div><div class="template-name">상세 분석</div><div class="template-description">깊이 있는 데이터 분석</div></div>
-                                            <div class="template-card"><div class="template-icon"><i class="fas fa-funnel-dollar"></i></div><div class="template-name">채용 퍼널</div><div class="template-description">단계별 전환율 분석</div></div>
+                                            <div class="template-card selected" data-template="summary"><div class="template-icon"><i class="fas fa-chart-pie"></i></div><div class="template-name">경영진 요약</div><div class="template-description">핵심 KPI와 트렌드 분석</div></div>
+                                            <div class="template-card" data-template="funnel"><div class="template-icon"><i class="fas fa-funnel-dollar"></i></div><div class="template-name">채용 퍼널</div><div class="template-description">단계별 전환율 분석</div></div>
+                                            <div class="template-card" data-template="deep-dive"><div class="template-icon"><i class="fas fa-chart-bar"></i></div><div class="template-name">상세 분석</div><div class="template-description">깊이 있는 데이터 분석</div></div>
                                         </div>
                                     </div>
                                     <div class="option-group">
@@ -483,13 +480,46 @@
                                     </div>
                                 </div>
                                 <div id="custom-tab" class="tab-content">
-                                     <!-- 커스텀 리포트 내용 -->
+                                    <div class="option-group">
+                                        <div class="option-title"><i class="fas fa-puzzle-piece"></i> 포함할 섹션 선택</div>
+                                        <div class="checkbox-group">
+                                            <div class="checkbox-item"><input type="checkbox" id="kpi" checked><label for="kpi">핵심 성과 지표 (KPI)<small>총 지원자, 전환율, 입과율 등 주요 지표</small></label></div>
+                                            <div class="checkbox-item"><input type="checkbox" id="charts" checked><label for="charts">시각화 차트<small>지원루트별, 모집분야별 분포도</small></label></div>
+                                            <div class="checkbox-item"><input type="checkbox" id="trends"><label for="trends">트렌드 분석<small>시간별 지원자 추이 및 패턴 분석</small></label></div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div id="ai-tab" class="tab-content">
-                                     <!-- AI 분석 가이드 내용 -->
+                                     <div class="ai-analysis-grid">
+                                        <div class="analysis-category">
+                                            <div class="category-title"><i class="fas fa-funnel-dollar"></i> 유입 분석</div>
+                                            <div class="analysis-item"><label><input type="checkbox" name="ai-task" value="source_efficiency"><div><div class="analysis-title">가장 효율적인 지원 경로는?</div><div class="analysis-description">어떤 지원루트가 가장 많은 최종 입사자를 만들어내는지 분석합니다.</div></div></label></div>
+                                            <div class="analysis-item"><label><input type="checkbox" name="ai-task" value="recruiter_performance"><div><div class="analysis-title">최고의 증원자는 누구인가?</div><div class="analysis-description">어떤 증원자가 추천한 지원자들이 면접 합격률이 높은지 분석합니다.</div></div></label></div>
+                                        </div>
+                                        <div class="analysis-category">
+                                            <div class="category-title"><i class="fas fa-users"></i> 지원자 특징 분석</div>
+                                            <div class="analysis-item"><label><input type="checkbox" name="ai-task" value="passer_profile"><div><div class="analysis-title">최종 합격자들의 공통점은?</div><div class="analysis-description">합격자들의 주요 나이대, 성별, 지역 등 인구통계학적 특징을 파악합니다.</div></div></label></div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div id="history-tab" class="tab-content">
-                                     <!-- 히스토리 내용 -->
+                                    <div class="option-group">
+                                        <div class="option-title"><i class="fas fa-clock"></i> 최근 생성된 리포트</div>
+                                        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; text-align: center; color: #6b7280;">
+                                            <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
+                                            <p>아직 생성된 리포트가 없습니다.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="progress-section" style="display: none;">
+                                    <h4>리포트 생성 진행률</h4>
+                                    <div class="progress-bar"><div class="progress-fill"></div></div>
+                                    <div class="progress-steps">
+                                        <div class="progress-step active"><i class="fas fa-database"></i> 데이터 수집</div>
+                                        <div class="progress-step"><i class="fas fa-chart-bar"></i> 분석 처리</div>
+                                        <div class="progress-step"><i class="fas fa-magic"></i> AI 분석</div>
+                                        <div class="progress-step"><i class="fas fa-file-pdf"></i> 리포트 생성</div>
+                                    </div>
                                 </div>
                                 <div class="action-buttons">
                                     <button class="btn btn-secondary"><i class="fas fa-eye"></i> 미리보기</button>
