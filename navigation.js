@@ -2,6 +2,18 @@
 
 export const NavigationModule = {
     switchPage(appInstance, pageId) {
+        // ▼▼▼▼▼ [여기부터 추가] ▼▼▼▼▼
+        // 페이지를 전환하기 전에, 현재 활성화된 페이지를 찾아서 정리(destroy) 함수를 호출합니다.
+        const currentPageElement = document.querySelector('.page.active');
+        if (currentPageElement) {
+            const currentPageId = currentPageElement.id;
+            // 만약 현재 페이지가 'report'라면, report 모듈의 destroy 함수를 실행합니다.
+            if (currentPageId === 'report' && appInstance.report && typeof appInstance.report.destroy === 'function') {
+                appInstance.report.destroy();
+            }
+            // 다른 페이지들도 정리 로직이 필요하다면 여기에 추가할 수 있습니다.
+        }
+        // ▲▲▲▲▲ [여기까지 추가] ▲▲▲▲▲
         // 모든 페이지 숨기기
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         
