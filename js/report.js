@@ -367,16 +367,28 @@ export const ReportModule = {
 
     // 🔥 리포트 생성 핵심 함수
     generateReport() {
+        console.log('🚀 [DEBUG] generateReport 시작');
+        
         const modalBody = document.getElementById('reportModalBody');
         const selectedTemplateEl = document.querySelector('#report .template-card.selected');
+        
+        console.log('🔍 [DEBUG] modalBody:', modalBody);
+        console.log('🔍 [DEBUG] selectedTemplateEl:', selectedTemplateEl);
+        
         if (!modalBody || !selectedTemplateEl) {
+            console.error('❌ [DEBUG] 필수 엘리먼트 누락');
             this.showCustomAlert('리포트 템플릿을 먼저 선택해주세요.'); 
             return;
         }
         
         const templateName = selectedTemplateEl.querySelector('.template-name').textContent;
+        console.log('🔍 [DEBUG] 선택된 템플릿:', templateName);
+        
         const data = this.getFilteredReportData();
+        console.log('🔍 [DEBUG] 필터링된 데이터 개수:', data.length);
+        
         if (data.length === 0) {
+            console.error('❌ [DEBUG] 데이터 없음');
             this.showCustomAlert('리포트를 생성할 데이터가 없습니다. 필터 설정을 확인해주세요.'); 
             return;
         }
@@ -386,39 +398,69 @@ export const ReportModule = {
         let reportHtml = `<div class="report-title">${templateName}</div>`;
         switch (templateName) {
             case '경영진 요약': 
+                console.log('📊 [DEBUG] 경영진 요약 리포트 생성');
                 reportHtml += this.generateSummaryContent(data); 
                 break;
             case '상세 분석': 
+                console.log('📋 [DEBUG] 상세 분석 리포트 생성');
                 reportHtml += this.generateDetailTable(data); 
                 break;
             default: 
+                console.log('⚠️ [DEBUG] 기본 템플릿 사용');
                 reportHtml += `<p>${templateName} 템플릿은 현재 준비 중입니다.</p>`; 
                 break;
         }
+        
+        console.log('🔍 [DEBUG] 생성된 HTML 길이:', reportHtml.length);
         modalBody.innerHTML = reportHtml;
+        
+        console.log('🔍 [DEBUG] 모달 열기 시작');
         this.openReportModal();
 
         if (templateName === '경영진 요약') {
+            console.log('📊 [DEBUG] 차트 렌더링 시작');
             const canvas = document.getElementById('report-chart');
             if (canvas) this.renderReportChart(canvas, data);
         }
+        
+        console.log('✅ [DEBUG] generateReport 완료');
     },
 
     // 🔥 모달 관리 함수들
     openReportModal() {
+        console.log('🔍 [DEBUG] openReportModal 호출됨');
         const modal = document.getElementById('reportModal');
+        console.log('🔍 [DEBUG] 모달 엘리먼트:', modal);
+        
         if (modal) {
             modal.style.display = 'flex';
+            modal.style.zIndex = '10000';
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.backgroundColor = 'rgba(0,0,0,0.8)';
+            modal.style.justifyContent = 'center';
+            modal.style.alignItems = 'center';
+            
             document.body.style.overflow = 'hidden';
+            console.log('✅ [DEBUG] 모달 열림 완료');
+        } else {
+            console.error('❌ [DEBUG] reportModal 엘리먼트를 찾을 수 없습니다!');
         }
     },
 
     closeReportModal() {
+        console.log('🔍 [DEBUG] closeReportModal 호출됨');
         const modal = document.getElementById('reportModal');
+        
         if (modal) {
             modal.style.display = 'none';
             document.body.style.overflow = '';
+            console.log('✅ [DEBUG] 모달 닫힘 완료');
         }
+        
         if (this._chartInstance) {
             this._chartInstance.destroy();
             this._chartInstance = null;
@@ -579,5 +621,24 @@ export const ReportModule = {
         overlay.onclick = (e) => {
             if (e.target === overlay) overlay.remove();
         };
+    },
+
+    // 🔧 강제 스크롤 복구 함수 (디버깅용)
+    forceScrollReset() {
+        console.log('🔧 [DEBUG] 강제 스크롤 리셋');
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.height = '';
+        
+        // 모든 모달 강제 닫기
+        const modals = document.querySelectorAll('#reportModal, .custom-alert-overlay');
+        modals.forEach(modal => {
+            if (modal) {
+                modal.style.display = 'none';
+                modal.remove();
+            }
+        });
+        console.log('✅ [DEBUG] 스크롤 복구 완료');
     }
 };
