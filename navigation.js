@@ -63,7 +63,9 @@ export const NavigationModule = {
         // 5. 새로운 페이지 모듈의 initialize 함수를 호출하여 기능 시작
         const newModule = this.pageModules[newPageId];
         if (newModule && typeof newModule.initialize === 'function') {
-            setTimeout(() => newModule.initialize(), 10);
+            // ▼▼▼▼▼ 여기가 수정된 부분입니다 ▼▼▼▼▼
+            setTimeout(() => newModule.initialize(appInstance), 10);
+            // ▲▲▲▲▲ 여기가 수정된 부분입니다 ▲▲▲▲▲
         } else {
             // 모듈화되지 않은 레거시 페이지 처리
             this.handleLegacyPageActions(appInstance, newPageId);
