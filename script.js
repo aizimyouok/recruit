@@ -568,7 +568,12 @@ const App = {
                 // 6. 빠른 모드 감지 및 상태 업데이트 (스마트 동기화 모니터링)
                 App.init.setupSyncStatusMonitoring();
                 
-                // 7. 접근성 개선 (비동기)
+                // 7. 🔥 리포트 모듈 초기화 (B) 기능 개선 단계
+                if (App.report && typeof App.report.init === 'function') {
+                    App.report.init();
+                }
+                
+                // 8. 접근성 개선 (비동기)
                 setTimeout(() => {
                     App.utils.enhanceAccessibility();
                 }, 1000);
