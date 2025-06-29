@@ -183,10 +183,10 @@
 
 #report .filter-grid {
     display: grid;
-    /* 필터 영역을 더 넓게 만들기 위해 minmax 값을 250px로 증가 */
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    /* 필터 영역을 적당히 넓게 - 원래 200px에서 220px로 소폭 증가 */
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     align-items: end;
-    gap: 25px 20px; /* 세로 간격, 가로 간격을 더 넓게 */
+    gap: 20px 15px; /* 원래 간격 유지 */
 }
 
 /* ▼▼▼▼▼ 핵심 수정 부분 ▼▼▼▼▼ */
@@ -5168,4 +5168,21 @@
     font-size: 16px !important;
     font-weight: 600 !important;
     color: #1f2937 !important;
+}
+
+/* 🎨 간단한 UI 개선 - 안전한 스타일링만 */
+
+/* 필터 그룹 간격 조정 */
+.filter-group {
+    margin-bottom: 18px;
+}
+
+/* 드롭다운 패딩 약간 증가 */
+.filter-group select {
+    padding: 10px 12px;
+}
+
+/* 실시간 미리보기 패딩 증가 */
+.live-preview-sidebar {
+    padding: 22px;
 }
