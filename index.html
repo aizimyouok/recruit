@@ -445,7 +445,10 @@
                         </div>
 
                         <div class="report-content">
-                            <div class="report-builder">
+                            <!-- 🔥 새로운 그리드 레이아웃 -->
+                            <div class="report-main-grid">
+                                <div class="report-builder-section">
+                                    <div class="report-builder">
                                 <div id="templates-tab" class="tab-content active">
                                     <div class="filter-section">
     <div class="filter-section-header">
@@ -513,20 +516,9 @@
                                             <i class="fas fa-file-alt"></i> 리포트 템플릿 선택
                                         </div>
                                         <div class="template-gallery">
-                                            <div class="template-card selected">
-                                                <div class="template-icon"><i class="fas fa-chart-pie"></i></div>
-                                                <div class="template-name">경영진 요약</div>
-                                                <div class="template-description">핵심 KPI와 트렌드 분석</div>
-                                            </div>
-                                            <div class="template-card">
-                                                <div class="template-icon"><i class="fas fa-chart-bar"></i></div>
-                                                <div class="template-name">상세 분석</div>
-                                                <div class="template-description">깊이 있는 데이터 분석</div>
-                                            </div>
-                                            <div class="template-card">
-                                                <div class="template-icon"><i class="fas fa-funnel-dollar"></i></div>
-                                                <div class="template-name">채용 퍼널</div>
-                                                <div class="template-description">단계별 전환율 분석</div>
+                                            <!-- 🔥 동적으로 렌더링되는 템플릿 갤러리 -->
+                                            <div class="template-loading">
+                                                <i class="fas fa-spinner fa-spin"></i> 템플릿 로딩 중...
                                             </div>
                                         </div>
                                     </div>
@@ -609,10 +601,75 @@
                                 </div>
                                 <div class="action-buttons">
                                     <button class="btn btn-secondary"><i class="fas fa-eye"></i> 미리보기</button>
-                                    <button class="btn btn-primary"><i class="fas fa-magic"></i> 리포트 생성</button>
+                                    <button class="btn btn-primary" id="generateReportBtn"><i class="fas fa-magic"></i> 리포트 생성</button>
                                 </div>
                             </div>
-                     </div>       
+                        </div>
+                        
+                        <!-- 🔥 실시간 미리보기 사이드바 -->
+                        <div class="live-preview-sidebar" id="livePreviewSidebar">
+                            <div class="preview-header">
+                                <h3><i class="fas fa-eye"></i> 실시간 미리보기</h3>
+                                <button class="preview-toggle" id="previewToggle">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="preview-content" id="livePreviewContent">
+                                <div class="preview-stats">
+                                    <div class="stat-item">
+                                        <div class="stat-label">선택된 템플릿</div>
+                                        <div class="stat-value" id="previewTemplateName">경영진 요약</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-label">데이터 범위</div>
+                                        <div class="stat-value" id="previewDataRange">전체 기간</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-label">예상 생성 시간</div>
+                                        <div class="stat-value" id="previewEstimatedTime">30초</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="preview-summary">
+                                    <h4>요약 정보</h4>
+                                    <div class="summary-grid">
+                                        <div class="summary-item">
+                                            <div class="summary-icon"><i class="fas fa-users"></i></div>
+                                            <div class="summary-text">
+                                                <div class="summary-label">총 지원자</div>
+                                                <div class="summary-value" id="previewTotalApplicants">로딩 중...</div>
+                                            </div>
+                                        </div>
+                                        <div class="summary-item">
+                                            <div class="summary-icon"><i class="fas fa-funnel-dollar"></i></div>
+                                            <div class="summary-text">
+                                                <div class="summary-label">전환율</div>
+                                                <div class="summary-value" id="previewConversionRate">로딩 중...</div>
+                                            </div>
+                                        </div>
+                                        <div class="summary-item">
+                                            <div class="summary-icon"><i class="fas fa-chart-line"></i></div>
+                                            <div class="summary-text">
+                                                <div class="summary-label">주요 채용 경로</div>
+                                                <div class="summary-value" id="previewTopSource">로딩 중...</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="preview-chart-container">
+                                    <h4>미니 차트</h4>
+                                    <canvas id="previewMiniChart" width="280" height="150"></canvas>
+                                </div>
+                                
+                                <div class="preview-actions">
+                                    <button class="btn-preview-full" id="openFullPreview">
+                                        <i class="fas fa-expand-arrows-alt"></i> 전체 미리보기
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

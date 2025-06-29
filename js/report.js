@@ -81,6 +81,8 @@ export const ReportModule = {
         console.log('📊 [ReportModule] Enhanced initialization...');
         
         this.renderEnhancedTemplates();
+        this.setupLivePreview();
+        this.setupReportHistory();
         this.addEventListeners();
         this.populateFilters();
         this.updatePreviewSummary();
@@ -124,6 +126,115 @@ export const ReportModule = {
         });
         
         gallery.innerHTML = html;
+    },
+
+    // 🔥 실시간 미리보기 초기화 (HTML에 이미 있는 사이드바 활용)
+    setupLivePreview() {
+        console.log('🔄 [ReportModule] 실시간 미리보기 초기화...');
+        
+        // 초기 데이터 업데이트
+        this.updateLivePreview();
+        
+        console.log('✅ [ReportModule] 실시간 미리보기 초기화 완료');
+    },
+
+    // 🔥 실시간 미리보기 사이드바 렌더링
+    renderLivePreviewSidebar() {
+        const reportContent = document.querySelector('.report-content');
+        if (!reportContent) return;
+
+        // 기존 그리드 구조가 없으면 생성
+        let mainGrid = reportContent.querySelector('.report-main-grid');
+        if (!mainGrid) {
+            const reportBuilder = reportContent.querySelector('.report-builder');
+            if (!reportBuilder) return;
+
+            // 새로운 그리드 구조 생성
+            mainGrid = document.createElement('div');
+            mainGrid.className = 'report-main-grid';
+            
+            const builderSection = document.createElement('div');
+            builderSection.className = 'report-builder-section';
+            builderSection.appendChild(reportBuilder);
+            
+            mainGrid.appendChild(builderSection);
+            reportContent.appendChild(mainGrid);
+        }
+
+        // 실시간 미리보기 사이드바 HTML
+        const sidebarHTML = `
+            <div class="live-preview-sidebar" id="livePreviewSidebar">
+                <div class="preview-header">
+                    <h3><i class="fas fa-eye"></i> 실시간 미리보기</h3>
+                    <button class="preview-toggle" id="previewToggle">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                </div>
+                
+                <div class="preview-content" id="livePreviewContent">
+                    <div class="preview-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">선택된 템플릿</div>
+                            <div class="stat-value" id="previewTemplateName">경영진 요약</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">데이터 범위</div>
+                            <div class="stat-value" id="previewDataRange">전체 기간</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">예상 생성 시간</div>
+                            <div class="stat-value" id="previewEstimatedTime">30초</div>
+                        </div>
+                    </div>
+                    
+                    <div class="preview-summary">
+                        <h4>요약 정보</h4>
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <div class="summary-icon"><i class="fas fa-users"></i></div>
+                                <div class="summary-text">
+                                    <div class="summary-label">총 지원자</div>
+                                    <div class="summary-value" id="previewTotalApplicants">로딩 중...</div>
+                                </div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-icon"><i class="fas fa-funnel-dollar"></i></div>
+                                <div class="summary-text">
+                                    <div class="summary-label">전환율</div>
+                                    <div class="summary-value" id="previewConversionRate">로딩 중...</div>
+                                </div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-icon"><i class="fas fa-chart-line"></i></div>
+                                <div class="summary-text">
+                                    <div class="summary-label">주요 채용 경로</div>
+                                    <div class="summary-value" id="previewTopSource">로딩 중...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="preview-chart-container">
+                        <h4>미니 차트</h4>
+                        <canvas id="previewMiniChart" width="280" height="150"></canvas>
+                    </div>
+                    
+                    <div class="preview-actions">
+                        <button class="btn-preview-full" id="openFullPreview">
+                            <i class="fas fa-expand-arrows-alt"></i> 전체 미리보기
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // 사이드바가 이미 존재하지 않으면 추가
+        if (!mainGrid.querySelector('.live-preview-sidebar')) {
+            mainGrid.insertAdjacentHTML('beforeend', sidebarHTML);
+        }
+
+        // 초기 데이터 업데이트
+        this.updateLivePreview();
     },
 
     // 🔥 이벤트 리스너 관리
@@ -170,6 +281,14 @@ export const ReportModule = {
             else if (button.matches('.format-option')) this.selectCard(button, '.format-option');
             else if (button.matches('#report-reset-filters')) this.resetFilters();
             else if (button.matches('.btn-primary')) this.generateReport();
+            // 🔥 히스토리 관련 이벤트 처리
+            else if (button.matches('#clearHistoryBtn')) this.clearAllHistory();
+            else if (button.matches('.btn-history-view')) this.viewHistoryItem(button.dataset.id);
+            else if (button.matches('.btn-history-delete')) this.deleteHistoryItem(button.dataset.id);
+            else if (button.matches('.btn-history-download')) this.viewHistoryItem(button.dataset.id);
+            // 🔥 미리보기 관련 이벤트 처리  
+            else if (button.matches('#previewToggle')) this.togglePreviewSidebar();
+            else if (button.matches('#openFullPreview')) this.generateReport();
         }
 
         if (button.closest('#reportModal')) {
@@ -187,12 +306,137 @@ export const ReportModule = {
         const template = this.templates[templateKey];
         if (!template) return;
 
-        const data = this.getFilteredReportData();
-        const previewContainer = document.querySelector('.preview-content');
+        // 기본 정보 업데이트
+        this.updatePreviewBasicInfo(template);
         
-        if (previewContainer && data.length > 0) {
+        // 통계 데이터 업데이트
+        this.updatePreviewStats();
+        
+        // 미니 차트 업데이트
+        this.updatePreviewMiniChart();
+    },
+
+    // 🔥 미리보기 기본 정보 업데이트
+    updatePreviewBasicInfo(template) {
+        const elements = {
+            templateName: document.getElementById('previewTemplateName'),
+            dataRange: document.getElementById('previewDataRange'),
+            estimatedTime: document.getElementById('previewEstimatedTime')
+        };
+
+        if (elements.templateName) elements.templateName.textContent = template.name;
+        if (elements.estimatedTime) elements.estimatedTime.textContent = template.estimatedTime;
+        
+        // 데이터 범위 업데이트
+        const periodSelect = document.getElementById('report-filter-period');
+        if (elements.dataRange && periodSelect) {
+            const periodText = periodSelect.options[periodSelect.selectedIndex].textContent;
+            elements.dataRange.textContent = periodText;
+        }
+    },
+
+    // 🔥 미리보기 통계 데이터 업데이트
+    updatePreviewStats() {
+        try {
+            const data = this.getFilteredReportData();
             const stats = this.calculateBasicStats(data);
-            previewContainer.innerHTML = this.generateLivePreviewHTML(template, stats, data.length);
+            
+            const elements = {
+                totalApplicants: document.getElementById('previewTotalApplicants'),
+                conversionRate: document.getElementById('previewConversionRate'),
+                topSource: document.getElementById('previewTopSource')
+            };
+
+            if (elements.totalApplicants) elements.totalApplicants.textContent = `${stats.total}명`;
+            if (elements.conversionRate) elements.conversionRate.textContent = `${stats.conversionRate}%`;
+            if (elements.topSource) elements.topSource.textContent = stats.topSource;
+        } catch (error) {
+            console.warn('🔴 [ReportModule] Preview stats update failed:', error);
+        }
+    },
+
+    // 🔥 기본 통계 계산
+    calculateBasicStats(data) {
+        if (!data || data.length === 0) {
+            return {
+                total: 0,
+                conversionRate: '0.0',
+                topSource: '데이터 없음'
+            };
+        }
+
+        const total = data.length;
+        
+        // 전환율 계산 (최종 단계까지 진행한 비율)
+        const finalStage = data.filter(item => {
+            const status = item['진행 상태'] || item['현재 단계'] || '';
+            return status.includes('합격') || status.includes('입사') || status.includes('최종');
+        }).length;
+        
+        const conversionRate = total > 0 ? ((finalStage / total) * 100).toFixed(1) : '0.0';
+        
+        // 상위 채용 경로 계산
+        const sources = {};
+        data.forEach(item => {
+            const source = item['지원루트'] || item['채용 경로'] || '기타';
+            sources[source] = (sources[source] || 0) + 1;
+        });
+        
+        const topSource = Object.keys(sources).length > 0 
+            ? Object.keys(sources).reduce((a, b) => sources[a] > sources[b] ? a : b)
+            : '데이터 없음';
+
+        return { total, conversionRate, topSource };
+    },
+
+    // 🔥 미리보기 미니 차트 업데이트
+    updatePreviewMiniChart() {
+        const canvas = document.getElementById('previewMiniChart');
+        if (!canvas) return;
+
+        try {
+            const data = this.getFilteredReportData();
+            if (data.length === 0) return;
+
+            // 기존 차트 인스턴스 제거
+            if (this._previewChartInstance) {
+                this._previewChartInstance.destroy();
+                this._previewChartInstance = null;
+            }
+
+            const ctx = canvas.getContext('2d');
+            const sources = this.calculateTopSources(data);
+            
+            this._previewChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: sources.map(s => s.source),
+                    datasets: [{
+                        data: sources.map(s => s.count),
+                        backgroundColor: [
+                            '#3b82f6', '#ef4444', '#10b981', 
+                            '#f59e0b', '#8b5cf6', '#06b6d4'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { 
+                                font: { size: 10 },
+                                padding: 8 
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            console.warn('🔴 [ReportModule] Preview chart update failed:', error);
         }
     },
 
@@ -369,6 +613,30 @@ export const ReportModule = {
     generateReport() {
         console.log('🚀 [DEBUG] generateReport 시작');
         
+        // 선택된 출력 형식 확인
+        const selectedFormat = document.querySelector('#report .format-option.selected');
+        const formatType = selectedFormat ? selectedFormat.textContent.trim().toLowerCase() : 'pdf';
+        
+        console.log('🔍 [DEBUG] 선택된 출력 형식:', formatType);
+        
+        // 출력 형식에 따라 다른 함수 호출
+        switch (formatType) {
+            case 'excel':
+                this.generateExcelReport();
+                return;
+            case 'powerpoint':
+                this.generatePowerPointReport();
+                return;
+            default:
+                this.generatePDFReport();
+                return;
+        }
+    },
+
+    // 🔥 PDF 리포트 생성 (기존 로직)
+    generatePDFReport() {
+        console.log('🚀 [DEBUG] PDF 리포트 생성 시작');
+        
         const modalBody = document.getElementById('reportModalBody');
         const selectedTemplateEl = document.querySelector('#report .template-card.selected');
         
@@ -423,7 +691,17 @@ export const ReportModule = {
             if (canvas) this.renderReportChart(canvas, data);
         }
         
-        console.log('✅ [DEBUG] generateReport 완료');
+        // 🔥 히스토리에 저장
+        this.saveReportToHistory({
+            templateName: templateName,
+            templateIcon: selectedTemplateEl.querySelector('.template-icon i').className,
+            format: 'PDF',
+            dataCount: data.length,
+            summary: this.generateReportSummary(data, templateName),
+            filters: this.getCurrentFilters()
+        });
+        
+        console.log('✅ [DEBUG] generatePDFReport 완료');
     },
 
     // 🔥 모달 관리 함수들
@@ -640,5 +918,535 @@ export const ReportModule = {
             }
         });
         console.log('✅ [DEBUG] 스크롤 복구 완료');
+    },
+
+    // 🔥 Excel 리포트 생성
+    generateExcelReport() {
+        console.log('📊 [DEBUG] Excel 리포트 생성 시작');
+        
+        try {
+            const data = this.getFilteredReportData();
+            const selectedTemplate = document.querySelector('#report .template-card.selected');
+            const templateName = selectedTemplate ? selectedTemplate.querySelector('.template-name').textContent : 'Report';
+            
+            if (data.length === 0) {
+                this.showCustomAlert('Excel로 출력할 데이터가 없습니다.');
+                return;
+            }
+
+            // SheetJS 라이브러리 동적 로드
+            this.loadSheetJS().then(() => {
+                const wb = XLSX.utils.book_new();
+                
+                // 메인 데이터 시트
+                const ws1 = XLSX.utils.json_to_sheet(data);
+                XLSX.utils.book_append_sheet(wb, ws1, "지원자 데이터");
+                
+                // 통계 시트
+                const stats = this.calculateDetailedStats(data);
+                const statsData = [
+                    ['항목', '값'],
+                    ['총 지원자 수', data.length],
+                    ['전환율', `${stats.conversionRate}%`],
+                    ['주요 채용 경로', stats.topSource],
+                    ['월별 평균 지원자', Math.round(data.length / 12)],
+                    ['생성 일시', new Date().toLocaleString('ko-KR')]
+                ];
+                
+                const ws2 = XLSX.utils.aoa_to_sheet(statsData);
+                XLSX.utils.book_append_sheet(wb, ws2, "통계 요약");
+                
+                // 파일 다운로드
+                const fileName = `${templateName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+                XLSX.writeFile(wb, fileName);
+                
+                this.showCustomAlert(`Excel 파일이 다운로드되었습니다: ${fileName}`);
+                
+                // 🔥 히스토리에 저장
+                this.saveReportToHistory({
+                    templateName: templateName,
+                    templateIcon: selectedTemplate ? selectedTemplate.querySelector('.template-icon i').className : 'fas fa-chart-pie',
+                    format: 'Excel',
+                    dataCount: data.length,
+                    summary: this.generateReportSummary(data, templateName),
+                    filters: this.getCurrentFilters()
+                });
+                
+                console.log('✅ [DEBUG] Excel 리포트 생성 완료');
+            });
+            
+        } catch (error) {
+            console.error('❌ [DEBUG] Excel 생성 오류:', error);
+            this.showCustomAlert('Excel 파일 생성 중 오류가 발생했습니다.');
+        }
+    },
+
+    // 🔥 PowerPoint 리포트 생성
+    generatePowerPointReport() {
+        console.log('📊 [DEBUG] PowerPoint 리포트 생성 시작');
+        
+        try {
+            const data = this.getFilteredReportData();
+            const selectedTemplate = document.querySelector('#report .template-card.selected');
+            const templateName = selectedTemplate ? selectedTemplate.querySelector('.template-name').textContent : 'Report';
+            
+            if (data.length === 0) {
+                this.showCustomAlert('PowerPoint로 출력할 데이터가 없습니다.');
+                return;
+            }
+
+            // HTML to Canvas 변환 후 이미지로 PowerPoint 생성
+            this.generatePowerPointSlides(data, templateName);
+            
+        } catch (error) {
+            console.error('❌ [DEBUG] PowerPoint 생성 오류:', error);
+            this.showCustomAlert('PowerPoint 파일 생성 중 오류가 발생했습니다.');
+        }
+    },
+
+    // 🔥 SheetJS 라이브러리 동적 로드
+    loadSheetJS() {
+        return new Promise((resolve, reject) => {
+            if (typeof XLSX !== 'undefined') {
+                resolve();
+                return;
+            }
+            
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error('SheetJS 로드 실패'));
+            document.head.appendChild(script);
+        });
+    },
+
+    // 🔥 상세 통계 계산
+    calculateDetailedStats(data) {
+        const stats = this.calculateBasicStats(data);
+        
+        // 월별 분포 계산
+        const monthlyDistribution = {};
+        data.forEach(item => {
+            const date = new Date(item['지원일'] || item['등록일'] || Date.now());
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            monthlyDistribution[monthKey] = (monthlyDistribution[monthKey] || 0) + 1;
+        });
+        
+        return {
+            ...stats,
+            monthlyDistribution,
+            avgMonthly: Object.keys(monthlyDistribution).length > 0 
+                ? Math.round(data.length / Object.keys(monthlyDistribution).length) 
+                : 0
+        };
+    },
+
+    // 🔥 PowerPoint 슬라이드 생성
+    generatePowerPointSlides(data, templateName) {
+        // Canvas를 사용해서 차트를 이미지로 변환
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'absolute';
+        tempContainer.style.left = '-9999px';
+        tempContainer.style.width = '800px';
+        tempContainer.style.height = '600px';
+        tempContainer.style.background = 'white';
+        tempContainer.innerHTML = `
+            <div style="padding: 40px; font-family: Arial, sans-serif;">
+                <h1 style="color: #1e293b; border-bottom: 3px solid #3b82f6; padding-bottom: 10px;">
+                    ${templateName}
+                </h1>
+                <div style="margin: 30px 0;">
+                    <h2>📊 주요 지표</h2>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 20px 0;">
+                        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 2em; font-weight: bold; color: #3b82f6;">${data.length}</div>
+                            <div>총 지원자</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="margin: 30px 0;">
+                    <h2>📈 채용 현황</h2>
+                    <canvas id="pptChart" width="600" height="300"></canvas>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(tempContainer);
+        
+        // 차트 생성
+        const canvas = tempContainer.querySelector('#pptChart');
+        const ctx = canvas.getContext('2d');
+        
+        const sources = this.calculateTopSources(data);
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: sources.map(s => s.source),
+                datasets: [{
+                    label: '지원자 수',
+                    data: sources.map(s => s.count),
+                    backgroundColor: '#3b82f6'
+                }]
+            },
+            options: {
+                responsive: false,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+        
+        // HTML2Canvas로 이미지 변환
+        setTimeout(() => {
+            html2canvas(tempContainer).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                
+                // 간단한 PowerPoint 형태로 다운로드 (이미지 파일)
+                const link = document.createElement('a');
+                link.download = `${templateName}_${new Date().toISOString().slice(0, 10)}.png`;
+                link.href = imgData;
+                link.click();
+                
+                document.body.removeChild(tempContainer);
+                this.showCustomAlert('PowerPoint 슬라이드가 이미지로 다운로드되었습니다.');
+                
+                // 🔥 히스토리에 저장
+                this.saveReportToHistory({
+                    templateName: templateName,
+                    templateIcon: selectedTemplate ? selectedTemplate.querySelector('.template-icon i').className : 'fas fa-chart-pie',
+                    format: 'PowerPoint',
+                    dataCount: data.length,
+                    summary: this.generateReportSummary(data, templateName),
+                    filters: this.getCurrentFilters()
+                });
+                
+                console.log('✅ [DEBUG] PowerPoint 생성 완료');
+            });
+        }, 1000);
     }
+};
+
+    // 🔥 ==================== 리포트 히스토리 관리 ====================
+
+    // 🔥 리포트 히스토리 초기화
+    setupReportHistory() {
+        this.renderHistoryTab();
+        this.loadHistoryFromStorage();
+    },
+
+    // 🔥 히스토리 탭 렌더링
+    renderHistoryTab() {
+        const historyTab = document.querySelector('#history-tab .option-group');
+        if (!historyTab) return;
+
+        historyTab.innerHTML = `
+            <div class="option-title">
+                <i class="fas fa-clock"></i> 리포트 히스토리
+                <button class="btn-clear-history" id="clearHistoryBtn" style="float: right; font-size: 0.8rem; padding: 4px 8px;">
+                    <i class="fas fa-trash"></i> 전체 삭제
+                </button>
+            </div>
+            <div class="history-container" id="historyContainer">
+                <div class="history-loading">
+                    <i class="fas fa-spinner fa-spin"></i> 히스토리 로딩 중...
+                </div>
+            </div>
+            <div class="history-stats" id="historyStats" style="margin-top: 15px; padding: 15px; background: #f8fafc; border-radius: 8px; font-size: 0.9rem;">
+                <!-- 통계 정보가 여기에 표시됩니다 -->
+            </div>
+        `;
+    },
+
+    // 🔥 LocalStorage에서 히스토리 로드
+    loadHistoryFromStorage() {
+        try {
+            const historyData = localStorage.getItem('cfc_report_history');
+            const history = historyData ? JSON.parse(historyData) : [];
+            
+            this.renderHistoryList(history);
+            this.updateHistoryStats(history);
+        } catch (error) {
+            console.warn('🔴 [ReportModule] 히스토리 로드 실패:', error);
+            this.renderHistoryList([]);
+        }
+    },
+
+    // 🔥 히스토리 목록 렌더링
+    renderHistoryList(history) {
+        const container = document.getElementById('historyContainer');
+        if (!container) return;
+
+        if (history.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 40px 20px; color: #6b7280;">
+                    <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
+                    <p>아직 생성된 리포트가 없습니다.</p>
+                    <p style="font-size: 0.9rem; margin-top: 5px;">첫 번째 리포트를 생성해보세요!</p>
+                </div>
+            `;
+            return;
+        }
+
+        const historyHTML = history.slice(0, 10).map((item, index) => `
+            <div class="history-item" data-id="${item.id}">
+                <div class="history-main">
+                    <div class="history-info">
+                        <div class="history-title">
+                            <i class="${item.templateIcon}"></i>
+                            ${item.templateName}
+                        </div>
+                        <div class="history-meta">
+                            <span class="history-date">${this.formatDate(item.createdAt)}</span>
+                            <span class="history-count">${item.dataCount}명</span>
+                            <span class="history-format">${item.format}</span>
+                        </div>
+                    </div>
+                    <div class="history-actions">
+                        <button class="btn-history-view" data-id="${item.id}" title="다시 보기">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-history-download" data-id="${item.id}" title="다시 다운로드">
+                            <i class="fas fa-download"></i>
+                        </button>
+                        <button class="btn-history-delete" data-id="${item.id}" title="삭제">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="history-preview" style="display: none;">
+                    <div class="history-summary">${item.summary || '요약 정보 없음'}</div>
+                </div>
+            </div>
+        `).join('');
+
+        container.innerHTML = historyHTML;
+    },
+
+    // 🔥 히스토리 통계 업데이트
+    updateHistoryStats(history) {
+        const statsContainer = document.getElementById('historyStats');
+        if (!statsContainer || history.length === 0) {
+            if (statsContainer) statsContainer.style.display = 'none';
+            return;
+        }
+
+        const totalReports = history.length;
+        const formats = {};
+        const templates = {};
+        
+        history.forEach(item => {
+            formats[item.format] = (formats[item.format] || 0) + 1;
+            templates[item.templateName] = (templates[item.templateName] || 0) + 1;
+        });
+
+        const mostUsedFormat = Object.keys(formats).reduce((a, b) => formats[a] > formats[b] ? a : b);
+        const mostUsedTemplate = Object.keys(templates).reduce((a, b) => templates[a] > templates[b] ? a : b);
+
+        statsContainer.innerHTML = `
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                <div><strong>총 리포트:</strong> ${totalReports}개</div>
+                <div><strong>자주 사용하는 형식:</strong> ${mostUsedFormat}</div>
+                <div><strong>자주 사용하는 템플릿:</strong> ${mostUsedTemplate}</div>
+            </div>
+        `;
+        statsContainer.style.display = 'block';
+    },
+
+    // 🔥 히스토리에 새 리포트 추가
+    addToHistory(reportData) {
+        try {
+            const historyData = localStorage.getItem('cfc_report_history');
+            const history = historyData ? JSON.parse(historyData) : [];
+            
+            const newItem = {
+                id: Date.now().toString(),
+                templateName: reportData.templateName,
+                templateIcon: reportData.templateIcon || 'fas fa-chart-pie',
+                format: reportData.format || 'PDF',
+                dataCount: reportData.dataCount || 0,
+                summary: reportData.summary || '',
+                createdAt: new Date().toISOString(),
+                filters: reportData.filters || {}
+            };
+
+            history.unshift(newItem);
+            
+            // 최대 50개까지만 보관
+            if (history.length > 50) {
+                history.splice(50);
+            }
+
+            localStorage.setItem('cfc_report_history', JSON.stringify(history));
+            
+            // UI 업데이트
+            this.loadHistoryFromStorage();
+            
+            console.log('✅ [ReportModule] 히스토리 추가 완료:', newItem);
+        } catch (error) {
+            console.warn('🔴 [ReportModule] 히스토리 추가 실패:', error);
+        }
+    },
+
+    // 🔥 히스토리 아이템 삭제
+    deleteHistoryItem(itemId) {
+        try {
+            const historyData = localStorage.getItem('cfc_report_history');
+            const history = historyData ? JSON.parse(historyData) : [];
+            
+            const updatedHistory = history.filter(item => item.id !== itemId);
+            localStorage.setItem('cfc_report_history', JSON.stringify(updatedHistory));
+            
+            this.loadHistoryFromStorage();
+            this.showCustomAlert('리포트 히스토리가 삭제되었습니다.');
+        } catch (error) {
+            console.warn('🔴 [ReportModule] 히스토리 삭제 실패:', error);
+        }
+    },
+
+    // 🔥 전체 히스토리 삭제
+    clearAllHistory() {
+        if (confirm('모든 리포트 히스토리를 삭제하시겠습니까?')) {
+            localStorage.removeItem('cfc_report_history');
+            this.loadHistoryFromStorage();
+            this.showCustomAlert('모든 리포트 히스토리가 삭제되었습니다.');
+        }
+    },
+
+    // 🔥 날짜 포맷팅
+    formatDate(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 0) {
+            return '오늘 ' + date.toLocaleTimeString('ko-KR', {hour: '2-digit', minute: '2-digit'});
+        } else if (diffDays === 1) {
+            return '어제 ' + date.toLocaleTimeString('ko-KR', {hour: '2-digit', minute: '2-digit'});
+        } else if (diffDays < 7) {
+            return `${diffDays}일 전`;
+        } else {
+            return date.toLocaleDateString('ko-KR');
+        }
+    },
+
+    // 🔥 히스토리 아이템 다시 보기
+    viewHistoryItem(itemId) {
+        try {
+            const historyData = localStorage.getItem('cfc_report_history');
+            const history = historyData ? JSON.parse(historyData) : [];
+            const item = history.find(h => h.id === itemId);
+            
+            if (!item) {
+                this.showCustomAlert('해당 리포트를 찾을 수 없습니다.');
+                return;
+            }
+
+            // 필터 복원
+            if (item.filters) {
+                Object.keys(item.filters).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element && item.filters[key] !== undefined) {
+                        element.value = item.filters[key];
+                    }
+                });
+            }
+
+            // 템플릿 선택 복원
+            const templateCards = document.querySelectorAll('.template-card');
+            templateCards.forEach(card => {
+                card.classList.remove('selected');
+                if (card.querySelector('.template-name').textContent === item.templateName) {
+                    card.classList.add('selected');
+                }
+            });
+
+            // 리포트 생성
+            this.generateReport();
+            
+            this.showCustomAlert(`"${item.templateName}" 리포트를 다시 생성했습니다.`);
+        } catch (error) {
+            console.warn('🔴 [ReportModule] 히스토리 아이템 보기 실패:', error);
+            this.showCustomAlert('리포트를 다시 생성하는데 실패했습니다.');
+        }
+    }
+
+};
+
+    // 🔥 ==================== 히스토리 헬퍼 함수들 ====================
+
+    // 🔥 리포트를 히스토리에 저장
+    saveReportToHistory(reportData) {
+        try {
+            this.addToHistory(reportData);
+            console.log('✅ [ReportModule] 리포트 히스토리 저장 완료:', reportData.templateName);
+        } catch (error) {
+            console.warn('🔴 [ReportModule] 히스토리 저장 실패:', error);
+        }
+    },
+
+    // 🔥 리포트 요약 생성
+    generateReportSummary(data, templateName) {
+        if (!data || data.length === 0) return '데이터 없음';
+        
+        const stats = this.calculateBasicStats(data);
+        const summary = [
+            `${stats.total}명의 지원자`,
+            `전환율 ${stats.conversionRate}%`,
+            `주요 경로: ${stats.topSource}`
+        ].join(' • ');
+        
+        return summary;
+    },
+
+    // 🔥 현재 필터 설정 가져오기
+    getCurrentFilters() {
+        const filters = {};
+        
+        const filterElements = [
+            'report-filter-period',
+            'report-filter-route',
+            'report-filter-field',
+            'report-filter-company',
+            'report-filter-recruiter',
+            'report-filter-interviewer'
+        ];
+        
+        filterElements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element && element.value) {
+                filters[id] = element.value;
+            }
+        });
+        
+        // 사용자 지정 날짜 범위
+        const startDate = document.getElementById('report-start-date');
+        const endDate = document.getElementById('report-end-date');
+        if (startDate && startDate.value) filters['report-start-date'] = startDate.value;
+        if (endDate && endDate.value) filters['report-end-date'] = endDate.value;
+        
+        return filters;
+    },
+
+    // 🔥 미리보기 사이드바 토글
+    togglePreviewSidebar() {
+        const sidebar = document.getElementById('livePreviewSidebar');
+        const toggleBtn = document.getElementById('previewToggle');
+        
+        if (!sidebar || !toggleBtn) return;
+        
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            sidebar.classList.remove('collapsed');
+            toggleBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            this.updateLivePreview(); // 다시 표시할 때 업데이트
+        } else {
+            sidebar.classList.add('collapsed');
+            toggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        }
+        
+        console.log('🔄 [ReportModule] 미리보기 사이드바 토글:', isCollapsed ? '표시' : '숨김');
+    }
+
 };
