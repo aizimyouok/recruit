@@ -1,129 +1,129 @@
-﻿/**
+/**
  * @file report.js
- * @description ?? CFC 梨꾩슜 ??쒕낫??- 由ы룷??諛쒗뻾 紐⑤뱢 (B) 湲곕뒫 媛쒖꽑 ?④퀎
+ * @description 🚀 CFC 채용 대시보드 - 리포트 발행 모듈 (B) 기능 개선 단계
  * @version 2.0 - B Stage Implementation
  * @date 2025-06-30
  */
 
 export const ReportModule = {
-    // ?뵩 珥덇린???곹깭
+    // 🔧 초기화 상태
     _isInitialized: false,
     _chartInstance: null,
     _currentTemplate: 'executive-summary',
     _currentFormat: 'pdf',
     
-    // ?렓 6媛??뺤옣 ?쒗뵆由??쒖뒪??
+    // 🎨 6개 확장 템플릿 시스템
     templates: {
         'executive-summary': {
-            name: '寃쎌쁺吏??붿빟',
+            name: '경영진 요약',
             icon: 'fas fa-chart-pie',
-            description: '?듭떖 KPI? ?몃젋??遺꾩꽍',
+            description: '핵심 KPI와 트렌드 분석',
             sections: ['kpi', 'funnel', 'topSources', 'trends'],
-            estimatedTime: '30珥?,
+            estimatedTime: '30초',
             difficulty: 'easy'
         },
         'detailed-analysis': {
-            name: '?곸꽭 遺꾩꽍', 
+            name: '상세 분석', 
             icon: 'fas fa-chart-bar',
-            description: '源딆씠 ?덈뒗 ?곗씠??遺꾩꽍',
+            description: '깊이 있는 데이터 분석',
             sections: ['kpi', 'charts', 'demographics', 'efficiency'],
-            estimatedTime: '45珥?,
+            estimatedTime: '45초',
             difficulty: 'medium'
         },
         'recruitment-funnel': {
-            name: '梨꾩슜 ?쇰꼸',
+            name: '채용 퍼널',
             icon: 'fas fa-funnel-dollar', 
-            description: '?④퀎蹂??꾪솚??吏묒쨷 遺꾩꽍',
+            description: '단계별 전환율 집중 분석',
             sections: ['funnel', 'bottleneck', 'optimization'],
-            estimatedTime: '20珥?,
+            estimatedTime: '20초',
             difficulty: 'easy'
         },
         'monthly-report': {
-            name: '?붽컙 由ы룷??,
+            name: '월간 리포트',
             icon: 'fas fa-calendar-alt',
-            description: '?붾퀎 ?깃낵 醫낇빀 遺꾩꽍', 
+            description: '월별 성과 종합 분석', 
             sections: ['monthly-kpi', 'comparison', 'trends', 'goals'],
-            estimatedTime: '1遺?,
+            estimatedTime: '1분',
             difficulty: 'hard'
         },
         'interviewer-performance': {
-            name: '硫댁젒愿 ?깃낵',
+            name: '면접관 성과',
             icon: 'fas fa-user-tie',
-            description: '硫댁젒愿蹂??⑥쑉??遺꾩꽍',
+            description: '면접관별 효율성 분석',
             sections: ['interviewer-stats', 'comparison', 'recommendations'], 
-            estimatedTime: '35珥?,
+            estimatedTime: '35초',
             difficulty: 'medium'
         },
         'cost-analysis': {
-            name: '鍮꾩슜 ?⑥쑉??,
+            name: '비용 효율성',
             icon: 'fas fa-dollar-sign',
-            description: '梨꾩슜 鍮꾩슜 ?鍮??④낵 遺꾩꽍',
+            description: '채용 비용 대비 효과 분석',
             sections: ['cost-breakdown', 'roi-analysis', 'optimization'],
-            estimatedTime: '40珥?, 
+            estimatedTime: '40초', 
             difficulty: 'medium'
         }
     },
 
-    // ?봽 紐⑤뱢 珥덇린??
+    // 🔄 모듈 초기화
     init() {
         if (this._isInitialized) return;
         
-        console.log('?? [ReportModule] B) 湲곕뒫 媛쒖꽑 ?④퀎 珥덇린???쒖옉...');
+        console.log('🚀 [ReportModule] B) 기능 개선 단계 초기화 시작...');
         
         try {
-            // 1. ?쒗뵆由?媛ㅻ윭由??뚮뜑留?
+            // 1. 템플릿 갤러리 렌더링
             this.renderTemplateGallery();
             
-            // 2. ?ㅼ떆媛?誘몃━蹂닿린 珥덇린??
+            // 2. 실시간 미리보기 초기화
             this.initLivePreview();
             
-            // 3. ?대깽??由ъ뒪???ㅼ젙
+            // 3. 이벤트 리스너 설정
             this.setupEventListeners();
             
-            // 4. ?덉뒪?좊━ ?쒖뒪??珥덇린??
+            // 4. 히스토리 시스템 초기화
             this.initHistorySystem();
             
-            // 5. 異쒕젰 ?뺤떇 ?ㅼ젙
+            // 5. 출력 형식 설정
             this.initFormatSelector();
             
-            // 6. ?렓 而ㅼ뒪? ?쒗뵆由??몄쭛湲?珥덇린??
+            // 6. 🎨 커스텀 템플릿 편집기 초기화
             this.initCustomTemplateEditor();
             
-            // 7. ?쨼 AI 遺꾩꽍 ?쒖뒪??珥덇린??
+            // 7. 🤖 AI 분석 시스템 초기화
             this.initAIAnalysisSystem();
             
-            // 8. ?뱤 李⑦듃 ?명꽣?숈뀡 ?쒖뒪??珥덇린??
+            // 8. 📊 차트 인터랙션 시스템 초기화
             this.initChartInteractionSystem();
             
-            // 9. ?뵕 ?몃? ?곕룞 ?쒖뒪??珥덇린??
+            // 9. 🔗 외부 연동 시스템 초기화
             this.initExternalIntegrationSystem();
             
             this._isInitialized = true;
-            console.log('??[ReportModule] B+C 怨좉툒 湲곕뒫 ?꾩껜 珥덇린???꾨즺!');
+            console.log('✅ [ReportModule] B+C 고급 기능 전체 초기화 완료!');
             
         } catch (error) {
-            console.error('??[ReportModule] 珥덇린???ㅽ뙣:', error);
+            console.error('❌ [ReportModule] 초기화 실패:', error);
         }
     },
 
-    // ?렓 ?쒗뵆由?媛ㅻ윭由??숈쟻 ?뚮뜑留?
+    // 🎨 템플릿 갤러리 동적 렌더링
     renderTemplateGallery() {
         const gallery = document.querySelector('.template-gallery');
         if (!gallery) {
-            console.error('???쒗뵆由?媛ㅻ윭由??붿냼瑜?李얠쓣 ???놁뒿?덈떎.');
+            console.error('❌ 템플릿 갤러리 요소를 찾을 수 없습니다.');
             return;
         }
 
-        // 濡쒕뵫 ?쒓굅
+        // 로딩 제거
         gallery.innerHTML = '';
         
-        // ?쒗뵆由?移대뱶???앹꽦
+        // 템플릿 카드들 생성
         Object.entries(this.templates).forEach(([key, template]) => {
             const card = document.createElement('div');
             card.className = 'template-card enhanced';
             card.dataset.template = key;
             
-            // ?쒖씠?꾨퀎 ?됱긽
+            // 난이도별 색상
             const difficultyColors = {
                 'easy': '#10b981',
                 'medium': '#f59e0b', 
@@ -147,15 +147,15 @@ export const ReportModule = {
                     </div>
                     <div class="meta-item">
                         <i class="fas fa-layer-group"></i>
-                        <span>${template.sections.length}媛??뱀뀡</span>
+                        <span>${template.sections.length}개 섹션</span>
                     </div>
                     <div class="difficulty-badge" style="background: ${difficultyColors[template.difficulty]}">
-                        ${template.difficulty === 'easy' ? '媛꾨떒' : template.difficulty === 'medium' ? '蹂댄넻' : '?곸꽭'}
+                        ${template.difficulty === 'easy' ? '간단' : template.difficulty === 'medium' ? '보통' : '상세'}
                     </div>
                 </div>
             `;
             
-            // ?대┃ ?대깽??
+            // 클릭 이벤트
             card.addEventListener('click', () => {
                 this.selectTemplate(key);
             });
@@ -163,40 +163,40 @@ export const ReportModule = {
             gallery.appendChild(card);
         });
 
-        // 湲곕낯 ?쒗뵆由??좏깮 
+        // 기본 템플릿 선택 
         this.selectTemplate('executive-summary');
         
-        console.log('???쒗뵆由?媛ㅻ윭由??뚮뜑留??꾨즺 (6媛??쒗뵆由?');
+        console.log('✅ 템플릿 갤러리 렌더링 완료 (6개 템플릿)');
     },
 
-    // ?렞 ?쒗뵆由??좏깮 
+    // 🎯 템플릿 선택 
     selectTemplate(templateKey) {
-        // 湲곗〈 ?좏깮 ?댁젣
+        // 기존 선택 해제
         document.querySelectorAll('.template-card').forEach(card => {
             card.classList.remove('selected');
         });
         
-        // ???쒗뵆由??좏깮
+        // 새 템플릿 선택
         const selectedCard = document.querySelector(`[data-template="${templateKey}"]`);
         if (selectedCard) {
             selectedCard.classList.add('selected');
             this._currentTemplate = templateKey;
             
-            // ?ㅼ떆媛?誘몃━蹂닿린 ?낅뜲?댄듃
+            // 실시간 미리보기 업데이트
             this.updateLivePreview();
             
-            console.log(`?뱥 ?쒗뵆由??좏깮: ${this.templates[templateKey].name}`);
+            console.log(`📋 템플릿 선택: ${this.templates[templateKey].name}`);
         }
     },
-    // ?봽 ?ㅼ떆媛?誘몃━蹂닿린 ?쒖뒪??珥덇린??
+    // 🔄 실시간 미리보기 시스템 초기화
     initLivePreview() {
         const sidebar = document.getElementById('livePreviewSidebar');
         if (!sidebar) {
-            console.warn('?좑툘 ?ㅼ떆媛?誘몃━蹂닿린 ?ъ씠?쒕컮 ?붿냼媛 ?놁뒿?덈떎.');
+            console.warn('⚠️ 실시간 미리보기 사이드바 요소가 없습니다.');
             return;
         }
 
-        // ?좉? 踰꾪듉 ?대깽??
+        // 토글 버튼 이벤트
         const toggleBtn = document.getElementById('previewToggle');
         if (toggleBtn) {
             toggleBtn.addEventListener('click', () => {
@@ -204,14 +204,14 @@ export const ReportModule = {
             });
         }
 
-        // 珥덇린 誘몃━蹂닿린 ?뚮뜑留?
+        // 초기 미리보기 렌더링
         this.renderLivePreviewContent();
         this.updateLivePreview();
         
-        console.log('???ㅼ떆媛?誘몃━蹂닿린 ?쒖뒪??珥덇린???꾨즺');
+        console.log('✅ 실시간 미리보기 시스템 초기화 완료');
     },
 
-    // ?렓 ?ㅼ떆媛?誘몃━蹂닿린 肄섑뀗痢??뚮뜑留? 
+    // 🎨 실시간 미리보기 콘텐츠 렌더링  
     renderLivePreviewContent() {
         const content = document.getElementById('livePreviewContent');
         if (!content) return;
@@ -219,36 +219,36 @@ export const ReportModule = {
         content.innerHTML = `
             <div class="preview-stats">
                 <div class="stat-item">
-                    <div class="stat-label">?좏깮???쒗뵆由?/div>
-                    <div class="stat-value" id="previewTemplateName">寃쎌쁺吏??붿빟</div>
+                    <div class="stat-label">선택된 템플릿</div>
+                    <div class="stat-value" id="previewTemplateName">경영진 요약</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">?곗씠??踰붿쐞</div>
-                    <div class="stat-value" id="previewDataRange">?꾩껜 湲곌컙</div>
+                    <div class="stat-label">데이터 범위</div>
+                    <div class="stat-value" id="previewDataRange">전체 기간</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">?덉긽 ?앹꽦 ?쒓컙</div>
-                    <div class="stat-value" id="previewEstimatedTime">30珥?/div>
+                    <div class="stat-label">예상 생성 시간</div>
+                    <div class="stat-value" id="previewEstimatedTime">30초</div>
                 </div>
             </div>
 
             <div class="summary-grid">
                 <div class="summary-item">
-                    <div class="summary-label">珥?吏?먯옄</div>
+                    <div class="summary-label">총 지원자</div>
                     <div class="summary-value" id="previewTotalApplicants">-</div>
                 </div>
                 <div class="summary-item">
-                    <div class="summary-label">?꾪솚??/div>
+                    <div class="summary-label">전환율</div>
                     <div class="summary-value" id="previewConversionRate">-</div>
                 </div>
                 <div class="summary-item">
-                    <div class="summary-label">二쇱슂 梨꾩슜 寃쎈줈</div>
+                    <div class="summary-label">주요 채용 경로</div>
                     <div class="summary-value" id="previewTopSource">-</div>
                 </div>
             </div>
 
             <div class="preview-chart-container">
-                <div class="chart-title">梨꾩슜 寃쎈줈 遺꾪룷</div>
+                <div class="chart-title">채용 경로 분포</div>
                 <div class="mini-chart-wrapper">
                     <canvas id="previewMiniChart" width="200" height="200"></canvas>
                 </div>
@@ -256,33 +256,33 @@ export const ReportModule = {
 
             <div class="preview-filters">
                 <div class="filter-summary" id="previewFilterSummary">
-                    ?꾪꽣: ?꾩껜 ?곗씠??
+                    필터: 전체 데이터
                 </div>
             </div>
         `;
     },
 
-    // ?뱤 ?ㅼ떆媛?誘몃━蹂닿린 ?낅뜲?댄듃
+    // 📊 실시간 미리보기 업데이트
     updateLivePreview() {
         try {
-            // ?꾩옱 ?좏깮???쒗뵆由??뺣낫 ?낅뜲?댄듃
+            // 현재 선택된 템플릿 정보 업데이트
             this.updatePreviewTemplateInfo();
             
-            // ?듦퀎 ?낅뜲?댄듃
+            // 통계 업데이트
             this.updatePreviewStats();
             
-            // 誘몃땲 李⑦듃 ?낅뜲?댄듃
+            // 미니 차트 업데이트
             this.updatePreviewMiniChart();
             
-            // ?꾪꽣 ?붿빟 ?낅뜲?댄듃
+            // 필터 요약 업데이트
             this.updatePreviewFilters();
             
         } catch (error) {
-            console.error('???ㅼ떆媛?誘몃━蹂닿린 ?낅뜲?댄듃 ?ㅽ뙣:', error);
+            console.error('❌ 실시간 미리보기 업데이트 실패:', error);
         }
     },
 
-    // ?뱥 ?쒗뵆由??뺣낫 ?낅뜲?댄듃
+    // 📋 템플릿 정보 업데이트
     updatePreviewTemplateInfo() {
         const template = this.templates[this._currentTemplate];
         if (!template) return;
@@ -294,9 +294,9 @@ export const ReportModule = {
         if (timeEl) timeEl.textContent = template.estimatedTime;
     },
 
-    // ?뱢 ?듦퀎 ?낅뜲?댄듃
+    // 📈 통계 업데이트
     updatePreviewStats() {
-        // ?꾪꽣留곷맂 ?곗씠??媛?몄삤湲?
+        // 필터링된 데이터 가져오기
         const filteredData = this.getFilteredData();
         
         if (!filteredData || filteredData.length === 0) {
@@ -304,40 +304,40 @@ export const ReportModule = {
             return;
         }
 
-        // 湲곕낯 ?듦퀎 怨꾩궛
+        // 기본 통계 계산
         const stats = this.calculateBasicStats(filteredData);
         
-        // UI ?낅뜲?댄듃
+        // UI 업데이트
         const totalEl = document.getElementById('previewTotalApplicants');
         const conversionEl = document.getElementById('previewConversionRate');
         const topSourceEl = document.getElementById('previewTopSource');
         
-        if (totalEl) totalEl.textContent = stats.total.toLocaleString() + '紐?;
+        if (totalEl) totalEl.textContent = stats.total.toLocaleString() + '명';
         if (conversionEl) conversionEl.textContent = stats.conversionRate + '%';
         if (topSourceEl) topSourceEl.textContent = stats.topSource;
     },
 
-    // ?뵢 湲곕낯 ?듦퀎 怨꾩궛
+    // 🔢 기본 통계 계산
     calculateBasicStats(data) {
         const total = data.length;
         
-        // ?꾪솚??怨꾩궛 (?덉떆: 理쒖쥌 ?⑷꺽??/ ?꾩껜 吏?먯옄)
+        // 전환율 계산 (예시: 최종 합격자 / 전체 지원자)
         const finalPassed = data.filter(item => {
-            const status = item['理쒖쥌寃곌낵'] || item['吏꾪뻾?곹솴'] || '';
-            return status.includes('?⑷꺽') || status.includes('?낃낵');
+            const status = item['최종결과'] || item['진행상황'] || '';
+            return status.includes('합격') || status.includes('입과');
         }).length;
         
         const conversionRate = total > 0 ? Math.round((finalPassed / total) * 100) : 0;
         
-        // 二쇱슂 梨꾩슜 寃쎈줈 怨꾩궛
+        // 주요 채용 경로 계산
         const sources = {};
         data.forEach(item => {
-            const source = item['吏?먮（??] || '湲고?';
+            const source = item['지원루트'] || '기타';
             sources[source] = (sources[source] || 0) + 1;
         });
         
         const topSource = Object.keys(sources).reduce((a, b) => 
-            sources[a] > sources[b] ? a : b, '湲고?');
+            sources[a] > sources[b] ? a : b, '기타');
         
         return {
             total,
@@ -347,14 +347,14 @@ export const ReportModule = {
         };
     },
 
-    // ?뱤 誘몃땲 李⑦듃 ?낅뜲?댄듃
+    // 📊 미니 차트 업데이트
     updatePreviewMiniChart() {
         const canvas = document.getElementById('previewMiniChart');
         if (!canvas) return;
 
         const ctx = canvas.getContext('2d');
         
-        // 湲곗〈 李⑦듃 ?쒓굅
+        // 기존 차트 제거
         if (this._miniChartInstance) {
             this._miniChartInstance.destroy();
         }
@@ -365,14 +365,14 @@ export const ReportModule = {
             return;
         }
 
-        // 梨꾩슜 寃쎈줈蹂??곗씠??以鍮?
+        // 채용 경로별 데이터 준비
         const stats = this.calculateBasicStats(filteredData);
         const chartData = Object.entries(stats.sources).map(([label, value]) => ({
             label: label.length > 8 ? label.substring(0, 8) + '...' : label,
             value
         }));
 
-        // Chart.js 誘몃땲 ?꾨꽋 李⑦듃
+        // Chart.js 미니 도넛 차트
         this._miniChartInstance = new Chart(ctx, {
             type: 'doughnut',
             data: {
@@ -398,7 +398,7 @@ export const ReportModule = {
         });
     },
 
-    // ?봽 ?ъ씠?쒕컮 ?좉?
+    // 🔄 사이드바 토글
     togglePreviewSidebar() {
         const sidebar = document.getElementById('livePreviewSidebar');
         const toggleBtn = document.getElementById('previewToggle');
@@ -410,44 +410,44 @@ export const ReportModule = {
         if (isCollapsed) {
             sidebar.classList.remove('collapsed');
             toggleBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
-            this.updateLivePreview(); // ?ㅼ떆 ?쒖떆?????낅뜲?댄듃
+            this.updateLivePreview(); // 다시 표시할 때 업데이트
         } else {
             sidebar.classList.add('collapsed');
             toggleBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
         }
         
-        console.log('?봽 誘몃━蹂닿린 ?ъ씠?쒕컮 ?좉?:', isCollapsed ? '?쒖떆' : '?④?');
+        console.log('🔄 미리보기 사이드바 토글:', isCollapsed ? '표시' : '숨김');
     },
-    // ?뱤 Excel/PowerPoint 異쒕젰 ?쒖뒪??
+    // 📊 Excel/PowerPoint 출력 시스템
 
-    // ?뱞 異쒕젰 ?뺤떇 ?좏깮湲?珥덇린??
+    // 📄 출력 형식 선택기 초기화
     initFormatSelector() {
         const formatOptions = document.querySelectorAll('.format-option');
         
         formatOptions.forEach(option => {
             option.addEventListener('click', () => {
-                // 湲곗〈 ?좏깮 ?댁젣
+                // 기존 선택 해제
                 formatOptions.forEach(opt => opt.classList.remove('selected'));
                 
-                // ???좏깮 ?곸슜
+                // 새 선택 적용
                 option.classList.add('selected');
                 
-                // ?뺤떇 ???
+                // 형식 저장
                 const format = option.textContent.trim().toLowerCase();
                 this._currentFormat = format;
                 
-                console.log(`?뱞 異쒕젰 ?뺤떇 ?좏깮: ${format}`);
+                console.log(`📄 출력 형식 선택: ${format}`);
             });
         });
     },
 
-    // ?뱥 由ы룷???앹꽦 (?뺤떇蹂?遺꾧린)
+    // 📋 리포트 생성 (형식별 분기)
     async generateReport() {
         const format = this._currentFormat;
         
-        console.log(`?? 由ы룷???앹꽦 ?쒖옉 - ?뺤떇: ${format}, ?쒗뵆由? ${this._currentTemplate}`);
+        console.log(`🚀 리포트 생성 시작 - 형식: ${format}, 템플릿: ${this._currentTemplate}`);
         
-        // 吏꾪뻾瑜??쒖떆
+        // 진행률 표시
         this.showProgressIndicator();
         
         try {
@@ -461,31 +461,31 @@ export const ReportModule = {
                 case 'powerpoint':
                     await this.generatePowerPointReport();
                     break;
-                case '??由ы룷??:
+                case '웹 리포트':
                     await this.generateWebReport();
                     break;
                 default:
                     await this.generatePDFReport();
             }
             
-            // ?덉뒪?좊━?????
+            // 히스토리에 저장
             this.saveToHistory();
             
-            console.log('??由ы룷???앹꽦 ?꾨즺!');
+            console.log('✅ 리포트 생성 완료!');
             
         } catch (error) {
-            console.error('??由ы룷???앹꽦 ?ㅽ뙣:', error);
-            alert('由ы룷???앹꽦 以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.');
+            console.error('❌ 리포트 생성 실패:', error);
+            alert('리포트 생성 중 오류가 발생했습니다.');
         } finally {
             this.hideProgressIndicator();
         }
     },
 
-    // ?뱤 Excel 由ы룷???앹꽦
+    // 📊 Excel 리포트 생성
     async generateExcelReport() {
-        console.log('?뱤 Excel 由ы룷???앹꽦 ?쒖옉...');
+        console.log('📊 Excel 리포트 생성 시작...');
         
-        // SheetJS ?쇱씠釉뚮윭由??숈쟻 濡쒕뵫
+        // SheetJS 라이브러리 동적 로딩
         if (typeof XLSX === 'undefined') {
             await this.loadSheetJS();
         }
@@ -493,53 +493,53 @@ export const ReportModule = {
         const filteredData = this.getFilteredData();
         const stats = this.calculateBasicStats(filteredData);
         
-        // ?뚰겕遺??앹꽦
+        // 워크북 생성
         const wb = XLSX.utils.book_new();
         
-        // 1. 吏?먯옄 ?곗씠???쒗듃
+        // 1. 지원자 데이터 시트
         const applicantSheet = XLSX.utils.json_to_sheet(filteredData);
-        XLSX.utils.book_append_sheet(wb, applicantSheet, '吏?먯옄 ?곗씠??);
+        XLSX.utils.book_append_sheet(wb, applicantSheet, '지원자 데이터');
         
-        // 2. ?듦퀎 ?붿빟 ?쒗듃
+        // 2. 통계 요약 시트
         const summaryData = [
-            ['??ぉ', '媛?],
-            ['珥?吏?먯옄 ??, stats.total],
-            ['?꾪솚??, stats.conversionRate + '%'],
-            ['二쇱슂 梨꾩슜 寃쎈줈', stats.topSource],
-            ['由ы룷???앹꽦??, new Date().toLocaleString('ko-KR')],
-            ['?쒗뵆由?, this.templates[this._currentTemplate].name]
+            ['항목', '값'],
+            ['총 지원자 수', stats.total],
+            ['전환율', stats.conversionRate + '%'],
+            ['주요 채용 경로', stats.topSource],
+            ['리포트 생성일', new Date().toLocaleString('ko-KR')],
+            ['템플릿', this.templates[this._currentTemplate].name]
         ];
         const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
-        XLSX.utils.book_append_sheet(wb, summarySheet, '?듦퀎 ?붿빟');
+        XLSX.utils.book_append_sheet(wb, summarySheet, '통계 요약');
         
-        // 3. 梨꾩슜 寃쎈줈蹂?遺꾩꽍 ?쒗듃
-        const sourceData = [['梨꾩슜 寃쎈줈', '吏?먯옄 ??, '鍮꾩쑉']];
+        // 3. 채용 경로별 분석 시트
+        const sourceData = [['채용 경로', '지원자 수', '비율']];
         Object.entries(stats.sources).forEach(([source, count]) => {
             const percentage = Math.round((count / stats.total) * 100);
             sourceData.push([source, count, percentage + '%']);
         });
         const sourceSheet = XLSX.utils.aoa_to_sheet(sourceData);
-        XLSX.utils.book_append_sheet(wb, sourceSheet, '梨꾩슜 寃쎈줈 遺꾩꽍');
+        XLSX.utils.book_append_sheet(wb, sourceSheet, '채용 경로 분석');
         
-        // ?뚯씪 ?ㅼ슫濡쒕뱶
-        const fileName = `CFC_梨꾩슜由ы룷??${this.templates[this._currentTemplate].name}_${this.getCurrentDateString()}.xlsx`;
+        // 파일 다운로드
+        const fileName = `CFC_채용리포트_${this.templates[this._currentTemplate].name}_${this.getCurrentDateString()}.xlsx`;
         XLSX.writeFile(wb, fileName);
         
-        console.log('??Excel 由ы룷???ㅼ슫濡쒕뱶 ?꾨즺:', fileName);
+        console.log('✅ Excel 리포트 다운로드 완료:', fileName);
     },
 
-    // ?렓 PowerPoint 由ы룷???앹꽦  
+    // 🎨 PowerPoint 리포트 생성  
     async generatePowerPointReport() {
-        console.log('?렓 PowerPoint 由ы룷???앹꽦 ?쒖옉...');
+        console.log('🎨 PowerPoint 리포트 생성 시작...');
         
-        // HTML2Canvas濡?李⑦듃 罹≪쿂
+        // HTML2Canvas로 차트 캡처
         const chartElement = await this.generateTempChartForCapture();
         
         if (!chartElement) {
-            throw new Error('李⑦듃 ?앹꽦 ?ㅽ뙣');
+            throw new Error('차트 생성 실패');
         }
         
-        // 李⑦듃瑜??대?吏濡?蹂??
+        // 차트를 이미지로 변환
         const canvas = await html2canvas(chartElement, {
             backgroundColor: '#ffffff',
             scale: 2,
@@ -547,29 +547,29 @@ export const ReportModule = {
             height: 600
         });
         
-        // Canvas瑜?Blob?쇰줈 蹂??
+        // Canvas를 Blob으로 변환
         canvas.toBlob((blob) => {
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `CFC_梨꾩슜由ы룷??${this.templates[this._currentTemplate].name}_${this.getCurrentDateString()}.png`;
+            link.download = `CFC_채용리포트_${this.templates[this._currentTemplate].name}_${this.getCurrentDateString()}.png`;
             link.click();
             
-            // ?꾩떆 李⑦듃 ?붿냼 ?쒓굅
+            // 임시 차트 요소 제거
             if (chartElement.parentNode) {
                 chartElement.parentNode.removeChild(chartElement);
             }
             
-            console.log('??PowerPoint???대?吏 ?ㅼ슫濡쒕뱶 ?꾨즺');
+            console.log('✅ PowerPoint용 이미지 다운로드 완료');
         }, 'image/png');
     },
 
-    // ?뵩 ?꾩떆 李⑦듃 ?앹꽦 (PowerPoint??
+    // 🔧 임시 차트 생성 (PowerPoint용)
     async generateTempChartForCapture() {
         const filteredData = this.getFilteredData();
         const stats = this.calculateBasicStats(filteredData);
         
-        // ?꾩떆 而⑦뀒?대꼫 ?앹꽦
+        // 임시 컨테이너 생성
         const container = document.createElement('div');
         container.style.cssText = `
             position: fixed;
@@ -584,22 +584,22 @@ export const ReportModule = {
         
         container.innerHTML = `
             <div style="text-align: center; margin-bottom: 30px;">
-                <h1 style="color: #1f2937; margin: 0 0 10px 0;">CFC 梨꾩슜 由ы룷??/h1>
+                <h1 style="color: #1f2937; margin: 0 0 10px 0;">CFC 채용 리포트</h1>
                 <h2 style="color: #6b7280; margin: 0; font-weight: normal;">${this.templates[this._currentTemplate].name}</h2>
             </div>
             
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 40px;">
                 <div style="text-align: center; padding: 20px; background: #f8fafc; border-radius: 8px;">
                     <div style="font-size: 2rem; font-weight: bold; color: #3b82f6;">${stats.total}</div>
-                    <div style="color: #6b7280;">珥?吏?먯옄</div>
+                    <div style="color: #6b7280;">총 지원자</div>
                 </div>
                 <div style="text-align: center; padding: 20px; background: #f8fafc; border-radius: 8px;">
                     <div style="font-size: 2rem; font-weight: bold; color: #10b981;">${stats.conversionRate}%</div>
-                    <div style="color: #6b7280;">?꾪솚??/div>
+                    <div style="color: #6b7280;">전환율</div>
                 </div>
                 <div style="text-align: center; padding: 20px; background: #f8fafc; border-radius: 8px;">
                     <div style="font-size: 1.2rem; font-weight: bold; color: #f59e0b;">${stats.topSource}</div>
-                    <div style="color: #6b7280;">二쇱슂 梨꾩슜 寃쎈줈</div>
+                    <div style="color: #6b7280;">주요 채용 경로</div>
                 </div>
             </div>
             
@@ -608,13 +608,13 @@ export const ReportModule = {
             </div>
             
             <div style="text-align: center; margin-top: 20px; color: #9ca3af; font-size: 0.9rem;">
-                ?앹꽦?? ${new Date().toLocaleString('ko-KR')}
+                생성일: ${new Date().toLocaleString('ko-KR')}
             </div>
         `;
         
         document.body.appendChild(container);
         
-        // 李⑦듃 ?앹꽦
+        // 차트 생성
         const canvas = container.querySelector('#tempChart');
         const ctx = canvas.getContext('2d');
         
@@ -651,13 +651,13 @@ export const ReportModule = {
             }
         });
         
-        // ?뚮뜑留??꾨즺 ?湲?
+        // 렌더링 완료 대기
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         return container;
     },
 
-    // ?뱴 SheetJS ?숈쟻 濡쒕뵫
+    // 📚 SheetJS 동적 로딩
     async loadSheetJS() {
         return new Promise((resolve, reject) => {
             if (typeof XLSX !== 'undefined') {
@@ -672,17 +672,17 @@ export const ReportModule = {
             document.head.appendChild(script);
         });
     },
-    // ?뮶 由ы룷???덉뒪?좊━ 愿由??쒖뒪??
+    // 💾 리포트 히스토리 관리 시스템
 
-    // ?뵩 ?덉뒪?좊━ ?쒖뒪??珥덇린??
+    // 🔧 히스토리 시스템 초기화
     initHistorySystem() {
         this.loadHistoryFromStorage();
         this.renderHistoryTab();
         
-        console.log('???덉뒪?좊━ ?쒖뒪??珥덇린???꾨즺');
+        console.log('✅ 히스토리 시스템 초기화 완료');
     },
 
-    // ?뮶 ?덉뒪?좊━ ???
+    // 💾 히스토리 저장
     saveToHistory() {
         const historyItem = {
             id: Date.now(),
@@ -694,25 +694,25 @@ export const ReportModule = {
             dataCount: this.getFilteredData().length
         };
         
-        // 湲곗〈 ?덉뒪?좊━ 濡쒕뱶
+        // 기존 히스토리 로드
         let history = JSON.parse(localStorage.getItem('reportHistory') || '[]');
         
-        // ???꾩씠??異붽? (理쒖떊??
+        // 새 아이템 추가 (최신순)
         history.unshift(historyItem);
         
-        // 理쒕? 20媛쒕쭔 ?좎?
+        // 최대 20개만 유지
         history = history.slice(0, 20);
         
-        // ???
+        // 저장
         localStorage.setItem('reportHistory', JSON.stringify(history));
         
-        // UI ?낅뜲?댄듃
+        // UI 업데이트
         this.renderHistoryTab();
         
-        console.log('?뮶 ?덉뒪?좊━ ????꾨즺:', historyItem);
+        console.log('💾 히스토리 저장 완료:', historyItem);
     },
 
-    // ?뱥 ?덉뒪?좊━ ???뚮뜑留?
+    // 📋 히스토리 탭 렌더링
     renderHistoryTab() {
         const historyTab = document.getElementById('history-tab');
         if (!historyTab) return;
@@ -722,18 +722,18 @@ export const ReportModule = {
         if (history.length === 0) {
             historyTab.innerHTML = `
                 <div class="option-group">
-                    <div class="option-title"><i class="fas fa-clock"></i> 理쒓렐 ?앹꽦??由ы룷??/div>
+                    <div class="option-title"><i class="fas fa-clock"></i> 최근 생성된 리포트</div>
                     <div style="background: #f8fafc; padding: 20px; border-radius: 12px; text-align: center; color: #6b7280;">
                         <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
-                        <p>?꾩쭅 ?앹꽦??由ы룷?멸? ?놁뒿?덈떎.</p>
-                        <p style="font-size: 0.9rem; margin-top: 5px;">泥?踰덉㎏ 由ы룷?몃? ?앹꽦?대낫?몄슂!</p>
+                        <p>아직 생성된 리포트가 없습니다.</p>
+                        <p style="font-size: 0.9rem; margin-top: 5px;">첫 번째 리포트를 생성해보세요!</p>
                     </div>
                 </div>
             `;
             return;
         }
 
-        // ?덉뒪?좊━ 紐⑸줉 HTML ?앹꽦
+        // 히스토리 목록 HTML 생성
         const historyHTML = history.map(item => {
             const timeAgo = this.getTimeAgo(item.timestamp);
             const filterSummary = this.getFilterSummary(item.filters);
@@ -748,14 +748,14 @@ export const ReportModule = {
                             </div>
                             <div class="history-meta">
                                 <span class="history-format">${item.format.toUpperCase()}</span>
-                                <span class="history-data-count">${item.dataCount}嫄?/span>
+                                <span class="history-data-count">${item.dataCount}건</span>
                                 <span class="history-time">${timeAgo}</span>
                             </div>
                             <div class="history-filters">${filterSummary}</div>
                         </div>
                         <div class="history-actions">
                             <button class="btn-history-view" onclick="App.report.viewHistoryItem(${item.id})">
-                                <i class="fas fa-eye"></i> ?ㅼ떆蹂닿린
+                                <i class="fas fa-eye"></i> 다시보기
                             </button>
                             <button class="btn-history-download" onclick="App.report.downloadHistoryItem(${item.id})">
                                 <i class="fas fa-download"></i>
@@ -772,11 +772,11 @@ export const ReportModule = {
         historyTab.innerHTML = `
             <div class="option-group">
                 <div class="option-title">
-                    <i class="fas fa-clock"></i> 理쒓렐 ?앹꽦??由ы룷??
+                    <i class="fas fa-clock"></i> 최근 생성된 리포트
                     <div class="history-stats">
-                        <span>珥?${history.length}媛?/span>
+                        <span>총 ${history.length}개</span>
                         <button class="btn-clear-history" onclick="App.report.clearAllHistory()">
-                            <i class="fas fa-trash-alt"></i> ?꾩껜 ??젣
+                            <i class="fas fa-trash-alt"></i> 전체 삭제
                         </button>
                     </div>
                 </div>
@@ -787,20 +787,20 @@ export const ReportModule = {
         `;
     },
 
-    // ?? ?덉뒪?좊━ ?꾩씠???ㅼ떆蹂닿린
+    // 👀 히스토리 아이템 다시보기
     viewHistoryItem(itemId) {
         const history = JSON.parse(localStorage.getItem('reportHistory') || '[]');
         const item = history.find(h => h.id === itemId);
         
         if (!item) {
-            alert('?덉뒪?좊━ ?꾩씠?쒖쓣 李얠쓣 ???놁뒿?덈떎.');
+            alert('히스토리 아이템을 찾을 수 없습니다.');
             return;
         }
 
-        // ?쒗뵆由??좏깮
+        // 템플릿 선택
         this.selectTemplate(item.template);
         
-        // 異쒕젰 ?뺤떇 ?좏깮
+        // 출력 형식 선택
         this._currentFormat = item.format;
         document.querySelectorAll('.format-option').forEach(opt => {
             opt.classList.remove('selected');
@@ -809,24 +809,24 @@ export const ReportModule = {
             }
         });
         
-        // ?꾪꽣 蹂듭썝
+        // 필터 복원
         this.restoreFilters(item.filters);
         
-        // 誘몃━蹂닿린 ?낅뜲?댄듃
+        // 미리보기 업데이트
         this.updateLivePreview();
         
-        // ?쒗뵆由???쑝濡??대룞
+        // 템플릿 탭으로 이동
         const templateTab = document.querySelector('[data-tab="template"]');
         if (templateTab) {
             templateTab.click();
         }
         
-        console.log('?? ?덉뒪?좊━ ?꾩씠??蹂듭썝 ?꾨즺:', item);
+        console.log('👀 히스토리 아이템 복원 완료:', item);
     },
 
-    // ?뿊截??덉뒪?좊━ ?꾩씠????젣
+    // 🗑️ 히스토리 아이템 삭제
     deleteHistoryItem(itemId) {
-        if (!confirm('??由ы룷?몃? ?덉뒪?좊━?먯꽌 ??젣?섏떆寃좎뒿?덇퉴?')) return;
+        if (!confirm('이 리포트를 히스토리에서 삭제하시겠습니까?')) return;
         
         let history = JSON.parse(localStorage.getItem('reportHistory') || '[]');
         history = history.filter(item => item.id !== itemId);
@@ -834,51 +834,51 @@ export const ReportModule = {
         localStorage.setItem('reportHistory', JSON.stringify(history));
         this.renderHistoryTab();
         
-        console.log('?뿊截??덉뒪?좊━ ?꾩씠????젣 ?꾨즺:', itemId);
+        console.log('🗑️ 히스토리 아이템 삭제 완료:', itemId);
     },
 
-    // ?뿊截??꾩껜 ?덉뒪?좊━ ??젣
+    // 🗑️ 전체 히스토리 삭제
     clearAllHistory() {
-        if (!confirm('紐⑤뱺 由ы룷???덉뒪?좊━瑜???젣?섏떆寃좎뒿?덇퉴?\n???묒뾽? ?섎룎由????놁뒿?덈떎.')) return;
+        if (!confirm('모든 리포트 히스토리를 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.')) return;
         
         localStorage.removeItem('reportHistory');
         this.renderHistoryTab();
         
-        console.log('?뿊截??꾩껜 ?덉뒪?좊━ ??젣 ?꾨즺');
+        console.log('🗑️ 전체 히스토리 삭제 완료');
     },
 
-    // ?뱿 ?덉뒪?좊━?먯꽌 ?ㅼ슫濡쒕뱶
+    // 📥 히스토리에서 다운로드
     downloadHistoryItem(itemId) {
         const history = JSON.parse(localStorage.getItem('reportHistory') || '[]');
         const item = history.find(h => h.id === itemId);
         
         if (!item) {
-            alert('?덉뒪?좊━ ?꾩씠?쒖쓣 李얠쓣 ???놁뒿?덈떎.');
+            alert('히스토리 아이템을 찾을 수 없습니다.');
             return;
         }
 
-        // ?ㅼ젙 蹂듭썝 ??由ы룷???앹꽦
+        // 설정 복원 후 리포트 생성
         this.viewHistoryItem(itemId);
         
-        // ?쎄컙??吏????由ы룷???앹꽦
+        // 약간의 지연 후 리포트 생성
         setTimeout(() => {
             this.generateReport();
         }, 500);
     },
 
-    // ?봽 ?덉뒪?좊━ 濡쒕뱶
+    // 🔄 히스토리 로드
     loadHistoryFromStorage() {
         try {
             const history = JSON.parse(localStorage.getItem('reportHistory') || '[]');
-            console.log(`?뱤 ?덉뒪?좊━ 濡쒕뱶 ?꾨즺: ${history.length}媛??꾩씠??);
+            console.log(`📊 히스토리 로드 완료: ${history.length}개 아이템`);
             return history;
         } catch (error) {
-            console.error('???덉뒪?좊━ 濡쒕뱶 ?ㅽ뙣:', error);
+            console.error('❌ 히스토리 로드 실패:', error);
             return [];
         }
     },
 
-    // ?뵩 ?꾪꽣 蹂듭썝
+    // 🔧 필터 복원
     restoreFilters(filters) {
         Object.entries(filters).forEach(([key, value]) => {
             const element = document.getElementById(key);
@@ -888,7 +888,7 @@ export const ReportModule = {
         });
     },
 
-    // ???곷????쒓컙 怨꾩궛
+    // ⏰ 상대적 시간 계산
     getTimeAgo(timestamp) {
         const now = new Date();
         const time = new Date(timestamp);
@@ -897,35 +897,35 @@ export const ReportModule = {
         const diffHours = Math.floor(diffMs / 3600000);
         const diffDays = Math.floor(diffMs / 86400000);
 
-        if (diffMins < 1) return '諛⑷툑 ??;
-        if (diffMins < 60) return `${diffMins}遺???;
-        if (diffHours < 24) return `${diffHours}?쒓컙 ??;
-        if (diffDays < 7) return `${diffDays}????;
+        if (diffMins < 1) return '방금 전';
+        if (diffMins < 60) return `${diffMins}분 전`;
+        if (diffHours < 24) return `${diffHours}시간 전`;
+        if (diffDays < 7) return `${diffDays}일 전`;
         
         return time.toLocaleDateString('ko-KR');
     },
 
-    // ?뱥 ?꾪꽣 ?붿빟 ?앹꽦
+    // 📋 필터 요약 생성
     getFilterSummary(filters) {
         const activeFiters = Object.entries(filters)
-            .filter(([key, value]) => value && value !== '?꾩껜' && value !== '')
+            .filter(([key, value]) => value && value !== '전체' && value !== '')
             .map(([key, value]) => {
                 const labels = {
-                    'report-filter-period': '湲곌컙',
-                    'report-filter-route': '吏?먮（??,
-                    'report-filter-field': '紐⑥쭛遺꾩빞',
-                    'report-filter-company': '?뚯궗紐?,
-                    'report-filter-recruiter': '利앹썝??,
-                    'report-filter-interviewer': '硫댁젒愿'
+                    'report-filter-period': '기간',
+                    'report-filter-route': '지원루트',
+                    'report-filter-field': '모집분야',
+                    'report-filter-company': '회사명',
+                    'report-filter-recruiter': '증원자',
+                    'report-filter-interviewer': '면접관'
                 };
                 return `${labels[key] || key}: ${value}`;
             });
         
-        return activeFiters.length > 0 ? activeFiters.join(', ') : '?꾩껜 ?곗씠??;
+        return activeFiters.length > 0 ? activeFiters.join(', ') : '전체 데이터';
     },
-    // ?렞 ?대깽??由ъ뒪???ㅼ젙
+    // 🎯 이벤트 리스너 설정
     setupEventListeners() {
-        // 由ы룷???앹꽦 踰꾪듉
+        // 리포트 생성 버튼
         const generateBtn = document.getElementById('generateReportBtn');
         if (generateBtn) {
             generateBtn.addEventListener('click', () => {
@@ -933,7 +933,7 @@ export const ReportModule = {
             });
         }
 
-        // ?꾪꽣 蹂寃??대깽??
+        // 필터 변경 이벤트
         const filterIds = [
             'report-filter-period',
             'report-filter-route', 
@@ -954,40 +954,40 @@ export const ReportModule = {
             }
         });
 
-        console.log('???대깽??由ъ뒪???ㅼ젙 ?꾨즺');
+        console.log('✅ 이벤트 리스너 설정 완료');
     },
 
-    // ?뱤 PDF 由ы룷???앹꽦 (湲곗〈 湲곕뒫 ?좎?)
+    // 📊 PDF 리포트 생성 (기존 기능 유지)
     async generatePDFReport() {
-        console.log('?뱞 PDF 由ы룷???앹꽦 ?쒖옉...');
+        console.log('📄 PDF 리포트 생성 시작...');
         
         const filteredData = this.getFilteredData();
         const template = this.templates[this._currentTemplate];
         
-        // PDF 肄섑뀗痢??앹꽦
+        // PDF 콘텐츠 생성
         const content = this.generateReportContent(filteredData, template);
         
-        // 紐⑤떖濡?PDF 誘몃━蹂닿린 ?쒖떆
+        // 모달로 PDF 미리보기 표시
         this.showPDFModal(content);
     },
 
-    // ?뙋 ??由ы룷???앹꽦
+    // 🌐 웹 리포트 생성
     async generateWebReport() {
-        console.log('?뙋 ??由ы룷???앹꽦 ?쒖옉...');
+        console.log('🌐 웹 리포트 생성 시작...');
         
         const filteredData = this.getFilteredData();
         const template = this.templates[this._currentTemplate];
         
-        // ??由ы룷??肄섑뀗痢??앹꽦
+        // 웹 리포트 콘텐츠 생성
         const content = this.generateReportContent(filteredData, template);
         
-        // ??李쎌뿉????由ы룷???쒖떆
+        // 새 창에서 웹 리포트 표시
         const newWindow = window.open('', '_blank');
         newWindow.document.write(`
             <!DOCTYPE html>
             <html>
             <head>
-                <title>CFC 梨꾩슜 由ы룷??- ${template.name}</title>
+                <title>CFC 채용 리포트 - ${template.name}</title>
                 <style>
                     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
                     .report-container { max-width: 1200px; margin: 0 auto; }
@@ -1001,36 +1001,36 @@ export const ReportModule = {
         newWindow.document.close();
     },
 
-    // ?뱷 由ы룷??肄섑뀗痢??앹꽦
+    // 📝 리포트 콘텐츠 생성
     generateReportContent(data, template) {
         const stats = this.calculateBasicStats(data);
         
         let content = `
             <div class="report-header">
-                <h1>CFC 梨꾩슜 由ы룷??/h1>
+                <h1>CFC 채용 리포트</h1>
                 <h2>${template.name}</h2>
-                <p>?앹꽦?? ${new Date().toLocaleString('ko-KR')}</p>
+                <p>생성일: ${new Date().toLocaleString('ko-KR')}</p>
             </div>
             
             <div class="report-summary">
                 <div class="kpi-grid">
                     <div class="kpi-item">
-                        <div class="kpi-label">珥?吏?먯옄</div>
-                        <div class="kpi-value">${stats.total.toLocaleString()}紐?/div>
+                        <div class="kpi-label">총 지원자</div>
+                        <div class="kpi-value">${stats.total.toLocaleString()}명</div>
                     </div>
                     <div class="kpi-item">
-                        <div class="kpi-label">?꾪솚??/div>
+                        <div class="kpi-label">전환율</div>
                         <div class="kpi-value">${stats.conversionRate}%</div>
                     </div>
                     <div class="kpi-item">
-                        <div class="kpi-label">二쇱슂 梨꾩슜 寃쎈줈</div>
+                        <div class="kpi-label">주요 채용 경로</div>
                         <div class="kpi-value">${stats.topSource}</div>
                     </div>
                 </div>
             </div>
         `;
 
-        // ?쒗뵆由용퀎 異붽? ?뱀뀡
+        // 템플릿별 추가 섹션
         if (template.sections.includes('funnel')) {
             content += this.generateFunnelSection(data);
         }
@@ -1046,31 +1046,31 @@ export const ReportModule = {
         return content;
     },
 
-    // ?뵇 ?곗씠???ы띁 ?⑥닔??
+    // 🔍 데이터 헬퍼 함수들
 
-    // ?뱤 ?꾪꽣留곷맂 ?곗씠??媛?몄삤湲?
+    // 📊 필터링된 데이터 가져오기
     getFilteredData() {
         try {
-            // ?꾩뿭 ???곹깭?먯꽌 ?곗씠??媛?몄삤湲?
+            // 전역 앱 상태에서 데이터 가져오기
             const allData = globalThis.App?.state?.data?.all || [];
             
             if (!allData || allData.length === 0) {
-                console.warn('?좑툘 ?곗씠?곌? ?놁뒿?덈떎.');
+                console.warn('⚠️ 데이터가 없습니다.');
                 return [];
             }
 
-            // ?꾩옱 ?꾪꽣 ?곸슜
+            // 현재 필터 적용
             const filters = this.getCurrentFilters();
             
             return this.applyFilters(allData, filters);
             
         } catch (error) {
-            console.error('???곗씠??媛?몄삤湲??ㅽ뙣:', error);
+            console.error('❌ 데이터 가져오기 실패:', error);
             return [];
         }
     },
 
-    // ?뵩 ?꾩옱 ?꾪꽣 ?곹깭 媛?몄삤湲?
+    // 🔧 현재 필터 상태 가져오기
     getCurrentFilters() {
         const filters = {};
         
@@ -1085,12 +1085,12 @@ export const ReportModule = {
         
         filterElements.forEach(id => {
             const element = document.getElementById(id);
-            if (element && element.value && element.value !== '?꾩껜') {
+            if (element && element.value && element.value !== '전체') {
                 filters[id] = element.value;
             }
         });
         
-        // ?ъ슜??吏???좎쭨 踰붿쐞
+        // 사용자 지정 날짜 범위
         const startDate = document.getElementById('report-start-date');
         const endDate = document.getElementById('report-end-date');
         if (startDate && startDate.value) filters['report-start-date'] = startDate.value;
@@ -1099,29 +1099,29 @@ export const ReportModule = {
         return filters;
     },
 
-    // ?뵇 ?꾪꽣 ?곸슜
+    // 🔍 필터 적용
     applyFilters(data, filters) {
         return data.filter(item => {
-            // 湲곌컙 ?꾪꽣
+            // 기간 필터
             if (filters['report-filter-period']) {
                 const period = filters['report-filter-period'];
                 if (!this.matchesPeriod(item, period)) return false;
             }
             
-            // ?ъ슜??吏???좎쭨 踰붿쐞
+            // 사용자 지정 날짜 범위
             if (filters['report-start-date'] || filters['report-end-date']) {
                 if (!this.matchesDateRange(item, filters['report-start-date'], filters['report-end-date'])) {
                     return false;
                 }
             }
             
-            // 湲고? ?꾪꽣??
+            // 기타 필터들
             const filterMappings = {
-                'report-filter-route': '吏?먮（??,
-                'report-filter-field': '紐⑥쭛遺꾩빞',
-                'report-filter-company': '?뚯궗紐?,
-                'report-filter-recruiter': '利앹썝??,
-                'report-filter-interviewer': '硫댁젒愿'
+                'report-filter-route': '지원루트',
+                'report-filter-field': '모집분야',
+                'report-filter-company': '회사명',
+                'report-filter-recruiter': '증원자',
+                'report-filter-interviewer': '면접관'
             };
             
             for (const [filterId, column] of Object.entries(filterMappings)) {
@@ -1134,31 +1134,31 @@ export const ReportModule = {
         });
     },
 
-    // ?뱟 湲곌컙 留ㅼ묶
+    // 📅 기간 매칭
     matchesPeriod(item, period) {
-        const itemDate = new Date(item['吏?먯씪??] || item['?깅줉??]);
+        const itemDate = new Date(item['지원일자'] || item['등록일']);
         const now = new Date();
         
         switch (period) {
-            case '?대쾲??:
+            case '이번달':
                 return itemDate.getMonth() === now.getMonth() && 
                        itemDate.getFullYear() === now.getFullYear();
-            case '理쒓렐 30??:
+            case '최근 30일':
                 const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
                 return itemDate >= thirtyDaysAgo;
-            case '理쒓렐 3媛쒖썡':
+            case '최근 3개월':
                 const threeMonthsAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
                 return itemDate >= threeMonthsAgo;
-            case '?ы빐':
+            case '올해':
                 return itemDate.getFullYear() === now.getFullYear();
             default:
                 return true;
         }
     },
 
-    // ?뱟 ?좎쭨 踰붿쐞 留ㅼ묶
+    // 📅 날짜 범위 매칭
     matchesDateRange(item, startDate, endDate) {
-        const itemDate = new Date(item['吏?먯씪??] || item['?깅줉??]);
+        const itemDate = new Date(item['지원일자'] || item['등록일']);
         
         if (startDate && itemDate < new Date(startDate)) return false;
         if (endDate && itemDate > new Date(endDate)) return false;
@@ -1166,7 +1166,7 @@ export const ReportModule = {
         return true;
     },
 
-    // ?뵩 ?좏떥由ы떚 ?⑥닔??
+    // 🔧 유틸리티 함수들
     getCurrentDateString() {
         return new Date().toISOString().split('T')[0];
     },
@@ -1190,7 +1190,7 @@ export const ReportModule = {
 
         const filters = this.getCurrentFilters();
         const summary = this.getFilterSummary(filters);
-        summaryEl.textContent = `?꾪꽣: ${summary}`;
+        summaryEl.textContent = `필터: ${summary}`;
     },
 
     drawEmptyChart(ctx) {
@@ -1198,7 +1198,7 @@ export const ReportModule = {
         ctx.fillStyle = '#e5e7eb';
         ctx.font = '14px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText('?곗씠???놁쓬', ctx.canvas.width / 2, ctx.canvas.height / 2);
+        ctx.fillText('데이터 없음', ctx.canvas.width / 2, ctx.canvas.height / 2);
     },
 
     showProgressIndicator() {
@@ -1216,17 +1216,17 @@ export const ReportModule = {
     },
 
     showPDFModal(content) {
-        // 湲곗〈 PDF 紐⑤떖 ?쒖떆 濡쒖쭅 (湲곗〈 肄붾뱶 ?쒖슜)
-        console.log('?뱞 PDF 紐⑤떖 ?쒖떆');
-        // ?ㅼ젣 PDF 紐⑤떖 援ы쁽? 湲곗〈 肄붾뱶瑜?李몄“?섏뿬 援ы쁽
+        // 기존 PDF 모달 표시 로직 (기존 코드 활용)
+        console.log('📄 PDF 모달 표시');
+        // 실제 PDF 모달 구현은 기존 코드를 참조하여 구현
     },
 
-    // ?뱤 ?뱀뀡蹂?肄섑뀗痢??앹꽦 ?⑥닔??
+    // 📊 섹션별 콘텐츠 생성 함수들
     generateFunnelSection(data) {
         return `
             <div class="report-section">
-                <h3>梨꾩슜 ?쇰꼸 遺꾩꽍</h3>
-                <p>?④퀎蹂??꾪솚??遺꾩꽍 寃곌낵?낅땲??</p>
+                <h3>채용 퍼널 분석</h3>
+                <p>단계별 전환율 분석 결과입니다.</p>
             </div>
         `;
     },
@@ -1234,8 +1234,8 @@ export const ReportModule = {
     generateDemographicsSection(data) {
         return `
             <div class="report-section">
-                <h3>?멸뎄?듦퀎?숈쟻 遺꾩꽍</h3>
-                <p>吏?먯옄 ?뱀꽦 遺꾩꽍 寃곌낵?낅땲??</p>
+                <h3>인구통계학적 분석</h3>
+                <p>지원자 특성 분석 결과입니다.</p>
             </div>
         `;
     },
@@ -1243,20 +1243,20 @@ export const ReportModule = {
     generateTrendsSection(data) {
         return `
             <div class="report-section">
-                <h3>?몃젋??遺꾩꽍</h3>
-                <p>?쒓컙蹂?吏?먯옄 異붿씠 遺꾩꽍 寃곌낵?낅땲??</p>
+                <h3>트렌드 분석</h3>
+                <p>시간별 지원자 추이 분석 결과입니다.</p>
             </div>
         `;
     },
-    // ?렓 C) 怨좉툒 湲곕뒫 - 而ㅼ뒪? ?쒗뵆由??몄쭛湲?
+    // 🎨 C) 고급 기능 - 커스텀 템플릿 편집기
 
-    // ?뵩 而ㅼ뒪? ?쒗뵆由??몄쭛湲?珥덇린??
+    // 🔧 커스텀 템플릿 편집기 초기화
     initCustomTemplateEditor() {
-        console.log('?렓 而ㅼ뒪? ?쒗뵆由??몄쭛湲?珥덇린??..');
+        console.log('🎨 커스텀 템플릿 편집기 초기화...');
         
         this.customTemplate = {
             id: 'custom-' + Date.now(),
-            name: '而ㅼ뒪? ?쒗뵆由?,
+            name: '커스텀 템플릿',
             sections: ['kpi', 'charts'],
             layout: 'grid',
             chartTypes: {
@@ -1271,91 +1271,91 @@ export const ReportModule = {
         this.renderCustomEditor();
         this.setupCustomEditorEvents();
         
-        console.log('??而ㅼ뒪? ?쒗뵆由??몄쭛湲?珥덇린???꾨즺');
+        console.log('✅ 커스텀 템플릿 편집기 초기화 완료');
     },
 
-    // ?렓 而ㅼ뒪? ?몄쭛湲??뚮뜑留?
+    // 🎨 커스텀 편집기 렌더링
     renderCustomEditor() {
         const customTab = document.getElementById('custom-tab');
         if (!customTab) return;
 
         customTab.innerHTML = `
             <div class="custom-editor-container">
-                <!-- ?쒗뵆由?湲곕낯 ?뺣낫 -->
+                <!-- 템플릿 기본 정보 -->
                 <div class="editor-section">
                     <div class="section-header">
-                        <h3><i class="fas fa-info-circle"></i> ?쒗뵆由??뺣낫</h3>
+                        <h3><i class="fas fa-info-circle"></i> 템플릿 정보</h3>
                     </div>
                     <div class="template-info-form">
                         <div class="form-group">
-                            <label>?쒗뵆由??대쫫</label>
+                            <label>템플릿 이름</label>
                             <input type="text" id="custom-template-name" value="${this.customTemplate.name}" 
-                                   placeholder="?섎쭔???쒗뵆由??대쫫???낅젰?섏꽭??>
+                                   placeholder="나만의 템플릿 이름을 입력하세요">
                         </div>
                     </div>
                 </div>
 
-                <!-- ?뱀뀡 ?좏깮 諛??쒕옒洹????쒕∼ -->
+                <!-- 섹션 선택 및 드래그 앤 드롭 -->
                 <div class="editor-section">
                     <div class="section-header">
-                        <h3><i class="fas fa-puzzle-piece"></i> 由ы룷??援ъ꽦 ?붿냼</h3>
+                        <h3><i class="fas fa-puzzle-piece"></i> 리포트 구성 요소</h3>
                         <button class="btn-preview-layout" id="previewLayoutBtn">
-                            <i class="fas fa-eye"></i> ?덉씠?꾩썐 誘몃━蹂닿린
+                            <i class="fas fa-eye"></i> 레이아웃 미리보기
                         </button>
                     </div>
                     
-                    <!-- ?ъ슜 媛?ν븳 ?뱀뀡??-->
+                    <!-- 사용 가능한 섹션들 -->
                     <div class="available-sections">
-                        <h4>?ъ슜 媛?ν븳 ?뱀뀡</h4>
+                        <h4>사용 가능한 섹션</h4>
                         <div class="section-pool" id="sectionPool">
                             ${this.renderAvailableSections()}
                         </div>
                     </div>
                     
-                    <!-- ?쒕옒洹????쒕∼ ?덉씠?꾩썐 -->
+                    <!-- 드래그 앤 드롭 레이아웃 -->
                     <div class="layout-editor">
-                        <h4>由ы룷???덉씠?꾩썐 (?쒕옒洹명븯??援ъ꽦)</h4>
+                        <h4>리포트 레이아웃 (드래그하여 구성)</h4>
                         <div class="layout-canvas" id="layoutCanvas">
                             ${this.renderLayoutCanvas()}
                         </div>
                     </div>
                 </div>
 
-                <!-- 李⑦듃 ????좏깮 -->
+                <!-- 차트 타입 선택 -->
                 <div class="editor-section">
                     <div class="section-header">
-                        <h3><i class="fas fa-chart-bar"></i> 李⑦듃 ?ㅼ젙</h3>
+                        <h3><i class="fas fa-chart-bar"></i> 차트 설정</h3>
                     </div>
                     <div class="chart-type-selector">
                         ${this.renderChartTypeSelector()}
                     </div>
                 </div>
 
-                <!-- ?됱긽 ?뚮쭏 而ㅼ뒪?곕쭏?댁쭠 -->
+                <!-- 색상 테마 커스터마이징 -->
                 <div class="editor-section">
                     <div class="section-header">
-                        <h3><i class="fas fa-palette"></i> ?됱긽 ?뚮쭏</h3>
+                        <h3><i class="fas fa-palette"></i> 색상 테마</h3>
                     </div>
                     <div class="color-theme-editor">
                         ${this.renderColorThemeEditor()}
                     </div>
                 </div>
 
-                <!-- ?쒗뵆由????遺덈윭?ㅺ린 -->
+                <!-- 템플릿 저장/불러오기 -->
                 <div class="editor-section">
                     <div class="section-header">
-                        <h3><i class="fas fa-save"></i> ?쒗뵆由?愿由?/h3>
+                        <h3><i class="fas fa-save"></i> 템플릿 관리</h3>
                     </div>
                     <div class="template-management">
                         <div class="template-actions">
                             <button class="btn btn-primary" id="saveCustomTemplate">
-                                <i class="fas fa-save"></i> ?쒗뵆由????
+                                <i class="fas fa-save"></i> 템플릿 저장
                             </button>
                             <button class="btn btn-secondary" id="loadCustomTemplate">
-                                <i class="fas fa-folder-open"></i> ?쒗뵆由?遺덈윭?ㅺ린
+                                <i class="fas fa-folder-open"></i> 템플릿 불러오기
                             </button>
                             <button class="btn btn-success" id="exportCustomTemplate">
-                                <i class="fas fa-download"></i> ?쒗뵆由??대낫?닿린
+                                <i class="fas fa-download"></i> 템플릿 내보내기
                             </button>
                         </div>
                         
@@ -1368,48 +1368,48 @@ export const ReportModule = {
         `;
     },
 
-    // ?뱷 ?ъ슜 媛?ν븳 ?뱀뀡???뚮뜑留?
+    // 📝 사용 가능한 섹션들 렌더링
     renderAvailableSections() {
         const sections = {
             'kpi': {
-                name: '?듭떖 ?깃낵 吏??,
+                name: '핵심 성과 지표',
                 icon: 'fas fa-tachometer-alt',
-                description: '珥?吏?먯옄, ?꾪솚?? ?낃낵????
+                description: '총 지원자, 전환율, 입과율 등'
             },
             'charts': {
-                name: '?쒓컖??李⑦듃',
+                name: '시각화 차트',
                 icon: 'fas fa-chart-pie',
-                description: '吏?먮（?몃퀎, 紐⑥쭛遺꾩빞蹂?遺꾪룷??
+                description: '지원루트별, 모집분야별 분포도'
             },
             'trends': {
-                name: '?몃젋??遺꾩꽍',
+                name: '트렌드 분석',
                 icon: 'fas fa-chart-line',
-                description: '?쒓컙蹂?吏?먯옄 異붿씠 諛??⑦꽩'
+                description: '시간별 지원자 추이 및 패턴'
             },
             'funnel': {
-                name: '梨꾩슜 ?쇰꼸',
+                name: '채용 퍼널',
                 icon: 'fas fa-funnel-dollar',
-                description: '?④퀎蹂??꾪솚??遺꾩꽍'
+                description: '단계별 전환율 분석'
             },
             'demographics': {
-                name: '?멸뎄?듦퀎 遺꾩꽍',
+                name: '인구통계 분석',
                 icon: 'fas fa-users',
-                description: '?곕졊?, ?깅퀎, 吏??퀎 遺꾪룷'
+                description: '연령대, 성별, 지역별 분포'
             },
             'efficiency': {
-                name: '?⑥쑉??遺꾩꽍',
+                name: '효율성 분석',
                 icon: 'fas fa-chart-bar',
-                description: '梨꾩슜 寃쎈줈蹂??⑥쑉??鍮꾧탳'
+                description: '채용 경로별 효율성 비교'
             },
             'interviews': {
-                name: '硫댁젒 ?꾪솴',
+                name: '면접 현황',
                 icon: 'fas fa-user-tie',
-                description: '硫댁젒 ?쇱젙 諛?寃곌낵 遺꾩꽍'
+                description: '면접 일정 및 결과 분석'
             },
             'cost-analysis': {
-                name: '鍮꾩슜 遺꾩꽍',
+                name: '비용 분석',
                 icon: 'fas fa-dollar-sign',
-                description: '梨꾩슜 鍮꾩슜 ?鍮??④낵'
+                description: '채용 비용 대비 효과'
             }
         };
 
@@ -1423,7 +1423,7 @@ export const ReportModule = {
                     <div class="section-description">${section.description}</div>
                 </div>
                 <div class="section-controls">
-                    <button class="btn-add-section" title="?덉씠?꾩썐??異붽?">
+                    <button class="btn-add-section" title="레이아웃에 추가">
                         <i class="fas fa-plus"></i>
                     </button>
                 </div>
@@ -1431,7 +1431,7 @@ export const ReportModule = {
         `).join('');
     },
 
-    // ?렓 ?덉씠?꾩썐 罹붾쾭???뚮뜑留?
+    // 🎨 레이아웃 캔버스 렌더링
     renderLayoutCanvas() {
         const selectedSections = this.customTemplate.sections;
         const layoutCanvas = document.getElementById('layoutCanvas');
@@ -1442,7 +1442,7 @@ export const ReportModule = {
             layoutCanvas.innerHTML = `
                 <div class="empty-canvas">
                     <i class="fas fa-plus-circle"></i>
-                    <p>?쇱そ?먯꽌 ?뱀뀡???쒕옒洹명븯???덉씠?꾩썐??援ъ꽦?섏꽭??/p>
+                    <p>왼쪽에서 섹션을 드래그하여 레이아웃을 구성하세요</p>
                 </div>
             `;
             return;
@@ -1455,13 +1455,13 @@ export const ReportModule = {
                         <div class="section-header">
                             <span class="section-title">${this.getSectionName(section)}</span>
                             <div class="section-actions">
-                                <button class="btn-move-up" title="?꾨줈 ?대룞">
+                                <button class="btn-move-up" title="위로 이동">
                                     <i class="fas fa-chevron-up"></i>
                                 </button>
-                                <button class="btn-move-down" title="?꾨옒濡??대룞">
+                                <button class="btn-move-down" title="아래로 이동">
                                     <i class="fas fa-chevron-down"></i>
                                 </button>
-                                <button class="btn-remove-section" title="?쒓굅">
+                                <button class="btn-remove-section" title="제거">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
@@ -1474,27 +1474,27 @@ export const ReportModule = {
             </div>
         `;
         
-        // ?대깽??由ъ뒪???ъ꽕??
+        // 이벤트 리스너 재설정
         this.setupLayoutSectionEvents();
     },
 
-    // ?뱤 李⑦듃 ????좏깮湲??뚮뜑留?
+    // 📊 차트 타입 선택기 렌더링
     renderChartTypeSelector() {
         const chartOptions = {
             'source-distribution': {
-                name: '吏?먮（??遺꾪룷',
+                name: '지원루트 분포',
                 types: ['doughnut', 'pie', 'bar', 'polar']
             },
             'trend-analysis': {
-                name: '?몃젋??遺꾩꽍',
+                name: '트렌드 분석',
                 types: ['line', 'area', 'bar']
             },
             'funnel-analysis': {
-                name: '梨꾩슜 ?쇰꼸',
+                name: '채용 퍼널',
                 types: ['bar', 'funnel', 'waterfall']
             },
             'demographics': {
-                name: '?멸뎄?듦퀎',
+                name: '인구통계',
                 types: ['bar', 'doughnut', 'radar']
             }
         };
@@ -1517,34 +1517,34 @@ export const ReportModule = {
         `).join('');
     },
 
-    // ?렓 ?됱긽 ?뚮쭏 ?몄쭛湲??뚮뜑留?
+    // 🎨 색상 테마 편집기 렌더링
     renderColorThemeEditor() {
         const presetThemes = {
             'modern': {
-                name: '紐⑤뜕',
+                name: '모던',
                 colors: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4']
             },
             'classic': {
-                name: '?대옒??,
+                name: '클래식',
                 colors: ['#1f2937', '#374151', '#6b7280', '#9ca3af', '#d1d5db', '#e5e7eb']
             },
             'vibrant': {
-                name: '?쒓린李?,
+                name: '활기찬',
                 colors: ['#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ef4444']
             },
             'nature': {
-                name: '?먯뿰',
+                name: '자연',
                 colors: ['#059669', '#84cc16', '#eab308', '#f97316', '#dc2626', '#7c2d12']
             },
             'corporate': {
-                name: '湲곗뾽',
+                name: '기업',
                 colors: ['#1e40af', '#1d4ed8', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd']
             }
         };
 
         return `
             <div class="theme-presets">
-                <h4>誘몃━ ?ㅼ젙???뚮쭏</h4>
+                <h4>미리 설정된 테마</h4>
                 <div class="preset-themes">
                     ${Object.entries(presetThemes).map(([key, theme]) => `
                         <div class="theme-preset ${this.customTemplate.colorTheme === key ? 'selected' : ''}" 
@@ -1561,11 +1561,11 @@ export const ReportModule = {
             </div>
             
             <div class="custom-colors">
-                <h4>?ъ슜???뺤쓽 ?됱긽</h4>
+                <h4>사용자 정의 색상</h4>
                 <div class="color-picker-grid">
                     ${this.customTemplate.customColors.map((color, index) => `
                         <div class="color-picker-item">
-                            <label>?됱긽 ${index + 1}</label>
+                            <label>색상 ${index + 1}</label>
                             <input type="color" value="${color}" data-color-index="${index}" 
                                    class="color-input">
                             <div class="color-preview" style="background-color: ${color}"></div>
@@ -1573,13 +1573,13 @@ export const ReportModule = {
                     `).join('')}
                 </div>
                 <button class="btn-add-color" id="addColorBtn">
-                    <i class="fas fa-plus"></i> ?됱긽 異붽?
+                    <i class="fas fa-plus"></i> 색상 추가
                 </button>
             </div>
         `;
     },
 
-    // ?뮶 ??λ맂 ?쒗뵆由용뱾 ?뚮뜑留?
+    // 💾 저장된 템플릿들 렌더링
     renderSavedTemplates() {
         const savedTemplatesContainer = document.getElementById('savedTemplates');
         if (!savedTemplatesContainer) return;
@@ -1590,7 +1590,7 @@ export const ReportModule = {
             savedTemplatesContainer.innerHTML = `
                 <div class="no-saved-templates">
                     <i class="fas fa-folder-open"></i>
-                    <p>??λ맂 而ㅼ뒪? ?쒗뵆由우씠 ?놁뒿?덈떎.</p>
+                    <p>저장된 커스텀 템플릿이 없습니다.</p>
                 </div>
             `;
             return;
@@ -1603,17 +1603,17 @@ export const ReportModule = {
                         <div class="template-info">
                             <div class="template-name">${template.name}</div>
                             <div class="template-meta">
-                                ${template.sections.length}媛??뱀뀡 ??${template.colorTheme} ?뚮쭏
+                                ${template.sections.length}개 섹션 • ${template.colorTheme} 테마
                             </div>
                         </div>
                         <div class="template-actions">
-                            <button class="btn-load-template" title="遺덈윭?ㅺ린" onclick="App.report.loadSavedTemplate('${template.id}')">
+                            <button class="btn-load-template" title="불러오기" onclick="App.report.loadSavedTemplate('${template.id}')">
                                 <i class="fas fa-folder-open"></i>
                             </button>
-                            <button class="btn-duplicate-template" title="蹂듭궗" onclick="App.report.duplicateSavedTemplate('${template.id}')">
+                            <button class="btn-duplicate-template" title="복사" onclick="App.report.duplicateSavedTemplate('${template.id}')">
                                 <i class="fas fa-copy"></i>
                             </button>
-                            <button class="btn-delete-template" title="??젣" onclick="App.report.deleteSavedTemplate('${template.id}')">
+                            <button class="btn-delete-template" title="삭제" onclick="App.report.deleteSavedTemplate('${template.id}')">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -1622,9 +1622,9 @@ export const ReportModule = {
             </div>
         `;
     },
-    // ?렞 而ㅼ뒪? ?몄쭛湲??대깽???ㅼ젙
+    // 🎯 커스텀 편집기 이벤트 설정
     setupCustomEditorEvents() {
-        // ?쒗뵆由??대쫫 蹂寃?
+        // 템플릿 이름 변경
         const nameInput = document.getElementById('custom-template-name');
         if (nameInput) {
             nameInput.addEventListener('input', (e) => {
@@ -1633,7 +1633,7 @@ export const ReportModule = {
             });
         }
 
-        // ?뱀뀡 異붽? 踰꾪듉??
+        // 섹션 추가 버튼들
         document.querySelectorAll('.btn-add-section').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const sectionItem = e.target.closest('.section-item');
@@ -1642,7 +1642,7 @@ export const ReportModule = {
             });
         });
 
-        // 李⑦듃 ????좏깮
+        // 차트 타입 선택
         document.querySelectorAll('.chart-type-option').forEach(option => {
             option.addEventListener('click', (e) => {
                 const chartKey = e.currentTarget.dataset.chart;
@@ -1651,7 +1651,7 @@ export const ReportModule = {
             });
         });
 
-        // ?됱긽 ?뚮쭏 ?좏깮
+        // 색상 테마 선택
         document.querySelectorAll('.theme-preset').forEach(preset => {
             preset.addEventListener('click', (e) => {
                 const themeKey = e.currentTarget.dataset.theme;
@@ -1659,7 +1659,7 @@ export const ReportModule = {
             });
         });
 
-        // ?ъ슜???뺤쓽 ?됱긽 蹂寃?
+        // 사용자 정의 색상 변경
         document.querySelectorAll('.color-input').forEach(input => {
             input.addEventListener('change', (e) => {
                 const colorIndex = parseInt(e.target.dataset.colorIndex);
@@ -1667,7 +1667,7 @@ export const ReportModule = {
             });
         });
 
-        // ?쒗뵆由?愿由?踰꾪듉??
+        // 템플릿 관리 버튼들
         const saveBtn = document.getElementById('saveCustomTemplate');
         const loadBtn = document.getElementById('loadCustomTemplate');
         const exportBtn = document.getElementById('exportCustomTemplate');
@@ -1678,10 +1678,10 @@ export const ReportModule = {
         if (exportBtn) exportBtn.addEventListener('click', () => this.exportCustomTemplate());
         if (previewBtn) previewBtn.addEventListener('click', () => this.showLayoutPreview());
 
-        // ?뚯씪 媛?몄삤湲?踰꾪듉 異붽?
+        // 파일 가져오기 버튼 추가
         const importBtn = document.createElement('button');
         importBtn.className = 'btn btn-info';
-        importBtn.innerHTML = '<i class="fas fa-upload"></i> ?쒗뵆由?媛?몄삤湲?;
+        importBtn.innerHTML = '<i class="fas fa-upload"></i> 템플릿 가져오기';
         importBtn.addEventListener('click', () => this.importCustomTemplate());
         
         const actionButtons = document.querySelector('.template-actions');
@@ -1689,29 +1689,29 @@ export const ReportModule = {
             actionButtons.appendChild(importBtn);
         }
 
-        // 而ㅼ뒪? 由ы룷???앹꽦 踰꾪듉 異붽?
+        // 커스텀 리포트 생성 버튼 추가
         const generateBtn = document.createElement('button');
         generateBtn.className = 'btn btn-success';
-        generateBtn.innerHTML = '<i class="fas fa-magic"></i> 而ㅼ뒪? 由ы룷???앹꽦';
+        generateBtn.innerHTML = '<i class="fas fa-magic"></i> 커스텀 리포트 생성';
         generateBtn.addEventListener('click', () => this.generateCustomReport());
         
         if (actionButtons) {
             actionButtons.appendChild(generateBtn);
         }
 
-        // ?쒕옒洹????쒕∼ ?ㅼ젙
+        // 드래그 앤 드롭 설정
         this.setupDragAndDrop();
         
-        console.log('??而ㅼ뒪? ?몄쭛湲??대깽???ㅼ젙 ?꾨즺');
+        console.log('✅ 커스텀 편집기 이벤트 설정 완료');
     },
 
-    // ?봽 ?쒕옒洹????쒕∼ ?ㅼ젙
+    // 🔄 드래그 앤 드롭 설정
     setupDragAndDrop() {
         const sectionPool = document.getElementById('sectionPool');
         const layoutCanvas = document.getElementById('layoutCanvas');
 
         if (sectionPool) {
-            // ?뱀뀡 ?꾩씠?쒕뱾???쒕옒洹??대깽??異붽?
+            // 섹션 아이템들에 드래그 이벤트 추가
             sectionPool.querySelectorAll('.section-item').forEach(item => {
                 item.addEventListener('dragstart', (e) => {
                     e.dataTransfer.setData('text/plain', item.dataset.section);
@@ -1725,7 +1725,7 @@ export const ReportModule = {
         }
 
         if (layoutCanvas) {
-            // ?덉씠?꾩썐 罹붾쾭?ㅼ뿉 ?쒕∼ ?대깽??異붽?
+            // 레이아웃 캔버스에 드롭 이벤트 추가
             layoutCanvas.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 layoutCanvas.classList.add('drag-over');
@@ -1749,18 +1749,18 @@ export const ReportModule = {
         }
     },
 
-    // ???덉씠?꾩썐???뱀뀡 異붽?
+    // ➕ 레이아웃에 섹션 추가
     addSectionToLayout(sectionType) {
         if (!this.customTemplate.sections.includes(sectionType)) {
             this.customTemplate.sections.push(sectionType);
             this.renderLayoutCanvas();
             this.updateCustomTemplatePreview();
             
-            console.log(`?뱷 ?뱀뀡 異붽?: ${sectionType}`);
+            console.log(`📝 섹션 추가: ${sectionType}`);
         }
     },
 
-    // ?뿊截??덉씠?꾩썐?먯꽌 ?뱀뀡 ?쒓굅
+    // 🗑️ 레이아웃에서 섹션 제거
     removeSectionFromLayout(sectionType) {
         const index = this.customTemplate.sections.indexOf(sectionType);
         if (index > -1) {
@@ -1768,11 +1768,11 @@ export const ReportModule = {
             this.renderLayoutCanvas();
             this.updateCustomTemplatePreview();
             
-            console.log(`?뿊截??뱀뀡 ?쒓굅: ${sectionType}`);
+            console.log(`🗑️ 섹션 제거: ${sectionType}`);
         }
     },
 
-    // ?봽 ?뱀뀡 ?쒖꽌 蹂寃?
+    // 🔄 섹션 순서 변경
     moveSectionInLayout(sectionType, direction) {
         const sections = this.customTemplate.sections;
         const currentIndex = sections.indexOf(sectionType);
@@ -1788,18 +1788,18 @@ export const ReportModule = {
             return;
         }
         
-        // 諛곗뿴?먯꽌 ?꾩튂 蹂寃?
+        // 배열에서 위치 변경
         [sections[currentIndex], sections[newIndex]] = [sections[newIndex], sections[currentIndex]];
         
         this.renderLayoutCanvas();
         this.updateCustomTemplatePreview();
         
-        console.log(`?봽 ?뱀뀡 ?대룞: ${sectionType} ${direction}`);
+        console.log(`🔄 섹션 이동: ${sectionType} ${direction}`);
     },
 
-    // ?렞 ?덉씠?꾩썐 ?뱀뀡 ?대깽???ㅼ젙
+    // 🎯 레이아웃 섹션 이벤트 설정
     setupLayoutSectionEvents() {
-        // ?뱀뀡 ?쒓굅 踰꾪듉
+        // 섹션 제거 버튼
         document.querySelectorAll('.btn-remove-section').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const section = e.target.closest('.layout-section');
@@ -1808,7 +1808,7 @@ export const ReportModule = {
             });
         });
 
-        // ?뱀뀡 ?대룞 踰꾪듉
+        // 섹션 이동 버튼
         document.querySelectorAll('.btn-move-up').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const section = e.target.closest('.layout-section');
@@ -1826,25 +1826,25 @@ export const ReportModule = {
         });
     },
 
-    // ?뱤 李⑦듃 ????낅뜲?댄듃
+    // 📊 차트 타입 업데이트
     updateChartType(chartKey, chartType) {
         this.customTemplate.chartTypes[chartKey] = chartType;
         
-        // UI ?낅뜲?댄듃
+        // UI 업데이트
         document.querySelectorAll(`.chart-type-option[data-chart="${chartKey}"]`).forEach(option => {
             option.classList.remove('selected');
         });
         document.querySelector(`.chart-type-option[data-chart="${chartKey}"][data-type="${chartType}"]`).classList.add('selected');
         
         this.updateCustomTemplatePreview();
-        console.log(`?뱤 李⑦듃 ???蹂寃? ${chartKey} -> ${chartType}`);
+        console.log(`📊 차트 타입 변경: ${chartKey} -> ${chartType}`);
     },
 
-    // ?렓 ?됱긽 ?뚮쭏 ?좏깮
+    // 🎨 색상 테마 선택
     selectColorTheme(themeKey) {
         this.customTemplate.colorTheme = themeKey;
         
-        // 誘몃━ ?ㅼ젙???뚮쭏 ?됱긽?쇰줈 ?낅뜲?댄듃
+        // 미리 설정된 테마 색상으로 업데이트
         const presetThemes = {
             'modern': ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'],
             'classic': ['#1f2937', '#374151', '#6b7280', '#9ca3af', '#d1d5db', '#e5e7eb'],
@@ -1857,45 +1857,45 @@ export const ReportModule = {
             this.customTemplate.customColors = [...presetThemes[themeKey]];
         }
         
-        // UI ?낅뜲?댄듃
+        // UI 업데이트
         document.querySelectorAll('.theme-preset').forEach(preset => {
             preset.classList.remove('selected');
         });
         document.querySelector(`.theme-preset[data-theme="${themeKey}"]`).classList.add('selected');
         
-        // ?됱긽 ?낅젰 ?꾨뱶???낅뜲?댄듃
+        // 색상 입력 필드들 업데이트
         this.updateColorInputs();
         this.updateCustomTemplatePreview();
         
-        console.log(`?렓 ?됱긽 ?뚮쭏 蹂寃? ${themeKey}`);
+        console.log(`🎨 색상 테마 변경: ${themeKey}`);
     },
 
-    // ?뙂 ?ъ슜???뺤쓽 ?됱긽 ?낅뜲?댄듃
+    // 🌈 사용자 정의 색상 업데이트
     updateCustomColor(colorIndex, newColor) {
         if (colorIndex < this.customTemplate.customColors.length) {
             this.customTemplate.customColors[colorIndex] = newColor;
             
-            // ?됱긽 誘몃━蹂닿린 ?낅뜲?댄듃
+            // 색상 미리보기 업데이트
             const preview = document.querySelector(`.color-input[data-color-index="${colorIndex}"]`).nextElementSibling;
             if (preview) {
                 preview.style.backgroundColor = newColor;
             }
             
             this.updateCustomTemplatePreview();
-            console.log(`?뙂 ?ъ슜???뺤쓽 ?됱긽 蹂寃? ${colorIndex} -> ${newColor}`);
+            console.log(`🌈 사용자 정의 색상 변경: ${colorIndex} -> ${newColor}`);
         }
     },
 
-    // ?뮶 而ㅼ뒪? ?쒗뵆由????
+    // 💾 커스텀 템플릿 저장
     saveCustomTemplate() {
         if (!this.customTemplate.name.trim()) {
-            alert('?쒗뵆由??대쫫???낅젰?댁＜?몄슂.');
+            alert('템플릿 이름을 입력해주세요.');
             return;
         }
 
         const savedTemplates = this.getSavedCustomTemplates();
         
-        // ???쒗뵆由?媛앹껜 ?앹꽦
+        // 새 템플릿 객체 생성
         const templateToSave = {
             ...this.customTemplate,
             id: this.customTemplate.id || 'custom-' + Date.now(),
@@ -1903,7 +1903,7 @@ export const ReportModule = {
             version: '1.0'
         };
 
-        // 湲곗〈 ?쒗뵆由우씠 ?덉쑝硫??낅뜲?댄듃, ?놁쑝硫?異붽?
+        // 기존 템플릿이 있으면 업데이트, 없으면 추가
         const existingIndex = savedTemplates.findIndex(t => t.id === templateToSave.id);
         if (existingIndex > -1) {
             savedTemplates[existingIndex] = templateToSave;
@@ -1911,34 +1911,34 @@ export const ReportModule = {
             savedTemplates.push(templateToSave);
         }
 
-        // LocalStorage?????
+        // LocalStorage에 저장
         localStorage.setItem('customTemplates', JSON.stringify(savedTemplates));
         
-        // UI ?낅뜲?댄듃
+        // UI 업데이트
         this.renderSavedTemplates();
         
-        alert(`?쒗뵆由?"${templateToSave.name}"????λ릺?덉뒿?덈떎.`);
-        console.log('?뮶 而ㅼ뒪? ?쒗뵆由?????꾨즺:', templateToSave);
+        alert(`템플릿 "${templateToSave.name}"이 저장되었습니다.`);
+        console.log('💾 커스텀 템플릿 저장 완료:', templateToSave);
     },
 
-    // ?뱛 ??λ맂 而ㅼ뒪? ?쒗뵆由용뱾 媛?몄삤湲?
+    // 📂 저장된 커스텀 템플릿들 가져오기
     getSavedCustomTemplates() {
         try {
             return JSON.parse(localStorage.getItem('customTemplates') || '[]');
         } catch (error) {
-            console.error('????λ맂 ?쒗뵆由?濡쒕뱶 ?ㅽ뙣:', error);
+            console.error('❌ 저장된 템플릿 로드 실패:', error);
             return [];
         }
     },
 
-    // ?뱥 ?덉씠?꾩썐 誘몃━蹂닿린 ?쒖떆
+    // 📋 레이아웃 미리보기 표시
     showLayoutPreview() {
         const previewModal = document.createElement('div');
         previewModal.className = 'custom-preview-modal';
         previewModal.innerHTML = `
             <div class="preview-modal-content">
                 <div class="preview-modal-header">
-                    <h3>?덉씠?꾩썐 誘몃━蹂닿린: ${this.customTemplate.name}</h3>
+                    <h3>레이아웃 미리보기: ${this.customTemplate.name}</h3>
                     <button class="btn-close-preview">
                         <i class="fas fa-times"></i>
                     </button>
@@ -1949,10 +1949,10 @@ export const ReportModule = {
             </div>
         `;
         
-        // 紐⑤떖 ?쒖떆
+        // 모달 표시
         document.body.appendChild(previewModal);
         
-        // ?リ린 ?대깽??
+        // 닫기 이벤트
         previewModal.querySelector('.btn-close-preview').addEventListener('click', () => {
             document.body.removeChild(previewModal);
         });
@@ -1964,17 +1964,17 @@ export const ReportModule = {
         });
     },
 
-    // ?뵩 ?ы띁 ?⑥닔??
+    // 🔧 헬퍼 함수들
     getSectionName(sectionType) {
         const sectionNames = {
-            'kpi': '?듭떖 ?깃낵 吏??,
-            'charts': '?쒓컖??李⑦듃',
-            'trends': '?몃젋??遺꾩꽍',
-            'funnel': '梨꾩슜 ?쇰꼸',
-            'demographics': '?멸뎄?듦퀎 遺꾩꽍',
-            'efficiency': '?⑥쑉??遺꾩꽍',
-            'interviews': '硫댁젒 ?꾪솴',
-            'cost-analysis': '鍮꾩슜 遺꾩꽍'
+            'kpi': '핵심 성과 지표',
+            'charts': '시각화 차트',
+            'trends': '트렌드 분석',
+            'funnel': '채용 퍼널',
+            'demographics': '인구통계 분석',
+            'efficiency': '효율성 분석',
+            'interviews': '면접 현황',
+            'cost-analysis': '비용 분석'
         };
         return sectionNames[sectionType] || sectionType;
     },
@@ -1996,15 +1996,15 @@ export const ReportModule = {
 
     getChartTypeName(chartType) {
         const names = {
-            'doughnut': '?꾨꽋',
-            'pie': '?뚯씠',
-            'bar': '留됰?',
-            'line': '??,
-            'area': '?곸뿭',
-            'polar': '洹뱀쥖??,
-            'funnel': '源붾븣湲?,
-            'waterfall': '??룷',
-            'radar': '?덉씠??
+            'doughnut': '도넛',
+            'pie': '파이',
+            'bar': '막대',
+            'line': '선',
+            'area': '영역',
+            'polar': '극좌표',
+            'funnel': '깔때기',
+            'waterfall': '폭포',
+            'radar': '레이더'
         };
         return names[chartType] || chartType;
     },
@@ -2013,7 +2013,7 @@ export const ReportModule = {
         return `
             <div class="section-preview-content">
                 <i class="fas fa-${this.getSectionIcon(sectionType)}"></i>
-                <span>${this.getSectionName(sectionType)} ?뱀뀡</span>
+                <span>${this.getSectionName(sectionType)} 섹션</span>
             </div>
         `;
     },
@@ -2042,21 +2042,21 @@ export const ReportModule = {
     },
 
     updateCustomTemplatePreview() {
-        // ?ㅼ떆媛?誘몃━蹂닿린?먯꽌 而ㅼ뒪? ?쒗뵆由??뺣낫 ?낅뜲?댄듃
+        // 실시간 미리보기에서 커스텀 템플릿 정보 업데이트
         this.updateLivePreview();
     },
 
     generateCustomTemplatePreview() {
         return `
             <div class="custom-template-preview">
-                <h4>?쒗뵆由? ${this.customTemplate.name}</h4>
+                <h4>템플릿: ${this.customTemplate.name}</h4>
                 <div class="preview-sections">
                     ${this.customTemplate.sections.map((section, index) => `
                         <div class="preview-section" style="order: ${index}">
                             <h5>${this.getSectionName(section)}</h5>
                             <div class="section-placeholder">
                                 <i class="fas fa-${this.getSectionIcon(section)}"></i>
-                                <span>?뱀뀡 ?댁슜???ш린???쒖떆?⑸땲??/span>
+                                <span>섹션 내용이 여기에 표시됩니다</span>
                             </div>
                         </div>
                     `).join('')}
@@ -2065,7 +2065,7 @@ export const ReportModule = {
         `;
     },
 
-    // ?뱾 ?쒗뵆由??대낫?닿린
+    // 📤 템플릿 내보내기
     exportCustomTemplate() {
         const templateData = {
             ...this.customTemplate,
@@ -2083,102 +2083,102 @@ export const ReportModule = {
         link.click();
         
         URL.revokeObjectURL(url);
-        console.log('?뱾 而ㅼ뒪? ?쒗뵆由??대낫?닿린 ?꾨즺');
+        console.log('📤 커스텀 템플릿 내보내기 완료');
     },
-    // ?뱛 ??λ맂 ?쒗뵆由?遺덈윭?ㅺ린
+    // 📂 저장된 템플릿 불러오기
     loadSavedTemplate(templateId) {
         const savedTemplates = this.getSavedCustomTemplates();
         const template = savedTemplates.find(t => t.id === templateId);
         
         if (!template) {
-            alert('?쒗뵆由우쓣 李얠쓣 ???놁뒿?덈떎.');
+            alert('템플릿을 찾을 수 없습니다.');
             return;
         }
 
-        // ?꾩옱 而ㅼ뒪? ?쒗뵆由우뿉 蹂듭궗
+        // 현재 커스텀 템플릿에 복사
         this.customTemplate = {
             ...template,
-            id: 'custom-' + Date.now() // ?덈줈??ID ?앹꽦
+            id: 'custom-' + Date.now() // 새로운 ID 생성
         };
 
-        // UI ?꾩껜 ?щ젋?붾쭅
+        // UI 전체 재렌더링
         this.renderCustomEditor();
         this.updateCustomTemplatePreview();
 
-        console.log('?뱛 ??λ맂 ?쒗뵆由?遺덈윭?ㅺ린 ?꾨즺:', template.name);
-        alert(`?쒗뵆由?"${template.name}"??遺덈윭?붿뒿?덈떎.`);
+        console.log('📂 저장된 템플릿 불러오기 완료:', template.name);
+        alert(`템플릿 "${template.name}"을 불러왔습니다.`);
     },
 
-    // ?뱥 ??λ맂 ?쒗뵆由?蹂듭궗
+    // 📋 저장된 템플릿 복사
     duplicateSavedTemplate(templateId) {
         const savedTemplates = this.getSavedCustomTemplates();
         const template = savedTemplates.find(t => t.id === templateId);
         
         if (!template) {
-            alert('?쒗뵆由우쓣 李얠쓣 ???놁뒿?덈떎.');
+            alert('템플릿을 찾을 수 없습니다.');
             return;
         }
 
-        // 蹂듭궗蹂??앹꽦
+        // 복사본 생성
         const duplicatedTemplate = {
             ...template,
             id: 'custom-' + Date.now(),
-            name: template.name + ' (蹂듭궗蹂?',
+            name: template.name + ' (복사본)',
             createdAt: new Date().toISOString()
         };
 
-        // ??λ맂 ?쒗뵆由?紐⑸줉??異붽?
+        // 저장된 템플릿 목록에 추가
         savedTemplates.push(duplicatedTemplate);
         localStorage.setItem('customTemplates', JSON.stringify(savedTemplates));
 
-        // UI ?낅뜲?댄듃
+        // UI 업데이트
         this.renderSavedTemplates();
 
-        console.log('?뱥 ?쒗뵆由?蹂듭궗 ?꾨즺:', duplicatedTemplate.name);
-        alert(`?쒗뵆由?"${duplicatedTemplate.name}"???앹꽦?섏뿀?듬땲??`);
+        console.log('📋 템플릿 복사 완료:', duplicatedTemplate.name);
+        alert(`템플릿 "${duplicatedTemplate.name}"이 생성되었습니다.`);
     },
 
-    // ?뿊截???λ맂 ?쒗뵆由???젣
+    // 🗑️ 저장된 템플릿 삭제
     deleteSavedTemplate(templateId) {
         const savedTemplates = this.getSavedCustomTemplates();
         const template = savedTemplates.find(t => t.id === templateId);
         
         if (!template) {
-            alert('?쒗뵆由우쓣 李얠쓣 ???놁뒿?덈떎.');
+            alert('템플릿을 찾을 수 없습니다.');
             return;
         }
 
-        if (!confirm(`?쒗뵆由?"${template.name}"????젣?섏떆寃좎뒿?덇퉴?`)) {
+        if (!confirm(`템플릿 "${template.name}"을 삭제하시겠습니까?`)) {
             return;
         }
 
-        // ?쒗뵆由?紐⑸줉?먯꽌 ?쒓굅
+        // 템플릿 목록에서 제거
         const updatedTemplates = savedTemplates.filter(t => t.id !== templateId);
         localStorage.setItem('customTemplates', JSON.stringify(updatedTemplates));
 
-        // UI ?낅뜲?댄듃
+        // UI 업데이트
         this.renderSavedTemplates();
 
-        console.log('?뿊截??쒗뵆由???젣 ?꾨즺:', template.name);
-        alert(`?쒗뵆由?"${template.name}"????젣?섏뿀?듬땲??`);
+        console.log('🗑️ 템플릿 삭제 완료:', template.name);
+        alert(`템플릿 "${template.name}"이 삭제되었습니다.`);
     },
 
-    // ?뱛 ?쒗뵆由?遺덈윭?ㅺ린 ?ㅼ씠?쇰줈洹??쒖떆
+    // 📂 템플릿 불러오기 다이얼로그 표시
     showLoadTemplateDialog() {
         const savedTemplates = this.getSavedCustomTemplates();
         
         if (savedTemplates.length === 0) {
-            alert('??λ맂 ?쒗뵆由우씠 ?놁뒿?덈떎.');
+            alert('저장된 템플릿이 없습니다.');
             return;
         }
 
-        // ?쒗뵆由??좏깮 ?ㅼ씠?쇰줈洹??앹꽦
+        // 템플릿 선택 다이얼로그 생성
         const dialog = document.createElement('div');
         dialog.className = 'template-load-dialog';
         dialog.innerHTML = `
             <div class="dialog-content">
                 <div class="dialog-header">
-                    <h3>?쒗뵆由?遺덈윭?ㅺ린</h3>
+                    <h3>템플릿 불러오기</h3>
                     <button class="btn-close-dialog">
                         <i class="fas fa-times"></i>
                     </button>
@@ -2190,13 +2190,13 @@ export const ReportModule = {
                                 <div class="template-info">
                                     <div class="template-name">${template.name}</div>
                                     <div class="template-meta">
-                                        ${template.sections.length}媛??뱀뀡 ??${template.colorTheme} ?뚮쭏
+                                        ${template.sections.length}개 섹션 • ${template.colorTheme} 테마
                                     </div>
                                     <div class="template-date">
-                                        ?앹꽦?? ${new Date(template.createdAt).toLocaleDateString('ko-KR')}
+                                        생성일: ${new Date(template.createdAt).toLocaleDateString('ko-KR')}
                                     </div>
                                 </div>
-                                <button class="btn-select-template">?좏깮</button>
+                                <button class="btn-select-template">선택</button>
                             </div>
                         `).join('')}
                     </div>
@@ -2206,7 +2206,7 @@ export const ReportModule = {
 
         document.body.appendChild(dialog);
 
-        // ?대깽??由ъ뒪???ㅼ젙
+        // 이벤트 리스너 설정
         dialog.querySelector('.btn-close-dialog').addEventListener('click', () => {
             document.body.removeChild(dialog);
         });
@@ -2228,7 +2228,7 @@ export const ReportModule = {
         });
     },
 
-    // ?뱿 ?쒗뵆由??뚯씪 媛?몄삤湲?(JSON ?뚯씪)
+    // 📥 템플릿 파일 가져오기 (JSON 파일)
     importCustomTemplate() {
         const input = document.createElement('input');
         input.type = 'file';
@@ -2243,29 +2243,29 @@ export const ReportModule = {
                 try {
                     const templateData = JSON.parse(event.target.result);
                     
-                    // ?쒗뵆由??곗씠??寃利?
+                    // 템플릿 데이터 검증
                     if (!this.validateTemplateData(templateData)) {
-                        alert('?щ컮瑜댁? ?딆? ?쒗뵆由??뚯씪?낅땲??');
+                        alert('올바르지 않은 템플릿 파일입니다.');
                         return;
                     }
 
-                    // ?덈줈??ID濡?媛?몄삤湲?
+                    // 새로운 ID로 가져오기
                     templateData.id = 'custom-' + Date.now();
                     templateData.createdAt = new Date().toISOString();
 
-                    // ?꾩옱 ?쒗뵆由우쑝濡??ㅼ젙
+                    // 현재 템플릿으로 설정
                     this.customTemplate = templateData;
 
-                    // UI ?낅뜲?댄듃
+                    // UI 업데이트
                     this.renderCustomEditor();
                     this.updateCustomTemplatePreview();
 
-                    alert(`?쒗뵆由?"${templateData.name}"??媛?몄솕?듬땲??`);
-                    console.log('?뱿 ?쒗뵆由?媛?몄삤湲??꾨즺:', templateData);
+                    alert(`템플릿 "${templateData.name}"을 가져왔습니다.`);
+                    console.log('📥 템플릿 가져오기 완료:', templateData);
 
                 } catch (error) {
-                    console.error('???쒗뵆由?媛?몄삤湲??ㅽ뙣:', error);
-                    alert('?쒗뵆由??뚯씪???쎈뒗 以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.');
+                    console.error('❌ 템플릿 가져오기 실패:', error);
+                    alert('템플릿 파일을 읽는 중 오류가 발생했습니다.');
                 }
             };
             
@@ -2275,7 +2275,7 @@ export const ReportModule = {
         input.click();
     },
 
-    // ???쒗뵆由??곗씠??寃利?
+    // ✅ 템플릿 데이터 검증
     validateTemplateData(templateData) {
         const requiredFields = ['name', 'sections', 'chartTypes', 'colorTheme', 'customColors'];
         
@@ -2285,12 +2285,12 @@ export const ReportModule = {
             }
         }
 
-        // 諛곗뿴 ???寃利?
+        // 배열 타입 검증
         if (!Array.isArray(templateData.sections) || !Array.isArray(templateData.customColors)) {
             return false;
         }
 
-        // 媛앹껜 ???寃利?
+        // 객체 타입 검증
         if (typeof templateData.chartTypes !== 'object' || templateData.chartTypes === null) {
             return false;
         }
@@ -2298,25 +2298,25 @@ export const ReportModule = {
         return true;
     },
 
-    // ?봽 而ㅼ뒪? ?먮뵒???덈줈怨좎묠
+    // 🔄 커스텀 에디터 새로고침
     refreshCustomEditor() {
         if (document.getElementById('custom-tab').innerHTML.includes('custom-editor-container')) {
             this.renderCustomEditor();
-            console.log('?봽 而ㅼ뒪? ?먮뵒???덈줈怨좎묠 ?꾨즺');
+            console.log('🔄 커스텀 에디터 새로고침 완료');
         }
     },
 
-    // ?렞 而ㅼ뒪? ?쒗뵆由우쑝濡?由ы룷???앹꽦
+    // 🎯 커스텀 템플릿으로 리포트 생성
     generateCustomReport() {
-        // ?꾩옱 而ㅼ뒪? ?쒗뵆由우쓣 ?꾩떆 ?쒗뵆由우쑝濡??깅줉
+        // 현재 커스텀 템플릿을 임시 템플릿으로 등록
         const tempTemplateKey = 'custom-temp';
         const originalTemplates = { ...this.templates };
         
-        // ?꾩떆 ?쒗뵆由?異붽?
+        // 임시 템플릿 추가
         this.templates[tempTemplateKey] = {
             name: this.customTemplate.name,
             icon: 'fas fa-magic',
-            description: '?ъ슜???뺤쓽 ?쒗뵆由?,
+            description: '사용자 정의 템플릿',
             sections: this.customTemplate.sections,
             estimatedTime: this.calculateEstimatedTime(this.customTemplate.sections),
             difficulty: this.calculateDifficulty(this.customTemplate.sections),
@@ -2324,21 +2324,21 @@ export const ReportModule = {
             customConfig: this.customTemplate
         };
 
-        // ?꾩떆 ?쒗뵆由??좏깮
+        // 임시 템플릿 선택
         this._currentTemplate = tempTemplateKey;
 
         try {
-            // 由ы룷???앹꽦
+            // 리포트 생성
             this.generateReport();
             
-            console.log('?렞 而ㅼ뒪? ?쒗뵆由우쑝濡?由ы룷???앹꽦:', this.customTemplate.name);
+            console.log('🎯 커스텀 템플릿으로 리포트 생성:', this.customTemplate.name);
         } finally {
-            // ?꾩떆 ?쒗뵆由??쒓굅 諛??먮낯 蹂듭썝
+            // 임시 템플릿 제거 및 원본 복원
             this.templates = originalTemplates;
         }
     },
 
-    // ?깍툘 ?덉긽 ?쒓컙 怨꾩궛
+    // ⏱️ 예상 시간 계산
     calculateEstimatedTime(sections) {
         const baseTimes = {
             'kpi': 5,
@@ -2355,12 +2355,12 @@ export const ReportModule = {
             return total + (baseTimes[section] || 5);
         }, 0);
 
-        if (totalSeconds < 30) return '30珥?誘몃쭔';
-        if (totalSeconds < 60) return `${totalSeconds}珥?;
-        return `${Math.ceil(totalSeconds / 60)}遺?;
+        if (totalSeconds < 30) return '30초 미만';
+        if (totalSeconds < 60) return `${totalSeconds}초`;
+        return `${Math.ceil(totalSeconds / 60)}분`;
     },
 
-    // ?뱤 ?쒖씠??怨꾩궛
+    // 📊 난이도 계산
     calculateDifficulty(sections) {
         const complexSections = ['trends', 'demographics', 'efficiency', 'cost-analysis'];
         const complexCount = sections.filter(s => complexSections.includes(s)).length;
@@ -2369,11 +2369,11 @@ export const ReportModule = {
         if (complexCount <= 2) return 'medium';
         return 'hard';
     },
-    // ?쨼 C) 怨좉툒 湲곕뒫 - AI 遺꾩꽍 ?쒖뒪??
+    // 🤖 C) 고급 기능 - AI 분석 시스템
 
-    // ?뵩 AI 遺꾩꽍 ?쒖뒪??珥덇린??
+    // 🔧 AI 분석 시스템 초기화
     initAIAnalysisSystem() {
-        console.log('?쨼 AI 遺꾩꽍 ?쒖뒪??珥덇린??..');
+        console.log('🤖 AI 분석 시스템 초기화...');
         
         this.aiAnalysis = {
             insights: [],
@@ -2386,47 +2386,47 @@ export const ReportModule = {
         this.renderAIAnalysisTab();
         this.setupAIAnalysisEvents();
         
-        console.log('??AI 遺꾩꽍 ?쒖뒪??珥덇린???꾨즺');
+        console.log('✅ AI 분석 시스템 초기화 완료');
     },
 
-    // ?렓 AI 遺꾩꽍 ???뚮뜑留?
+    // 🎨 AI 분석 탭 렌더링
     renderAIAnalysisTab() {
         const aiTab = document.getElementById('ai-tab');
         if (!aiTab) return;
 
         aiTab.innerHTML = `
             <div class="ai-analysis-container">
-                <!-- AI 遺꾩꽍 ?ㅻ뜑 -->
+                <!-- AI 분석 헤더 -->
                 <div class="ai-header">
                     <div class="ai-title">
                         <i class="fas fa-robot"></i>
-                        <h3>AI 遺꾩꽍 ?붿쭊</h3>
+                        <h3>AI 분석 엔진</h3>
                     </div>
                     <div class="ai-controls">
                         <button class="btn btn-primary" id="runAIAnalysis">
-                            <i class="fas fa-play"></i> 遺꾩꽍 ?ㅽ뻾
+                            <i class="fas fa-play"></i> 분석 실행
                         </button>
                         <button class="btn btn-secondary" id="exportAIInsights">
-                            <i class="fas fa-download"></i> ?몄궗?댄듃 ?대낫?닿린
+                            <i class="fas fa-download"></i> 인사이트 내보내기
                         </button>
                     </div>
                 </div>
 
-                <!-- 遺꾩꽍 ?좏깮 ?⑤꼸 -->
+                <!-- 분석 선택 패널 -->
                 <div class="analysis-selection">
-                    <h4><i class="fas fa-cogs"></i> 遺꾩꽍 ?좏삎 ?좏깮</h4>
+                    <h4><i class="fas fa-cogs"></i> 분석 유형 선택</h4>
                     <div class="analysis-types">
                         <div class="analysis-type-card" data-type="insights">
                             <div class="card-icon">
                                 <i class="fas fa-lightbulb"></i>
                             </div>
                             <div class="card-content">
-                                <h5>?먮룞 ?몄궗?댄듃</h5>
-                                <p>?곗씠???⑦꽩??遺꾩꽍?섏뿬 ?듭떖 ?몄궗?댄듃瑜??먮룞 ?앹꽦?⑸땲??/p>
+                                <h5>자동 인사이트</h5>
+                                <p>데이터 패턴을 분석하여 핵심 인사이트를 자동 생성합니다</p>
                                 <div class="card-features">
-                                    <span>??梨꾩슜 ?⑥쑉??遺꾩꽍</span>
-                                    <span>???깃낵 ?⑦꽩 諛쒓껄</span>
-                                    <span>??理쒖쟻???ъ씤???쒖븞</span>
+                                    <span>• 채용 효율성 분석</span>
+                                    <span>• 성과 패턴 발견</span>
+                                    <span>• 최적화 포인트 제안</span>
                                 </div>
                             </div>
                             <div class="card-toggle">
@@ -2440,12 +2440,12 @@ export const ReportModule = {
                                 <i class="fas fa-bullseye"></i>
                             </div>
                             <div class="card-content">
-                                <h5>異붿쿇 ?쒖뒪??/h5>
-                                <p>理쒖쟻??梨꾩슜 ?꾨왂怨?媛쒖꽑 諛⑹븞???쒖븞?⑸땲??/p>
+                                <h5>추천 시스템</h5>
+                                <p>최적의 채용 전략과 개선 방안을 제안합니다</p>
                                 <div class="card-features">
-                                    <span>??理쒖쟻 梨꾩슜 寃쎈줈 異붿쿇</span>
-                                    <span>??硫댁젒愿 諛곗젙 理쒖쟻??/span>
-                                    <span>???꾨왂??媛쒖꽑???쒖떆</span>
+                                    <span>• 최적 채용 경로 추천</span>
+                                    <span>• 면접관 배정 최적화</span>
+                                    <span>• 전략적 개선안 제시</span>
                                 </div>
                             </div>
                             <div class="card-toggle">
@@ -2459,12 +2459,12 @@ export const ReportModule = {
                                 <i class="fas fa-crystal-ball"></i>
                             </div>
                             <div class="card-content">
-                                <h5>?덉륫 遺꾩꽍</h5>
-                                <p>怨쇨굅 ?곗씠?곕? 湲곕컲?쇰줈 誘몃옒 ?몃젋?쒕? ?덉륫?⑸땲??/p>
+                                <h5>예측 분석</h5>
+                                <p>과거 데이터를 기반으로 미래 트렌드를 예측합니다</p>
                                 <div class="card-features">
-                                    <span>??吏?먯옄 ???덉륫</span>
-                                    <span>??怨꾩젅???⑦꽩 遺꾩꽍</span>
-                                    <span>???깃낵 ?덉륫 紐⑤뜽留?/span>
+                                    <span>• 지원자 수 예측</span>
+                                    <span>• 계절성 패턴 분석</span>
+                                    <span>• 성과 예측 모델링</span>
                                 </div>
                             </div>
                             <div class="card-toggle">
@@ -2478,12 +2478,12 @@ export const ReportModule = {
                                 <i class="fas fa-exclamation-triangle"></i>
                             </div>
                             <div class="card-content">
-                                <h5>?댁긽 ?⑦꽩 媛먯?</h5>
-                                <p>鍮꾩젙?곸쟻???⑦꽩?대굹 湲됯꺽??蹂?붾? 媛먯??⑸땲??/p>
+                                <h5>이상 패턴 감지</h5>
+                                <p>비정상적인 패턴이나 급격한 변화를 감지합니다</p>
                                 <div class="card-features">
-                                    <span>??湲됯꺽??利앷컧 ?뚮┝</span>
-                                    <span>???댁긽 ?됰룞 ?⑦꽩 ?먯?</span>
-                                    <span>???꾪뿕 ?붿냼 ?앸퀎</span>
+                                    <span>• 급격한 증감 알림</span>
+                                    <span>• 이상 행동 패턴 탐지</span>
+                                    <span>• 위험 요소 식별</span>
                                 </div>
                             </div>
                             <div class="card-toggle">
@@ -2494,14 +2494,14 @@ export const ReportModule = {
                     </div>
                 </div>
 
-                <!-- 遺꾩꽍 寃곌낵 ?곸뿭 -->
+                <!-- 분석 결과 영역 -->
                 <div class="analysis-results" id="aiAnalysisResults">
                     ${this.renderAnalysisPlaceholder()}
                 </div>
 
-                <!-- 遺꾩꽍 ?덉뒪?좊━ -->
+                <!-- 분석 히스토리 -->
                 <div class="analysis-history">
-                    <h4><i class="fas fa-history"></i> 遺꾩꽍 ?덉뒪?좊━</h4>
+                    <h4><i class="fas fa-history"></i> 분석 히스토리</h4>
                     <div class="history-list" id="aiAnalysisHistory">
                         ${this.renderAnalysisHistory()}
                     </div>
@@ -2510,36 +2510,36 @@ export const ReportModule = {
         `;
     },
 
-    // ?봽 遺꾩꽍 寃곌낵 ?뚮젅?댁뒪???
+    // 🔄 분석 결과 플레이스홀더
     renderAnalysisPlaceholder() {
         return `
             <div class="analysis-placeholder">
                 <div class="placeholder-icon">
                     <i class="fas fa-robot"></i>
                 </div>
-                <h4>AI 遺꾩꽍 以鍮??꾨즺</h4>
-                <p>?꾩쓽 "遺꾩꽍 ?ㅽ뻾" 踰꾪듉???대┃?섏뿬 ?곗씠?곕? 遺꾩꽍?섍퀬 ?몄궗?댄듃瑜??앹꽦?섏꽭??</p>
+                <h4>AI 분석 준비 완료</h4>
+                <p>위의 "분석 실행" 버튼을 클릭하여 데이터를 분석하고 인사이트를 생성하세요.</p>
                 <div class="placeholder-features">
                     <div class="feature-item">
                         <i class="fas fa-check-circle"></i>
-                        <span>?먮룞 ?⑦꽩 ?몄떇</span>
+                        <span>자동 패턴 인식</span>
                     </div>
                     <div class="feature-item">
                         <i class="fas fa-check-circle"></i>
-                        <span>留욎땄??異붿쿇?ы빆</span>
+                        <span>맞춤형 추천사항</span>
                     </div>
                     <div class="feature-item">
                         <i class="fas fa-check-circle"></i>
-                        <span>?덉륫 遺꾩꽍</span>
+                        <span>예측 분석</span>
                     </div>
                 </div>
             </div>
         `;
     },
 
-    // ?렞 AI 遺꾩꽍 ?대깽???ㅼ젙
+    // 🎯 AI 분석 이벤트 설정
     setupAIAnalysisEvents() {
-        // 遺꾩꽍 ?ㅽ뻾 踰꾪듉
+        // 분석 실행 버튼
         const runBtn = document.getElementById('runAIAnalysis');
         if (runBtn) {
             runBtn.addEventListener('click', () => {
@@ -2547,7 +2547,7 @@ export const ReportModule = {
             });
         }
 
-        // ?몄궗?댄듃 ?대낫?닿린 踰꾪듉
+        // 인사이트 내보내기 버튼
         const exportBtn = document.getElementById('exportAIInsights');
         if (exportBtn) {
             exportBtn.addEventListener('click', () => {
@@ -2555,7 +2555,7 @@ export const ReportModule = {
             });
         }
 
-        // 遺꾩꽍 ???移대뱶 ?대┃ ?대깽??
+        // 분석 타입 카드 클릭 이벤트
         document.querySelectorAll('.analysis-type-card').forEach(card => {
             card.addEventListener('click', () => {
                 const checkbox = card.querySelector('input[type="checkbox"]');
@@ -2564,31 +2564,31 @@ export const ReportModule = {
             });
         });
 
-        console.log('??AI 遺꾩꽍 ?대깽???ㅼ젙 ?꾨즺');
+        console.log('✅ AI 분석 이벤트 설정 완료');
     },
 
-    // ?? AI 遺꾩꽍 ?ㅽ뻾
+    // 🚀 AI 분석 실행
     async runAIAnalysis() {
         const runBtn = document.getElementById('runAIAnalysis');
         if (runBtn) {
-            runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 遺꾩꽍 以?..';
+            runBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 분석 중...';
             runBtn.disabled = true;
         }
 
         try {
-            console.log('?쨼 AI 遺꾩꽍 ?쒖옉...');
+            console.log('🤖 AI 분석 시작...');
             
-            // ?꾪꽣留곷맂 ?곗씠??媛?몄삤湲?
+            // 필터링된 데이터 가져오기
             const data = this.getFilteredData();
             
             if (!data || data.length === 0) {
-                throw new Error('遺꾩꽍???곗씠?곌? ?놁뒿?덈떎.');
+                throw new Error('분석할 데이터가 없습니다.');
             }
 
-            // 遺꾩꽍 吏꾪뻾 ?곹솴 ?쒖떆
+            // 분석 진행 상황 표시
             this.showAnalysisProgress();
 
-            // 媛?遺꾩꽍 ??낅퀎濡??ㅽ뻾
+            // 각 분석 타입별로 실행
             const analysisResults = {
                 insights: [],
                 recommendations: [],
@@ -2612,7 +2612,7 @@ export const ReportModule = {
                 analysisResults.anomalies = await this.detectAnomalies(data);
             }
 
-            // 寃곌낵 ???諛??쒖떆
+            // 결과 저장 및 표시
             this.aiAnalysis = {
                 ...analysisResults,
                 lastAnalyzedAt: new Date().toISOString(),
@@ -2622,146 +2622,146 @@ export const ReportModule = {
             this.renderAnalysisResults(analysisResults);
             this.saveAnalysisToHistory(analysisResults);
 
-            console.log('??AI 遺꾩꽍 ?꾨즺:', analysisResults);
+            console.log('✅ AI 분석 완료:', analysisResults);
 
         } catch (error) {
-            console.error('??AI 遺꾩꽍 ?ㅽ뙣:', error);
+            console.error('❌ AI 분석 실패:', error);
             this.showAnalysisError(error.message);
         } finally {
             if (runBtn) {
-                runBtn.innerHTML = '<i class="fas fa-play"></i> 遺꾩꽍 ?ㅽ뻾';
+                runBtn.innerHTML = '<i class="fas fa-play"></i> 분석 실행';
                 runBtn.disabled = false;
             }
         }
     },
 
-    // ?뵇 ?먮룞 ?몄궗?댄듃 ?앹꽦
+    // 🔍 자동 인사이트 생성
     async generateInsights(data) {
-        console.log('?뵇 ?몄궗?댄듃 ?앹꽦 以?..');
+        console.log('🔍 인사이트 생성 중...');
         
         const insights = [];
         const stats = this.calculateBasicStats(data);
 
-        // 1. 梨꾩슜 ?⑥쑉??遺꾩꽍
+        // 1. 채용 효율성 분석
         const sourceAnalysis = this.analyzeSourceEfficiency(data);
         if (sourceAnalysis.bestSource) {
             insights.push({
                 type: 'efficiency',
-                title: `媛???⑥쑉?곸씤 梨꾩슜 寃쎈줈: ${sourceAnalysis.bestSource.name}`,
-                description: `${sourceAnalysis.bestSource.name}???듯븳 吏?먯옄?ㅼ쓽 理쒖쥌 ?⑷꺽瑜좎씠 ${sourceAnalysis.bestSource.successRate}%濡?媛???믪뒿?덈떎.`,
+                title: `가장 효율적인 채용 경로: ${sourceAnalysis.bestSource.name}`,
+                description: `${sourceAnalysis.bestSource.name}을 통한 지원자들의 최종 합격률이 ${sourceAnalysis.bestSource.successRate}%로 가장 높습니다.`,
                 priority: 'high',
                 actionable: true,
-                recommendation: `${sourceAnalysis.bestSource.name} 梨꾨꼸????留롮? 由ъ냼?ㅻ? ?ъ옄?섎뒗 寃껋쓣 怨좊젮?대낫?몄슂.`
+                recommendation: `${sourceAnalysis.bestSource.name} 채널에 더 많은 리소스를 투자하는 것을 고려해보세요.`
             });
         }
 
-        // 2. ?쒓컙?蹂??⑦꽩 遺꾩꽍
+        // 2. 시간대별 패턴 분석
         const timePattern = this.analyzeTimePatterns(data);
         if (timePattern.peakMonth) {
             insights.push({
                 type: 'pattern',
-                title: `理쒕? 吏???쒓린: ${timePattern.peakMonth}`,
-                description: `${timePattern.peakMonth}???꾩껜 吏?먯옄??${timePattern.peakPercentage}%媛 吏묒쨷?섏뼱 ?덉뒿?덈떎.`,
+                title: `최대 지원 시기: ${timePattern.peakMonth}`,
+                description: `${timePattern.peakMonth}에 전체 지원자의 ${timePattern.peakPercentage}%가 집중되어 있습니다.`,
                 priority: 'medium',
                 actionable: true,
-                recommendation: '?쇳겕 ?쒖쫵??留욎떠 梨꾩슜 ?꾨줈?몄뒪? ?몃젰 諛곗튂瑜??ъ쟾??以鍮꾪븯?몄슂.'
+                recommendation: '피크 시즌에 맞춰 채용 프로세스와 인력 배치를 사전에 준비하세요.'
             });
         }
 
-        // 3. ?꾪솚??遺꾩꽍
+        // 3. 전환율 분석
         if (stats.conversionRate < 20) {
             insights.push({
                 type: 'performance',
-                title: '?꾪솚??媛쒖꽑 ?꾩슂',
-                description: `?꾩옱 ?꾪솚??${stats.conversionRate}%???낃퀎 ?됯퇏??25-30% ?鍮???? ?섏??낅땲??`,
+                title: '전환율 개선 필요',
+                description: `현재 전환율 ${stats.conversionRate}%는 업계 평균인 25-30% 대비 낮은 수준입니다.`,
                 priority: 'high',
                 actionable: true,
-                recommendation: '硫댁젒 ?꾨줈?몄뒪 媛쒖꽑?대굹 梨꾩슜 湲곗? ?ш??좊? ?듯빐 ?꾪솚?⑥쓣 ?믪뿬蹂댁꽭??'
+                recommendation: '면접 프로세스 개선이나 채용 기준 재검토를 통해 전환율을 높여보세요.'
             });
         }
 
-        // 4. 硫댁젒愿 ?깃낵 遺꾩꽍
+        // 4. 면접관 성과 분석
         const interviewerAnalysis = this.analyzeInterviewerPerformance(data);
         if (interviewerAnalysis.topPerformer) {
             insights.push({
                 type: 'performance',
-                title: `?곗닔 硫댁젒愿: ${interviewerAnalysis.topPerformer.name}`,
-                description: `${interviewerAnalysis.topPerformer.name} 硫댁젒愿???⑷꺽瑜좎씠 ${interviewerAnalysis.topPerformer.successRate}%濡?媛???믪뒿?덈떎.`,
+                title: `우수 면접관: ${interviewerAnalysis.topPerformer.name}`,
+                description: `${interviewerAnalysis.topPerformer.name} 면접관의 합격률이 ${interviewerAnalysis.topPerformer.successRate}%로 가장 높습니다.`,
                 priority: 'medium',
                 actionable: true,
-                recommendation: '?곗닔 硫댁젒愿??硫댁젒 諛⑹떇???ㅻⅨ 硫댁젒愿?ㅺ낵 怨듭쑀?섏뿬 ?꾩껜?곸씤 硫댁젒 ?덉쭏???μ긽?쒗궎?몄슂.'
+                recommendation: '우수 면접관의 면접 방식을 다른 면접관들과 공유하여 전체적인 면접 품질을 향상시키세요.'
             });
         }
 
         return insights;
     },
 
-    // ?뱤 異붿쿇 ?쒖뒪??
+    // 📊 추천 시스템
     async generateRecommendations(data) {
-        console.log('?뱤 異붿쿇?ы빆 ?앹꽦 以?..');
+        console.log('📊 추천사항 생성 중...');
         
         const recommendations = [];
 
-        // 1. 梨꾩슜 寃쎈줈 理쒖쟻??異붿쿇
+        // 1. 채용 경로 최적화 추천
         const sourceOptimization = this.recommendSourceOptimization(data);
         recommendations.push(...sourceOptimization);
 
-        // 2. 硫댁젒 ?꾨줈?몄뒪 媛쒖꽑 異붿쿇
+        // 2. 면접 프로세스 개선 추천
         const processOptimization = this.recommendProcessOptimization(data);
         recommendations.push(...processOptimization);
 
-        // 3. ?쒓린蹂??꾨왂 異붿쿇
+        // 3. 시기별 전략 추천
         const timingStrategy = this.recommendTimingStrategy(data);
         recommendations.push(...timingStrategy);
 
         return recommendations;
     },
 
-    // ?뵰 ?덉륫 遺꾩꽍
+    // 🔮 예측 분석
     async generatePredictions(data) {
-        console.log('?뵰 ?덉륫 遺꾩꽍 以?..');
+        console.log('🔮 예측 분석 중...');
         
         const predictions = {};
 
-        // 1. ?ㅼ쓬 ??吏?먯옄 ???덉륫
+        // 1. 다음 달 지원자 수 예측
         predictions.nextMonthApplicants = this.predictNextMonthApplicants(data);
 
-        // 2. 怨꾩젅???⑦꽩 ?덉륫
+        // 2. 계절성 패턴 예측
         predictions.seasonalPattern = this.predictSeasonalPatterns(data);
 
-        // 3. ?깃낵 ?덉륫
+        // 3. 성과 예측
         predictions.performanceForecast = this.predictPerformanceTrends(data);
 
         return predictions;
     },
 
-    // ?좑툘 ?댁긽 ?⑦꽩 媛먯?
+    // ⚠️ 이상 패턴 감지
     async detectAnomalies(data) {
-        console.log('?좑툘 ?댁긽 ?⑦꽩 媛먯? 以?..');
+        console.log('⚠️ 이상 패턴 감지 중...');
         
         const anomalies = [];
 
-        // 1. 湲됯꺽??吏?먯옄 ??蹂??媛먯?
+        // 1. 급격한 지원자 수 변화 감지
         const volumeAnomalies = this.detectVolumeAnomalies(data);
         anomalies.push(...volumeAnomalies);
 
-        // 2. ?꾪솚??湲됰? 媛먯?
+        // 2. 전환율 급변 감지
         const conversionAnomalies = this.detectConversionAnomalies(data);
         anomalies.push(...conversionAnomalies);
 
-        // 3. ?뱀젙 寃쎈줈??鍮꾩젙?곸쟻 ?⑦꽩 媛먯?
+        // 3. 특정 경로의 비정상적 패턴 감지
         const sourceAnomalies = this.detectSourceAnomalies(data);
         anomalies.push(...sourceAnomalies);
 
         return anomalies;
     },
-    // ?뵇 梨꾩슜 寃쎈줈 ?⑥쑉??遺꾩꽍
+    // 🔍 채용 경로 효율성 분석
     analyzeSourceEfficiency(data) {
         const sourceStats = {};
         
         data.forEach(item => {
-            const source = item['吏?먮（??] || '湲고?';
-            const isFinalPass = item['理쒖쥌寃곌낵']?.includes('?⑷꺽') || item['吏꾪뻾?곹솴']?.includes('?낃낵');
+            const source = item['지원루트'] || '기타';
+            const isFinalPass = item['최종결과']?.includes('합격') || item['진행상황']?.includes('입과');
             
             if (!sourceStats[source]) {
                 sourceStats[source] = { total: 0, success: 0 };
@@ -2777,7 +2777,7 @@ export const ReportModule = {
         let bestRate = 0;
 
         Object.entries(sourceStats).forEach(([source, stats]) => {
-            if (stats.total >= 5) { // 理쒖냼 5紐??댁긽???섑뵆
+            if (stats.total >= 5) { // 최소 5명 이상의 샘플
                 const successRate = Math.round((stats.success / stats.total) * 100);
                 if (successRate > bestRate) {
                     bestRate = successRate;
@@ -2794,16 +2794,16 @@ export const ReportModule = {
         return { bestSource, sourceStats };
     },
 
-    // ?뱟 ?쒓컙 ?⑦꽩 遺꾩꽍
+    // 📅 시간 패턴 분석
     analyzeTimePatterns(data) {
         const monthStats = {};
         
         data.forEach(item => {
-            const dateStr = item['吏?먯씪??] || item['?깅줉??];
+            const dateStr = item['지원일자'] || item['등록일'];
             if (dateStr) {
                 const date = new Date(dateStr);
                 const month = date.getMonth() + 1;
-                const monthName = `${month}??;
+                const monthName = `${month}월`;
                 
                 monthStats[monthName] = (monthStats[monthName] || 0) + 1;
             }
@@ -2831,13 +2831,13 @@ export const ReportModule = {
         };
     },
 
-    // ?뫅?랅윊?硫댁젒愿 ?깃낵 遺꾩꽍
+    // 👨‍💼 면접관 성과 분석
     analyzeInterviewerPerformance(data) {
         const interviewerStats = {};
         
         data.forEach(item => {
-            const interviewer = item['硫댁젒愿'] || '誘몄???;
-            const isFinalPass = item['理쒖쥌寃곌낵']?.includes('?⑷꺽') || item['吏꾪뻾?곹솴']?.includes('?낃낵');
+            const interviewer = item['면접관'] || '미지정';
+            const isFinalPass = item['최종결과']?.includes('합격') || item['진행상황']?.includes('입과');
             
             if (!interviewerStats[interviewer]) {
                 interviewerStats[interviewer] = { total: 0, success: 0 };
@@ -2853,7 +2853,7 @@ export const ReportModule = {
         let bestRate = 0;
 
         Object.entries(interviewerStats).forEach(([interviewer, stats]) => {
-            if (stats.total >= 3 && interviewer !== '誘몄???) {
+            if (stats.total >= 3 && interviewer !== '미지정') {
                 const successRate = Math.round((stats.success / stats.total) * 100);
                 if (successRate > bestRate) {
                     bestRate = successRate;
@@ -2870,12 +2870,12 @@ export const ReportModule = {
         return { topPerformer, interviewerStats };
     },
 
-    // ?렞 梨꾩슜 寃쎈줈 理쒖쟻??異붿쿇
+    // 🎯 채용 경로 최적화 추천
     recommendSourceOptimization(data) {
         const recommendations = [];
         const { sourceStats } = this.analyzeSourceEfficiency(data);
         
-        // ?깃낵媛 ??? 梨꾩슜 寃쎈줈 ?앸퀎
+        // 성과가 낮은 채용 경로 식별
         const lowPerformingSources = Object.entries(sourceStats)
             .filter(([source, stats]) => stats.total >= 5)
             .map(([source, stats]) => ({
@@ -2890,16 +2890,16 @@ export const ReportModule = {
             const worstSource = lowPerformingSources[0];
             recommendations.push({
                 type: 'optimization',
-                category: '梨꾩슜 寃쎈줈',
-                title: `${worstSource.source} 梨꾨꼸 媛쒖꽑 ?꾩슂`,
-                description: `${worstSource.source}???깃났瑜좎씠 ${worstSource.successRate}%濡???뒿?덈떎.`,
+                category: '채용 경로',
+                title: `${worstSource.source} 채널 개선 필요`,
+                description: `${worstSource.source}의 성공률이 ${worstSource.successRate}%로 낮습니다.`,
                 priority: 'high',
                 impact: 'medium',
                 effort: 'low',
                 actions: [
-                    '梨꾩슜 怨듦퀬 ?댁슜 媛쒖꽑',
-                    '?寃?吏?먯옄痢??ъ젙??,
-                    '?ㅽ겕由щ떇 ?꾨줈?몄뒪 媛뺥솕'
+                    '채용 공고 내용 개선',
+                    '타겟 지원자층 재정의',
+                    '스크리닝 프로세스 강화'
                 ]
             });
         }
@@ -2907,26 +2907,26 @@ export const ReportModule = {
         return recommendations;
     },
 
-    // ?숋툘 ?꾨줈?몄뒪 理쒖쟻??異붿쿇
+    // ⚙️ 프로세스 최적화 추천
     recommendProcessOptimization(data) {
         const recommendations = [];
         const stats = this.calculateBasicStats(data);
         
-        // ?꾩껜 ?꾪솚?⑥씠 ??? 寃쎌슦
+        // 전체 전환율이 낮은 경우
         if (stats.conversionRate < 20) {
             recommendations.push({
                 type: 'process',
-                category: '硫댁젒 ?꾨줈?몄뒪',
-                title: '硫댁젒 ?꾨줈?몄뒪 理쒖쟻??,
-                description: `?꾩옱 ?꾪솚??${stats.conversionRate}%瑜?媛쒖꽑???꾩슂?⑸땲??`,
+                category: '면접 프로세스',
+                title: '면접 프로세스 최적화',
+                description: `현재 전환율 ${stats.conversionRate}%를 개선이 필요합니다.`,
                 priority: 'high',
                 impact: 'high',
                 effort: 'medium',
                 actions: [
-                    '硫댁젒 吏덈Ц ?쒖???,
-                    '?됯? 湲곗? 紐낇솗??,
-                    '硫댁젒愿 援먯쑁 媛뺥솕',
-                    '?쇰뱶諛??꾨줈?몄뒪 媛쒖꽑'
+                    '면접 질문 표준화',
+                    '평가 기준 명확화',
+                    '면접관 교육 강화',
+                    '피드백 프로세스 개선'
                 ]
             });
         }
@@ -2934,7 +2934,7 @@ export const ReportModule = {
         return recommendations;
     },
 
-    // ?뱟 ?쒓린蹂??꾨왂 異붿쿇
+    // 📅 시기별 전략 추천
     recommendTimingStrategy(data) {
         const recommendations = [];
         const { peakMonth, monthStats } = this.analyzeTimePatterns(data);
@@ -2945,16 +2945,16 @@ export const ReportModule = {
             
             recommendations.push({
                 type: 'strategy',
-                category: '?쒓린蹂??꾨왂',
-                title: `${peakMonth} ?쇳겕 ?쒖쫵 ?鍮?媛뺥솕`,
-                description: `${peakMonth}??吏?먯옄媛 吏묒쨷?섎?濡??ъ쟾 以鍮꾧? ?꾩슂?⑸땲??`,
+                category: '시기별 전략',
+                title: `${peakMonth} 피크 시즌 대비 강화`,
+                description: `${peakMonth}에 지원자가 집중되므로 사전 준비가 필요합니다.`,
                 priority: 'medium',
                 impact: 'medium',
                 effort: 'low',
                 actions: [
-                    '?쇳겕 ?쒖쫵 ??硫댁젒愿 異붽? 諛곗젙',
-                    '梨꾩슜 ?꾨줈?몄뒪 媛꾩냼??寃??,
-                    '?먮룞???꾧뎄 ?쒖슜 利앸?'
+                    '피크 시즌 전 면접관 추가 배정',
+                    '채용 프로세스 간소화 검토',
+                    '자동화 도구 활용 증대'
                 ]
             });
         }
@@ -2962,7 +2962,7 @@ export const ReportModule = {
         return recommendations;
     },
 
-    // ?뱢 ?ㅼ쓬 ??吏?먯옄 ???덉륫
+    // 📈 다음 달 지원자 수 예측
     predictNextMonthApplicants(data) {
         const monthlyData = this.getMonthlyData(data);
         
@@ -2970,15 +2970,15 @@ export const ReportModule = {
             return {
                 prediction: null,
                 confidence: 'low',
-                message: '?덉륫???꾪븳 異⑸텇???곗씠?곌? ?놁뒿?덈떎.'
+                message: '예측을 위한 충분한 데이터가 없습니다.'
             };
         }
 
-        // ?⑥닚 ?대룞?됯퇏 ?덉륫 (理쒓렐 3媛쒖썡)
+        // 단순 이동평균 예측 (최근 3개월)
         const recent3Months = monthlyData.slice(-3);
         const average = recent3Months.reduce((sum, count) => sum + count, 0) / 3;
         
-        // ?몃젋??遺꾩꽍
+        // 트렌드 분석
         const trend = this.calculateTrend(recent3Months);
         const prediction = Math.round(average + trend);
 
@@ -2990,47 +2990,47 @@ export const ReportModule = {
         };
     },
 
-    // ?뙇 怨꾩젅???⑦꽩 ?덉륫
+    // 🌍 계절성 패턴 예측
     predictSeasonalPatterns(data) {
         const { monthStats } = this.analyzeTimePatterns(data);
         
-        // 怨꾩젅蹂?洹몃９??
+        // 계절별 그룹화
         const seasons = {
-            '遊?(3-5??': [3, 4, 5],
-            '?щ쫫 (6-8??': [6, 7, 8],
-            '媛??(9-11??': [9, 10, 11],
-            '寃⑥슱 (12-2??': [12, 1, 2]
+            '봄 (3-5월)': [3, 4, 5],
+            '여름 (6-8월)': [6, 7, 8],
+            '가을 (9-11월)': [9, 10, 11],
+            '겨울 (12-2월)': [12, 1, 2]
         };
 
         const seasonalPattern = {};
         
         Object.entries(seasons).forEach(([seasonName, months]) => {
             const seasonTotal = months.reduce((sum, month) => {
-                const monthKey = `${month}??;
+                const monthKey = `${month}월`;
                 return sum + (monthStats[monthKey] || 0);
             }, 0);
             seasonalPattern[seasonName] = seasonTotal;
         });
 
-        // 媛???쒕컻??怨꾩젅 李얘린
+        // 가장 활발한 계절 찾기
         const mostActiveSeasonEntry = Object.entries(seasonalPattern)
             .sort((a, b) => b[1] - a[1])[0];
 
         return {
             pattern: seasonalPattern,
             mostActiveSeason: mostActiveSeasonEntry ? mostActiveSeasonEntry[0] : null,
-            recommendation: `${mostActiveSeasonEntry?.[0] || '?뱀젙 怨꾩젅'}??梨꾩슜 ?쒕룞??吏묒쨷?섎뒗 寃껋씠 ?④낵?곸엯?덈떎.`
+            recommendation: `${mostActiveSeasonEntry?.[0] || '특정 계절'}에 채용 활동을 집중하는 것이 효과적입니다.`
         };
     },
 
-    // ?뱤 ?깃낵 ?덉륫
+    // 📊 성과 예측
     predictPerformanceTrends(data) {
         const monthlyStats = this.getMonthlyPerformanceData(data);
         
         if (monthlyStats.length < 2) {
             return {
                 trend: 'insufficient_data',
-                message: '?몃젋??遺꾩꽍???꾪븳 異⑸텇???곗씠?곌? ?놁뒿?덈떎.'
+                message: '트렌드 분석을 위한 충분한 데이터가 없습니다.'
             };
         }
 
@@ -3039,11 +3039,11 @@ export const ReportModule = {
         return {
             trend: recentTrend > 5 ? 'improving' : recentTrend < -5 ? 'declining' : 'stable',
             trendValue: recentTrend,
-            prediction: `?ν썑 ?깃낵媛 ${recentTrend > 0 ? '媛쒖꽑' : recentTrend < 0 ? '?낇솕' : '?좎?'}??寃껋쑝濡??덉긽?⑸땲??`
+            prediction: `향후 성과가 ${recentTrend > 0 ? '개선' : recentTrend < 0 ? '악화' : '유지'}될 것으로 예상됩니다.`
         };
     },
 
-    // ?좑툘 蹂쇰ⅷ ?댁긽 媛먯?
+    // ⚠️ 볼륨 이상 감지
     detectVolumeAnomalies(data) {
         const anomalies = [];
         const monthlyData = this.getMonthlyData(data);
@@ -3051,7 +3051,7 @@ export const ReportModule = {
         if (monthlyData.length < 3) return anomalies;
 
         const average = monthlyData.reduce((sum, count) => sum + count, 0) / monthlyData.length;
-        const threshold = average * 0.5; // ?됯퇏??50% ?댄븯硫??댁긽
+        const threshold = average * 0.5; // 평균의 50% 이하면 이상
 
         const recentMonth = monthlyData[monthlyData.length - 1];
         
@@ -3059,19 +3059,19 @@ export const ReportModule = {
             anomalies.push({
                 type: 'volume_drop',
                 severity: 'high',
-                title: '吏?먯옄 ??湲됯컧 媛먯?',
-                description: `理쒓렐 吏?먯옄 ?섍? ?됯퇏 ?鍮?${Math.round((1 - recentMonth/average) * 100)}% 媛먯냼?덉뒿?덈떎.`,
-                recommendation: '梨꾩슜 怨듦퀬 ?뺤궛?대굹 留덉???媛뺥솕瑜?怨좊젮?대낫?몄슂.'
+                title: '지원자 수 급감 감지',
+                description: `최근 지원자 수가 평균 대비 ${Math.round((1 - recentMonth/average) * 100)}% 감소했습니다.`,
+                recommendation: '채용 공고 확산이나 마케팅 강화를 고려해보세요.'
             });
         }
 
         return anomalies;
     },
 
-    // ?뱣 ?꾪솚???댁긽 媛먯?
+    // 📉 전환율 이상 감지
     detectConversionAnomalies(data) {
         const anomalies = [];
-        const recentData = data.slice(-50); // 理쒓렐 50紐??곗씠??
+        const recentData = data.slice(-50); // 최근 50명 데이터
         
         if (recentData.length < 20) return anomalies;
 
@@ -3084,16 +3084,16 @@ export const ReportModule = {
             anomalies.push({
                 type: 'conversion_drop',
                 severity: 'medium',
-                title: '理쒓렐 ?꾪솚???섎씫 媛먯?',
-                description: `理쒓렐 ?꾪솚?⑥씠 ?꾩껜 ?됯퇏 ?鍮?${Math.round(conversionDrop)}%p ?섎씫?덉뒿?덈떎.`,
-                recommendation: '硫댁젒 ?꾨줈?몄뒪???됯? 湲곗????ш??좏빐蹂댁꽭??'
+                title: '최근 전환율 하락 감지',
+                description: `최근 전환율이 전체 평균 대비 ${Math.round(conversionDrop)}%p 하락했습니다.`,
+                recommendation: '면접 프로세스나 평가 기준을 재검토해보세요.'
             });
         }
 
         return anomalies;
     },
 
-    // ?뵇 ?뱀젙 寃쎈줈 ?댁긽 媛먯?
+    // 🔍 특정 경로 이상 감지
     detectSourceAnomalies(data) {
         const anomalies = [];
         const { sourceStats } = this.analyzeSourceEfficiency(data);
@@ -3103,9 +3103,9 @@ export const ReportModule = {
                 anomalies.push({
                     type: 'source_failure',
                     severity: 'high',
-                    title: `${source} 梨꾨꼸 ?깃낵 ?댁긽`,
-                    description: `${source}???듯븳 吏?먯옄 ${stats.total}紐?以??⑷꺽?먭? 0紐낆엯?덈떎.`,
-                    recommendation: `${source} 梨꾨꼸???寃잜똿?대굹 ?ㅽ겕由щ떇 ?꾨줈?몄뒪瑜??먭??대낫?몄슂.`
+                    title: `${source} 채널 성과 이상`,
+                    description: `${source}을 통한 지원자 ${stats.total}명 중 합격자가 0명입니다.`,
+                    recommendation: `${source} 채널의 타겟팅이나 스크리닝 프로세스를 점검해보세요.`
                 });
             }
         });
@@ -3113,12 +3113,12 @@ export const ReportModule = {
         return anomalies;
     },
 
-    // ?뵩 ?ы띁 ?⑥닔??
+    // 🔧 헬퍼 함수들
     getMonthlyData(data) {
         const monthCounts = {};
         
         data.forEach(item => {
-            const dateStr = item['吏?먯씪??] || item['?깅줉??];
+            const dateStr = item['지원일자'] || item['등록일'];
             if (dateStr) {
                 const date = new Date(dateStr);
                 const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -3133,7 +3133,7 @@ export const ReportModule = {
         const monthlyPerf = {};
         
         data.forEach(item => {
-            const dateStr = item['吏?먯씪??] || item['?깅줉??];
+            const dateStr = item['지원일자'] || item['등록일'];
             if (dateStr) {
                 const date = new Date(dateStr);
                 const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
@@ -3143,7 +3143,7 @@ export const ReportModule = {
                 }
                 
                 monthlyPerf[monthKey].total++;
-                if (item['理쒖쥌寃곌낵']?.includes('?⑷꺽') || item['吏꾪뻾?곹솴']?.includes('?낃낵')) {
+                if (item['최종결과']?.includes('합격') || item['진행상황']?.includes('입과')) {
                     monthlyPerf[monthKey].success++;
                 }
             }
@@ -3165,7 +3165,7 @@ export const ReportModule = {
         const recent = performanceData.slice(-2);
         return recent[1] - recent[0];
     },
-    // ?뱤 遺꾩꽍 寃곌낵 ?뚮뜑留?
+    // 📊 분석 결과 렌더링
     renderAnalysisResults(results) {
         const resultsContainer = document.getElementById('aiAnalysisResults');
         if (!resultsContainer) return;
@@ -3173,10 +3173,10 @@ export const ReportModule = {
         resultsContainer.innerHTML = `
             <div class="analysis-results-content">
                 <div class="results-header">
-                    <h4><i class="fas fa-chart-line"></i> 遺꾩꽍 寃곌낵</h4>
+                    <h4><i class="fas fa-chart-line"></i> 분석 결과</h4>
                     <div class="results-meta">
-                        <span>遺꾩꽍 ?꾨즺: ${new Date().toLocaleString('ko-KR')}</span>
-                        <span>?곗씠?? ${this.aiAnalysis.dataCount}嫄?/span>
+                        <span>분석 완료: ${new Date().toLocaleString('ko-KR')}</span>
+                        <span>데이터: ${this.aiAnalysis.dataCount}건</span>
                     </div>
                 </div>
 
@@ -3188,20 +3188,20 @@ export const ReportModule = {
         `;
     },
 
-    // ?뮕 ?몄궗?댄듃 ?뱀뀡 ?뚮뜑留?
+    // 💡 인사이트 섹션 렌더링
     renderInsightsSection(insights) {
         if (!insights || insights.length === 0) {
             return `
                 <div class="results-section">
-                    <h5><i class="fas fa-lightbulb"></i> ?먮룞 ?몄궗?댄듃</h5>
-                    <div class="no-results">諛쒓껄???밸퀎???⑦꽩???놁뒿?덈떎.</div>
+                    <h5><i class="fas fa-lightbulb"></i> 자동 인사이트</h5>
+                    <div class="no-results">발견된 특별한 패턴이 없습니다.</div>
                 </div>
             `;
         }
 
         return `
             <div class="results-section">
-                <h5><i class="fas fa-lightbulb"></i> ?먮룞 ?몄궗?댄듃 (${insights.length}媛?</h5>
+                <h5><i class="fas fa-lightbulb"></i> 자동 인사이트 (${insights.length}개)</h5>
                 <div class="insights-grid">
                     ${insights.map(insight => `
                         <div class="insight-card priority-${insight.priority}">
@@ -3224,34 +3224,34 @@ export const ReportModule = {
         `;
     },
 
-    // ?렞 異붿쿇?ы빆 ?뱀뀡 ?뚮뜑留?
+    // 🎯 추천사항 섹션 렌더링
     renderRecommendationsSection(recommendations) {
         if (!recommendations || recommendations.length === 0) {
             return `
                 <div class="results-section">
-                    <h5><i class="fas fa-bullseye"></i> 異붿쿇?ы빆</h5>
-                    <div class="no-results">?꾩옱 ?곹솴?먯꽌???밸퀎??媛쒖꽑 異붿쿇?ы빆???놁뒿?덈떎.</div>
+                    <h5><i class="fas fa-bullseye"></i> 추천사항</h5>
+                    <div class="no-results">현재 상황에서는 특별한 개선 추천사항이 없습니다.</div>
                 </div>
             `;
         }
 
         return `
             <div class="results-section">
-                <h5><i class="fas fa-bullseye"></i> 異붿쿇?ы빆 (${recommendations.length}媛?</h5>
+                <h5><i class="fas fa-bullseye"></i> 추천사항 (${recommendations.length}개)</h5>
                 <div class="recommendations-list">
                     ${recommendations.map(rec => `
                         <div class="recommendation-card">
                             <div class="rec-header">
                                 <div class="rec-category">${rec.category}</div>
                                 <div class="rec-metrics">
-                                    <span class="metric impact-${rec.impact}">?곹뼢?? ${this.getMetricText(rec.impact)}</span>
-                                    <span class="metric effort-${rec.effort}">?몃젰?? ${this.getMetricText(rec.effort)}</span>
+                                    <span class="metric impact-${rec.impact}">영향도: ${this.getMetricText(rec.impact)}</span>
+                                    <span class="metric effort-${rec.effort}">노력도: ${this.getMetricText(rec.effort)}</span>
                                 </div>
                             </div>
                             <h6>${rec.title}</h6>
                             <p>${rec.description}</p>
                             <div class="rec-actions">
-                                <h6>?ㅽ뻾 諛⑹븞:</h6>
+                                <h6>실행 방안:</h6>
                                 <ul>
                                     ${rec.actions.map(action => `<li>${action}</li>`).join('')}
                                 </ul>
@@ -3263,20 +3263,20 @@ export const ReportModule = {
         `;
     },
 
-    // ?뵰 ?덉륫 ?뱀뀡 ?뚮뜑留?
+    // 🔮 예측 섹션 렌더링
     renderPredictionsSection(predictions) {
         if (!predictions || Object.keys(predictions).length === 0) {
             return `
                 <div class="results-section">
-                    <h5><i class="fas fa-crystal-ball"></i> ?덉륫 遺꾩꽍</h5>
-                    <div class="no-results">?덉륫???꾪븳 異⑸텇???곗씠?곌? ?놁뒿?덈떎.</div>
+                    <h5><i class="fas fa-crystal-ball"></i> 예측 분석</h5>
+                    <div class="no-results">예측을 위한 충분한 데이터가 없습니다.</div>
                 </div>
             `;
         }
 
         return `
             <div class="results-section">
-                <h5><i class="fas fa-crystal-ball"></i> ?덉륫 遺꾩꽍</h5>
+                <h5><i class="fas fa-crystal-ball"></i> 예측 분석</h5>
                 <div class="predictions-grid">
                     ${predictions.nextMonthApplicants ? `
                         <div class="prediction-card">
@@ -3284,14 +3284,14 @@ export const ReportModule = {
                                 <i class="fas fa-users"></i>
                             </div>
                             <div class="pred-content">
-                                <h6>?ㅼ쓬 ???덉긽 吏?먯옄</h6>
-                                <div class="pred-value">${predictions.nextMonthApplicants.prediction || 'N/A'}紐?/div>
+                                <h6>다음 달 예상 지원자</h6>
+                                <div class="pred-value">${predictions.nextMonthApplicants.prediction || 'N/A'}명</div>
                                 <div class="pred-confidence confidence-${predictions.nextMonthApplicants.confidence}">
-                                    ?좊ː?? ${this.getConfidenceText(predictions.nextMonthApplicants.confidence)}
+                                    신뢰도: ${this.getConfidenceText(predictions.nextMonthApplicants.confidence)}
                                 </div>
                                 ${predictions.nextMonthApplicants.trend ? `
                                     <div class="pred-trend trend-${predictions.nextMonthApplicants.trend}">
-                                        ?몃젋?? ${this.getTrendText(predictions.nextMonthApplicants.trend)}
+                                        트렌드: ${this.getTrendText(predictions.nextMonthApplicants.trend)}
                                     </div>
                                 ` : ''}
                             </div>
@@ -3304,7 +3304,7 @@ export const ReportModule = {
                                 <i class="fas fa-calendar-alt"></i>
                             </div>
                             <div class="pred-content">
-                                <h6>怨꾩젅???⑦꽩</h6>
+                                <h6>계절성 패턴</h6>
                                 <div class="pred-value">${predictions.seasonalPattern.mostActiveSeason || 'N/A'}</div>
                                 <div class="pred-desc">${predictions.seasonalPattern.recommendation}</div>
                             </div>
@@ -3317,7 +3317,7 @@ export const ReportModule = {
                                 <i class="fas fa-chart-line"></i>
                             </div>
                             <div class="pred-content">
-                                <h6>?깃낵 ?꾨쭩</h6>
+                                <h6>성과 전망</h6>
                                 <div class="pred-value trend-${predictions.performanceForecast.trend}">
                                     ${this.getTrendText(predictions.performanceForecast.trend)}
                                 </div>
@@ -3330,20 +3330,20 @@ export const ReportModule = {
         `;
     },
 
-    // ?좑툘 ?댁긽 ?⑦꽩 ?뱀뀡 ?뚮뜑留?
+    // ⚠️ 이상 패턴 섹션 렌더링
     renderAnomaliesSection(anomalies) {
         if (!anomalies || anomalies.length === 0) {
             return `
                 <div class="results-section">
-                    <h5><i class="fas fa-shield-alt"></i> ?댁긽 ?⑦꽩 媛먯?</h5>
-                    <div class="no-results success">媛먯????댁긽 ?⑦꽩???놁뒿?덈떎. ?덉젙?곸씤 ?곹깭?낅땲??</div>
+                    <h5><i class="fas fa-shield-alt"></i> 이상 패턴 감지</h5>
+                    <div class="no-results success">감지된 이상 패턴이 없습니다. 안정적인 상태입니다.</div>
                 </div>
             `;
         }
 
         return `
             <div class="results-section">
-                <h5><i class="fas fa-exclamation-triangle"></i> ?댁긽 ?⑦꽩 媛먯? (${anomalies.length}媛?</h5>
+                <h5><i class="fas fa-exclamation-triangle"></i> 이상 패턴 감지 (${anomalies.length}개)</h5>
                 <div class="anomalies-list">
                     ${anomalies.map(anomaly => `
                         <div class="anomaly-card severity-${anomaly.severity}">
@@ -3366,7 +3366,7 @@ export const ReportModule = {
         `;
     },
 
-    // ?뱢 遺꾩꽍 吏꾪뻾 ?곹솴 ?쒖떆
+    // 📈 분석 진행 상황 표시
     showAnalysisProgress() {
         const resultsContainer = document.getElementById('aiAnalysisResults');
         if (!resultsContainer) return;
@@ -3374,24 +3374,24 @@ export const ReportModule = {
         resultsContainer.innerHTML = `
             <div class="analysis-progress">
                 <div class="progress-header">
-                    <h4><i class="fas fa-cog fa-spin"></i> AI 遺꾩꽍 吏꾪뻾 以?..</h4>
+                    <h4><i class="fas fa-cog fa-spin"></i> AI 분석 진행 중...</h4>
                 </div>
                 <div class="progress-steps">
                     <div class="progress-step active">
                         <i class="fas fa-database"></i>
-                        <span>?곗씠???섏쭛</span>
+                        <span>데이터 수집</span>
                     </div>
                     <div class="progress-step active">
                         <i class="fas fa-search"></i>
-                        <span>?⑦꽩 遺꾩꽍</span>
+                        <span>패턴 분석</span>
                     </div>
                     <div class="progress-step active">
                         <i class="fas fa-lightbulb"></i>
-                        <span>?몄궗?댄듃 ?앹꽦</span>
+                        <span>인사이트 생성</span>
                     </div>
                     <div class="progress-step active">
                         <i class="fas fa-chart-line"></i>
-                        <span>?덉륫 紐⑤뜽留?/span>
+                        <span>예측 모델링</span>
                     </div>
                 </div>
                 <div class="progress-bar">
@@ -3401,7 +3401,7 @@ export const ReportModule = {
         `;
     },
 
-    // ??遺꾩꽍 ?ㅻ쪟 ?쒖떆
+    // ❌ 분석 오류 표시
     showAnalysisError(errorMessage) {
         const resultsContainer = document.getElementById('aiAnalysisResults');
         if (!resultsContainer) return;
@@ -3411,16 +3411,16 @@ export const ReportModule = {
                 <div class="error-icon">
                     <i class="fas fa-exclamation-circle"></i>
                 </div>
-                <h4>遺꾩꽍 以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎</h4>
+                <h4>분석 중 오류가 발생했습니다</h4>
                 <p>${errorMessage}</p>
                 <button class="btn btn-primary" onclick="App.report.runAIAnalysis()">
-                    <i class="fas fa-redo"></i> ?ㅼ떆 ?쒕룄
+                    <i class="fas fa-redo"></i> 다시 시도
                 </button>
             </div>
         `;
     },
 
-    // ?뮶 遺꾩꽍 ?덉뒪?좊━ ???
+    // 💾 분석 히스토리 저장
     saveAnalysisToHistory(results) {
         const history = JSON.parse(localStorage.getItem('aiAnalysisHistory') || '[]');
         
@@ -3434,7 +3434,7 @@ export const ReportModule = {
         
         history.unshift(historyItem);
         
-        // 理쒕? 10媛쒕쭔 ?좎?
+        // 최대 10개만 유지
         if (history.length > 10) {
             history.splice(10);
         }
@@ -3443,7 +3443,7 @@ export const ReportModule = {
         this.renderAnalysisHistory();
     },
 
-    // ?뱶 遺꾩꽍 ?덉뒪?좊━ ?뚮뜑留?
+    // 📜 분석 히스토리 렌더링
     renderAnalysisHistory() {
         const historyContainer = document.getElementById('aiAnalysisHistory');
         if (!historyContainer) return '';
@@ -3454,7 +3454,7 @@ export const ReportModule = {
             historyContainer.innerHTML = `
                 <div class="no-history">
                     <i class="fas fa-history"></i>
-                    <p>?꾩쭅 遺꾩꽍 ?덉뒪?좊━媛 ?놁뒿?덈떎.</p>
+                    <p>아직 분석 히스토리가 없습니다.</p>
                 </div>
             `;
             return;
@@ -3467,9 +3467,9 @@ export const ReportModule = {
                         <div class="history-info">
                             <div class="history-date">${new Date(item.timestamp).toLocaleString('ko-KR')}</div>
                             <div class="history-stats">
-                                ${item.dataCount}嫄??곗씠????
-                                ${item.results.insights?.length || 0}媛??몄궗?댄듃 ??
-                                ${item.results.recommendations?.length || 0}媛?異붿쿇?ы빆
+                                ${item.dataCount}건 데이터 • 
+                                ${item.results.insights?.length || 0}개 인사이트 • 
+                                ${item.results.recommendations?.length || 0}개 추천사항
                             </div>
                         </div>
                         <div class="history-actions">
@@ -3486,17 +3486,17 @@ export const ReportModule = {
         `;
     },
 
-    // ?? ?덉뒪?좊━ ?꾩씠??蹂닿린
+    // 👀 히스토리 아이템 보기
     viewAnalysisHistory(historyId) {
         const history = JSON.parse(localStorage.getItem('aiAnalysisHistory') || '[]');
         const item = history.find(h => h.id === historyId);
         
         if (!item) {
-            alert('?덉뒪?좊━ ?꾩씠?쒖쓣 李얠쓣 ???놁뒿?덈떎.');
+            alert('히스토리 아이템을 찾을 수 없습니다.');
             return;
         }
 
-        // 怨쇨굅 遺꾩꽍 寃곌낵 ?쒖떆
+        // 과거 분석 결과 표시
         this.aiAnalysis = {
             ...item.results,
             lastAnalyzedAt: item.timestamp,
@@ -3504,12 +3504,12 @@ export const ReportModule = {
         };
 
         this.renderAnalysisResults(item.results);
-        console.log('?? 怨쇨굅 遺꾩꽍 寃곌낵 蹂닿린:', item);
+        console.log('👀 과거 분석 결과 보기:', item);
     },
 
-    // ?뿊截??덉뒪?좊━ ?꾩씠????젣
+    // 🗑️ 히스토리 아이템 삭제
     deleteAnalysisHistory(historyId) {
-        if (!confirm('??遺꾩꽍 ?덉뒪?좊━瑜???젣?섏떆寃좎뒿?덇퉴?')) return;
+        if (!confirm('이 분석 히스토리를 삭제하시겠습니까?')) return;
         
         let history = JSON.parse(localStorage.getItem('aiAnalysisHistory') || '[]');
         history = history.filter(item => item.id !== historyId);
@@ -3517,13 +3517,13 @@ export const ReportModule = {
         localStorage.setItem('aiAnalysisHistory', JSON.stringify(history));
         this.renderAnalysisHistory();
         
-        console.log('?뿊截?遺꾩꽍 ?덉뒪?좊━ ??젣 ?꾨즺:', historyId);
+        console.log('🗑️ 분석 히스토리 삭제 완료:', historyId);
     },
 
-    // ?뱾 AI ?몄궗?댄듃 ?대낫?닿린
+    // 📤 AI 인사이트 내보내기
     exportAIInsights() {
         if (!this.aiAnalysis.insights && !this.aiAnalysis.recommendations) {
-            alert('?대낫??遺꾩꽍 寃곌낵媛 ?놁뒿?덈떎. 癒쇱? 遺꾩꽍???ㅽ뻾?댁＜?몄슂.');
+            alert('내보낼 분석 결과가 없습니다. 먼저 분석을 실행해주세요.');
             return;
         }
 
@@ -3543,14 +3543,14 @@ export const ReportModule = {
         
         const link = document.createElement('a');
         link.href = url;
-        link.download = `CFC_AI_?몄궗?댄듃_${new Date().toISOString().split('T')[0]}.json`;
+        link.download = `CFC_AI_인사이트_${new Date().toISOString().split('T')[0]}.json`;
         link.click();
         
         URL.revokeObjectURL(url);
-        console.log('?뱾 AI ?몄궗?댄듃 ?대낫?닿린 ?꾨즺');
+        console.log('📤 AI 인사이트 내보내기 완료');
     },
 
-    // ?뵩 ?ы띁 ?⑥닔??
+    // 🔧 헬퍼 함수들
     getInsightTypeIcon(type) {
         const icons = {
             'efficiency': '<i class="fas fa-tachometer-alt"></i>',
@@ -3562,39 +3562,39 @@ export const ReportModule = {
 
     getPriorityText(priority) {
         const texts = {
-            'high': '?믪쓬',
-            'medium': '蹂댄넻',
-            'low': '??쓬'
+            'high': '높음',
+            'medium': '보통',
+            'low': '낮음'
         };
         return texts[priority] || priority;
     },
 
     getMetricText(level) {
         const texts = {
-            'high': '?믪쓬',
-            'medium': '蹂댄넻',
-            'low': '??쓬'
+            'high': '높음',
+            'medium': '보통',
+            'low': '낮음'
         };
         return texts[level] || level;
     },
 
     getConfidenceText(confidence) {
         const texts = {
-            'high': '?믪쓬',
-            'medium': '蹂댄넻',
-            'low': '??쓬'
+            'high': '높음',
+            'medium': '보통',
+            'low': '낮음'
         };
         return texts[confidence] || confidence;
     },
 
     getTrendText(trend) {
         const texts = {
-            'increasing': '利앷?',
-            'decreasing': '媛먯냼',
-            'stable': '?덉젙',
-            'improving': '媛쒖꽑',
-            'declining': '?낇솕',
-            'insufficient_data': '?곗씠??遺議?
+            'increasing': '증가',
+            'decreasing': '감소',
+            'stable': '안정',
+            'improving': '개선',
+            'declining': '악화',
+            'insufficient_data': '데이터 부족'
         };
         return texts[trend] || trend;
     },
@@ -3610,17 +3610,17 @@ export const ReportModule = {
 
     getSeverityText(severity) {
         const texts = {
-            'high': '?믪쓬',
-            'medium': '蹂댄넻',
-            'low': '??쓬'
+            'high': '높음',
+            'medium': '보통',
+            'low': '낮음'
         };
         return texts[severity] || severity;
     },
-    // ?뱤 C) 怨좉툒 湲곕뒫 - 李⑦듃 ?명꽣?숈뀡 媛뺥솕
+    // 📊 C) 고급 기능 - 차트 인터랙션 강화
 
-    // ?뵩 李⑦듃 ?명꽣?숈뀡 ?쒖뒪??珥덇린??
+    // 🔧 차트 인터랙션 시스템 초기화
     initChartInteractionSystem() {
-        console.log('?뱤 李⑦듃 ?명꽣?숈뀡 ?쒖뒪??珥덇린??..');
+        console.log('📊 차트 인터랙션 시스템 초기화...');
         
         this.chartInteractions = {
             drillDownHistory: [],
@@ -3632,35 +3632,35 @@ export const ReportModule = {
         
         this.setupAdvancedChartFeatures();
         
-        console.log('??李⑦듃 ?명꽣?숈뀡 ?쒖뒪??珥덇린???꾨즺');
+        console.log('✅ 차트 인터랙션 시스템 초기화 완료');
     },
 
-    // ?렞 怨좉툒 李⑦듃 湲곕뒫 ?ㅼ젙
+    // 🎯 고급 차트 기능 설정
     setupAdvancedChartFeatures() {
-        // 湲곗〈 李⑦듃 ?몄뒪?댁뒪?ㅼ뿉 ?명꽣?숈뀡 異붽?
+        // 기존 차트 인스턴스들에 인터랙션 추가
         this.enhanceExistingCharts();
         
-        // ?덈줈??李⑦듃 ?앹꽦 ???먮룞?쇰줈 ?명꽣?숈뀡 異붽?
+        // 새로운 차트 생성 시 자동으로 인터랙션 추가
         this.interceptChartCreation();
     },
 
-    // ?뱢 湲곗〈 李⑦듃???μ긽
+    // 📈 기존 차트들 향상
     enhanceExistingCharts() {
-        // ?ㅼ떆媛?誘몃━蹂닿린 誘몃땲 李⑦듃 ?μ긽
+        // 실시간 미리보기 미니 차트 향상
         if (this._miniChartInstance) {
             this.addChartInteractions(this._miniChartInstance, 'mini-chart');
         }
         
-        // ?섏씠吏 ???ㅻⅨ 李⑦듃??李얠븘???μ긽
+        // 페이지 내 다른 차트들 찾아서 향상
         this.findAndEnhanceCharts();
     },
 
-    // ?뵇 ?섏씠吏 ??李⑦듃 李얘린 諛??μ긽
+    // 🔍 페이지 내 차트 찾기 및 향상
     findAndEnhanceCharts() {
         const canvasElements = document.querySelectorAll('canvas');
         
         canvasElements.forEach(canvas => {
-            // Chart.js ?몄뒪?댁뒪媛 ?덈뒗 罹붾쾭???뺤씤
+            // Chart.js 인스턴스가 있는 캔버스 확인
             if (Chart.getChart(canvas)) {
                 const chartInstance = Chart.getChart(canvas);
                 this.addChartInteractions(chartInstance, canvas.id || 'unnamed-chart');
@@ -3668,16 +3668,16 @@ export const ReportModule = {
         });
     },
 
-    // ?뱤 李⑦듃 ?앹꽦 ?명꽣?됲듃
+    // 📊 차트 생성 인터셉트
     interceptChartCreation() {
-        // Chart.js ?앹꽦???섑븨
+        // Chart.js 생성자 래핑
         const originalChart = window.Chart;
         const self = this;
         
         window.Chart = function(ctx, config) {
             const chart = new originalChart(ctx, config);
             
-            // ?덈줈 ?앹꽦??李⑦듃???명꽣?숈뀡 異붽?
+            // 새로 생성된 차트에 인터랙션 추가
             setTimeout(() => {
                 self.addChartInteractions(chart, ctx.canvas?.id || 'dynamic-chart');
             }, 100);
@@ -3685,38 +3685,38 @@ export const ReportModule = {
             return chart;
         };
         
-        // Chart.js???뺤쟻 硫붿꽌?쒕뱾 蹂듭궗
+        // Chart.js의 정적 메서드들 복사
         Object.setPrototypeOf(window.Chart, originalChart);
         Object.assign(window.Chart, originalChart);
     },
 
-    // ?렞 李⑦듃???명꽣?숈뀡 異붽?
+    // 🎯 차트에 인터랙션 추가
     addChartInteractions(chartInstance, chartId) {
         if (!chartInstance || chartInstance._interactionsAdded) return;
         
-        console.log(`?뱤 李⑦듃 ?명꽣?숈뀡 異붽?: ${chartId}`);
+        console.log(`📊 차트 인터랙션 추가: ${chartId}`);
         
-        // 1. ?쒕┫?ㅼ슫 湲곕뒫
+        // 1. 드릴다운 기능
         this.addDrillDownInteraction(chartInstance, chartId);
         
-        // 2. ?몃쾭 ?섏씠?쇱씠??
+        // 2. 호버 하이라이트
         this.addHoverHighlight(chartInstance, chartId);
         
-        // 3. ?대┃ ?좊땲硫붿씠??
+        // 3. 클릭 애니메이션
         this.addClickAnimation(chartInstance, chartId);
         
-        // 4. 而⑦뀓?ㅽ듃 硫붾돱
+        // 4. 컨텍스트 메뉴
         this.addContextMenu(chartInstance, chartId);
         
-        // 5. ?곗씠???덉씠釉??좉?
+        // 5. 데이터 레이블 토글
         this.addDataLabelToggle(chartInstance, chartId);
         
-        // ?명꽣?숈뀡 異붽? ?쒖떆
+        // 인터랙션 추가 표시
         chartInstance._interactionsAdded = true;
         chartInstance._chartId = chartId;
     },
 
-    // ?뵿 ?쒕┫?ㅼ슫 湲곕뒫 異붽?
+    // 🔽 드릴다운 기능 추가
     addDrillDownInteraction(chartInstance, chartId) {
         const originalOnClick = chartInstance.options.onClick;
         
@@ -3729,51 +3729,51 @@ export const ReportModule = {
                 this.handleChartDrillDown(chartInstance, chartId, datasetIndex, dataIndex, event);
             }
             
-            // ?먮옒 onClick ?대깽?몃룄 ?ㅽ뻾
+            // 원래 onClick 이벤트도 실행
             if (originalOnClick) {
                 originalOnClick.call(chartInstance, event, elements);
             }
         };
     },
 
-    // ?뱤 ?쒕┫?ㅼ슫 泥섎━
+    // 📊 드릴다운 처리
     handleChartDrillDown(chartInstance, chartId, datasetIndex, dataIndex, event) {
         const dataset = chartInstance.data.datasets[datasetIndex];
         const label = chartInstance.data.labels[dataIndex];
         const value = dataset.data[dataIndex];
         
-        console.log(`?뵿 ?쒕┫?ㅼ슫: ${label} (${value})`);
+        console.log(`🔽 드릴다운: ${label} (${value})`);
         
-        // ?쒕┫?ㅼ슫 媛?ν븳 李⑦듃?몄? ?뺤씤
+        // 드릴다운 가능한 차트인지 확인
         if (this.canDrillDown(chartId, label)) {
             this.showDrillDownModal(chartId, label, value, event);
         } else {
-            // 湲곕낯 ?숈옉: ?곸꽭 ?뺣낫 ?댄똻 ?쒖떆
+            // 기본 동작: 상세 정보 툴팁 표시
             this.showDetailTooltip(chartInstance, label, value, event);
         }
     },
 
-    // ?뵇 ?쒕┫?ㅼ슫 媛???щ? ?뺤씤
+    // 🔍 드릴다운 가능 여부 확인
     canDrillDown(chartId, label) {
         const drillDownRules = {
             'previewMiniChart': {
-                '吏?먮（??: true,
-                '紐⑥쭛遺꾩빞': true,
-                '?뚯궗紐?: false
+                '지원루트': true,
+                '모집분야': true,
+                '회사명': false
             }
         };
         
         return drillDownRules[chartId]?.[label] || false;
     },
 
-    // ?뱥 ?쒕┫?ㅼ슫 紐⑤떖 ?쒖떆
+    // 📋 드릴다운 모달 표시
     showDrillDownModal(chartId, label, value, event) {
         const modal = document.createElement('div');
         modal.className = 'drilldown-modal';
         modal.innerHTML = `
             <div class="drilldown-content">
                 <div class="drilldown-header">
-                    <h4>${label} ?곸꽭 遺꾩꽍</h4>
+                    <h4>${label} 상세 분석</h4>
                     <button class="btn-close-drilldown">
                         <i class="fas fa-times"></i>
                     </button>
@@ -3783,10 +3783,10 @@ export const ReportModule = {
                 </div>
                 <div class="drilldown-actions">
                     <button class="btn btn-primary" onclick="App.report.applyDrillDownFilter('${label}')">
-                        ??議곌굔?쇰줈 ?꾪꽣 ?곸슜
+                        이 조건으로 필터 적용
                     </button>
                     <button class="btn btn-secondary" onclick="App.report.generateDetailedReport('${label}')">
-                        ?곸꽭 由ы룷???앹꽦
+                        상세 리포트 생성
                     </button>
                 </div>
             </div>
@@ -3794,7 +3794,7 @@ export const ReportModule = {
         
         document.body.appendChild(modal);
         
-        // ?リ린 ?대깽??
+        // 닫기 이벤트
         modal.querySelector('.btn-close-drilldown').addEventListener('click', () => {
             document.body.removeChild(modal);
         });
@@ -3805,7 +3805,7 @@ export const ReportModule = {
             }
         });
         
-        // ?쒕┫?ㅼ슫 ?덉뒪?좊━??異붽?
+        // 드릴다운 히스토리에 추가
         this.chartInteractions.drillDownHistory.push({
             chartId,
             label,
@@ -3814,7 +3814,7 @@ export const ReportModule = {
         });
     },
 
-    // ?뱤 ?쒕┫?ㅼ슫 肄섑뀗痢??앹꽦
+    // 📊 드릴다운 콘텐츠 생성
     generateDrillDownContent(label, value) {
         const filteredData = this.getFilteredData();
         const detailData = this.getDetailDataForLabel(filteredData, label);
@@ -3822,28 +3822,28 @@ export const ReportModule = {
         return `
             <div class="drilldown-stats">
                 <div class="stat-item">
-                    <div class="stat-label">珥?吏?먯옄</div>
-                    <div class="stat-value">${value}紐?/div>
+                    <div class="stat-label">총 지원자</div>
+                    <div class="stat-value">${value}명</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">?꾩껜 ?鍮?鍮꾩쑉</div>
+                    <div class="stat-label">전체 대비 비율</div>
                     <div class="stat-value">${this.calculatePercentage(value, filteredData.length)}%</div>
                 </div>
             </div>
             
             <div class="drilldown-breakdown">
-                <h5>?몃? 遺꾩꽍</h5>
+                <h5>세부 분석</h5>
                 ${this.generateBreakdownChart(detailData)}
             </div>
             
             <div class="drilldown-trends">
-                <h5>?쒓컙蹂??몃젋??/h5>
+                <h5>시간별 트렌드</h5>
                 ${this.generateTrendChart(detailData)}
             </div>
         `;
     },
 
-    // ???몃쾭 ?섏씠?쇱씠??異붽?
+    // ✨ 호버 하이라이트 추가
     addHoverHighlight(chartInstance, chartId) {
         const originalOnHover = chartInstance.options.onHover;
         
@@ -3853,30 +3853,30 @@ export const ReportModule = {
             if (elements && elements.length > 0) {
                 canvas.style.cursor = 'pointer';
                 
-                // ?몃쾭???붿냼 ?섏씠?쇱씠??
+                // 호버된 요소 하이라이트
                 this.highlightElement(chartInstance, elements[0]);
             } else {
                 canvas.style.cursor = 'default';
                 this.clearHighlight(chartInstance);
             }
             
-            // ?먮옒 onHover ?대깽?몃룄 ?ㅽ뻾
+            // 원래 onHover 이벤트도 실행
             if (originalOnHover) {
                 originalOnHover.call(chartInstance, event, elements);
             }
         };
     },
 
-    // ?뙚 ?붿냼 ?섏씠?쇱씠??
+    // 🌟 요소 하이라이트
     highlightElement(chartInstance, element) {
         const dataset = chartInstance.data.datasets[element.datasetIndex];
         
-        // ?먮옒 ?됱긽 諛깆뾽
+        // 원래 색상 백업
         if (!dataset._originalBackgroundColor) {
             dataset._originalBackgroundColor = [...dataset.backgroundColor];
         }
         
-        // ?섏씠?쇱씠???④낵
+        // 하이라이트 효과
         const newColors = dataset._originalBackgroundColor.map((color, index) => {
             if (index === element.index) {
                 return this.brightenColor(color, 0.2);
@@ -3889,7 +3889,7 @@ export const ReportModule = {
         chartInstance.update('none');
     },
 
-    // ?봽 ?섏씠?쇱씠???쒓굅
+    // 🔄 하이라이트 제거
     clearHighlight(chartInstance) {
         chartInstance.data.datasets.forEach(dataset => {
             if (dataset._originalBackgroundColor) {
@@ -3899,7 +3899,7 @@ export const ReportModule = {
         chartInstance.update('none');
     },
 
-    // ?뮟 ?대┃ ?좊땲硫붿씠??異붽?
+    // 💫 클릭 애니메이션 추가
     addClickAnimation(chartInstance, chartId) {
         const canvas = chartInstance.canvas;
         
@@ -3910,7 +3910,7 @@ export const ReportModule = {
         });
     },
 
-    // ?뙄 ?대┃ 由ы뵆 ?④낵
+    // 🌊 클릭 리플 효과
     createClickRipple(canvas, event) {
         const rect = canvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
@@ -3942,7 +3942,7 @@ export const ReportModule = {
         }, 600);
     },
 
-    // ?벑 而⑦뀓?ㅽ듃 硫붾돱 異붽?
+    // 📱 컨텍스트 메뉴 추가
     addContextMenu(chartInstance, chartId) {
         const canvas = chartInstance.canvas;
         
@@ -3952,9 +3952,9 @@ export const ReportModule = {
         });
     },
 
-    // ?뱥 李⑦듃 而⑦뀓?ㅽ듃 硫붾돱 ?쒖떆
+    // 📋 차트 컨텍스트 메뉴 표시
     showChartContextMenu(chartInstance, chartId, event) {
-        // 湲곗〈 而⑦뀓?ㅽ듃 硫붾돱 ?쒓굅
+        // 기존 컨텍스트 메뉴 제거
         const existingMenu = document.querySelector('.chart-context-menu');
         if (existingMenu) {
             existingMenu.remove();
@@ -3965,24 +3965,24 @@ export const ReportModule = {
         menu.innerHTML = `
             <div class="context-menu-item" data-action="export">
                 <i class="fas fa-download"></i>
-                <span>李⑦듃 ?대낫?닿린</span>
+                <span>차트 내보내기</span>
             </div>
             <div class="context-menu-item" data-action="fullscreen">
                 <i class="fas fa-expand"></i>
-                <span>?꾩껜?붾㈃</span>
+                <span>전체화면</span>
             </div>
             <div class="context-menu-item" data-action="annotations">
                 <i class="fas fa-comment"></i>
-                <span>二쇱꽍 異붽?</span>
+                <span>주석 추가</span>
             </div>
             <div class="context-menu-separator"></div>
             <div class="context-menu-item" data-action="data-labels">
                 <i class="fas fa-tag"></i>
-                <span>?곗씠???덉씠釉??좉?</span>
+                <span>데이터 레이블 토글</span>
             </div>
             <div class="context-menu-item" data-action="animation-toggle">
                 <i class="fas fa-magic"></i>
-                <span>?좊땲硫붿씠??${this.chartInteractions.animationEnabled ? '?꾧린' : '耳쒓린'}</span>
+                <span>애니메이션 ${this.chartInteractions.animationEnabled ? '끄기' : '켜기'}</span>
             </div>
         `;
         
@@ -3995,7 +3995,7 @@ export const ReportModule = {
         
         document.body.appendChild(menu);
         
-        // 硫붾돱 ?꾩씠???대┃ ?대깽??
+        // 메뉴 아이템 클릭 이벤트
         menu.querySelectorAll('.context-menu-item').forEach(item => {
             item.addEventListener('click', () => {
                 const action = item.dataset.action;
@@ -4004,7 +4004,7 @@ export const ReportModule = {
             });
         });
         
-        // ?몃? ?대┃ ??硫붾돱 ?リ린
+        // 외부 클릭 시 메뉴 닫기
         setTimeout(() => {
             document.addEventListener('click', function closeMenu() {
                 menu.remove();
@@ -4013,7 +4013,7 @@ export const ReportModule = {
         }, 100);
     },
 
-    // ?렗 而⑦뀓?ㅽ듃 硫붾돱 ?≪뀡 泥섎━
+    // 🎬 컨텍스트 메뉴 액션 처리
     handleContextMenuAction(chartInstance, chartId, action) {
         switch (action) {
             case 'export':
@@ -4034,25 +4034,25 @@ export const ReportModule = {
         }
     },
 
-    // ?뱾 李⑦듃 ?대낫?닿린
+    // 📤 차트 내보내기
     exportChart(chartInstance, chartId) {
         const canvas = chartInstance.canvas;
         const link = document.createElement('a');
-        link.download = `李⑦듃_${chartId}_${new Date().toISOString().split('T')[0]}.png`;
+        link.download = `차트_${chartId}_${new Date().toISOString().split('T')[0]}.png`;
         link.href = canvas.toDataURL();
         link.click();
         
-        console.log('?뱾 李⑦듃 ?대낫?닿린 ?꾨즺:', chartId);
+        console.log('📤 차트 내보내기 완료:', chartId);
     },
 
-    // ?뵇 李⑦듃 ?꾩껜?붾㈃
+    // 🔍 차트 전체화면
     showChartFullscreen(chartInstance, chartId) {
         const modal = document.createElement('div');
         modal.className = 'chart-fullscreen-modal';
         modal.innerHTML = `
             <div class="fullscreen-content">
                 <div class="fullscreen-header">
-                    <h4>李⑦듃 ?꾩껜?붾㈃</h4>
+                    <h4>차트 전체화면</h4>
                     <button class="btn-close-fullscreen">
                         <i class="fas fa-times"></i>
                     </button>
@@ -4065,7 +4065,7 @@ export const ReportModule = {
         
         document.body.appendChild(modal);
         
-        // ?꾩껜?붾㈃ 李⑦듃 ?앹꽦
+        // 전체화면 차트 생성
         const fullscreenCanvas = modal.querySelector('#fullscreen-chart');
         const fullscreenChart = new Chart(fullscreenCanvas, {
             type: chartInstance.config.type,
@@ -4085,7 +4085,7 @@ export const ReportModule = {
             }
         });
         
-        // ?リ린 ?대깽??
+        // 닫기 이벤트
         modal.querySelector('.btn-close-fullscreen').addEventListener('click', () => {
             fullscreenChart.destroy();
             document.body.removeChild(modal);
@@ -4099,7 +4099,7 @@ export const ReportModule = {
         });
     },
 
-    // ?뤇截??곗씠???덉씠釉??좉?
+    // 🏷️ 데이터 레이블 토글
     toggleDataLabels(chartInstance) {
         const plugins = chartInstance.options.plugins;
         
@@ -4120,16 +4120,16 @@ export const ReportModule = {
         }
         
         chartInstance.update();
-        console.log('?뤇截??곗씠???덉씠釉??좉?:', plugins.datalabels.display);
+        console.log('🏷️ 데이터 레이블 토글:', plugins.datalabels.display);
     },
 
-    // ?렚 ?좊땲硫붿씠???좉?
+    // 🎭 애니메이션 토글
     toggleAnimations() {
         this.chartInteractions.animationEnabled = !this.chartInteractions.animationEnabled;
-        console.log('?렚 ?좊땲硫붿씠???좉?:', this.chartInteractions.animationEnabled);
+        console.log('🎭 애니메이션 토글:', this.chartInteractions.animationEnabled);
     },
 
-    // ?뵩 ?좏떥由ы떚 ?⑥닔??
+    // 🔧 유틸리티 함수들
     brightenColor(color, factor) {
         if (typeof color === 'string' && color.startsWith('#')) {
             const hex = color.slice(1);
@@ -4158,15 +4158,15 @@ export const ReportModule = {
 
     getDetailDataForLabel(data, label) {
         return data.filter(item => {
-            return item['吏?먮（??] === label || 
-                   item['紐⑥쭛遺꾩빞'] === label || 
-                   item['?뚯궗紐?] === label;
+            return item['지원루트'] === label || 
+                   item['모집분야'] === label || 
+                   item['회사명'] === label;
         });
     },
 
-    // ?뱤 ?쒕┫?ㅼ슫 ?꾪꽣 ?곸슜
+    // 📊 드릴다운 필터 적용
     applyDrillDownFilter(label) {
-        // ?대떦 ?쇰꺼濡??꾪꽣 ?ㅼ젙
+        // 해당 라벨로 필터 설정
         const routeFilter = document.getElementById('report-filter-route');
         const fieldFilter = document.getElementById('report-filter-field');
         const companyFilter = document.getElementById('report-filter-company');
@@ -4182,26 +4182,26 @@ export const ReportModule = {
             }
         });
         
-        console.log('?뵇 ?쒕┫?ㅼ슫 ?꾪꽣 ?곸슜:', label);
+        console.log('🔍 드릴다운 필터 적용:', label);
     },
 
-    // ?뱥 ?곸꽭 由ы룷???앹꽦
+    // 📋 상세 리포트 생성
     generateDetailedReport(label) {
-        // ?대떦 ?쇰꺼??????곸꽭 由ы룷???앹꽦
+        // 해당 라벨에 대한 상세 리포트 생성
         this.applyDrillDownFilter(label);
         
-        // ?좎떆 ??由ы룷???앹꽦
+        // 잠시 후 리포트 생성
         setTimeout(() => {
             this.generateReport();
         }, 500);
         
-        console.log('?뱥 ?곸꽭 由ы룷???앹꽦:', label);
+        console.log('📋 상세 리포트 생성:', label);
     },
-    // ?뵕 C) 怨좉툒 湲곕뒫 - ?몃? ?곕룞 ?쒖뒪??
+    // 🔗 C) 고급 기능 - 외부 연동 시스템
 
-    // ?뵩 ?몃? ?곕룞 ?쒖뒪??珥덇린??
+    // 🔧 외부 연동 시스템 초기화
     initExternalIntegrationSystem() {
-        console.log('?뵕 ?몃? ?곕룞 ?쒖뒪??珥덇린??..');
+        console.log('🔗 외부 연동 시스템 초기화...');
         
         this.integrations = {
             googleAnalytics: {
@@ -4230,32 +4230,32 @@ export const ReportModule = {
         
         this.setupIntegrationUI();
         
-        console.log('???몃? ?곕룞 ?쒖뒪??珥덇린???꾨즺');
+        console.log('✅ 외부 연동 시스템 초기화 완료');
     },
 
-    // ?렓 ?곕룞 ?ㅼ젙 UI ?앹꽦
+    // 🎨 연동 설정 UI 생성
     setupIntegrationUI() {
-        // 由ы룷???ㅼ젙???곕룞 ??異붽?
+        // 리포트 설정에 연동 탭 추가
         this.addIntegrationTab();
         
-        // ?곕룞 ?곹깭 ?쒖떆湲?異붽?
+        // 연동 상태 표시기 추가
         this.addIntegrationStatusIndicator();
     },
 
-    // ?뱥 ?곕룞 ??異붽?
+    // 📋 연동 탭 추가
     addIntegrationTab() {
         const reportTabs = document.querySelector('.report-tabs');
         if (!reportTabs) return;
 
-        // ?곕룞 ??踰꾪듉 異붽?
+        // 연동 탭 버튼 추가
         const integrationTab = document.createElement('button');
         integrationTab.className = 'report-tab';
         integrationTab.dataset.tab = 'integrations';
-        integrationTab.innerHTML = '<i class="fas fa-plug"></i> ?몃? ?곕룞';
+        integrationTab.innerHTML = '<i class="fas fa-plug"></i> 외부 연동';
         
         reportTabs.appendChild(integrationTab);
 
-        // ?곕룞 ??肄섑뀗痢?異붽?
+        // 연동 탭 콘텐츠 추가
         const reportContent = document.querySelector('.report-content');
         if (reportContent) {
             const integrationTabContent = document.createElement('div');
@@ -4266,22 +4266,22 @@ export const ReportModule = {
             reportContent.querySelector('.report-builder-section .report-builder').appendChild(integrationTabContent);
         }
 
-        // ???대┃ ?대깽??異붽?
+        // 탭 클릭 이벤트 추가
         integrationTab.addEventListener('click', () => {
             this.showIntegrationsTab();
         });
     },
 
-    // ?렓 ?곕룞 ??肄섑뀗痢??뚮뜑留?
+    // 🎨 연동 탭 콘텐츠 렌더링
     renderIntegrationsTabContent() {
         return `
             <div class="integrations-container">
                 <div class="integrations-header">
-                    <h3><i class="fas fa-plug"></i> ?몃? ?쒖뒪???곕룞</h3>
-                    <p>?ㅼ뼇???몃? ?쒕퉬?ㅼ? ?곕룞?섏뿬 由ы룷??湲곕뒫???뺤옣?섏꽭??</p>
+                    <h3><i class="fas fa-plug"></i> 외부 시스템 연동</h3>
+                    <p>다양한 외부 서비스와 연동하여 리포트 기능을 확장하세요.</p>
                 </div>
 
-                <!-- Google Analytics ?곕룞 -->
+                <!-- Google Analytics 연동 -->
                 <div class="integration-card" data-integration="googleAnalytics">
                     <div class="integration-header">
                         <div class="integration-info">
@@ -4290,7 +4290,7 @@ export const ReportModule = {
                             </div>
                             <div class="integration-details">
                                 <h4>Google Analytics</h4>
-                                <p>?뱀궗?댄듃 ?몃옒???곗씠?곕? ?곕룞?섏뿬 吏?먯옄 ?좎엯 寃쎈줈瑜?遺꾩꽍?⑸땲??</p>
+                                <p>웹사이트 트래픽 데이터를 연동하여 지원자 유입 경로를 분석합니다.</p>
                             </div>
                         </div>
                         <div class="integration-toggle">
@@ -4307,26 +4307,26 @@ export const ReportModule = {
                             </div>
                             <div class="form-actions">
                                 <button class="btn btn-primary" onclick="App.report.testGoogleAnalytics()">
-                                    <i class="fas fa-flask"></i> ?곌껐 ?뚯뒪??
+                                    <i class="fas fa-flask"></i> 연결 테스트
                                 </button>
                                 <button class="btn btn-success" onclick="App.report.syncGoogleAnalytics()">
-                                    <i class="fas fa-sync"></i> ?곗씠???숆린??
+                                    <i class="fas fa-sync"></i> 데이터 동기화
                                 </button>
                             </div>
                         </div>
                         <div class="integration-features">
-                            <h5>?쒓났 湲곕뒫</h5>
+                            <h5>제공 기능</h5>
                             <ul>
-                                <li>?뱀궗?댄듃 ?좎엯 寃쎈줈 遺꾩꽍</li>
-                                <li>?섏씠吏蹂?吏?먯옄 ?꾪솚??/li>
-                                <li>?ㅼ떆媛?諛⑸Ц???듦퀎</li>
-                                <li>湲곌컙蹂??몃옒???몃젋??/li>
+                                <li>웹사이트 유입 경로 분석</li>
+                                <li>페이지별 지원자 전환율</li>
+                                <li>실시간 방문자 통계</li>
+                                <li>기간별 트래픽 트렌드</li>
                             </ul>
                         </div>
                     </div>
                 </div>
 
-                <!-- Slack ?곕룞 -->
+                <!-- Slack 연동 -->
                 <div class="integration-card" data-integration="slack">
                     <div class="integration-header">
                         <div class="integration-info">
@@ -4334,8 +4334,8 @@ export const ReportModule = {
                                 <i class="fab fa-slack"></i>
                             </div>
                             <div class="integration-details">
-                                <h4>Slack ?뚮┝</h4>
-                                <p>以묒슂??梨꾩슜 ?대깽?몄? 由ы룷?몃? Slack 梨꾨꼸濡??먮룞 ?뚮┝??諛쏆뒿?덈떎.</p>
+                                <h4>Slack 알림</h4>
+                                <p>중요한 채용 이벤트와 리포트를 Slack 채널로 자동 알림을 받습니다.</p>
                             </div>
                         </div>
                         <div class="integration-toggle">
@@ -4351,32 +4351,32 @@ export const ReportModule = {
                                        value="${this.integrations.slack.webhookUrl}">
                             </div>
                             <div class="form-group">
-                                <label>?뚮┝ 梨꾨꼸</label>
+                                <label>알림 채널</label>
                                 <input type="text" id="slack-channel" placeholder="#recruitment" 
                                        value="${this.integrations.slack.channels[0] || ''}">
                             </div>
                             <div class="form-group">
-                                <label>?뚮┝ ?좏삎</label>
+                                <label>알림 유형</label>
                                 <div class="checkbox-group">
-                                    <label><input type="checkbox" checked> ?쇱씪 由ы룷??/label>
-                                    <label><input type="checkbox" checked> 二쇨컙 ?붿빟</label>
-                                    <label><input type="checkbox"> 湲닿툒 ?뚮┝</label>
-                                    <label><input type="checkbox"> 紐⑺몴 ?ъ꽦 ?뚮┝</label>
+                                    <label><input type="checkbox" checked> 일일 리포트</label>
+                                    <label><input type="checkbox" checked> 주간 요약</label>
+                                    <label><input type="checkbox"> 긴급 알림</label>
+                                    <label><input type="checkbox"> 목표 달성 알림</label>
                                 </div>
                             </div>
                             <div class="form-actions">
                                 <button class="btn btn-primary" onclick="App.report.testSlackIntegration()">
-                                    <i class="fas fa-paper-plane"></i> ?뚯뒪??硫붿떆吏 諛쒖넚
+                                    <i class="fas fa-paper-plane"></i> 테스트 메시지 발송
                                 </button>
                                 <button class="btn btn-success" onclick="App.report.sendSlackReport()">
-                                    <i class="fas fa-share"></i> 由ы룷??怨듭쑀
+                                    <i class="fas fa-share"></i> 리포트 공유
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- ?대찓???곕룞 -->
+                <!-- 이메일 연동 -->
                 <div class="integration-card" data-integration="email">
                     <div class="integration-header">
                         <div class="integration-info">
@@ -4384,8 +4384,8 @@ export const ReportModule = {
                                 <i class="fas fa-envelope"></i>
                             </div>
                             <div class="integration-details">
-                                <h4>?대찓???먮룞 諛쒖넚</h4>
-                                <p>?뺢린?곸쑝濡?由ы룷?몃? ?대찓?쇰줈 ?먮룞 諛쒖넚?섍굅???뚮┝??諛쏆뒿?덈떎.</p>
+                                <h4>이메일 자동 발송</h4>
+                                <p>정기적으로 리포트를 이메일로 자동 발송하거나 알림을 받습니다.</p>
                             </div>
                         </div>
                         <div class="integration-toggle">
@@ -4397,50 +4397,50 @@ export const ReportModule = {
                         <div class="config-form">
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label>SMTP ?쒕쾭</label>
+                                    <label>SMTP 서버</label>
                                     <input type="text" id="email-smtp-host" placeholder="smtp.gmail.com">
                                 </div>
                                 <div class="form-group">
-                                    <label>?ы듃</label>
+                                    <label>포트</label>
                                     <input type="number" id="email-smtp-port" placeholder="587">
                                 </div>
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
-                                    <label>?ъ슜?먮챸</label>
+                                    <label>사용자명</label>
                                     <input type="email" id="email-username" placeholder="user@company.com">
                                 </div>
                                 <div class="form-group">
-                                    <label>鍮꾨?踰덊샇</label>
-                                    <input type="password" id="email-password" placeholder="??鍮꾨?踰덊샇">
+                                    <label>비밀번호</label>
+                                    <input type="password" id="email-password" placeholder="앱 비밀번호">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label>?섏떊??紐⑸줉</label>
+                                <label>수신자 목록</label>
                                 <textarea id="email-recipients" placeholder="hr@company.com, manager@company.com" rows="2"></textarea>
                             </div>
                             <div class="form-group">
-                                <label>諛쒖넚 二쇨린</label>
+                                <label>발송 주기</label>
                                 <select id="email-schedule">
-                                    <option value="daily">留ㅼ씪</option>
-                                    <option value="weekly" selected>留ㅼ＜</option>
-                                    <option value="monthly">留ㅼ썡</option>
-                                    <option value="custom">?ъ슜??吏??/option>
+                                    <option value="daily">매일</option>
+                                    <option value="weekly" selected>매주</option>
+                                    <option value="monthly">매월</option>
+                                    <option value="custom">사용자 지정</option>
                                 </select>
                             </div>
                             <div class="form-actions">
                                 <button class="btn btn-primary" onclick="App.report.testEmailConfiguration()">
-                                    <i class="fas fa-envelope-open"></i> ?뚯뒪???대찓??諛쒖넚
+                                    <i class="fas fa-envelope-open"></i> 테스트 이메일 발송
                                 </button>
                                 <button class="btn btn-success" onclick="App.report.scheduleEmailReports()">
-                                    <i class="fas fa-calendar-plus"></i> ?먮룞 諛쒖넚 ?ㅼ젙
+                                    <i class="fas fa-calendar-plus"></i> 자동 발송 설정
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- API ?곕룞 -->
+                <!-- API 연동 -->
                 <div class="integration-card" data-integration="api">
                     <div class="integration-header">
                         <div class="integration-info">
@@ -4448,8 +4448,8 @@ export const ReportModule = {
                                 <i class="fas fa-code"></i>
                             </div>
                             <div class="integration-details">
-                                <h4>API ?곗씠???곕룞</h4>
-                                <p>?몃? ?쒖뒪?쒖쓽 API瑜??듯빐 異붽? ?곗씠?곕? 媛?몄삤嫄곕굹 ?대낫?낅땲??</p>
+                                <h4>API 데이터 연동</h4>
+                                <p>외부 시스템의 API를 통해 추가 데이터를 가져오거나 내보냅니다.</p>
                             </div>
                         </div>
                         <div class="integration-toggle">
@@ -4460,12 +4460,12 @@ export const ReportModule = {
                     <div class="integration-config ${this.integrations.api.enabled ? 'active' : ''}">
                         <div class="config-form">
                             <div class="api-endpoints">
-                                <h5>API ?붾뱶?ъ씤???ㅼ젙</h5>
+                                <h5>API 엔드포인트 설정</h5>
                                 <div class="endpoint-item">
                                     <div class="form-row">
                                         <div class="form-group">
-                                            <label>?대쫫</label>
-                                            <input type="text" placeholder="HR ?쒖뒪??>
+                                            <label>이름</label>
+                                            <input type="text" placeholder="HR 시스템">
                                         </div>
                                         <div class="form-group">
                                             <label>URL</label>
@@ -4474,51 +4474,51 @@ export const ReportModule = {
                                     </div>
                                     <div class="form-row">
                                         <div class="form-group">
-                                            <label>?몄쬆 ?좏겙</label>
+                                            <label>인증 토큰</label>
                                             <input type="password" placeholder="Bearer token">
                                         </div>
                                         <div class="form-group">
-                                            <label>?숆린??二쇨린</label>
+                                            <label>동기화 주기</label>
                                             <select>
-                                                <option>?ㅼ떆媛?/option>
-                                                <option>留ㅼ떆媛?/option>
-                                                <option>留ㅼ씪</option>
+                                                <option>실시간</option>
+                                                <option>매시간</option>
+                                                <option>매일</option>
                                             </select>
                                         </div>
                                     </div>
                                 </div>
                                 <button class="btn btn-outline add-endpoint-btn">
-                                    <i class="fas fa-plus"></i> ?붾뱶?ъ씤??異붽?
+                                    <i class="fas fa-plus"></i> 엔드포인트 추가
                                 </button>
                             </div>
                             <div class="form-actions">
                                 <button class="btn btn-primary" onclick="App.report.testAPIConnection()">
-                                    <i class="fas fa-link"></i> ?곌껐 ?뚯뒪??
+                                    <i class="fas fa-link"></i> 연결 테스트
                                 </button>
                                 <button class="btn btn-success" onclick="App.report.syncAPIData()">
-                                    <i class="fas fa-sync-alt"></i> ?곗씠???숆린??
+                                    <i class="fas fa-sync-alt"></i> 데이터 동기화
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- ?곕룞 ?곹깭 ?붿빟 -->
+                <!-- 연동 상태 요약 -->
                 <div class="integration-summary">
-                    <h4><i class="fas fa-chart-pie"></i> ?곕룞 ?곹깭 ?붿빟</h4>
+                    <h4><i class="fas fa-chart-pie"></i> 연동 상태 요약</h4>
                     <div class="summary-grid">
                         <div class="summary-item">
-                            <div class="summary-label">?쒖꽦 ?곕룞</div>
+                            <div class="summary-label">활성 연동</div>
                             <div class="summary-value" id="active-integrations">0</div>
                         </div>
                         <div class="summary-item">
-                            <div class="summary-label">留덉?留??숆린??/div>
-                            <div class="summary-value" id="last-sync">?놁쓬</div>
+                            <div class="summary-label">마지막 동기화</div>
+                            <div class="summary-value" id="last-sync">없음</div>
                         </div>
                         <div class="summary-item">
-                            <div class="summary-label">?곕룞 ?곹깭</div>
+                            <div class="summary-label">연동 상태</div>
                             <div class="summary-value status-indicator" id="integration-status">
-                                <span class="status-dot offline"></span> ?ㅽ봽?쇱씤
+                                <span class="status-dot offline"></span> 오프라인
                             </div>
                         </div>
                     </div>
@@ -4527,9 +4527,9 @@ export const ReportModule = {
         `;
     },
 
-    // ?벑 ?곕룞 ???쒖떆
+    // 📱 연동 탭 표시
     showIntegrationsTab() {
-        // 紐⑤뱺 ??鍮꾪솢?깊솕
+        // 모든 탭 비활성화
         document.querySelectorAll('.report-tab').forEach(tab => {
             tab.classList.remove('active');
         });
@@ -4537,18 +4537,18 @@ export const ReportModule = {
             content.classList.remove('active');
         });
 
-        // ?곕룞 ???쒖꽦??
+        // 연동 탭 활성화
         document.querySelector('[data-tab="integrations"]').classList.add('active');
         document.getElementById('integrations-tab').classList.add('active');
 
-        // ?곕룞 ?대깽???ㅼ젙
+        // 연동 이벤트 설정
         this.setupIntegrationEvents();
         this.updateIntegrationStatus();
     },
 
-    // ?렞 ?곕룞 ?대깽???ㅼ젙
+    // 🎯 연동 이벤트 설정
     setupIntegrationEvents() {
-        // ?좉? ?ㅼ쐞移??대깽??
+        // 토글 스위치 이벤트
         document.querySelectorAll('.integration-toggle input[type="checkbox"]').forEach(toggle => {
             toggle.addEventListener('change', (e) => {
                 const integrationCard = e.target.closest('.integration-card');
@@ -4565,7 +4565,7 @@ export const ReportModule = {
             });
         });
 
-        // ?붾뱶?ъ씤??異붽? 踰꾪듉
+        // 엔드포인트 추가 버튼
         const addEndpointBtn = document.querySelector('.add-endpoint-btn');
         if (addEndpointBtn) {
             addEndpointBtn.addEventListener('click', () => {
@@ -4574,65 +4574,65 @@ export const ReportModule = {
         }
     },
 
-    // ???곕룞 ?쒖꽦??
+    // ✅ 연동 활성화
     enableIntegration(type) {
         this.integrations[type].enabled = true;
         this.saveIntegrationSettings();
         this.updateIntegrationStatus();
         
-        console.log(`??${type} ?곕룞 ?쒖꽦??);
+        console.log(`✅ ${type} 연동 활성화`);
     },
 
-    // ???곕룞 鍮꾪솢?깊솕
+    // ❌ 연동 비활성화
     disableIntegration(type) {
         this.integrations[type].enabled = false;
         this.saveIntegrationSettings();
         this.updateIntegrationStatus();
         
-        console.log(`??${type} ?곕룞 鍮꾪솢?깊솕`);
+        console.log(`❌ ${type} 연동 비활성화`);
     },
 
-    // ?뵮 Google Analytics ?뚯뒪??
+    // 🔬 Google Analytics 테스트
     testGoogleAnalytics() {
         const trackingId = document.getElementById('ga-tracking-id').value;
         
         if (!trackingId) {
-            alert('Tracking ID瑜??낅젰?댁＜?몄슂.');
+            alert('Tracking ID를 입력해주세요.');
             return;
         }
 
-        // ?쒕??덉씠?섎맂 ?뚯뒪??
-        this.showLoadingIndicator('Google Analytics ?곌껐 ?뚯뒪??以?..');
+        // 시뮬레이션된 테스트
+        this.showLoadingIndicator('Google Analytics 연결 테스트 중...');
         
         setTimeout(() => {
             this.hideLoadingIndicator();
             
-            // ?깃났 ?쒕??덉씠??
+            // 성공 시뮬레이션
             const success = Math.random() > 0.3;
             
             if (success) {
                 this.integrations.googleAnalytics.trackingId = trackingId;
                 this.saveIntegrationSettings();
-                alert('??Google Analytics ?곌껐 ?뚯뒪???깃났!');
+                alert('✅ Google Analytics 연결 테스트 성공!');
             } else {
-                alert('???곌껐 ?ㅽ뙣: Tracking ID瑜??뺤씤?댁＜?몄슂.');
+                alert('❌ 연결 실패: Tracking ID를 확인해주세요.');
             }
         }, 2000);
     },
 
-    // ?뱤 Google Analytics ?숆린??
+    // 📊 Google Analytics 동기화
     syncGoogleAnalytics() {
         if (!this.integrations.googleAnalytics.trackingId) {
-            alert('癒쇱? Google Analytics瑜??ㅼ젙?댁＜?몄슂.');
+            alert('먼저 Google Analytics를 설정해주세요.');
             return;
         }
 
-        this.showLoadingIndicator('Google Analytics ?곗씠???숆린??以?..');
+        this.showLoadingIndicator('Google Analytics 데이터 동기화 중...');
         
         setTimeout(() => {
             this.hideLoadingIndicator();
             
-            // ?쒕??덉씠?섎맂 ?곗씠??
+            // 시뮬레이션된 데이터
             const mockData = {
                 sessions: Math.floor(Math.random() * 10000) + 5000,
                 pageviews: Math.floor(Math.random() * 20000) + 10000,
@@ -4649,31 +4649,31 @@ export const ReportModule = {
             this.saveIntegrationSettings();
             this.updateIntegrationStatus();
 
-            alert(`??Google Analytics ?숆린???꾨즺!\n\n?몄뀡: ${mockData.sessions}\n?섏씠吏酉? ${mockData.pageviews}\n?꾪솚?? ${mockData.conversion}`);
+            alert(`✅ Google Analytics 동기화 완료!\n\n세션: ${mockData.sessions}\n페이지뷰: ${mockData.pageviews}\n전환율: ${mockData.conversion}`);
             
-            console.log('?뱤 Google Analytics ?곗씠??', mockData);
+            console.log('📊 Google Analytics 데이터:', mockData);
         }, 3000);
     },
-    // ?뮠 Slack ?곕룞 ?뚯뒪??
+    // 💬 Slack 연동 테스트
     testSlackIntegration() {
         const webhookUrl = document.getElementById('slack-webhook').value;
         const channel = document.getElementById('slack-channel').value;
         
         if (!webhookUrl) {
-            alert('Slack Webhook URL???낅젰?댁＜?몄슂.');
+            alert('Slack Webhook URL을 입력해주세요.');
             return;
         }
 
-        this.showLoadingIndicator('Slack ?곌껐 ?뚯뒪??以?..');
+        this.showLoadingIndicator('Slack 연결 테스트 중...');
         
         setTimeout(() => {
             this.hideLoadingIndicator();
             
-            // ?쒕??덉씠?섎맂 ?뚯뒪??硫붿떆吏 諛쒖넚
+            // 시뮬레이션된 테스트 메시지 발송
             const testMessage = {
-                text: "?쨼 CFC 梨꾩슜 ??쒕낫???뚯뒪??硫붿떆吏",
+                text: "🤖 CFC 채용 대시보드 테스트 메시지",
                 channel: channel || '#general',
-                username: 'CFC 梨꾩슜遊?,
+                username: 'CFC 채용봇',
                 icon_emoji: ':robot_face:'
             };
 
@@ -4681,19 +4681,19 @@ export const ReportModule = {
             this.integrations.slack.channels = [channel || '#general'];
             this.saveIntegrationSettings();
 
-            alert('??Slack ?뚯뒪??硫붿떆吏 諛쒖넚 ?깃났!');
-            console.log('?뮠 Slack ?뚯뒪??硫붿떆吏:', testMessage);
+            alert('✅ Slack 테스트 메시지 발송 성공!');
+            console.log('💬 Slack 테스트 메시지:', testMessage);
         }, 1500);
     },
 
-    // ?뱾 Slack 由ы룷??怨듭쑀
+    // 📤 Slack 리포트 공유
     sendSlackReport() {
         if (!this.integrations.slack.webhookUrl) {
-            alert('癒쇱? Slack???ㅼ젙?댁＜?몄슂.');
+            alert('먼저 Slack을 설정해주세요.');
             return;
         }
 
-        this.showLoadingIndicator('Slack?쇰줈 由ы룷???꾩넚 以?..');
+        this.showLoadingIndicator('Slack으로 리포트 전송 중...');
         
         setTimeout(() => {
             this.hideLoadingIndicator();
@@ -4705,82 +4705,82 @@ export const ReportModule = {
             this.saveIntegrationSettings();
             this.updateIntegrationStatus();
 
-            alert('??Slack?쇰줈 由ы룷?멸? ?깃났?곸쑝濡??꾩넚?섏뿀?듬땲??');
-            console.log('?뱾 Slack 由ы룷??硫붿떆吏:', slackMessage);
+            alert('✅ Slack으로 리포트가 성공적으로 전송되었습니다!');
+            console.log('📤 Slack 리포트 메시지:', slackMessage);
         }, 2000);
     },
 
-    // ?뱷 Slack 由ы룷??硫붿떆吏 ?щ㎎
+    // 📝 Slack 리포트 메시지 포맷
     formatSlackReportMessage(stats) {
         const today = new Date().toLocaleDateString('ko-KR');
         
         return {
-            text: "?뱤 CFC 梨꾩슜 ??쒕낫???쇱씪 由ы룷??,
+            text: "📊 CFC 채용 대시보드 일일 리포트",
             attachments: [{
                 color: "good",
                 fields: [
                     {
-                        title: "珥?吏?먯옄",
-                        value: `${stats.total}紐?,
+                        title: "총 지원자",
+                        value: `${stats.total}명`,
                         short: true
                     },
                     {
-                        title: "?꾪솚??,
+                        title: "전환율",
                         value: `${stats.conversionRate}%`,
                         short: true
                     },
                     {
-                        title: "二쇱슂 梨꾩슜 寃쎈줈",
+                        title: "주요 채용 경로",
                         value: stats.topSource,
                         short: true
                     },
                     {
-                        title: "由ы룷???앹꽦??,
+                        title: "리포트 생성일",
                         value: today,
                         short: true
                     }
                 ],
-                footer: "CFC 梨꾩슜 ??쒕낫??,
+                footer: "CFC 채용 대시보드",
                 ts: Math.floor(Date.now() / 1000)
             }]
         };
     },
 
-    // ?벁 ?대찓???ㅼ젙 ?뚯뒪??
+    // 📧 이메일 설정 테스트
     testEmailConfiguration() {
         const config = this.getEmailConfiguration();
         
         if (!config.smtpHost || !config.username || !config.password) {
-            alert('?대찓???ㅼ젙??紐⑤몢 ?낅젰?댁＜?몄슂.');
+            alert('이메일 설정을 모두 입력해주세요.');
             return;
         }
 
-        this.showLoadingIndicator('?대찓???ㅼ젙 ?뚯뒪??以?..');
+        this.showLoadingIndicator('이메일 설정 테스트 중...');
         
         setTimeout(() => {
             this.hideLoadingIndicator();
             
-            // ?쒕??덉씠?섎맂 ?뚯뒪??
+            // 시뮬레이션된 테스트
             const success = Math.random() > 0.2;
             
             if (success) {
                 this.integrations.email.smtpConfig = config;
                 this.saveIntegrationSettings();
-                alert('???대찓???ㅼ젙 ?뚯뒪???깃났!\n?뚯뒪???대찓?쇱씠 諛쒖넚?섏뿀?듬땲??');
+                alert('✅ 이메일 설정 테스트 성공!\n테스트 이메일이 발송되었습니다.');
             } else {
-                alert('???대찓???ㅼ젙 ?ㅻ쪟: SMTP ?ㅼ젙???뺤씤?댁＜?몄슂.');
+                alert('❌ 이메일 설정 오류: SMTP 설정을 확인해주세요.');
             }
         }, 2500);
     },
 
-    // ?뱟 ?대찓???먮룞 諛쒖넚 ?ㅼ젙
+    // 📅 이메일 자동 발송 설정
     scheduleEmailReports() {
         const config = this.getEmailConfiguration();
         const schedule = document.getElementById('email-schedule').value;
         const recipients = document.getElementById('email-recipients').value;
         
         if (!recipients) {
-            alert('?섏떊?먮? ?낅젰?댁＜?몄슂.');
+            alert('수신자를 입력해주세요.');
             return;
         }
 
@@ -4789,15 +4789,15 @@ export const ReportModule = {
         this.integrations.email.recipients = recipients.split(',').map(email => email.trim());
         this.saveIntegrationSettings();
 
-        alert(`??${schedule} 二쇨린濡??대찓???먮룞 諛쒖넚???ㅼ젙?섏뿀?듬땲??\n?섏떊?? ${recipients}`);
+        alert(`✅ ${schedule} 주기로 이메일 자동 발송이 설정되었습니다.\n수신자: ${recipients}`);
         
-        // ?쒕??덉씠?섎맂 泥?踰덉㎏ 諛쒖넚
+        // 시뮬레이션된 첫 번째 발송
         setTimeout(() => {
             this.sendScheduledEmail();
         }, 5000);
     },
 
-    // ?벉 ?덉빟???대찓??諛쒖넚
+    // 📬 예약된 이메일 발송
     sendScheduledEmail() {
         const stats = this.calculateBasicStats(this.getFilteredData());
         const emailContent = this.formatEmailReportContent(stats);
@@ -4806,18 +4806,18 @@ export const ReportModule = {
         this.saveIntegrationSettings();
         this.updateIntegrationStatus();
 
-        console.log('?벉 ?대찓??由ы룷??諛쒖넚:', emailContent);
+        console.log('📬 이메일 리포트 발송:', emailContent);
         
-        // ?ъ슜?먯뿉寃??뚮┝ (?ㅼ젣濡쒕뒗 諛깃렇?쇱슫?쒖뿉??諛쒖넚??
+        // 사용자에게 알림 (실제로는 백그라운드에서 발송됨)
         if (Notification.permission === 'granted') {
-            new Notification('CFC 梨꾩슜 ??쒕낫??, {
-                body: '?대찓??由ы룷?멸? ?깃났?곸쑝濡?諛쒖넚?섏뿀?듬땲??',
+            new Notification('CFC 채용 대시보드', {
+                body: '이메일 리포트가 성공적으로 발송되었습니다.',
                 icon: '/favicon.ico'
             });
         }
     },
 
-    // ?벁 ?대찓???ㅼ젙 媛?몄삤湲?
+    // 📧 이메일 설정 가져오기
     getEmailConfiguration() {
         return {
             smtpHost: document.getElementById('email-smtp-host')?.value || '',
@@ -4828,65 +4828,65 @@ export const ReportModule = {
         };
     },
 
-    // ?뱷 ?대찓??由ы룷??肄섑뀗痢??щ㎎
+    // 📝 이메일 리포트 콘텐츠 포맷
     formatEmailReportContent(stats) {
         const today = new Date().toLocaleDateString('ko-KR');
         
         return {
-            subject: `CFC 梨꾩슜 ??쒕낫??由ы룷??- ${today}`,
+            subject: `CFC 채용 대시보드 리포트 - ${today}`,
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; color: white; text-align: center;">
-                        <h1 style="margin: 0;">CFC 梨꾩슜 ??쒕낫??/h1>
-                        <p style="margin: 10px 0 0 0;">?쇱씪 由ы룷??- ${today}</p>
+                        <h1 style="margin: 0;">CFC 채용 대시보드</h1>
+                        <p style="margin: 10px 0 0 0;">일일 리포트 - ${today}</p>
                     </div>
                     
                     <div style="padding: 30px; background: #f8fafc;">
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; margin-bottom: 30px;">
                             <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                                 <div style="font-size: 2rem; font-weight: bold; color: #3b82f6;">${stats.total}</div>
-                                <div style="color: #6b7280;">珥?吏?먯옄</div>
+                                <div style="color: #6b7280;">총 지원자</div>
                             </div>
                             <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                                 <div style="font-size: 2rem; font-weight: bold; color: #10b981;">${stats.conversionRate}%</div>
-                                <div style="color: #6b7280;">?꾪솚??/div>
+                                <div style="color: #6b7280;">전환율</div>
                             </div>
                             <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                                 <div style="font-size: 1.2rem; font-weight: bold; color: #f59e0b;">${stats.topSource}</div>
-                                <div style="color: #6b7280;">二쇱슂 梨꾩슜 寃쎈줈</div>
+                                <div style="color: #6b7280;">주요 채용 경로</div>
                             </div>
                         </div>
                         
                         <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                            <h3 style="margin-top: 0; color: #1f2937;">梨꾩슜 ?꾪솴 ?붿빟</h3>
-                            <p>?ㅻ뒛 ${today} 湲곗??쇰줈 珥?${stats.total}紐낆쓽 吏?먯옄媛 ?덉쑝硫? ?꾩껜 ?꾪솚?⑥? ${stats.conversionRate}%?낅땲??</p>
-                            <p>二쇱슂 梨꾩슜 寃쎈줈??"${stats.topSource}"?대ŉ, 吏?띿쟻??紐⑤땲?곕쭅???꾩슂?⑸땲??</p>
+                            <h3 style="margin-top: 0; color: #1f2937;">채용 현황 요약</h3>
+                            <p>오늘 ${today} 기준으로 총 ${stats.total}명의 지원자가 있으며, 전체 전환율은 ${stats.conversionRate}%입니다.</p>
+                            <p>주요 채용 경로는 "${stats.topSource}"이며, 지속적인 모니터링이 필요합니다.</p>
                         </div>
                     </div>
                     
                     <div style="background: #1f2937; padding: 20px; text-align: center; color: white;">
-                        <p style="margin: 0;">CFC 梨꾩슜 ??쒕낫?쒖뿉???먮룞 ?앹꽦??由ы룷?몄엯?덈떎.</p>
+                        <p style="margin: 0;">CFC 채용 대시보드에서 자동 생성된 리포트입니다.</p>
                     </div>
                 </div>
             `
         };
     },
 
-    // ?뵕 API ?곌껐 ?뚯뒪??
+    // 🔗 API 연결 테스트
     testAPIConnection() {
         const endpoints = this.getAPIEndpoints();
         
         if (endpoints.length === 0) {
-            alert('API ?붾뱶?ъ씤?몃? ?ㅼ젙?댁＜?몄슂.');
+            alert('API 엔드포인트를 설정해주세요.');
             return;
         }
 
-        this.showLoadingIndicator('API ?곌껐 ?뚯뒪??以?..');
+        this.showLoadingIndicator('API 연결 테스트 중...');
         
         setTimeout(() => {
             this.hideLoadingIndicator();
             
-            // ?쒕??덉씠?섎맂 ?곌껐 ?뚯뒪??
+            // 시뮬레이션된 연결 테스트
             const results = endpoints.map(endpoint => ({
                 name: endpoint.name,
                 url: endpoint.url,
@@ -4897,26 +4897,26 @@ export const ReportModule = {
             const successCount = results.filter(r => r.status === 'success').length;
             const totalCount = results.length;
 
-            alert(`API ?곌껐 ?뚯뒪???꾨즺!\n?깃났: ${successCount}/${totalCount} ?붾뱶?ъ씤??);
-            console.log('?뵕 API ?뚯뒪??寃곌낵:', results);
+            alert(`API 연결 테스트 완료!\n성공: ${successCount}/${totalCount} 엔드포인트`);
+            console.log('🔗 API 테스트 결과:', results);
         }, 2000);
     },
 
-    // ?봽 API ?곗씠???숆린??
+    // 🔄 API 데이터 동기화
     syncAPIData() {
         const endpoints = this.getAPIEndpoints();
         
         if (endpoints.length === 0) {
-            alert('API ?붾뱶?ъ씤?몃? ?ㅼ젙?댁＜?몄슂.');
+            alert('API 엔드포인트를 설정해주세요.');
             return;
         }
 
-        this.showLoadingIndicator('API ?곗씠???숆린??以?..');
+        this.showLoadingIndicator('API 데이터 동기화 중...');
         
         setTimeout(() => {
             this.hideLoadingIndicator();
             
-            // ?쒕??덉씠?섎맂 ?곗씠???숆린??
+            // 시뮬레이션된 데이터 동기화
             const syncedData = {
                 candidates: Math.floor(Math.random() * 100) + 50,
                 positions: Math.floor(Math.random() * 20) + 10,
@@ -4928,13 +4928,13 @@ export const ReportModule = {
             this.saveIntegrationSettings();
             this.updateIntegrationStatus();
 
-            alert(`??API ?곗씠???숆린???꾨즺!\n\n吏?먯옄: ${syncedData.candidates}紐?n?ъ??? ${syncedData.positions}媛?n硫댁젒: ${syncedData.interviews}嫄?);
+            alert(`✅ API 데이터 동기화 완료!\n\n지원자: ${syncedData.candidates}명\n포지션: ${syncedData.positions}개\n면접: ${syncedData.interviews}건`);
             
-            console.log('?봽 ?숆린?붾맂 API ?곗씠??', syncedData);
+            console.log('🔄 동기화된 API 데이터:', syncedData);
         }, 3000);
     },
 
-    // ??API ?붾뱶?ъ씤??異붽?
+    // ➕ API 엔드포인트 추가
     addAPIEndpoint() {
         const container = document.querySelector('.api-endpoints');
         const newEndpoint = document.createElement('div');
@@ -4942,8 +4942,8 @@ export const ReportModule = {
         newEndpoint.innerHTML = `
             <div class="form-row">
                 <div class="form-group">
-                    <label>?대쫫</label>
-                    <input type="text" placeholder="?쒖뒪???대쫫">
+                    <label>이름</label>
+                    <input type="text" placeholder="시스템 이름">
                 </div>
                 <div class="form-group">
                     <label>URL</label>
@@ -4952,32 +4952,32 @@ export const ReportModule = {
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label>?몄쬆 ?좏겙</label>
+                    <label>인증 토큰</label>
                     <input type="password" placeholder="Bearer token">
                 </div>
                 <div class="form-group">
-                    <label>?숆린??二쇨린</label>
+                    <label>동기화 주기</label>
                     <select>
-                        <option>?ㅼ떆媛?/option>
-                        <option>留ㅼ떆媛?/option>
-                        <option>留ㅼ씪</option>
+                        <option>실시간</option>
+                        <option>매시간</option>
+                        <option>매일</option>
                     </select>
                 </div>
             </div>
             <button class="btn btn-danger btn-sm remove-endpoint" style="margin-top: 10px;">
-                <i class="fas fa-trash"></i> ?쒓굅
+                <i class="fas fa-trash"></i> 제거
             </button>
         `;
         
         container.insertBefore(newEndpoint, container.querySelector('.add-endpoint-btn'));
         
-        // ?쒓굅 踰꾪듉 ?대깽??
+        // 제거 버튼 이벤트
         newEndpoint.querySelector('.remove-endpoint').addEventListener('click', () => {
             newEndpoint.remove();
         });
     },
 
-    // ?뱤 ?곕룞 ?곹깭 ?낅뜲?댄듃
+    // 📊 연동 상태 업데이트
     updateIntegrationStatus() {
         const activeCount = Object.values(this.integrations).filter(i => i.enabled).length;
         const lastSyncTimes = Object.values(this.integrations)
@@ -4987,7 +4987,7 @@ export const ReportModule = {
         const lastSync = lastSyncTimes.length > 0 ? 
             Math.max(...lastSyncTimes.map(t => new Date(t).getTime())) : null;
         
-        // UI ?낅뜲?댄듃
+        // UI 업데이트
         const activeEl = document.getElementById('active-integrations');
         const lastSyncEl = document.getElementById('last-sync');
         const statusEl = document.getElementById('integration-status');
@@ -4995,7 +4995,7 @@ export const ReportModule = {
         if (activeEl) activeEl.textContent = activeCount;
         if (lastSyncEl) {
             lastSyncEl.textContent = lastSync ? 
-                new Date(lastSync).toLocaleString('ko-KR') : '?놁쓬';
+                new Date(lastSync).toLocaleString('ko-KR') : '없음';
         }
         if (statusEl) {
             const dot = statusEl.querySelector('.status-dot');
@@ -5003,19 +5003,19 @@ export const ReportModule = {
             
             if (activeCount > 0) {
                 dot.className = 'status-dot online';
-                text.textContent = ' ?⑤씪??;
+                text.textContent = ' 온라인';
             } else {
                 dot.className = 'status-dot offline';
-                text.textContent = ' ?ㅽ봽?쇱씤';
+                text.textContent = ' 오프라인';
             }
         }
     },
 
-    // ?뵩 ?좏떥由ы떚 ?⑥닔??
+    // 🔧 유틸리티 함수들
     getAPIEndpoints() {
         const endpoints = [];
         document.querySelectorAll('.endpoint-item').forEach(item => {
-            const name = item.querySelector('input[placeholder*="?대쫫"]')?.value;
+            const name = item.querySelector('input[placeholder*="이름"]')?.value;
             const url = item.querySelector('input[type="url"]')?.value;
             const token = item.querySelector('input[type="password"]')?.value;
             
@@ -5037,7 +5037,7 @@ export const ReportModule = {
                 this.integrations = { ...this.integrations, ...JSON.parse(saved) };
             }
         } catch (error) {
-            console.error('???곕룞 ?ㅼ젙 濡쒕뱶 ?ㅽ뙣:', error);
+            console.error('❌ 연동 설정 로드 실패:', error);
         }
     },
 
@@ -5061,7 +5061,7 @@ export const ReportModule = {
         }
     },
 
-    // ?봽 ?곕룞 ?곹깭 ?쒖떆湲?異붽?
+    // 🔄 연동 상태 표시기 추가
     addIntegrationStatusIndicator() {
         const header = document.querySelector('.live-preview-sidebar .preview-header');
         if (!header) return;
@@ -5070,15 +5070,15 @@ export const ReportModule = {
         statusIndicator.className = 'integration-status-mini';
         statusIndicator.innerHTML = `
             <div class="status-mini-dot offline" id="statusMiniDot"></div>
-            <span id="statusMiniText">?곕룞 ?놁쓬</span>
+            <span id="statusMiniText">연동 없음</span>
         `;
         
         header.appendChild(statusIndicator);
         
-        // 二쇨린?곸쑝濡??곹깭 ?낅뜲?댄듃
+        // 주기적으로 상태 업데이트
         setInterval(() => {
             this.updateMiniStatusIndicator();
-        }, 30000); // 30珥덈쭏???낅뜲?댄듃
+        }, 30000); // 30초마다 업데이트
     },
 
     updateMiniStatusIndicator() {
@@ -5089,14 +5089,14 @@ export const ReportModule = {
         if (dot && text) {
             if (activeCount > 0) {
                 dot.className = 'status-mini-dot online';
-                text.textContent = `${activeCount}媛??곕룞`;
+                text.textContent = `${activeCount}개 연동`;
             } else {
                 dot.className = 'status-mini-dot offline';
-                text.textContent = '?곕룞 ?놁쓬';
+                text.textContent = '연동 없음';
             }
         }
     },
 };
 
-// ?? 紐⑤뱢 ?대낫?닿린
+// 🚀 모듈 내보내기
 export { ReportModule };
