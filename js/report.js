@@ -177,10 +177,7 @@ export const ReportModule = {
             else if (button.matches('#printReportBtn')) window.print();
         }
     },
-            if (button.matches('#closeReportModalBtn')) this.closeReportModal();
-            else if (button.matches('#printReportBtn')) window.print();
-        }
-    },
+
     // 🔥 실시간 미리보기 업데이트
     updateLivePreview() {
         const selectedTemplate = document.querySelector('.template-card.selected');
