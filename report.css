@@ -192,12 +192,12 @@
 /* ▼▼▼▼▼ 핵심 수정 부분 ▼▼▼▼▼ */
 /* 기간 필터를 감싸는 새로운 컨테이너 스타일 */
 #report .period-filter-container {
-    /* 그리드 한 줄을 모두 차지하도록 설정 */
-    grid-column: 1 / -1;
-    display: flex; /* 내부 요소들을 가로로 배열 */
-    align-items: flex-end; /* 내부 요소들을 아래쪽으로 정렬 */
+    /* 다른 필터들과 함께 그리드 아이템으로 배치되도록 수정 */
+    /* grid-column: 1 / -1; 제거하여 전체 폭 차지하지 않도록 함 */
+    display: flex;
+    align-items: flex-end;
     gap: 15px;
-    flex-wrap: wrap; /* 창이 좁아지면 줄바꿈 */
+    flex-wrap: wrap;
 }
 
 /* 날짜 범위 선택기 자체는 이제 그리드 아이템이 아니므로 grid-column 속성 제거 */
