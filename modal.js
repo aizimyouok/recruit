@@ -565,3 +565,5 @@ export const ModalModule = {
         }
     }
 };
+
+export { ModalModule };

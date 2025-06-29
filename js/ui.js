@@ -173,3 +173,5 @@ export const UIModule = {
         `;
     }
 };
+
+export { UIModule };

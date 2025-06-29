@@ -490,3 +490,5 @@ export const InterviewScheduleModule = {
         }
     }
 };
+
+export { InterviewScheduleModule };

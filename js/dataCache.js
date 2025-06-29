@@ -225,3 +225,5 @@ export const DataCacheModule = {
         window.location.reload();
     }
 };
+
+export { DataCacheModule };

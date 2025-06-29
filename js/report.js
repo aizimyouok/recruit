@@ -92,11 +92,19 @@ export const ReportModule = {
             // 7. 🤖 AI 분석 시스템 초기화
             this.initAIAnalysisSystem();
             
-            // 8. 📊 차트 인터랙션 시스템 초기화
-            this.initChartInteractionSystem();
+            // 8. 📊 차트 인터랙션 시스템 초기화 (안전한 방식)
+            try {
+                this.initChartInteractionSystem();
+            } catch (chartError) {
+                console.error('❌ 차트 인터랙션 시스템 건너뜀:', chartError);
+            }
             
             // 9. 🔗 외부 연동 시스템 초기화
-            this.initExternalIntegrationSystem();
+            try {
+                this.initExternalIntegrationSystem();
+            } catch (extError) {
+                console.error('❌ 외부 연동 시스템 건너뜀:', extError);
+            }
             
             // 10. 🚨 강제 레이아웃 수정 (CSS 적용 안될 때 대비)
             this.forceLayoutFix();
@@ -3705,30 +3713,48 @@ export const ReportModule = {
     },
     // 📊 C) 고급 기능 - 차트 인터랙션 강화
 
-    // 🔧 차트 인터랙션 시스템 초기화
+    // 🔧 차트 인터랙션 시스템 초기화 - 안전한 방식
     initChartInteractionSystem() {
-        console.log('📊 차트 인터랙션 시스템 초기화...');
-        
-        this.chartInteractions = {
-            drillDownHistory: [],
-            annotations: [],
-            highlights: {},
-            activeFilters: {},
-            animationEnabled: true
-        };
-        
-        this.setupAdvancedChartFeatures();
-        
-        console.log('✅ 차트 인터랙션 시스템 초기화 완료');
+        try {
+            console.log('📊 차트 인터랙션 시스템 초기화...');
+            
+            this.chartInteractions = {
+                drillDownHistory: [],
+                annotations: [],
+                highlights: {},
+                activeFilters: {},
+                animationEnabled: true
+            };
+            
+            this.setupAdvancedChartFeatures();
+            
+            console.log('✅ 차트 인터랙션 시스템 초기화 완료');
+        } catch (error) {
+            console.error('❌ 차트 인터랙션 시스템 초기화 실패:', error);
+            // 최소한의 기본값 설정
+            this.chartInteractions = {
+                drillDownHistory: [],
+                annotations: [],
+                highlights: {},
+                activeFilters: {},
+                animationEnabled: false
+            };
+        }
     },
 
-    // 🎯 고급 차트 기능 설정
+    // 🎯 고급 차트 기능 설정 - 안전한 방식
     setupAdvancedChartFeatures() {
-        // 기존 차트 인스턴스들에 인터랙션 추가
-        this.enhanceExistingCharts();
-        
-        // 새로운 차트 생성 시 자동으로 인터랙션 추가
-        this.interceptChartCreation();
+        try {
+            // 기존 차트 인스턴스들에 인터랙션 추가
+            this.enhanceExistingCharts();
+            
+            // 새로운 차트 생성 시 자동으로 인터랙션 추가
+            this.interceptChartCreation();
+            
+            console.log('✅ 고급 차트 기능 설정 완료');
+        } catch (error) {
+            console.error('❌ 고급 차트 기능 설정 실패:', error);
+        }
     },
 
     // 📈 기존 차트들 향상
@@ -3755,26 +3781,58 @@ export const ReportModule = {
         });
     },
 
-    // 📊 차트 생성 인터셉트
+    // 📊 차트 생성 인터셉트 - 안전한 방식으로 수정
     interceptChartCreation() {
-        // Chart.js 생성자 래핑
-        const originalChart = window.Chart;
-        const self = this;
-        
-        window.Chart = function(ctx, config) {
-            const chart = new originalChart(ctx, config);
+        try {
+            // Chart.js 생성자 래핑
+            const originalChart = window.Chart;
+            const self = this;
             
-            // 새로 생성된 차트에 인터랙션 추가
-            setTimeout(() => {
-                self.addChartInteractions(chart, ctx.canvas?.id || 'dynamic-chart');
-            }, 100);
+            window.Chart = function(ctx, config) {
+                const chart = new originalChart(ctx, config);
+                
+                // 새로 생성된 차트에 인터랙션 추가
+                setTimeout(() => {
+                    self.addChartInteractions(chart, ctx.canvas?.id || 'dynamic-chart');
+                }, 100);
+                
+                return chart;
+            };
             
-            return chart;
-        };
-        
-        // Chart.js의 정적 메서드들 복사
-        Object.setPrototypeOf(window.Chart, originalChart);
-        Object.assign(window.Chart, originalChart);
+            // Chart.js의 정적 메서드들을 안전하게 복사
+            Object.setPrototypeOf(window.Chart, originalChart);
+            
+            // 읽기 전용 속성들을 제외하고 복사
+            const descriptors = Object.getOwnPropertyDescriptors(originalChart);
+            for (const [key, descriptor] of Object.entries(descriptors)) {
+                if (descriptor.writable !== false && descriptor.set !== undefined) {
+                    try {
+                        Object.defineProperty(window.Chart, key, descriptor);
+                    } catch (error) {
+                        // 읽기 전용 속성은 무시
+                        console.warn(`⚠️ 차트 속성 복사 건너뜀: ${key}`);
+                    }
+                }
+            }
+            
+            // 기본적인 정적 메서드들만 안전하게 복사
+            const safeMethods = ['register', 'unregister', 'getChart', 'overrides'];
+            safeMethods.forEach(method => {
+                if (originalChart[method] && typeof originalChart[method] === 'function') {
+                    try {
+                        window.Chart[method] = originalChart[method];
+                    } catch (error) {
+                        console.warn(`⚠️ 차트 메서드 복사 실패: ${method}`, error);
+                    }
+                }
+            });
+            
+            console.log('✅ 차트 생성 인터셉트 설정 완료');
+            
+        } catch (error) {
+            console.error('❌ 차트 생성 인터셉트 설정 실패:', error);
+            // 인터셉트 실패 시 원본 Chart.js 그대로 사용
+        }
     },
 
     // 🎯 차트에 인터랙션 추가
@@ -4119,6 +4177,72 @@ export const ReportModule = {
                 this.toggleAnimations();
                 break;
         }
+    },
+
+    // 🏷️ 데이터 레이블 토글 기능 추가
+    addDataLabelToggle(chartInstance, chartId) {
+        if (!chartInstance || !chartInstance.canvas) {
+            console.warn('⚠️ 차트 인스턴스가 유효하지 않습니다:', chartId);
+            return;
+        }
+
+        // 차트에 데이터 레이블 토글 상태 초기화
+        if (!chartInstance._dataLabelsEnabled) {
+            chartInstance._dataLabelsEnabled = false;
+        }
+
+        // 차트 캔버스에 더블클릭 이벤트 추가 (데이터 레이블 토글용)
+        const canvas = chartInstance.canvas;
+        
+        const toggleDataLabels = () => {
+            chartInstance._dataLabelsEnabled = !chartInstance._dataLabelsEnabled;
+            
+            // 데이터 레이블 플러그인 설정
+            if (!chartInstance.options.plugins) {
+                chartInstance.options.plugins = {};
+            }
+            
+            if (!chartInstance.options.plugins.datalabels) {
+                chartInstance.options.plugins.datalabels = {};
+            }
+            
+            chartInstance.options.plugins.datalabels = {
+                display: chartInstance._dataLabelsEnabled,
+                color: '#1f2937',
+                font: {
+                    weight: 'bold',
+                    size: 11
+                },
+                formatter: (value, context) => {
+                    // 값이 숫자인 경우 적절한 포맷팅
+                    if (typeof value === 'number') {
+                        if (value >= 1000) {
+                            return (value / 1000).toFixed(1) + 'K';
+                        }
+                        return value.toString();
+                    }
+                    return value;
+                },
+                padding: 4,
+                borderRadius: 4,
+                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                borderColor: '#d1d5db',
+                borderWidth: 1
+            };
+            
+            // 차트 업데이트
+            chartInstance.update('none');
+            
+            console.log(`🏷️ 데이터 레이블 토글 (${chartId}):`, chartInstance._dataLabelsEnabled ? 'ON' : 'OFF');
+        };
+
+        // 더블클릭 이벤트 리스너 추가
+        canvas.addEventListener('dblclick', toggleDataLabels);
+        
+        // 차트 인스턴스에 토글 함수 저장 (나중에 제거할 수 있도록)
+        chartInstance._toggleDataLabels = toggleDataLabels;
+        
+        console.log(`✅ 데이터 레이블 토글 기능 추가 완료: ${chartId}`);
     },
 
     // 📤 차트 내보내기
@@ -5243,7 +5367,8 @@ export const ReportModule = {
         `;
 
         console.log(`✅ ${columnName} 필터 초기화 완료 (${uniqueValues.length}개 옵션)`);
-    },
+    }
 };
 
 // 🚀 모듈 내보내기
+export { ReportModule };

@@ -286,3 +286,5 @@ export const DataModule = {
         return result;
     }
 };
+
+export { DataModule };
