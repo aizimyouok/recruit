@@ -580,3 +580,4 @@ export const ReportModule = {
             if (e.target === overlay) overlay.remove();
         };
     }
+};
