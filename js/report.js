@@ -1247,12 +1247,7 @@ export const ReportModule = {
                 <p>시간별 지원자 추이 분석 결과입니다.</p>
             </div>
         `;
-    }
-
-};
-
-// 🚀 모듈 내보내기
-export default ReportModule;
+    },
     // 🎨 C) 고급 기능 - 커스텀 템플릿 편집기
 
     // 🔧 커스텀 템플릿 편집기 초기화
@@ -5101,3 +5096,8 @@ export default ReportModule;
             }
         }
     },
+};
+
+// 🚀 모듈 내보내기
+export { ReportModule };
+export default ReportModule;
