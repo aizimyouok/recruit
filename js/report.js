@@ -1123,8 +1123,7 @@ export const ReportModule = {
                 console.log('✅ [DEBUG] PowerPoint 생성 완료');
             });
         }, 1000);
-    }
-};
+    },
 
     // 🔥 ==================== 리포트 히스토리 관리 ====================
 
