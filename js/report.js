@@ -98,12 +98,85 @@ export const ReportModule = {
             // 9. 🔗 외부 연동 시스템 초기화
             this.initExternalIntegrationSystem();
             
+            // 10. 🚨 강제 레이아웃 수정 (CSS 적용 안될 때 대비)
+            this.forceLayoutFix();
+            
             this._isInitialized = true;
             console.log('✅ [ReportModule] B+C 고급 기능 전체 초기화 완료!');
             
         } catch (error) {
             console.error('❌ [ReportModule] 초기화 실패:', error);
         }
+    },
+
+    // 🚨 강제 레이아웃 수정 함수
+    forceLayoutFix() {
+        console.log('🚨 강제 레이아웃 수정 시작...');
+        
+        // DOM이 완전히 로드된 후에 실행
+        setTimeout(() => {
+            try {
+                const filterGrid = document.querySelector('#report .filter-grid');
+                if (filterGrid) {
+                    // 강제로 CSS 스타일 적용
+                    filterGrid.style.display = 'grid';
+                    filterGrid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+                    filterGrid.style.gap = '20px';
+                    filterGrid.style.alignItems = 'start';
+                    console.log('✅ filter-grid 스타일 강제 적용됨');
+                }
+
+                const periodContainer = document.querySelector('#report .period-filter-container');
+                if (periodContainer) {
+                    periodContainer.style.gridColumn = 'span 1';
+                    periodContainer.style.display = 'block';
+                    console.log('✅ period-filter-container 스타일 강제 적용됨');
+                }
+
+                const filterSection = document.querySelector('#report .filter-section');
+                if (filterSection) {
+                    filterSection.style.background = '#ffffff';
+                    filterSection.style.borderRadius = '12px';
+                    filterSection.style.padding = '20px';
+                    filterSection.style.marginBottom = '20px';
+                    filterSection.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+                    console.log('✅ filter-section 스타일 강제 적용됨');
+                }
+
+                // 모든 필터 그룹 스타일링
+                const filterGroups = document.querySelectorAll('#report .filter-group');
+                filterGroups.forEach(group => {
+                    group.style.marginBottom = '15px';
+                    
+                    const label = group.querySelector('label');
+                    if (label) {
+                        label.style.display = 'block';
+                        label.style.marginBottom = '5px';
+                        label.style.fontWeight = '600';
+                        label.style.color = '#374151';
+                        label.style.fontSize = '14px';
+                    }
+
+                    const select = group.querySelector('select');
+                    const input = group.querySelector('input');
+                    [select, input].forEach(element => {
+                        if (element) {
+                            element.style.width = '100%';
+                            element.style.padding = '8px 12px';
+                            element.style.border = '1px solid #d1d5db';
+                            element.style.borderRadius = '6px';
+                            element.style.fontSize = '14px';
+                            element.style.background = 'white';
+                        }
+                    });
+                });
+
+                console.log('✅ 모든 필터 요소 스타일 강제 적용 완료');
+
+            } catch (error) {
+                console.error('❌ 강제 레이아웃 수정 실패:', error);
+            }
+        }, 1000); // 1초 후에 실행하여 DOM이 완전히 로드되도록 함
     },
 
     // 🎨 템플릿 갤러리 동적 렌더링
