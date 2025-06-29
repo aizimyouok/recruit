@@ -182,11 +182,11 @@
 }
 
 #report .filter-grid {
-    display: grid;
-    /* 필터 영역을 적당히 넓게 - 원래 200px에서 220px로 소폭 증가 */
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    align-items: end;
-    gap: 20px 15px; /* 원래 간격 유지 */
+    display: grid !important;
+    /* 필터들이 가로로 배치되도록 더 작은 최소 폭으로 설정 */
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+    align-items: end !important;
+    gap: 20px 15px !important;
 }
 
 /* ▼▼▼▼▼ 핵심 수정 부분 ▼▼▼▼▼ */
@@ -194,10 +194,13 @@
 #report .period-filter-container {
     /* 다른 필터들과 함께 그리드 아이템으로 배치되도록 수정 */
     /* grid-column: 1 / -1; 제거하여 전체 폭 차지하지 않도록 함 */
-    display: flex;
-    align-items: flex-end;
-    gap: 15px;
-    flex-wrap: wrap;
+    display: flex !important;
+    align-items: flex-end !important;
+    gap: 15px !important;
+    flex-wrap: wrap !important;
+    /* grid-column 속성을 완전히 무력화 */
+    grid-column: unset !important;
+}
 }
 
 /* 날짜 범위 선택기 자체는 이제 그리드 아이템이 아니므로 grid-column 속성 제거 */
@@ -5185,4 +5188,44 @@
 /* 실시간 미리보기 패딩 증가 */
 .live-preview-sidebar {
     padding: 22px;
+}
+
+/* 🚨 강제 레이아웃 수정 - 필터 영역 가로 배치 */
+#report .filter-section {
+    background: #ffffff !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    margin-bottom: 20px !important;
+}
+
+#report .filter-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 20px !important;
+    align-items: start !important;
+}
+
+#report .period-filter-container {
+    grid-column: span 1 !important;
+    display: block !important;
+}
+
+#report .filter-group {
+    margin-bottom: 15px !important;
+}
+
+#report .filter-group label {
+    display: block !important;
+    margin-bottom: 5px !important;
+    font-weight: 600 !important;
+    color: #374151 !important;
+}
+
+#report .filter-group select,
+#report .filter-group input {
+    width: 100% !important;
+    padding: 8px 12px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px !important;
+    font-size: 14px !important;
 }
