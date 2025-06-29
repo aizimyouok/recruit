@@ -445,30 +445,35 @@ export const ReportModule = {
             value
         }));
 
-        // Chart.js 미니 도넛 차트
-        this._miniChartInstance = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: chartData.map(item => item.label),
-                datasets: [{
-                    data: chartData.map(item => item.value),
-                    backgroundColor: [
-                        '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'
-                    ],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
+        // Chart.js 미니 도넛 차트 - 안전한 생성
+        try {
+            this._miniChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: chartData.map(item => item.label),
+                    datasets: [{
+                        data: chartData.map(item => item.value),
+                        backgroundColor: [
+                            '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'
+                        ],
+                        borderWidth: 0
+                    }]
                 },
-                cutout: '60%'
-            }
-        });
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+        } catch (chartError) {
+            console.error('❌ 미니 차트 생성 실패:', chartError);
+            this.drawEmptyChart(ctx);
+        }
     },
 
     // 🔄 사이드바 토글
@@ -687,7 +692,7 @@ export const ReportModule = {
         
         document.body.appendChild(container);
         
-        // 차트 생성
+        // 차트 생성 - 안전한 생성
         const canvas = container.querySelector('#tempChart');
         const ctx = canvas.getContext('2d');
         
@@ -696,33 +701,42 @@ export const ReportModule = {
             value
         }));
         
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: chartData.map(item => item.label),
-                datasets: [{
-                    data: chartData.map(item => item.value),
-                    backgroundColor: [
-                        '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'
-                    ],
-                    borderWidth: 2,
-                    borderColor: '#ffffff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                        labels: {
-                            padding: 20,
-                            usePointStyle: true
+        try {
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: chartData.map(item => item.label),
+                    datasets: [{
+                        data: chartData.map(item => item.value),
+                        backgroundColor: [
+                            '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
+        } catch (chartError) {
+            console.error('❌ PowerPoint용 차트 생성 실패:', chartError);
+            // 차트 생성 실패 시 대체 콘텐츠 표시
+            canvas.style.display = 'none';
+            const errorDiv = document.createElement('div');
+            errorDiv.innerHTML = '<p style="text-align: center; color: #6b7280;">차트 생성 실패</p>';
+            canvas.parentNode.appendChild(errorDiv);
+        }
         
         // 렌더링 완료 대기
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -5168,6 +5182,67 @@ export const ReportModule = {
                 text.textContent = '연동 없음';
             }
         }
+    },
+
+    // 🔧 필터 초기화 함수 (data.js에서 호출됨)
+    populateFilters() {
+        console.log('📊 리포트 필터 초기화 시작...');
+        
+        try {
+            // 전역 앱 상태에서 데이터 가져오기
+            const allData = globalThis.App?.state?.data?.all || [];
+            
+            if (!allData || allData.length === 0) {
+                console.warn('⚠️ 필터 초기화용 데이터가 없습니다.');
+                return;
+            }
+
+            const headers = globalThis.App?.state?.data?.headers || [];
+            
+            // 각 필터 드롭다운 초기화
+            this.populateFilterDropdown('report-filter-route', headers, allData, '지원루트');
+            this.populateFilterDropdown('report-filter-field', headers, allData, '모집분야');
+            this.populateFilterDropdown('report-filter-company', headers, allData, '회사명');
+            this.populateFilterDropdown('report-filter-recruiter', headers, allData, '증원자');
+            this.populateFilterDropdown('report-filter-interviewer', headers, allData, '면접관');
+            
+            // 실시간 미리보기 업데이트
+            this.updateLivePreview();
+            
+            console.log('✅ 리포트 필터 초기화 완료');
+            
+        } catch (error) {
+            console.error('❌ 리포트 필터 초기화 실패:', error);
+        }
+    },
+
+    // 🔧 개별 필터 드롭다운 초기화
+    populateFilterDropdown(selectId, headers, data, columnName) {
+        const selectElement = document.getElementById(selectId);
+        if (!selectElement) {
+            console.warn(`⚠️ 필터 요소를 찾을 수 없습니다: ${selectId}`);
+            return;
+        }
+
+        const columnIndex = headers.indexOf(columnName);
+        if (columnIndex === -1) {
+            console.warn(`⚠️ 컬럼을 찾을 수 없습니다: ${columnName}`);
+            return;
+        }
+
+        // 고유한 값들 추출
+        const uniqueValues = [...new Set(
+            data.map(row => (row[columnIndex] || '').toString().trim())
+                .filter(value => value && value !== '')
+        )].sort();
+
+        // 드롭다운 옵션 생성
+        selectElement.innerHTML = `
+            <option value="">전체</option>
+            ${uniqueValues.map(value => `<option value="${value}">${value}</option>`).join('')}
+        `;
+
+        console.log(`✅ ${columnName} 필터 초기화 완료 (${uniqueValues.length}개 옵션)`);
     },
 };
 
