@@ -288,5 +288,3 @@ export const Utils = {
         return false;
     }
 };
-
-export { Utils };
