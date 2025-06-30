@@ -40,6 +40,32 @@
             grid-template-columns: 1fr 1fr !important;
             gap: 20px !important;
         }
+        
+        /* 🔥 실시간 미리보기 창 크기 조정 - 데이터 필터링 창과 동일한 크기 */
+        #report .report-main-grid {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important; /* 완전히 동일한 크기 */
+            gap: 20px !important;
+            max-width: 2800px !important;
+            margin: 0 auto !important;
+            width: 100% !important;
+            align-items: start !important;
+        }
+        
+        #report .report-builder-section {
+            min-width: 0 !important;
+            width: 100% !important;
+        }
+        
+        #report .live-preview-sidebar {
+            width: 100% !important;
+            min-width: 0 !important;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
+            border-radius: 16px !important;
+            padding: 25px !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+        }
     </style>
 </head>
 <body>
