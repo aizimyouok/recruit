@@ -89,7 +89,6 @@ const ReportModule = {
                 this.populateFilters();
                 this.setupPeriodFilterListener();
             }, 1000);
-            }, 1000);
             
             this._isInitialized = true;
             console.log('✅ [ReportModule v6.0] 초기화 완료!');
