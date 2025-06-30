@@ -15,7 +15,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
-    <!-- 🚨 강제 레이아웃 수정 - 인라인 스타일로 확실히 적용 -->
     <style>
         /* 데이터 필터링 영역 강제 가로 배치 */
         #report .filter-grid {
@@ -473,13 +472,10 @@
                     </div>
                 </div>
 
-                <!-- ================== [수정된 부분 시작] ================== -->
-                <!-- 리포트 페이지: HTML 구조만 남기고 style과 script 태그는 제거 -->
-                 <div id="report" class="page">
+                <div id="report" class="page">
                     <div class="report-container">
                         <div class="report-header">
                             <h1><i class="fas fa-chart-line"></i> CFC 채용 리포트</h1>
-                            
                         </div>
 
                         <div class="report-tabs-container">
@@ -498,236 +494,130 @@
                                 </button>
                             </div>
                         </div>
-
-                        <div class="report-content">
-                            <!-- 🔥 새로운 그리드 레이아웃 -->
-                            <div class="report-main-grid">
-                                <div class="report-builder-section">
-                                    <div class="report-builder">
-                                <div id="templates-tab" class="tab-content active">
-                                    <div class="filter-section">
-    <div class="filter-section-header">
-        <h3><i class="fas fa-filter"></i> 데이터 필터링</h3>
-        <button class="btn-reset-filters" id="report-reset-filters">
-            <i class="fas fa-undo"></i> 초기화
-        </button>
-    </div>
-    <div class="filter-grid">
-        <div class="period-filter-container">
-            <div class="filter-group">
-                <label>기간 선택</label>
-                <select id="report-filter-period">
-                    <option value="all">전체 기간</option>
-                    <option value="this-month">이번달</option>
-                    <option value="last-30">최근 30일</option>
-                    <option value="last-90">최근 3개월</option>
-                    <option value="this-year">올해</option>
-                    <option value="custom">사용자 지정</option>
-                </select>
-            </div>
-            <div class="filter-group date-range-picker" id="report-custom-date-range">
-                <label>날짜 범위 입력</label> 
-                <div class="date-range-inputs">
-                    <input type="date" id="report-start-date">
-                    <span>-</span>
-                    <input type="date" id="report-end-date">
-                </div>
-            </div>
-        </div>
-        <div class="filter-group">
-            <label>지원루트</label>
-            <select id="report-filter-route">
-                <option>로딩 중...</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label>모집분야</label>
-            <select id="report-filter-position">
-                <option>로딩 중...</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label>회사명</label>
-            <select id="report-filter-company">
-                <option>로딩 중...</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label>증원자</label>
-            <select id="report-filter-recruiter">
-                <option>로딩 중...</option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label>면접관</label>
-            <select id="report-filter-interviewer">
-                <option>로딩 중...</option>
-            </select>
-        </div>
-    </div>
-</div>
-                                    <div class="option-group">
-                                        <div class="option-title">
-                                            <i class="fas fa-file-alt"></i> 리포트 템플릿 선택
-                                        </div>
-                                        <div class="template-gallery">
-                                            <!-- 🔥 동적으로 렌더링되는 템플릿 갤러리 -->
-                                            <div class="template-loading">
-                                                <i class="fas fa-spinner fa-spin"></i> 템플릿 로딩 중...
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="option-group">
-                                        <div class="option-title">
-                                            <i class="fas fa-download"></i> 출력 형식
-                                        </div>
-                                        <div class="format-selector">
-                                            <div class="format-option selected"><i class="fas fa-file-pdf"></i><span>PDF</span></div>
-                                            <div class="format-option"><i class="fas fa-file-excel"></i><span>Excel</span></div>
-                                            <div class="format-option"><i class="fas fa-file-powerpoint"></i><span>PowerPoint</span></div>
-                                            <div class="format-option"><i class="fas fa-globe"></i><span>웹 리포트</span></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="custom-tab" class="tab-content">
-                                    <div class="option-group">
-                                        <div class="option-title"><i class="fas fa-puzzle-piece"></i> 포함할 섹션 선택</div>
-                                        <div class="checkbox-group">
-                                            <div class="checkbox-item"><input type="checkbox" id="kpi" checked><label for="kpi">핵심 성과 지표 (KPI)<small>총 지원자, 전환율, 입과율 등 주요 지표</small></label></div>
-                                            <div class="checkbox-item"><input type="checkbox" id="charts" checked><label for="charts">시각화 차트<small>지원루트별, 모집분야별 분포도</small></label></div>
-                                            <div class="checkbox-item"><input type="checkbox" id="trends"><label for="trends">트렌드 분석<small>시간별 지원자 추이 및 패턴 분석</small></label></div>
-                                            <div class="checkbox-item"><input type="checkbox" id="efficiency"><label for="efficiency">효율성 분석<small>채용 경로별 효율성 비교</small></label></div>
-                                            <div class="checkbox-item"><input type="checkbox" id="demographics"><label for="demographics">인구통계 분석<small>연령대, 성별, 지역별 분포</small></label></div>
-                                            <div class="checkbox-item"><input type="checkbox" id="interviews"><label for="interviews">면접 현황<small>면접 일정 및 결과 분석</small></label></div>
-                                        </div>
-                                    </div>
-                                    <div class="option-group">
-                                        <div class="option-title"><i class="fas fa-palette"></i> 차트 스타일</div>
-                                        <div class="format-selector">
-                                            <div class="format-option selected"><i class="fas fa-paint-brush"></i><span>모던</span></div>
-                                            <div class="format-option"><i class="fas fa-chart-bar"></i><span>클래식</span></div>
-                                            <div class="format-option"><i class="fas fa-magic"></i><span>미니멀</span></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="ai-tab" class="tab-content">
-                                    <div class="ai-analysis-grid">
-                                        <div class="analysis-category">
-                                            <div class="category-title"><i class="fas fa-funnel-dollar"></i> 유입 분석</div>
-                                            <div class="analysis-item"><label><input type="checkbox"><div><div class="analysis-title">가장 효율적인 지원 경로는?</div><div class="analysis-description">어떤 지원루트가 가장 많은 최종 입사자를 만들어내는지 분석합니다.</div></div></label></div>
-                                            <div class="analysis-item"><label><input type="checkbox"><div><div class="analysis-title">최고의 증원자는 누구인가?</div><div class="analysis-description">어떤 증원자가 추천한 지원자들이 면접 합격률이 높은지 분석합니다.</div></div></label></div>
-                                        </div>
-                                        <div class="analysis-category">
-                                            <div class="category-title"><i class="fas fa-users"></i> 지원자 특징 분석</div>
-                                            <div class="analysis-item"><label><input type="checkbox"><div><div class="analysis-title">최종 합격자들의 공통점은?</div><div class="analysis-description">합격자들의 주요 나이대, 성별, 지역 등 인구통계학적 특징을 파악합니다.</div></div></label></div>
-                                            <div class="analysis-item"><label><input type="checkbox"><div><div class="analysis-title">면접 전환율이 높은 지원자 유형은?</div><div class="analysis-description">서류 통과 후 면접까지 잘 이어지는 지원자들의 특징을 분석합니다.</div></div></label></div>
-                                        </div>
-                                        <div class="analysis-category">
-                                            <div class="category-title"><i class="fas fa-chart-line"></i> 채용 과정 분석</div>
-                                            <div class="analysis-item"><label><input type="checkbox"><div><div class="analysis-title">이탈이 가장 많은 구간은?</div><div class="analysis-description">지원부터 입과까지 단계별 전환율을 계산하고 병목 구간을 찾아냅니다.</div></div></label></div>
-                                            <div class="analysis-item"><label><input type="checkbox"><div><div class="analysis-title">면접관별 합격률 차이는?</div><div class="analysis-description">면접관별 평균 합격률과 평가 성향을 비교 분석합니다.</div></div></label></div>
-                                        </div>
-                                        <div class="analysis-category">
-                                            <div class="category-title"><i class="fas fa-brain"></i> 예측 분석</div>
-                                            <div class="analysis-item"><label><input type="checkbox"><div><div class="analysis-title">다음 달 지원자 수 예측</div><div class="analysis-description">과거 트렌드를 바탕으로 향후 지원자 수를 예측합니다.</div></div></label></div>
-                                            <div class="analysis-item"><label><input type="checkbox"><div><div class="analysis-title">계절성 분석</div><div class="analysis-description">월별, 계절별 채용 패턴을 분석하여 최적의 채용 시기를 제안합니다.</div></div></label></div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="history-tab" class="tab-content">
-                                    <div class="option-group">
-                                        <div class="option-title"><i class="fas fa-clock"></i> 최근 생성된 리포트</div>
-                                        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; text-align: center; color: #6b7280;">
-                                            <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
-                                            <p>아직 생성된 리포트가 없습니다.</p>
-                                            <p style="font-size: 0.9rem; margin-top: 5px;">첫 번째 리포트를 생성해보세요!</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="progress-section" style="display: none;">
-                                    <h4>리포트 생성 진행률</h4>
-                                    <div class="progress-bar"><div class="progress-fill"></div></div>
-                                    <div class="progress-steps">
-                                        <div class="progress-step active"><i class="fas fa-database"></i> 데이터 수집</div>
-                                        <div class="progress-step"><i class="fas fa-chart-bar"></i> 분석 처리</div>
-                                        <div class="progress-step"><i class="fas fa-magic"></i> AI 분석</div>
-                                        <div class="progress-step"><i class="fas fa-file-pdf"></i> 리포트 생성</div>
-                                    </div>
-                                </div>
-                                <div class="action-buttons">
-                                    <button class="btn btn-secondary"><i class="fas fa-eye"></i> 미리보기</button>
-                                    <button class="btn btn-primary" id="generateReportBtn"><i class="fas fa-magic"></i> 리포트 생성</button>
-                                </div>
-                            </div>
-                        </div>
                         
-                        <!-- 🔥 실시간 미리보기 사이드바 -->
-                        <div class="live-preview-sidebar" id="livePreviewSidebar">
-                            <div class="preview-header">
-                                <h3><i class="fas fa-eye"></i> 실시간 미리보기</h3>
-                                <button class="preview-toggle" id="previewToggle">
-                                    <i class="fas fa-chevron-left"></i>
-                                </button>
+                        <div class="report-main-grid">
+                            <div class="report-builder-section">
+                                <div class="report-builder">
+                                    <div id="templates-tab" class="tab-content active">
+                                        <div class="filter-section">
+                                            <div class="filter-section-header">
+                                                <h3><i class="fas fa-filter"></i> 데이터 필터링</h3>
+                                                <button class="btn-reset-filters" id="report-reset-filters">
+                                                    <i class="fas fa-undo"></i> 초기화
+                                                </button>
+                                            </div>
+                                            <div class="filter-grid">
+                                                <div class="period-filter-container">
+                                                    <div class="filter-group">
+                                                        <label>기간 선택</label>
+                                                        <select id="report-filter-period">
+                                                            <option value="all">전체 기간</option>
+                                                            <option value="this-month">이번달</option>
+                                                            <option value="last-30">최근 30일</option>
+                                                            <option value="last-90">최근 3개월</option>
+                                                            <option value="this-year">올해</option>
+                                                            <option value="custom">사용자 지정</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="filter-group date-range-picker" id="report-custom-date-range">
+                                                        <label>날짜 범위 입력</label> 
+                                                        <div class="date-range-inputs">
+                                                            <input type="date" id="report-start-date">
+                                                            <span>-</span>
+                                                            <input type="date" id="report-end-date">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="filter-group">
+                                                    <label>지원루트</label>
+                                                    <select id="report-filter-route">
+                                                        <option>로딩 중...</option>
+                                                    </select>
+                                                </div>
+                                                <div class="filter-group">
+                                                    <label>모집분야</label>
+                                                    <select id="report-filter-position">
+                                                        <option>로딩 중...</option>
+                                                    </select>
+                                                </div>
+                                                <div class="filter-group">
+                                                    <label>회사명</label>
+                                                    <select id="report-filter-company">
+                                                        <option>로딩 중...</option>
+                                                    </select>
+                                                </div>
+                                                <div class="filter-group">
+                                                    <label>증원자</label>
+                                                    <select id="report-filter-recruiter">
+                                                        <option>로딩 중...</option>
+                                                    </select>
+                                                </div>
+                                                <div class="filter-group">
+                                                    <label>면접관</label>
+                                                    <select id="report-filter-interviewer">
+                                                        <option>로딩 중...</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="option-group">
+                                            <div class="option-title">
+                                                <i class="fas fa-file-alt"></i> 리포트 템플릿 선택
+                                            </div>
+                                            <div class="template-gallery">
+                                                <div class="template-loading">
+                                                    <i class="fas fa-spinner fa-spin"></i> 템플릿 로딩 중...
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="option-group">
+                                            <div class="option-title">
+                                                <i class="fas fa-download"></i> 출력 형식
+                                            </div>
+                                            <div class="format-selector">
+                                                <div class="format-option selected"><i class="fas fa-file-pdf"></i><span>PDF</span></div>
+                                                <div class="format-option"><i class="fas fa-file-excel"></i><span>Excel</span></div>
+                                                <div class="format-option"><i class="fas fa-file-powerpoint"></i><span>PowerPoint</span></div>
+                                                <div class="format-option"><i class="fas fa-globe"></i><span>웹 리포트</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="custom-tab" class="tab-content">
+                                    </div>
+                                    <div id="ai-tab" class="tab-content">
+                                    </div>
+                                    <div id="history-tab" class="tab-content">
+                                    </div>
+                                    <div class="progress-section" style="display: none;">
+                                        <h4>리포트 생성 진행률</h4>
+                                        <div class="progress-bar"><div class="progress-fill"></div></div>
+                                        <div class="progress-steps">
+                                            <div class="progress-step active"><i class="fas fa-database"></i> 데이터 수집</div>
+                                            <div class="progress-step"><i class="fas fa-chart-bar"></i> 분석 처리</div>
+                                            <div class="progress-step"><i class="fas fa-magic"></i> AI 분석</div>
+                                            <div class="progress-step"><i class="fas fa-file-pdf"></i> 리포트 생성</div>
+                                        </div>
+                                    </div>
+                                    <div class="action-buttons">
+                                        <button class="btn btn-secondary"><i class="fas fa-eye"></i> 미리보기</button>
+                                        <button class="btn btn-primary" id="generateReportBtn"><i class="fas fa-magic"></i> 리포트 생성</button>
+                                    </div>
+                                </div>
                             </div>
-                            
-                            <div class="preview-content" id="livePreviewContent">
-                                <div class="preview-stats">
-                                    <div class="stat-item">
-                                        <div class="stat-label">선택된 템플릿</div>
-                                        <div class="stat-value" id="previewTemplateName">경영진 요약</div>
-                                    </div>
-                                    <div class="stat-item">
-                                        <div class="stat-label">데이터 범위</div>
-                                        <div class="stat-value" id="previewDataRange">전체 기간</div>
-                                    </div>
-                                    <div class="stat-item">
-                                        <div class="stat-label">예상 생성 시간</div>
-                                        <div class="stat-value" id="previewEstimatedTime">30초</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="preview-summary">
-                                    <h4>요약 정보</h4>
-                                    <div class="summary-grid">
-                                        <div class="summary-item">
-                                            <div class="summary-icon"><i class="fas fa-users"></i></div>
-                                            <div class="summary-text">
-                                                <div class="summary-label">총 지원자</div>
-                                                <div class="summary-value" id="previewTotalApplicants">로딩 중...</div>
-                                            </div>
-                                        </div>
-                                        <div class="summary-item">
-                                            <div class="summary-icon"><i class="fas fa-funnel-dollar"></i></div>
-                                            <div class="summary-text">
-                                                <div class="summary-label">전환율</div>
-                                                <div class="summary-value" id="previewConversionRate">로딩 중...</div>
-                                            </div>
-                                        </div>
-                                        <div class="summary-item">
-                                            <div class="summary-icon"><i class="fas fa-chart-line"></i></div>
-                                            <div class="summary-text">
-                                                <div class="summary-label">주요 채용 경로</div>
-                                                <div class="summary-value" id="previewTopSource">로딩 중...</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="preview-chart-container">
-                                    <h4>미니 차트</h4>
-                                    <canvas id="previewMiniChart" width="280" height="150"></canvas>
-                                </div>
-                                
-                                <div class="preview-actions">
-                                    <button class="btn-preview-full" id="openFullPreview">
-                                        <i class="fas fa-expand-arrows-alt"></i> 전체 미리보기
+
+                            <div class="live-preview-sidebar" id="livePreviewSidebar">
+                                <div class="preview-header">
+                                    <h3><i class="fas fa-eye"></i> 실시간 미리보기</h3>
+                                    <button class="preview-toggle" id="previewToggle">
+                                        <i class="fas fa-chevron-left"></i>
                                     </button>
                                 </div>
+                                <div class="preview-content" id="livePreviewContent">
+                                </div>
                             </div>
-                        </div>
-                    </div>
+                        </div> </div>
                 </div>
-            </div>
+                </div>
         </main>
     </div>
 
