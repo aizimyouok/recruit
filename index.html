@@ -16,6 +16,21 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
+        /* 🚨 전체 레이아웃 최대 폭 제한 완전 제거 */
+        body, html {
+            width: 100% !important;
+            max-width: none !important;
+        }
+        
+        .app-container,
+        .main-content,
+        .content-area,
+        .content-container,
+        #report {
+            width: 100% !important;
+            max-width: none !important;
+        }
+        
         /* 데이터 필터링 영역 강제 가로 배치 - 화면 끝까지 가득 채우기 */
         #report .filter-grid {
             display: grid !important;
@@ -96,11 +111,29 @@
             max-width: none !important;
         }
         
-        /* 모든 컨테이너들 */
+        /* 모든 컨테이너들 강제 전체 폭 적용 */
         .report-main-grid,
         .report-builder-section,
         #report .report-builder,
-        #report .option-group {
+        #report .option-group,
+        #report .report-container {
+            width: 100% !important;
+            max-width: none !important;
+        }
+        
+        /* 🚨 최우선 강제 적용 - 모든 요소를 화면 끝까지 */
+        #report * {
+            box-sizing: border-box !important;
+        }
+        
+        /* content-area의 padding을 리포트 페이지에서만 줄이기 */
+        #report.page {
+            margin: -30px !important; /* content-area의 30px 패딩 상쇄 */
+            padding: 15px !important; /* 최소한의 패딩만 유지 */
+            width: calc(100% + 60px) !important; /* 패딩 상쇄한 만큼 폭 확대 */
+        }
+        
+        #report .report-main-grid {
             width: 100% !important;
             max-width: none !important;
         }
