@@ -80,9 +80,15 @@ const ReportModule = {
             this.initFormatSelector();
             this.initSecureAISystem();
             
+            // 🔥 그리드 레이아웃 강제 적용
+            setTimeout(() => {
+                this.forceGridLayout();
+            }, 500);
+            
             setTimeout(() => {
                 this.populateFilters();
                 this.setupPeriodFilterListener();
+            }, 1000);
             }, 1000);
             
             this._isInitialized = true;
@@ -153,7 +159,37 @@ const ReportModule = {
         if (selectedCard) {
             selectedCard.classList.add('selected');
             this._currentTemplate = templateKey;
+            
+            // 🔥 그리드 레이아웃 강제 적용
+            this.forceGridLayout();
             this.updateLivePreview();
+        }
+    },
+    
+    // 🔥 그리드 레이아웃 강제 적용 함수
+    forceGridLayout() {
+        const reportMainGrid = document.querySelector('.report-main-grid');
+        if (reportMainGrid) {
+            reportMainGrid.style.display = 'grid';
+            reportMainGrid.style.gridTemplateColumns = '1fr 1fr';
+            reportMainGrid.style.gap = '20px';
+            reportMainGrid.style.width = '100%';
+            reportMainGrid.style.maxWidth = '2800px';
+            reportMainGrid.style.margin = '0 auto';
+            reportMainGrid.style.alignItems = 'start';
+        }
+        
+        const reportBuilderSection = document.querySelector('.report-builder-section');
+        if (reportBuilderSection) {
+            reportBuilderSection.style.width = '100%';
+            reportBuilderSection.style.minWidth = '0';
+        }
+        
+        const livePreviewSidebar = document.querySelector('.live-preview-sidebar');
+        if (livePreviewSidebar) {
+            livePreviewSidebar.style.width = '100%';
+            livePreviewSidebar.style.minWidth = '0';
+            livePreviewSidebar.style.maxWidth = '100%';
         }
     },
 
@@ -173,7 +209,22 @@ const ReportModule = {
     // 라이브 미리보기 업데이트
     updateLivePreview() {
         const previewContent = document.getElementById('livePreviewContent');
+        const previewSidebar = document.getElementById('livePreviewSidebar');
+        
         if (!previewContent) return;
+        
+        // 🔥 미리보기 사이드바 스타일 강제 적용
+        if (previewSidebar) {
+            previewSidebar.style.width = '100%';
+            previewSidebar.style.maxWidth = '100%';
+            previewSidebar.style.minWidth = '0';
+            previewSidebar.style.boxSizing = 'border-box';
+        }
+        
+        // 🔥 미리보기 콘텐츠 스타일 강제 적용  
+        previewContent.style.width = '100%';
+        previewContent.style.maxWidth = '100%';
+        previewContent.style.boxSizing = 'border-box';
         
         const template = this.templates[this._currentTemplate];
         if (!template) return;
@@ -185,7 +236,7 @@ const ReportModule = {
                 <h4>${template.name}</h4>
                 <span class="preview-count">${filteredData.length}명 대상</span>
             </div>
-            <div class="preview-summary" style="width: 100%; overflow-x: auto;">
+            <div class="preview-summary" style="width: 100%; max-width: 100%; overflow-x: auto; box-sizing: border-box;">
                 ${this.generateReportContent(template, filteredData)}
             </div>
             <div class="preview-actions">
@@ -194,6 +245,22 @@ const ReportModule = {
                 </button>
             </div>
         `;
+        
+        // 🔥 DOM 삽입 후 추가 스타일 강제 적용
+        setTimeout(() => {
+            const allElements = previewContent.querySelectorAll('*');
+            allElements.forEach(el => {
+                if (el.classList.contains('report-content') || 
+                    el.classList.contains('report-header') || 
+                    el.classList.contains('report-section') ||
+                    el.classList.contains('kpi-grid') ||
+                    el.classList.contains('kpi-card')) {
+                    el.style.width = '100%';
+                    el.style.maxWidth = '100%';
+                    el.style.boxSizing = 'border-box';
+                }
+            });
+        }, 50);
     },
 
     // 미리보기 요약 생성
