@@ -126,6 +126,10 @@
     border-radius: 16px;
     padding: 25px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    background: var(--main-bg);
+    width: 100%; /* 명시적으로 전체 너비 사용 */
+    min-height: 600px; /* 최소 높이 설정으로 미리보기와 균형 맞춤 */
+    height: fit-content;
 }
 
 #report .report-preview {
@@ -1572,15 +1576,17 @@
 
 .report-main-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* 데이터 필터링 창과 미리보기 창 동일한 크기 */
-    gap: 25px;
-    max-width: 2800px; /* 더 넓게 설정 */
+    grid-template-columns: 1fr 1fr; /* 데이터 필터링 창과 미리보기 창 완전히 동일한 크기 */
+    gap: 20px;
+    max-width: 2800px;
     margin: 0 auto;
     width: 100%;
+    align-items: start; /* 상단 정렬로 동일한 시작점 */
 }
 
 .report-builder-section {
     min-width: 0;
+    width: 100%; /* 명시적으로 전체 너비 사용 */
 }
 
 .live-preview-sidebar {
@@ -1591,11 +1597,13 @@
     position: sticky;
     top: 20px;
     height: fit-content;
+    min-height: 600px; /* 데이터 필터링 섹션과 동일한 최소 높이 */
     max-height: calc(100vh - 40px);
     overflow-y: auto;
     transition: all 0.3s ease;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-    /* 고정 width 제거 - 그리드가 자동으로 크기 조정 */
+    width: 100%; /* 명시적으로 전체 너비 사용 */
+    min-width: 0; /* 그리드 아이템이 너무 좁아지지 않도록 */
 }
 
 .live-preview-sidebar.collapsed {
@@ -1615,8 +1623,8 @@
 
 .preview-header h3 {
     margin: 0;
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: 1.2rem; /* 데이터 필터링 헤더와 비슷한 크기 */
+    font-weight: 700; /* 더 굵게 */
     color: #1e293b;
     display: flex;
     align-items: center;
@@ -1625,6 +1633,7 @@
 
 .preview-header h3 i {
     color: #3b82f6;
+    font-size: 1.1rem;
 }
 
 .preview-toggle {
@@ -1840,18 +1849,22 @@
 
 @media (max-width: 1200px) {
     .report-main-grid {
-        grid-template-columns: 1fr 1fr; /* 동일한 크기 유지 */
+        grid-template-columns: 1fr 1fr; /* 중간 화면에서도 동일한 크기 유지 */
         gap: 15px;
     }
     
     .live-preview-sidebar {
-        padding: 15px;
+        padding: 20px;
+    }
+    
+    .report-builder-section {
+        width: 100%;
     }
 }
 
 @media (max-width: 768px) {
     .report-main-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr; /* 모바일에서만 세로 배치 */
         gap: 20px;
     }
     
@@ -1860,10 +1873,15 @@
         top: auto;
         max-height: none;
         order: -1; /* 모바일에서는 위쪽에 표시 */
+        width: 100%;
     }
     
     .preview-header {
-        display: none; /* 모바일에서는 토글 버튼 숨김 */
+        display: flex; /* 모바일에서도 헤더 표시 */
+    }
+    
+    .report-builder-section {
+        width: 100%;
     }
 }
 
