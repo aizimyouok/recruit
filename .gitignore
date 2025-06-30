@@ -1,0 +1,43 @@
+# 실행 파일 및 시스템 파일 제외
+*.exe
+*.dll
+*.pak
+*.bin
+*.dat
+*.log
+*.json
+locales/
+resources/
+squirrel.exe
+vk_swiftshader.dll
+vulkan-1.dll
+LICENSE
+
+# 백업 파일들
+*.backup
+*.broken*
+*.before_*
+*.v4_backup
+
+# Node.js 관련 (향후 사용 가능성)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 운영체제 관련
+.DS_Store
+Thumbs.db
+
+# 임시 파일
+*.tmp
+*.temp
+
+# 에디터 관련
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 로그 파일
+*.log

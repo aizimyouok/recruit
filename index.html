@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFC 채용 현황 대시보드</title>
+    <meta name="theme-color" content="#f8fafc">
+    <meta name="description" content="채용 지원자 관리 및 통계 분석 대시보드">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet">
+    <link href="styles.css?v=20250630" rel="stylesheet">
+    <link href="report.css?v=20250630" rel="stylesheet"> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        /* 간단한 그리드 레이아웃 강제 적용 */
+        #report .filter-grid {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr 1fr !important;
+            gap: 25px 20px !important;
+        }
+        
+        #report .template-gallery {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr 1fr !important;
+            gap: 20px !important;
+        }
+        
+        #report .format-selector {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr 1fr 1fr !important;
+            gap: 12px !important;
+        }
+        
+        #report .ai-analysis-grid {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 20px !important;
+        }
+    </style>
+</head>
+<body>
+<div class="mobile-overlay" onclick="globalThis.App.ui.toggleMobileMenu()"></div>
+
+    <div class="app-container">
+        <nav class="sidebar" id="sidebar" role="navigation" aria-label="주 메뉴 네비게이션">
+            <div class="sidebar-header">
+                <div class="sidebar-title">CFC 채용 대시보드</div>
+                <div class="sidebar-subtitle">Recruit Status</div>
+            </div>
+            <div class="nav-menu">
+                <button class="nav-item active" onclick="globalThis.App.navigation.switchPage('dashboard')"><i class="fas fa-users icon"></i> 현황</button>
+                <button class="nav-item" onclick="globalThis.App.navigation.switchPage('stats')"><i class="fas fa-chart-pie icon"></i> 통계</button>
+                <button class="nav-item" onclick="globalThis.App.navigation.switchPage('efficiency')"><i class="fas fa-chart-line icon"></i> 효율성 분석</button>
+                <button class="nav-item" onclick="globalThis.App.navigation.switchPage('interviewSchedule')"><i class="fas fa-calendar-alt icon"></i> 면접일정</button>
+                <button class="nav-item" onclick="globalThis.App.navigation.switchPage('costManagement')"><i class="fas fa-dollar-sign icon"></i> 비용 관리</button>
+                <button class="nav-item" onclick="globalThis.App.navigation.switchPage('report')"><i class="fas fa-file-signature icon"></i> 리포트 발행</button>
+            </div>
+
+            <div class="sidebar-widgets">
+                <div class="sidebar-widget interview-pending-widget" style="border-left: 3px solid #f59e0b; margin-bottom: 20px;">
+                    <div class="interview-widget-header" onclick="globalThis.App && globalThis.App.sidebar && globalThis.App.sidebar.toggleInterviewWidget()" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div class="sidebar-widget-title">면접 대기 📅</div>
+                            <div class="sidebar-widget-value" id="interviewTotalCount" style="color: #f59e0b; font-size: 1.8rem; margin: 8px 0;">0명</div>
+                            <div class="sidebar-widget-subtitle" id="interviewPeriodLabel">금일 이후 예정</div>
+                        </div>
+                        <div class="interview-toggle-icon" id="interviewToggleIcon" style="color: #f59e0b; font-size: 1.2rem; transition: transform 0.3s ease;">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                    <div class="interview-period-filter" style="margin: 15px 0; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <div class="sidebar-widget-title" style="margin-bottom: 8px;">조회 기간</div>
+                        <select id="interviewPeriodSelect" onchange="globalThis.App && globalThis.App.sidebar && globalThis.App.sidebar.updateInterviewPeriod()" style="width: 100%; padding: 6px 8px; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--sidebar-text); font-size: 0.85rem;">
+                            <option value="today">오늘</option>
+                            <option value="tomorrow">내일</option>
+                            <option value="week">이번 주</option>
+                            <option value="month">이번 달</option>
+                            <option value="custom">기간 선택</option>
+                        </select>
+                        <div id="interviewCustomDateRange" style="display: none; margin-top: 8px;">
+                            <input type="date" id="interviewStartDate" style="width: 100%; padding: 4px; margin-bottom: 4px; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--sidebar-text); font-size: 0.8rem;">
+                            <input type="date" id="interviewEndDate" style="width: 100%; padding: 4px; margin-bottom: 4px; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--sidebar-text); font-size: 0.8rem;">
+                            <button onclick="globalThis.App && globalThis.App.sidebar && globalThis.App.sidebar.updateInterviewPeriod()" style="width: 100%; padding: 4px; background: var(--sidebar-accent); color: white; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer;">적용</button>
+                        </div>
+                    </div>
+                    <div class="interview-details" id="interviewDetails" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
+                        <div class="interview-details-content" style="padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <div class="sidebar-widget-title" style="margin-bottom: 12px;">면접관별 현황</div>
+                            <div id="interviewByInterviewer">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="sidebar-widget">
+                    <div class="sidebar-widget-title">조회 기간</div>
+                    <select id="sidebarPeriodFilter" onchange="globalThis.App.sidebar.handlePeriodChange()" style="width: 100%; padding: 8px; margin-top: 8px; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--sidebar-text); font-size: 0.9rem;">
+                        <option value="all">전체</option>
+                        <option value="year">올해</option>
+                        <option value="month">이번 달</option>
+                        <option value="week">이번 주</option>
+                        <option value="custom">기간 입력</option>
+                    </select>
+                    <div id="sidebarCustomDateRange" style="display: none; margin-top: 8px;">
+                        <input type="date" id="sidebarStartDate" style="width: 100%; padding: 6px; margin-bottom: 4px; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--sidebar-text); font-size: 0.8rem;">
+                        <input type="date" id="sidebarEndDate" style="width: 100%; padding: 6px; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--sidebar-text); font-size: 0.8rem;">
+                        <button onclick="globalThis.App.sidebar.updateWidgets()" style="width: 100%; margin-top: 4px; padding: 6px; background: var(--sidebar-accent); color: white; border: none; border-radius: 4px; font-size: 0.8rem; cursor: pointer;">적용</button>
+                    </div>
+                </div>
+                <div class="sidebar-widget" style="border-left: 3px solid #818cf8;">
+                    <div class="sidebar-widget-content">
+                        <div class="sidebar-widget-left">
+                            <div class="sidebar-widget-title">지원자</div>
+                            <div class="sidebar-widget-subtitle" id="sidebarPeriodLabel">전체 기간</div>
+                        </div>
+                        <div class="sidebar-widget-value" id="sidebarTotalApplicants" style="color: #818cf8;">0</div>
+                    </div>
+                </div>
+                <div class="sidebar-widget" style="border-left: 3px solid #10b981;">
+                    <div class="sidebar-widget-content">
+                        <div class="sidebar-widget-left">
+                            <div class="sidebar-widget-title">합격률</div>
+                            <div class="sidebar-widget-subtitle">전체지원자 대비</div>
+                        </div>
+                        <div class="sidebar-widget-value" id="sidebarSuccessRate" style="color: #10b981;">0%</div>
+                    </div>
+                </div>
+                <div class="sidebar-widget" style="border-left: 3px solid #fb923c;">
+                    <div class="sidebar-widget-content">
+                        <div class="sidebar-widget-left">
+                            <div class="sidebar-widget-title">입과율</div>
+                            <div class="sidebar-widget-subtitle">전체지원자 대비</div>
+                        </div>
+                        <div class="sidebar-widget-value" id="sidebarJoinRate" style="color: #fb923c;">0%</div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <header class="main-header" role="banner" aria-label="메인 헤더 영역">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="mobile-menu-btn" onclick="globalThis.App.ui.toggleMobileMenu()" aria-label="모바일 메뉴 열기">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="main-title" id="pageTitle">지원자 현황</h1>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div class="last-update-info" id="lastUpdateInfo" style="display: none; font-size: 0.8rem; color: var(--text-secondary); text-align: right;">
+                        <div style="font-weight: 500;">마지막 업데이트</div>
+                        <div id="lastUpdateTime">-</div>
+                    </div>
+                    <button class="refresh-btn" onclick="globalThis.App.data.forceRefresh()" aria-label="데이터 새로고침" title="최신 데이터로 새로고침">
+                        <i class="fas fa-sync-alt" id="refreshIcon"></i>
+                    </button>
+                    <div class="sync-status" id="syncStatus" title="실시간 동기화 상태">
+                        <i class="fas fa-circle" id="syncStatusIcon"></i>
+                    </div>
+                    <button class="theme-toggle" onclick="globalThis.App.theme.toggle()" aria-label="다크모드 토글">
+                        <i class="fas fa-moon" id="themeIcon"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-area" role="main" aria-label="메인 콘텐츠 영역" id="main-content">
+
+                <div id="dashboard" class="page active">
+                    <div class="interview-schedule-card">
+                        <div class="interview-schedule-header">
+                            <span class="interview-schedule-title">임박한 면접 일정</span>
+                            <i class="fas fa-calendar-check interview-schedule-icon"></i>
+                        </div>
+                        <div id="interviewScheduleList">
+                            <div class="no-interviews">예정된 면접이 없습니다.</div>
+                        </div>
+                    </div>
+
+                    <div class="page-header">
+                        <h2 class="page-title">전체 지원자 목록</h2>
+                        <div class="header-actions">
+                            <div class="view-toggle">
+                                <button class="view-btn active" onclick="globalThis.App.view.switch('table')" aria-label="테이블 뷰로 전환">
+                                    <i class="fas fa-table"></i>
+                                </button>
+                                <button class="view-btn" onclick="globalThis.App.view.switch('cards')" aria-label="카드 뷰로 전환">
+                                    <i class="fas fa-th-large"></i>
+                                </button>
+                            </div>
+                            <button class="secondary-btn reset-btn" onclick="globalThis.App.filter.reset()" aria-label="모든 필터 초기화">
+                                <i class="fas fa-undo"></i> 필터 초기화
+                            </button>
+                            <div class="column-toggle-container">
+                                <button class="secondary-btn" onclick="globalThis.App.ui.toggleColumnDropdown()" aria-label="컬럼 표시 설정"><i class="fas fa-columns"></i> 컬럼 설정</button>
+                                <div class="column-toggle-dropdown" id="columnToggleDropdown"></div>
+                            </div>
+                             <button class="primary-btn" onclick="globalThis.App.modal.openNew()" aria-label="새 지원자 등록">
+                                <i class="fas fa-plus"></i> 신규 지원자 등록
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="filter-bar" role="search" aria-label="지원자 필터링 도구">
+                        <div class="filter-group search-input">
+                            <label for="globalSearch">통합 검색</label>
+                            <div style="position: relative;">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" id="globalSearch" placeholder="이름, 연락처, 메모 등 검색..." oninput="globalThis.App.search.handle()" aria-label="지원자 통합 검색" aria-describedby="search-description" />
+                                <div id="search-description" class="sr-only">이름, 연락처, 메모 등을 검색할 수 있습니다</div>
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <label for="routeFilter">지원루트</label>
+                            <select id="routeFilter" onchange="globalThis.App.filter.apply()" aria-label="지원루트로 필터링"><option value="all">전체</option></select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="positionFilter">모집분야</label>
+                            <select id="positionFilter" onchange="globalThis.App.filter.apply()" aria-label="모집분야로 필터링"><option value="all">전체</option></select>
+                        </div>
+                         <div class="filter-group date-filter-group">
+                            <label>조회 기간</label>
+                            <div class="date-filter-container">
+                                <div id="dateModeToggle">
+                                    <button class="date-mode-btn" data-mode="all">전체</button>
+                                    <button class="date-mode-btn" data-mode="year">연</button>
+                                    <button class="date-mode-btn" data-mode="month">월</button>
+                                    <button class="date-mode-btn" data-mode="day">일</button>
+                                    <button class="date-mode-btn" data-mode="range">기간</button>
+                                </div>
+                                <div id="dateInputsContainer"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-summary" id="filterSummary"></div>
+
+                    <div class="content-container">
+                        <div class="table-container" id="tableView">
+                            <table class="data-table" role="table" aria-label="지원자 목록 테이블"></table>
+                        </div>
+                        <div class="cards-container" id="cardsView">
+                        </div>
+                        <div class="pagination-container" id="paginationContainer">
+                            <div class="pagination-info" id="paginationInfo"></div>
+                            <div class="pagination-controls">
+                                <button class="pagination-btn" id="firstPageBtn" onclick="globalThis.App.pagination.goToPage(1)" aria-label="첫 페이지로 이동">
+                                    <i class="fas fa-angle-double-left"></i> 처음
+                                </button>
+                                <button class="pagination-btn" id="prevPageBtn" onclick="globalThis.App.pagination.goToPrevPage()" aria-label="이전 페이지로 이동">
+                                    <i class="fas fa-angle-left"></i> 이전
+                                </button>
+                                <div class="pagination-numbers" id="paginationNumbers"></div>
+                                <button class="pagination-btn" id="nextPageBtn" onclick="globalThis.App.pagination.goToNextPage()" aria-label="다음 페이지로 이동">
+                                    다음 <i class="fas fa-angle-right"></i>
+                                </button>
+                                <button class="pagination-btn" id="lastPageBtn" onclick="globalThis.App.pagination.goToLastPage()" aria-label="마지막 페이지로 이동">
+                                    마지막 <i class="fas fa-angle-double-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="stats" class="page">
+                    <div class="stats-fixed-header">
+                        <div class="page-header">
+                            <h2 class="page-title">채용 통계 분석</h2>
+                            <div class="header-actions">
+                                <select id="statsPeriodFilter" onchange="globalThis.App.stats.handlePeriodChange()" style="padding: 8px 12px; margin-right: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--content-bg); color: var(--text-primary);">
+                                    <option value="all">전체 기간</option>
+                                    <option value="year">올해</option>
+                                    <option value="month">이번 달</option>
+                                    <option value="week">이번 주</option>
+                                    <option value="custom">기간 입력</option>
+                                </select>
+                                <div id="statsCustomDateRange" style="display: none; margin-right: 10px;">
+                                    <input type="date" id="statsStartDate" style="padding: 8px; margin-right: 5px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--content-bg); color: var(--text-primary); font-size: 0.9rem;">
+                                    <input type="date" id="statsEndDate" style="padding: 8px; margin-right: 5px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--content-bg); color: var(--text-primary); font-size: 0.9rem;">
+                                    <button onclick="globalThis.App.stats.update()" style="padding: 8px 12px; background: var(--sidebar-accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">적용</button>
+                                </div>
+                                <button class="secondary-btn" onclick="globalThis.App.stats.update()" aria-label="통계 데이터 새로고침">
+                                    <i class="fas fa-sync-alt"></i> 새로고침
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stats-scrollable-content">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div class="content-container" style="padding: 20px;">
+                                <h3 style="margin-bottom: 20px;">지원루트별 분포</h3>
+                                <canvas id="routeChart" style="max-height: 300px;" aria-label="지원루트별 분포 차트"></canvas>
+                            </div>
+                            <div class="content-container" style="padding: 20px;">
+                                <h3 style="margin-bottom: 20px;">모집분야별 분포</h3>
+                                <canvas id="positionChart" style="max-height: 300px;" aria-label="모집분야별 분포 차트"></canvas>
+                            </div>
+                        </div>
+                        <div class="content-container" style="padding: 25px; margin-bottom: 20px;">
+                            <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-chart-area" style="color: var(--sidebar-accent);"></i>
+                                지원자 추이 분석
+                            </h3>
+                            <div class="trend-tabs" style="margin-bottom: 20px;">
+                                <button class="trend-tab-btn active" data-period="all" onclick="globalThis.App.trend.switchTab('all')">전체</button>
+                                <button class="trend-tab-btn" data-period="year" onclick="globalThis.App.trend.switchTab('year')">년별</button>
+                                <button class="trend-tab-btn" data-period="month" onclick="globalThis.App.trend.switchTab('month')">월별</button>
+                            </div>
+                            <canvas id="trendChart" style="max-height: 400px;" aria-label="지원자 추이 차트"></canvas>
+                        </div>
+                        <div class="content-container demographics-container" style="padding: 25px; margin-bottom: 20px;">
+                            <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-users" style="color: var(--sidebar-accent);"></i>
+                                인구통계 분석
+                            </h3>
+                            <div class="demographics-tabs" style="margin-bottom: 25px;">
+                                <button class="demographics-tab-btn active" data-tab="region" onclick="globalThis.App.demographics.switchTab('region')">
+                                    <i class="fas fa-map-marked-alt"></i> 지역별 분포
+                                </button>
+                                <button class="demographics-tab-btn" data-tab="ageGender" onclick="globalThis.App.demographics.switchTab('ageGender')">
+                                    <i class="fas fa-users"></i> 연령별/성별 분포
+                                </button>
+                            </div>
+                            <div class="demographics-content">
+                                <div id="regionTab" class="demographics-tab-content active">
+                                    <div id="koreaMap" class="region-display-container"></div>
+                                </div>
+                                <div id="ageGenderTab" class="demographics-tab-content">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="efficiency" class="page">
+                    <div class="stats-fixed-header">
+                        <div class="page-header">
+                            <h2 class="page-title">효율성 분석</h2>
+                            <div class="header-actions">
+                                <select id="efficiencyPeriodFilter" onchange="globalThis.App.efficiency.handlePeriodChange()" style="padding: 8px 12px; margin-right: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--content-bg); color: var(--text-primary);">
+                                    <option value="all">전체 기간</option>
+                                    <option value="year">올해</option>
+                                    <option value="month">이번 달</option>
+                                    <option value="week">이번 주</option>
+                                    <option value="custom">기간 입력</option>
+                                </select>
+                                <div id="efficiencyCustomDateRange" style="display: none; margin-right: 10px;">
+                                    <input type="date" id="efficiencyStartDate" style="padding: 8px; margin-right: 5px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--content-bg); color: var(--text-primary); font-size: 0.9rem;">
+                                    <input type="date" id="efficiencyEndDate" style="padding: 8px; margin-right: 5px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--content-bg); color: var(--text-primary); font-size: 0.9rem;">
+                                    <button onclick="globalThis.App.efficiency.updateAll()" style="padding: 8px 12px; background: var(--sidebar-accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem;">적용</button>
+                                </div>
+                                <button class="secondary-btn" onclick="globalThis.App.efficiency.updateAll()" aria-label="효율성 데이터 새로고침">
+                                    <i class="fas fa-sync-alt"></i> 새로고침
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stats-scrollable-content">
+                        <div class="content-container" style="padding: 25px; margin-bottom: 20px;">
+                            <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-chart-line" style="color: var(--success);"></i>
+                                카테고리별 효율성
+                            </h3>
+                            <div class="efficiency-tabs" style="margin-bottom: 20px;">
+                                <button class="efficiency-tab-btn active" data-tab="route" onclick="globalThis.App.efficiency.switchTab('route')">지원루트별</button>
+                                <button class="efficiency-tab-btn" data-tab="recruiter" onclick="globalThis.App.efficiency.switchTab('recruiter')">증원자별</button>
+                                <button class="efficiency-tab-btn" data-tab="interviewer" onclick="globalThis.App.efficiency.switchTab('interviewer')">면접관별</button>
+                            </div>
+                            <div id="efficiencyTabContent"></div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div class="content-container" style="padding: 20px;">
+                                <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas fa-star" style="color: var(--sidebar-accent);"></i>
+                                    종합 성과 비교
+                                </h3>
+                                <canvas id="radarChart" style="max-height: 400px;" aria-label="지원루트별 종합 성과 레이더 차트"></canvas>
+                            </div>
+                            <div class="content-container" style="padding: 20px;">
+                                <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                                    <i class="fas fa-chart-scatter" style="color: var(--accent-orange);"></i>
+                                    나이-합격률 상관관계
+                                </h3>
+                                <canvas id="scatterChart" style="max-height: 400px;" aria-label="나이와 합격률 상관관계 산점도 차트"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="interviewSchedule" class="page">
+                    <div class="page-header">
+                         <div class="interviewer-summary-card" id="interviewerCountsContainer">
+                            </div>
+                        <div class="header-actions">
+                            <div class="column-toggle-container">
+                                <button class="secondary-btn" id="scheduleColumnToggleBtn" aria-label="컬럼 표시 설정"><i class="fas fa-columns"></i> 컬럼 설정</button>
+                                <div class="column-toggle-dropdown" id="scheduleColumnToggleDropdown"></div>
+                            </div>
+                            <button class="secondary-btn" onclick="globalThis.App.interviewSchedule.refresh()" aria-label="일정 새로고침">
+                                <i class="fas fa-sync-alt"></i> 새로고침
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="filter-bar-wrapper">
+                        <div class="filter-bar" role="search" aria-label="면접일정 필터링">
+                            <div class="filter-group search-input">
+                                <label for="scheduleSearch">통합 검색</label>
+                                <div style="position: relative;">
+                                    <i class="fas fa-search search-icon"></i>
+                                    <input type="text" id="scheduleSearch" placeholder="이름, 비고 등 검색..." oninput="globalThis.App.interviewSchedule.applyFilters()" />
+                                </div>
+                            </div>
+                            <div class="filter-group">
+                                <label for="scheduleRouteFilter">지원루트</label>
+                                <select id="scheduleRouteFilter" onchange="globalThis.App.interviewSchedule.applyFilters()"></select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="schedulePositionFilter">모집분야</label>
+                                <select id="schedulePositionFilter" onchange="globalThis.App.interviewSchedule.applyFilters()"></select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="scheduleInterviewerFilter">면접관</label>
+                                <select id="scheduleInterviewerFilter" onchange="globalThis.App.interviewSchedule.applyFilters()"></select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="scheduleCompanyFilter">회사명</label>
+                                <select id="scheduleCompanyFilter" onchange="globalThis.App.interviewSchedule.applyFilters()"></select>
+                            </div>
+                            <div class="filter-group date-filter-group">
+                                <label>조회 기간</label>
+                                <div class="date-filter-container" id="scheduleDateFilterContainer">
+                                </div>
+                            </div>
+                            <div class="filter-group reset-group">
+                                <button class="secondary-btn reset-btn" onclick="globalThis.App.interviewSchedule.resetFilters()" aria-label="모든 필터 초기화">
+                                    <i class="fas fa-undo"></i> 초기화
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="content-container" style="margin-top: 20px;">
+                        <div class="table-container" id="scheduleListContainer">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="costManagement" class="page">
+                    <div class="page-header">
+                        <h2 class="page-title">💰 비용 관리</h2>
+                        <div class="header-actions">
+                            <button class="btn btn-primary" onclick="globalThis.App.costManagement.showAddModal()">
+                                <i class="fas fa-plus"></i> 비용 추가
+                            </button>
+                            <button class="secondary-btn" onclick="globalThis.App.costManagement.exportData()">
+                                <i class="fas fa-download"></i> 내보내기
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 비용 현황 요약 -->
+                    <div class="cost-summary-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px;">
+                        <div class="cost-summary-card">
+                            <div class="cost-summary-header">
+                                <i class="fas fa-wallet" style="color: #3b82f6;"></i>
+                                <span>총 예산</span>
+                            </div>
+                            <div class="cost-summary-value" id="totalBudget">₩25,000,000</div>
+                            <div class="cost-summary-change">연간 목표</div>
+                        </div>
+                        <div class="cost-summary-card">
+                            <div class="cost-summary-header">
+                                <i class="fas fa-credit-card" style="color: #ef4444;"></i>
+                                <span>사용 금액</span>
+                            </div>
+                            <div class="cost-summary-value" id="totalSpent">₩21,000,000</div>
+                            <div class="cost-summary-change positive" id="spentPercentage">84% 사용</div>
+                        </div>
+                        <div class="cost-summary-card">
+                            <div class="cost-summary-header">
+                                <i class="fas fa-user" style="color: #10b981;"></i>
+                                <span>채용당 비용</span>
+                            </div>
+                            <div class="cost-summary-value" id="costPerHire">₩2,100,000</div>
+                            <div class="cost-summary-change negative">-8% 절약</div>
+                        </div>
+                        <div class="cost-summary-card">
+                            <div class="cost-summary-header">
+                                <i class="fas fa-chart-line" style="color: #f59e0b;"></i>
+                                <span>ROI 최고</span>
+                            </div>
+                            <div class="cost-summary-value" id="bestROI">직원추천</div>
+                            <div class="cost-summary-change">₩800K/명</div>
+                        </div>
+                    </div>
+
+                    <!-- 필터 및 검색 -->
+                    <div class="cost-filter-section" style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; align-items: end;">
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">기간 선택</label>
+                                <select id="costPeriodFilter" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
+                                    <option value="all">전체 기간</option>
+                                    <option value="thisMonth">이번 달</option>
+                                    <option value="lastMonth">지난 달</option>
+                                    <option value="thisQuarter">이번 분기</option>
+                                    <option value="thisYear">올해</option>
+                                    <option value="custom">기간 지정</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">채용 채널</label>
+                                <select id="costChannelFilter" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
+                                    <option value="all">전체 채널</option>
+                                    <option value="온라인채용">온라인 채용</option>
+                                    <option value="헤드헌팅">헤드헌팅</option>
+                                    <option value="채용박람회">채용박람회</option>
+                                    <option value="직원추천">직원 추천</option>
+                                    <option value="기타">기타</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 5px; font-weight: 600;">비용 구분</label>
+                                <select id="costCategoryFilter" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px;">
+                                    <option value="all">전체 항목</option>
+                                    <option value="광고비">광고비</option>
+                                    <option value="수수료">수수료</option>
+                                    <option value="부스비용">부스비용</option>
+                                    <option value="인센티브">인센티브</option>
+                                    <option value="기타">기타</option>
+                                </select>
+                            </div>
+                            <div>
+                                <button class="btn btn-secondary" onclick="globalThis.App.costManagement.applyFilters()" style="width: 100%;">
+                                    <i class="fas fa-search"></i> 검색
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 비용 목록 테이블 -->
+                    <div class="content-container">
+                        <div class="table-container">
+                            <table class="data-table" id="costTable">
+                                <thead>
+                                    <tr>
+                                        <th>날짜</th>
+                                        <th>채용 채널</th>
+                                        <th>비용 항목</th>
+                                        <th>금액</th>
+                                        <th>채용 완료</th>
+                                        <th>1인당 비용</th>
+                                        <th>담당자</th>
+                                        <th>비고</th>
+                                        <th>작업</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="costTableBody">
+                                    <!-- 비용 데이터가 여기에 로드됩니다 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="report" class="page">
+                    <div class="report-container">
+                        <div class="report-header">
+                            <h1><i class="fas fa-chart-line"></i> CFC 채용 리포트</h1>
+                        </div>
+
+                        <div class="report-tabs-container">
+                            <div class="report-tabs">
+                                <button class="report-tab active" data-tab="templates">
+                                    <i class="fas fa-layer-group"></i> 템플릿 선택
+                                </button>
+                                <button class="report-tab" data-tab="custom">
+                                    <i class="fas fa-cogs"></i> 커스텀 리포트
+                                </button>
+                                <button class="report-tab" data-tab="ai">
+                                    <i class="fas fa-magic"></i> AI 분석 가이드
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="report-main-grid">
+                            <div class="report-builder-section">
+                                <div class="report-builder">
+                                    <div id="templates-tab" class="tab-content active">
+                                        <div class="filter-section">
+                                            <div class="filter-section-header">
+                                                <h3><i class="fas fa-filter"></i> 데이터 필터링</h3>
+                                                <button class="btn-reset-filters" id="report-reset-filters">
+                                                    <i class="fas fa-undo"></i> 초기화
+                                                </button>
+                                            </div>
+                                            <div class="filter-grid">
+                                                <div class="filter-group">
+                                                    <label>기간 선택</label>
+                                                    <select id="report-filter-period">
+                                                        <option value="all">전체 기간</option>
+                                                        <option value="this-month">이번달</option>
+                                                        <option value="last-30">최근 30일</option>
+                                                        <option value="last-90">최근 3개월</option>
+                                                        <option value="this-year">올해</option>
+                                                        <option value="custom">사용자 지정</option>
+                                                    </select>
+                                                </div>
+                                                <div class="filter-group date-range-picker" id="report-custom-date-range" style="display: none;">
+                                                    <label>날짜 범위 입력</label> 
+                                                    <div class="date-range-inputs">
+                                                        <input type="date" id="report-start-date">
+                                                        <span>-</span>
+                                                        <input type="date" id="report-end-date">
+                                                    </div>
+                                                </div>
+                                                <div class="filter-group">
+                                                    <label>지원루트</label>
+                                                    <select id="report-filter-route">
+                                                        <option>로딩 중...</option>
+                                                    </select>
+                                                </div>
+                                                <div class="filter-group">
+                                                    <label>모집분야</label>
+                                                    <select id="report-filter-position">
+                                                        <option>로딩 중...</option>
+                                                    </select>
+                                                </div>
+                                                <div class="filter-group">
+                                                    <label>회사명</label>
+                                                    <select id="report-filter-company">
+                                                        <option>로딩 중...</option>
+                                                    </select>
+                                                </div>
+                                                <div class="filter-group">
+                                                    <label>증원자</label>
+                                                    <select id="report-filter-recruiter">
+                                                        <option>로딩 중...</option>
+                                                    </select>
+                                                </div>
+                                                <div class="filter-group">
+                                                    <label>면접관</label>
+                                                    <select id="report-filter-interviewer">
+                                                        <option>로딩 중...</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="option-group">
+                                            <div class="option-title">
+                                                <i class="fas fa-file-alt"></i> 리포트 템플릿 선택
+                                            </div>
+                                            <div class="template-gallery">
+                                                <div class="template-loading">
+                                                    <i class="fas fa-spinner fa-spin"></i> 템플릿 로딩 중...
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="option-group">
+                                            <div class="option-title">
+                                                <i class="fas fa-download"></i> 출력 형식
+                                            </div>
+                                            <div class="format-selector">
+                                                <div class="format-option selected"><i class="fas fa-file-pdf"></i><span>PDF</span></div>
+                                                <div class="format-option"><i class="fas fa-file-excel"></i><span>Excel</span></div>
+                                                <div class="format-option"><i class="fas fa-file-powerpoint"></i><span>PowerPoint</span></div>
+                                                <div class="format-option"><i class="fas fa-globe"></i><span>웹 리포트</span></div>
+                                            </div>
+                                        </div>
+
+                                        <div class="option-group">
+                                            <div class="option-title">
+                                                <i class="fas fa-shield-alt"></i> 보안 강화된 AI 분석 엔진
+                                            </div>
+                                            <div class="ai-analysis-security-info" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                                    <i class="fas fa-shield-alt"></i>
+                                                    <strong>보안 및 비용 최적화 완료</strong>
+                                                </div>
+                                                <div style="font-size: 13px; line-height: 1.4;">
+                                                    🔐 API 키가 구글 드라이브에서 안전하게 관리됩니다<br>
+                                                    💰 수동 분석으로 불필요한 비용을 절약합니다<br>
+                                                    🎯 필요할 때만 AI 분석을 실행하여 효율성을 높입니다
+                                                </div>
+                                            </div>
+                                            <div class="ai-analysis-notice" style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 6px; padding: 12px; margin-bottom: 10px;">
+                                                <div style="display: flex; align-items: center; gap: 8px; color: #0369a1;">
+                                                    <i class="fas fa-info-circle"></i>
+                                                    <span style="font-weight: 600; font-size: 14px;">AI 분석 사용법</span>
+                                                </div>
+                                                <p style="margin: 8px 0 0 0; font-size: 13px; color: #0369a1;">
+                                                    리포트 미리보기에서 "분석 실행" 버튼을 클릭하여 AI 인사이트를 확인하세요.
+                                                    실시간이 아닌 수동 분석으로 비용을 효율적으로 관리합니다.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="progress-section" style="display: none;">
+                                            <h4>리포트 생성 진행률</h4>
+                                            <div class="progress-bar"><div class="progress-fill"></div></div>
+                                            <div class="progress-steps">
+                                                <div class="progress-step active"><i class="fas fa-database"></i> 데이터 수집</div>
+                                                <div class="progress-step"><i class="fas fa-chart-bar"></i> 분석 처리</div>
+                                                <div class="progress-step"><i class="fas fa-magic"></i> AI 분석</div>
+                                                <div class="progress-step"><i class="fas fa-file-pdf"></i> 리포트 생성</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="action-buttons">
+                                            <button class="btn btn-primary" id="generateReportBtn"><i class="fas fa-magic"></i> 리포트 생성</button>
+                                        </div>
+                                    </div>
+                                    <div id="custom-tab" class="tab-content">
+                                    </div>
+                                    <div id="ai-tab" class="tab-content">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="live-preview-sidebar" id="livePreviewSidebar">
+                                <div class="preview-header">
+                                    <h3><i class="fas fa-eye"></i> 실시간 미리보기</h3>
+                                    <button class="preview-toggle" id="previewToggle">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                </div>
+                                <div class="preview-content" id="livePreviewContent">
+                                </div>
+                            </div>
+                        </div> </div>
+                </div>
+                </div>
+        </main>
+    </div>
+
+    <div id="applicantModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">신규 지원자 등록</h3>
+                <button class="close-btn" onclick="globalThis.App.modal.close()" aria-label="모달 닫기">&times;</button>
+            </div>
+            <div class="modal-body"><form id="applicantForm"></form></div>
+            <div class="modal-footer"></div>
+        </div>
+    </div>
+
+    <!-- 비용 추가 모달 -->
+    <div id="costModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">💰 비용 데이터 추가</h3>
+                <button class="close-btn" onclick="globalThis.App.costManagement.closeModal()" aria-label="모달 닫기">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="costForm" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label for="costDate" style="display: block; margin-bottom: 5px; font-weight: 600;">📅 날짜</label>
+                        <input type="date" id="costDate" required style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;">
+                    </div>
+                    <div>
+                        <label for="costChannel" style="display: block; margin-bottom: 5px; font-weight: 600;">📢 채용 채널</label>
+                        <select id="costChannel" required style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;">
+                            <option value="">선택하세요</option>
+                            <option value="온라인채용">온라인 채용</option>
+                            <option value="헤드헌팅">헤드헌팅</option>
+                            <option value="채용박람회">채용박람회</option>
+                            <option value="직원추천">직원 추천</option>
+                            <option value="기타">기타</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="costCategory" style="display: block; margin-bottom: 5px; font-weight: 600;">🏷️ 비용 항목</label>
+                        <select id="costCategory" required style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;">
+                            <option value="">선택하세요</option>
+                            <option value="광고비">광고비</option>
+                            <option value="수수료">수수료</option>
+                            <option value="부스비용">부스비용</option>
+                            <option value="인센티브">인센티브</option>
+                            <option value="기타">기타</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="costAmount" style="display: block; margin-bottom: 5px; font-weight: 600;">💵 금액 (원)</label>
+                        <input type="number" id="costAmount" required min="0" step="1000" placeholder="예: 1000000" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;">
+                    </div>
+                    <div>
+                        <label for="costHires" style="display: block; margin-bottom: 5px; font-weight: 600;">👤 채용 완료 수</label>
+                        <input type="number" id="costHires" required min="0" step="1" placeholder="예: 3" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;">
+                    </div>
+                    <div>
+                        <label for="costManager" style="display: block; margin-bottom: 5px; font-weight: 600;">👨‍💼 담당자</label>
+                        <input type="text" id="costManager" required placeholder="예: 김철수" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;">
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <label for="costNote" style="display: block; margin-bottom: 5px; font-weight: 600;">📝 비고</label>
+                        <textarea id="costNote" placeholder="추가 설명이나 메모를 입력하세요" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; height: 80px; resize: vertical;"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="globalThis.App.costManagement.closeModal()">취소</button>
+                <button type="button" class="btn btn-primary" onclick="globalThis.App.costManagement.saveCost()">
+                    <i class="fas fa-save"></i> 저장
+                </button>
+            </div>
+        </div>
+    </div>
+
+   <div id="reportModal" class="report-modal">
+        <div class="report-modal-content">
+            <div class="report-modal-header">
+                <h3 class="report-modal-title">리포트 미리보기</h3>
+                <div class="report-modal-actions">
+                    <button class="btn btn-secondary" id="printReportBtn"><i class="fas fa-print"></i> 인쇄</button>
+                    <button class="close-btn" id="closeReportModalBtn">&times;</button>
+                </div>
+            </div>
+            <div class="report-modal-body" id="reportModalBody">
+                </div>
+        </div>
+    </div>
+
+    <!-- 설정 및 기본 모듈들 먼저 로드 -->
+    <script src="js/config.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/cache.js"></script>
+    <script src="js/dataCache.js"></script>
+    <script src="js/smartSync.js"></script>
+    
+    <!-- UI 및 기능 모듈들 -->
+    <script src="js/data.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="modal.js"></script>
+    <script src="navigation.js"></script>
+    <script src="theme.js"></script>
+    
+    <!-- 페이지별 모듈들 -->
+    <script src="js/interviewSchedule.js"></script>
+    <script src="js/report.js"></script>
+    <script src="js/costManagement.js"></script>
+    
+    <!-- 메인 애플리케이션 마지막에 로드 -->
+    <script src="script.js"></script>
+</body>
+</html>
