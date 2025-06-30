@@ -201,7 +201,6 @@
     /* grid-column 속성을 완전히 무력화 */
     grid-column: unset !important;
 }
-}
 
 /* 날짜 범위 선택기 자체는 이제 그리드 아이템이 아니므로 grid-column 속성 제거 */
 #report .date-range-picker {
@@ -5367,4 +5366,183 @@
     top: 20px !important; /* 상단에서 20px 떨어진 위치에 고정합니다. */
     max-height: calc(100vh - 40px); /* 화면 높이를 넘지 않도록 최대 높이를 제한합니다. */
     overflow-y: auto; /* 내용이 길어지면 스크롤바가 생깁니다. */
+}
+
+
+/* ========================================
+   🤖 AI 분석 엔진 스타일
+   ======================================== */
+
+/* AI 분석 그리드 레이아웃 */
+#report .ai-analysis-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 20px !important;
+    margin-top: 20px;
+}
+
+/* AI 옵션 카드 */
+#report .ai-option {
+    background: var(--content-bg, white);
+    border: 2px solid var(--border-color, #e5e7eb);
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+#report .ai-option:hover {
+    border-color: #4f46e5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.1);
+}
+
+/* AI 옵션 헤더 */
+#report .ai-option-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--text-primary, #374151);
+}
+
+#report .ai-option-header i {
+    color: #4f46e5;
+    font-size: 1.2rem;
+}
+
+/* AI 옵션 설명 */
+#report .ai-option p {
+    color: var(--text-secondary, #6b7280);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+/* AI 토글 스위치 */
+#report .ai-toggle {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 30px;
+}
+
+#report .ai-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+#report .ai-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 30px;
+}
+
+#report .ai-slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+#report .ai-toggle input:checked + .ai-slider {
+    background-color: #4f46e5;
+}
+
+#report .ai-toggle input:checked + .ai-slider:before {
+    transform: translateX(30px);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    #report .ai-analysis-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+
+/* ========================================
+   🔧 최종 디버깅 및 강제 스타일 적용
+   ======================================== */
+
+/* 필터 그리드 강제 적용 */
+#report .filter-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 20px !important;
+    width: 100% !important;
+    max-width: none !important;
+}
+
+/* 날짜 범위 선택기 강제 스타일 */
+#report .date-range-picker {
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+#report .date-range-picker.show {
+    display: block !important;
+}
+
+/* 템플릿 갤러리 강제 적용 */
+#report .template-gallery {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 20px !important;
+    width: 100% !important;
+}
+
+/* 출력 형식 선택기 강제 적용 */
+#report .format-selector {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 12px !important;
+    width: 100% !important;
+}
+
+/* AI 분석 그리드 강제 적용 */
+#report .ai-analysis-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 20px !important;
+    width: 100% !important;
+}
+
+/* 디버깅용 테두리 (개발 중에만 사용) */
+#report .filter-grid,
+#report .template-gallery,
+#report .format-selector,
+#report .ai-analysis-grid {
+    /* border: 2px dashed red; 필요시 주석 해제 */
+}
+
+/* 반응형 디자인 개선 */
+@media (max-width: 1200px) {
+    #report .filter-grid,
+    #report .template-gallery {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    #report .filter-grid,
+    #report .template-gallery,
+    #report .format-selector,
+    #report .ai-analysis-grid {
+        grid-template-columns: 1fr !important;
+    }
 }
