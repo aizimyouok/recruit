@@ -9,8 +9,8 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet">
-    <link href="styles.css?v=20250630" rel="stylesheet">
-    <link href="report.css?v=20250630" rel="stylesheet"> 
+    <link href="styles.css?v=20250701" rel="stylesheet">
+    <link href="report.css?v=20250701" rel="stylesheet"> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -180,6 +180,45 @@
         
         #report .live-preview-sidebar ul {
             width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        
+        /* 🔥 더 강력한 텍스트 색상 및 레이아웃 강제 적용 */
+        #livePreviewSidebar .report-header,
+        #livePreviewSidebar .report-header *,
+        .live-preview-sidebar .report-header,
+        .live-preview-sidebar .report-header * {
+            color: white !important;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+        }
+        
+        #livePreviewSidebar .report-title,
+        .live-preview-sidebar .report-title,
+        #livePreviewContent .report-title {
+            color: white !important;
+            font-weight: 700 !important;
+        }
+        
+        #livePreviewSidebar .report-meta,
+        .live-preview-sidebar .report-meta,
+        #livePreviewContent .report-meta {
+            color: white !important;
+        }
+        
+        #livePreviewSidebar .report-meta span,
+        .live-preview-sidebar .report-meta span,
+        #livePreviewContent .report-meta span {
+            color: white !important;
+            background: rgba(255, 255, 255, 0.2) !important;
+        }
+        
+        /* 전체 콘텐츠 너비 강제 적용 */
+        #livePreviewContent,
+        #livePreviewContent *,
+        .preview-content,
+        .preview-content * {
+            width: 100% !important;
+            max-width: 100% !important;
             box-sizing: border-box !important;
         }
     </style>
