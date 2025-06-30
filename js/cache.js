@@ -191,5 +191,3 @@ export const CacheModule = {
         };
     }
 };
-
-export { CacheModule };

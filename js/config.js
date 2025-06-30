@@ -27,5 +27,3 @@ export const CONFIG = {
         orange: '#fb923c'
     }
 };
-
-export { CONFIG };

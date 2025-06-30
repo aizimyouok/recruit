@@ -181,5 +181,3 @@ export const NavigationModule = {
         document.head.appendChild(style);
     }
 };
-
-export { NavigationModule };

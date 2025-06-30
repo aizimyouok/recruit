@@ -1,21 +1,4 @@
 // =========================
-// 모듈 import
-// =========================
-import { CONFIG } from './js/config.js';
-import { createInitialState } from './js/state.js';
-import { Utils } from './js/utils.js';
-import { DataModule } from './js/data.js';
-import { UIModule } from './js/ui.js';
-import { ModalModule } from './modal.js';
-import { NavigationModule } from './navigation.js';
-import { ThemeModule } from './theme.js';
-import { CacheModule } from './js/cache.js';
-import { DataCacheModule } from './js/dataCache.js';
-import { SmartSyncModule } from './js/smartSync.js';
-import { InterviewScheduleModule } from './js/interviewSchedule.js';
-import { ReportModule } from './js/report.js';
-
-// =========================
 // 애플리케이션 메인 객체
 // =========================
 

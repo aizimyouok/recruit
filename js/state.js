@@ -29,5 +29,3 @@ export const createInitialState = () => ({
         currentTrendTab: 'all'
     }
 });
-
-export { createInitialState };
