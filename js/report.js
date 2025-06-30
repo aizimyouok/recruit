@@ -112,6 +112,8 @@ const ReportModule = {
             // 11. 🔧 필터 초기화 (데이터 로드 후)
             setTimeout(() => {
                 this.populateFilters();
+                // 초기화 후 기간 필터 이벤트 리스너 다시 설정
+                this.setupPeriodFilterListener();
             }, 1000); // 1초 후 실행하여 데이터 로드 완료 대기
             
             this._isInitialized = true;
@@ -120,6 +122,110 @@ const ReportModule = {
         } catch (error) {
             console.error('❌ [ReportModule] 초기화 실패:', error);
         }
+    },
+
+    // 🔧 기간 필터 이벤트 리스너 별도 설정
+    setupPeriodFilterListener() {
+        const periodFilter = document.getElementById('report-filter-period');
+        if (periodFilter) {
+            // 기존 이벤트 리스너 제거 후 새로 추가
+            periodFilter.removeEventListener('change', this.handlePeriodFilterChange.bind(this));
+            periodFilter.addEventListener('change', this.handlePeriodFilterChange.bind(this));
+            console.log('✅ 기간 필터 이벤트 리스너 설정 완료');
+            
+            // 초기 상태 설정
+            this.handlePeriodFilterChange();
+        } else {
+            console.error('❌ 기간 필터 요소를 찾을 수 없습니다');
+        }
+    },
+
+    // 🔧 필터 데이터 채우기
+    populateFilters() {
+        try {
+            const data = globalThis.App?.state?.data?.all || [];
+            
+            if (data.length === 0) {
+                console.warn('⚠️ 필터 데이터가 없습니다.');
+                return;
+            }
+
+            // 각 필터별 옵션 생성
+            this.populateSelectFilter('report-filter-route', '지원루트', data);
+            this.populateSelectFilter('report-filter-position', '모집분야', data);
+            this.populateSelectFilter('report-filter-company', '회사명', data);
+            this.populateSelectFilter('report-filter-recruiter', '증원자', data);
+            this.populateSelectFilter('report-filter-interviewer', '면접관', data);
+            
+            console.log('✅ 필터 데이터 채우기 완료');
+            
+        } catch (error) {
+            console.error('❌ 필터 데이터 채우기 실패:', error);
+        }
+    },
+
+    // 🔧 개별 셀렉트 필터 채우기
+    populateSelectFilter(selectId, columnName, data) {
+        const selectElement = document.getElementById(selectId);
+        if (!selectElement) {
+            console.warn(`⚠️ ${selectId} 요소를 찾을 수 없습니다.`);
+            return;
+        }
+
+        // 유니크한 값들 추출
+        const uniqueValues = [...new Set(data
+            .map(item => item[columnName])
+            .filter(value => value && value.trim() !== '')
+        )].sort();
+
+        // 옵션 초기화
+        selectElement.innerHTML = '<option value="">전체</option>';
+        
+        // 옵션 추가
+        uniqueValues.forEach(value => {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = value;
+            selectElement.appendChild(option);
+        });
+        
+        console.log(`✅ ${columnName} 필터 옵션 ${uniqueValues.length}개 추가`);
+    },
+
+    // 🔧 필터 초기화
+    resetFilters() {
+        const filterIds = [
+            'report-filter-period',
+            'report-filter-route', 
+            'report-filter-position',
+            'report-filter-company',
+            'report-filter-recruiter',
+            'report-filter-interviewer',
+            'report-start-date',
+            'report-end-date'
+        ];
+        
+        filterIds.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                if (element.type === 'date') {
+                    element.value = '';
+                } else {
+                    element.value = element.tagName === 'SELECT' ? '' : 'all';
+                }
+            }
+        });
+        
+        // 사용자 지정 날짜 범위 숨기기
+        const customDateRange = document.getElementById('report-custom-date-range');
+        if (customDateRange) {
+            customDateRange.style.display = 'none';
+        }
+        
+        // 미리보기 업데이트
+        this.updateLivePreview();
+        
+        console.log('🔧 필터 초기화 완료');
     },
 
     // 🚨 강제 레이아웃 수정 함수
@@ -1049,9 +1155,8 @@ const ReportModule = {
             });
         });
 
-        // 필터 변경 이벤트
+        // 필터 변경 이벤트 (기간 제외)
         const filterIds = [
-            'report-filter-period',
             'report-filter-route', 
             'report-filter-position',
             'report-filter-company',
@@ -1065,12 +1170,48 @@ const ReportModule = {
             const element = document.getElementById(id);
             if (element) {
                 element.addEventListener('change', () => {
+                    console.log(`필터 변경: ${id} = ${element.value}`);
                     this.updateLivePreview();
                 });
             }
         });
 
-        console.log('✅ 이벤트 리스너 설정 완료');
+        console.log('✅ 기본 이벤트 리스너 설정 완료');
+    },
+
+    // 🔧 기간 필터 변경 핸들러
+    handlePeriodFilterChange() {
+        const periodFilter = document.getElementById('report-filter-period');
+        const customDateRange = document.getElementById('report-custom-date-range');
+        
+        console.log('🔧 기간 필터 변경 감지:', periodFilter ? periodFilter.value : 'null');
+        console.log('🔧 커스텀 날짜 범위 요소:', !!customDateRange);
+        
+        if (periodFilter && customDateRange) {
+            if (periodFilter.value === 'custom') {
+                customDateRange.style.display = 'block';
+                customDateRange.style.visibility = 'visible';
+                console.log('✅ 사용자 지정 날짜 범위 표시');
+            } else {
+                customDateRange.style.display = 'none';
+                console.log('✅ 사용자 지정 날짜 범위 숨김');
+            }
+        } else {
+            console.error('❌ 기간 필터 요소를 찾을 수 없습니다:', {
+                periodFilter: !!periodFilter,
+                customDateRange: !!customDateRange
+            });
+            
+            // DOM에서 직접 찾아보기
+            console.log('🔍 DOM에서 요소 재검색...');
+            const allSelects = document.querySelectorAll('select');
+            const allDateRanges = document.querySelectorAll('[id*="date-range"]');
+            console.log('🔍 전체 select 요소:', allSelects.length);
+            console.log('🔍 date-range 관련 요소:', allDateRanges.length);
+        }
+        
+        // 미리보기도 업데이트
+        this.updateLivePreview();
     },
 
     // 📊 PDF 리포트 생성 (기존 기능 유지)
@@ -5422,3 +5563,381 @@ const ReportModule = {
 };
 
 // 🚀 모듈 내보내기
+    
+    // 🤖 AI 분석 시스템 초기화
+    initAIAnalysisSystem() {
+        console.log('🤖 AI 분석 시스템 초기화...');
+        
+        // AI 토글 스위치 이벤트 리스너
+        const aiInsights = document.getElementById('ai-insights');
+        const aiRecommendations = document.getElementById('ai-recommendations');
+        
+        if (aiInsights) {
+            aiInsights.addEventListener('change', (e) => {
+                console.log('AI 인사이트 토글:', e.target.checked);
+                this.updateAISettings();
+            });
+        }
+        
+        if (aiRecommendations) {
+            aiRecommendations.addEventListener('change', (e) => {
+                console.log('AI 개선 제안 토글:', e.target.checked);
+                this.updateAISettings();
+            });
+        }
+        
+        console.log('✅ AI 분석 시스템 초기화 완료');
+    },
+
+    // 🤖 AI 설정 업데이트
+    updateAISettings() {
+        const settings = {
+            insights: document.getElementById('ai-insights')?.checked || false,
+            recommendations: document.getElementById('ai-recommendations')?.checked || false
+        };
+        
+        // 로컬 스토리지에 설정 저장
+        localStorage.setItem('aiAnalysisSettings', JSON.stringify(settings));
+        
+        // 미리보기 업데이트
+        this.updateLivePreview();
+        
+        console.log('🤖 AI 설정 업데이트:', settings);
+    },
+
+    // 📊 차트 인터랙션 시스템 초기화 (스텁)
+    initChartInteractionSystem() {
+        console.log('📊 차트 인터랙션 시스템 초기화 (스텁)');
+        // 추후 구현 예정
+    },
+
+    // 🔗 외부 연동 시스템 초기화 (스텁)
+    initExternalIntegrationSystem() {
+        console.log('🔗 외부 연동 시스템 초기화 (스텁)');
+        // 추후 구현 예정
+    },
+
+    // 📋 리포트 탭 전환
+    switchReportTab(tabName) {
+        // 모든 탭 비활성화
+        document.querySelectorAll('.report-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        
+        // 모든 탭 콘텐츠 숨기기
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        
+        // 선택된 탭 활성화
+        const selectedTab = document.querySelector(`[data-tab="${tabName}"]`);
+        const selectedContent = document.getElementById(`${tabName}-tab`);
+        
+        if (selectedTab) selectedTab.classList.add('active');
+        if (selectedContent) selectedContent.classList.add('active');
+        
+        console.log(`📋 리포트 탭 전환: ${tabName}`);
+    },
+
+    // 🔧 섹션 이름 가져오기
+    getSectionName(sectionKey) {
+        const sectionNames = {
+            'kpi': '핵심 성과 지표',
+            'charts': '시각화 차트',
+            'trends': '트렌드 분석',
+            'funnel': '채용 퍼널',
+            'demographics': '인구통계 분석',
+            'efficiency': '효율성 분석',
+            'interviews': '면접 현황',
+            'cost-analysis': '비용 분석'
+        };
+        
+        return sectionNames[sectionKey] || sectionKey;
+    },
+
+    // 🔧 섹션 미리보기 렌더링
+    renderSectionPreview(sectionKey) {
+        const previews = {
+            'kpi': '<div class="section-preview-content">📊 총 지원자, 전환율, 입과율</div>',
+            'charts': '<div class="section-preview-content">📈 파이차트, 막대그래프</div>',
+            'trends': '<div class="section-preview-content">📉 시간별 추이</div>',
+            'funnel': '<div class="section-preview-content">🔄 단계별 전환율</div>',
+            'demographics': '<div class="section-preview-content">👥 연령대, 지역별</div>',
+            'efficiency': '<div class="section-preview-content">⚡ 효율성 비교</div>',
+            'interviews': '<div class="section-preview-content">🗓️ 면접 일정</div>',
+            'cost-analysis': '<div class="section-preview-content">💰 비용 분석</div>'
+        };
+        
+        return previews[sectionKey] || '<div class="section-preview-content">📄 콘텐츠</div>';
+    },
+
+    // 🔧 차트 아이콘 가져오기
+    getChartIcon(chartType) {
+        const icons = {
+            'doughnut': 'chart-pie',
+            'pie': 'chart-pie',
+            'bar': 'chart-bar',
+            'line': 'chart-line',
+            'area': 'chart-area',
+            'polar': 'chart-pie',
+            'funnel': 'funnel-dollar',
+            'waterfall': 'chart-bar',
+            'radar': 'chart-pie'
+        };
+        
+        return icons[chartType] || 'chart-bar';
+    },
+
+    // 🔧 차트 타입 이름 가져오기
+    getChartTypeName(chartType) {
+        const names = {
+            'doughnut': '도넛',
+            'pie': '파이',
+            'bar': '막대',
+            'line': '선',
+            'area': '영역',
+            'polar': '극좌표',
+            'funnel': '퍼널',
+            'waterfall': '폭포',
+            'radar': '레이더'
+        };
+        
+        return names[chartType] || chartType;
+    },
+
+    // 💾 저장된 커스텀 템플릿 가져오기
+    getSavedCustomTemplates() {
+        try {
+            return JSON.parse(localStorage.getItem('customTemplates') || '[]');
+        } catch (error) {
+            console.error('❌ 저장된 템플릿 로드 실패:', error);
+            return [];
+        }
+    },
+
+    // 💾 커스텀 템플릿 저장
+    saveCustomTemplate() {
+        if (!this.customTemplate.name || this.customTemplate.name.trim() === '') {
+            alert('템플릿 이름을 입력해주세요.');
+            return;
+        }
+        
+        const savedTemplates = this.getSavedCustomTemplates();
+        
+        // 새 템플릿 추가
+        const templateToSave = {
+            ...this.customTemplate,
+            id: 'custom-' + Date.now(),
+            createdAt: new Date().toISOString()
+        };
+        
+        savedTemplates.unshift(templateToSave);
+        
+        // 최대 10개만 유지
+        const limitedTemplates = savedTemplates.slice(0, 10);
+        
+        localStorage.setItem('customTemplates', JSON.stringify(limitedTemplates));
+        
+        // UI 업데이트
+        this.renderSavedTemplates();
+        
+        alert(`템플릿 "${this.customTemplate.name}"이 저장되었습니다.`);
+        console.log('💾 커스텀 템플릿 저장 완료:', templateToSave);
+    },
+
+    // 📂 템플릿 불러오기 대화상자
+    showLoadTemplateDialog() {
+        const savedTemplates = this.getSavedCustomTemplates();
+        
+        if (savedTemplates.length === 0) {
+            alert('저장된 템플릿이 없습니다.');
+            return;
+        }
+        
+        // 간단한 선택 대화상자 (실제로는 더 예쁜 모달을 만들 수 있음)
+        const templateNames = savedTemplates.map((t, index) => `${index + 1}. ${t.name}`).join('\n');
+        const choice = prompt(`불러올 템플릿을 선택하세요:\n${templateNames}\n\n번호를 입력하세요:`);
+        
+        if (choice) {
+            const index = parseInt(choice) - 1;
+            if (index >= 0 && index < savedTemplates.length) {
+                this.loadSavedTemplate(savedTemplates[index].id);
+            } else {
+                alert('올바른 번호를 입력해주세요.');
+            }
+        }
+    },
+
+    // 📂 저장된 템플릿 불러오기
+    loadSavedTemplate(templateId) {
+        const savedTemplates = this.getSavedCustomTemplates();
+        const template = savedTemplates.find(t => t.id === templateId);
+        
+        if (!template) {
+            alert('템플릿을 찾을 수 없습니다.');
+            return;
+        }
+        
+        // 현재 커스텀 템플릿 설정 업데이트
+        this.customTemplate = { ...template };
+        
+        // UI 업데이트
+        this.renderCustomEditor();
+        
+        console.log('📂 템플릿 불러오기 완료:', template.name);
+    },
+
+    // 📤 템플릿 내보내기
+    exportCustomTemplate() {
+        const dataStr = JSON.stringify(this.customTemplate, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(dataBlob);
+        link.download = `${this.customTemplate.name || 'custom_template'}.json`;
+        link.click();
+        
+        console.log('📤 템플릿 내보내기 완료');
+    },
+
+    // 📥 템플릿 가져오기
+    importCustomTemplate() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const template = JSON.parse(e.target.result);
+                    
+                    // 기본 구조 검증
+                    if (template.name && template.sections && template.chartTypes) {
+                        this.customTemplate = { ...template, id: 'custom-' + Date.now() };
+                        this.renderCustomEditor();
+                        console.log('📥 템플릿 가져오기 완료:', template.name);
+                    } else {
+                        alert('올바른 템플릿 파일이 아닙니다.');
+                    }
+                } catch (error) {
+                    alert('파일을 읽는 중 오류가 발생했습니다.');
+                    console.error('❌ 템플릿 가져오기 실패:', error);
+                }
+            };
+            reader.readAsText(file);
+        };
+        
+        input.click();
+    },
+
+    // 📊 커스텀 리포트 생성
+    generateCustomReport() {
+        if (this.customTemplate.sections.length === 0) {
+            alert('최소 하나의 섹션을 추가해주세요.');
+            return;
+        }
+        
+        console.log('📊 커스텀 리포트 생성 시작:', this.customTemplate);
+        
+        // 기존 generateReport 함수 활용
+        this._currentTemplate = 'custom';
+        this.generateReport();
+    },
+
+    // 🖼️ 레이아웃 미리보기 표시
+    showLayoutPreview() {
+        // 간단한 알림으로 대체 (실제로는 모달 창을 만들 수 있음)
+        const sectionNames = this.customTemplate.sections.map(s => this.getSectionName(s)).join('\n• ');
+        alert(`현재 레이아웃 구성:\n\n• ${sectionNames}`);
+    },
+
+    // 🗑️ 저장된 템플릿 삭제
+    deleteSavedTemplate(templateId) {
+        if (!confirm('이 템플릿을 삭제하시겠습니까?')) return;
+        
+        let savedTemplates = this.getSavedCustomTemplates();
+        savedTemplates = savedTemplates.filter(t => t.id !== templateId);
+        
+        localStorage.setItem('customTemplates', JSON.stringify(savedTemplates));
+        this.renderSavedTemplates();
+        
+        console.log('🗑️ 템플릿 삭제 완료:', templateId);
+    },
+
+    // 📋 템플릿 복사
+    duplicateSavedTemplate(templateId) {
+        const savedTemplates = this.getSavedCustomTemplates();
+        const template = savedTemplates.find(t => t.id === templateId);
+        
+        if (!template) return;
+        
+        const duplicatedTemplate = {
+            ...template,
+            id: 'custom-' + Date.now(),
+            name: template.name + ' (복사)',
+            createdAt: new Date().toISOString()
+        };
+        
+        savedTemplates.unshift(duplicatedTemplate);
+        localStorage.setItem('customTemplates', JSON.stringify(savedTemplates));
+        this.renderSavedTemplates();
+        
+        console.log('📋 템플릿 복사 완료:', duplicatedTemplate.name);
+    },
+
+    // 🎨 사용자 정의 색상 업데이트
+    updateCustomColor(colorIndex, newColor) {
+        if (colorIndex >= 0 && colorIndex < this.customTemplate.customColors.length) {
+            this.customTemplate.customColors[colorIndex] = newColor;
+            
+            // 미리보기 업데이트
+            this.updateCustomTemplatePreview();
+            
+            console.log(`🎨 색상 ${colorIndex + 1} 업데이트:`, newColor);
+        }
+    },
+
+    // 🔄 커스텀 템플릿 미리보기 업데이트
+    updateCustomTemplatePreview() {
+        // 실시간 미리보기 업데이트
+        this.updateLivePreview();
+        
+        // 커스텀 탭이 활성화된 경우 미리보기 정보 업데이트
+        const customTab = document.getElementById('custom-tab');
+        if (customTab && customTab.classList.contains('active')) {
+            // 여기에 커스텀 템플릿 전용 미리보기 로직 추가 가능
+        }
+    }
+};
+
+// 🌍 전역 스코프에 모듈 등록
+if (typeof globalThis !== 'undefined') {
+    globalThis.ReportModule = ReportModule;
+    
+    // App 네임스페이스에도 등록
+    if (globalThis.App) {
+        globalThis.App.report = ReportModule;
+    } else {
+        // App이 아직 없으면 생성
+        globalThis.App = globalThis.App || {};
+        globalThis.App.report = ReportModule;
+    }
+    
+    console.log('🌍 ReportModule 전역 등록 완료');
+}
+
+// 📱 DOM 로드 완료 시 자동 초기화
+document.addEventListener('DOMContentLoaded', () => {
+    // 리포트 페이지가 있을 때만 초기화
+    if (document.getElementById('report')) {
+        setTimeout(() => {
+            ReportModule.init();
+        }, 1500); // 1.5초 후 초기화 (다른 모듈들이 로드된 후)
+    }
+});
+
+console.log('📊 리포트 모듈 로드 완료 - 버전 2.0 (B+C 고급 기능)');

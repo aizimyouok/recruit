@@ -463,9 +463,6 @@
                                 <button class="report-tab" data-tab="ai">
                                     <i class="fas fa-magic"></i> AI 분석 가이드
                                 </button>
-                                <button class="report-tab" data-tab="history">
-                                    <i class="fas fa-history"></i> 리포트 히스토리
-                                </button>
                             </div>
                         </div>
                         
@@ -481,25 +478,23 @@
                                                 </button>
                                             </div>
                                             <div class="filter-grid">
-                                                <div class="period-filter-container">
-                                                    <div class="filter-group">
-                                                        <label>기간 선택</label>
-                                                        <select id="report-filter-period">
-                                                            <option value="all">전체 기간</option>
-                                                            <option value="this-month">이번달</option>
-                                                            <option value="last-30">최근 30일</option>
-                                                            <option value="last-90">최근 3개월</option>
-                                                            <option value="this-year">올해</option>
-                                                            <option value="custom">사용자 지정</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="filter-group date-range-picker" id="report-custom-date-range">
-                                                        <label>날짜 범위 입력</label> 
-                                                        <div class="date-range-inputs">
-                                                            <input type="date" id="report-start-date">
-                                                            <span>-</span>
-                                                            <input type="date" id="report-end-date">
-                                                        </div>
+                                                <div class="filter-group">
+                                                    <label>기간 선택</label>
+                                                    <select id="report-filter-period">
+                                                        <option value="all">전체 기간</option>
+                                                        <option value="this-month">이번달</option>
+                                                        <option value="last-30">최근 30일</option>
+                                                        <option value="last-90">최근 3개월</option>
+                                                        <option value="this-year">올해</option>
+                                                        <option value="custom">사용자 지정</option>
+                                                    </select>
+                                                </div>
+                                                <div class="filter-group date-range-picker" id="report-custom-date-range" style="display: none;">
+                                                    <label>날짜 범위 입력</label> 
+                                                    <div class="date-range-inputs">
+                                                        <input type="date" id="report-start-date">
+                                                        <span>-</span>
+                                                        <input type="date" id="report-end-date">
                                                     </div>
                                                 </div>
                                                 <div class="filter-group">
@@ -534,6 +529,7 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        
                                         <div class="option-group">
                                             <div class="option-title">
                                                 <i class="fas fa-file-alt"></i> 리포트 템플릿 선택
@@ -544,6 +540,7 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        
                                         <div class="option-group">
                                             <div class="option-title">
                                                 <i class="fas fa-download"></i> 출력 형식
@@ -555,26 +552,55 @@
                                                 <div class="format-option"><i class="fas fa-globe"></i><span>웹 리포트</span></div>
                                             </div>
                                         </div>
+
+                                        <div class="option-group">
+                                            <div class="option-title">
+                                                <i class="fas fa-magic"></i> AI 분석 엔진
+                                            </div>
+                                            <div class="ai-analysis-grid">
+                                                <div class="ai-option">
+                                                    <div class="ai-option-header">
+                                                        <i class="fas fa-brain"></i>
+                                                        <span>스마트 인사이트</span>
+                                                    </div>
+                                                    <p>데이터에서 자동으로 주요 패턴과 트렌드를 찾아 분석합니다.</p>
+                                                    <label class="ai-toggle">
+                                                        <input type="checkbox" id="ai-insights" checked>
+                                                        <span class="ai-slider"></span>
+                                                    </label>
+                                                </div>
+                                                <div class="ai-option">
+                                                    <div class="ai-option-header">
+                                                        <i class="fas fa-lightbulb"></i>
+                                                        <span>개선 제안</span>
+                                                    </div>
+                                                    <p>채용 프로세스 개선을 위한 AI 기반 제안을 제공합니다.</p>
+                                                    <label class="ai-toggle">
+                                                        <input type="checkbox" id="ai-recommendations" checked>
+                                                        <span class="ai-slider"></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="progress-section" style="display: none;">
+                                            <h4>리포트 생성 진행률</h4>
+                                            <div class="progress-bar"><div class="progress-fill"></div></div>
+                                            <div class="progress-steps">
+                                                <div class="progress-step active"><i class="fas fa-database"></i> 데이터 수집</div>
+                                                <div class="progress-step"><i class="fas fa-chart-bar"></i> 분석 처리</div>
+                                                <div class="progress-step"><i class="fas fa-magic"></i> AI 분석</div>
+                                                <div class="progress-step"><i class="fas fa-file-pdf"></i> 리포트 생성</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="action-buttons">
+                                            <button class="btn btn-primary" id="generateReportBtn"><i class="fas fa-magic"></i> 리포트 생성</button>
+                                        </div>
                                     </div>
                                     <div id="custom-tab" class="tab-content">
                                     </div>
                                     <div id="ai-tab" class="tab-content">
-                                    </div>
-                                    <div id="history-tab" class="tab-content">
-                                    </div>
-                                    <div class="progress-section" style="display: none;">
-                                        <h4>리포트 생성 진행률</h4>
-                                        <div class="progress-bar"><div class="progress-fill"></div></div>
-                                        <div class="progress-steps">
-                                            <div class="progress-step active"><i class="fas fa-database"></i> 데이터 수집</div>
-                                            <div class="progress-step"><i class="fas fa-chart-bar"></i> 분석 처리</div>
-                                            <div class="progress-step"><i class="fas fa-magic"></i> AI 분석</div>
-                                            <div class="progress-step"><i class="fas fa-file-pdf"></i> 리포트 생성</div>
-                                        </div>
-                                    </div>
-                                    <div class="action-buttons">
-                                        <button class="btn btn-secondary"><i class="fas fa-eye"></i> 미리보기</button>
-                                        <button class="btn btn-primary" id="generateReportBtn"><i class="fas fa-magic"></i> 리포트 생성</button>
                                     </div>
                                 </div>
                             </div>
