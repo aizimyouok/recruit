@@ -2,7 +2,7 @@
 // state.js - 상태 관리
 // =========================
 
-export const createInitialState = () => ({
+const createInitialState = () => ({
     data: {
         all: [],
         filtered: [],

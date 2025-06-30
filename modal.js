@@ -1,6 +1,6 @@
 // modal.js - 개선된 빠른 처리 버전 (시간 표시 버그 수정 및 나이 계산 기능 추가)
 
-export const ModalModule = {
+const ModalModule = {
     get element() {
         return document.getElementById('applicantModal');
     },

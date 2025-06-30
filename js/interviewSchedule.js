@@ -1,7 +1,7 @@
 // js/interviewSchedule.js 파일의 전체 코드입니다.
 // createRowHtml 함수 부분이 수정되었습니다.
 
-export const InterviewScheduleModule = {
+const InterviewScheduleModule = {
     state: {
         interviewer: 'all',
         company: 'all',

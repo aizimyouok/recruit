@@ -646,8 +646,26 @@
         </div>
     </div>
 
+    <!-- 설정 및 기본 모듈들 먼저 로드 -->
+    <script src="js/config.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/cache.js"></script>
+    <script src="js/dataCache.js"></script>
+    <script src="js/smartSync.js"></script>
+    
+    <!-- UI 및 기능 모듈들 -->
+    <script src="js/data.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="modal.js"></script>
+    <script src="navigation.js"></script>
+    <script src="theme.js"></script>
+    
+    <!-- 페이지별 모듈들 -->
     <script src="js/interviewSchedule.js"></script>
     <script src="js/report.js"></script>
+    
+    <!-- 메인 애플리케이션 마지막에 로드 -->
     <script src="script.js"></script>
 </body>
 </html>

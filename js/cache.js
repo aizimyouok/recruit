@@ -2,7 +2,7 @@
 // cache.js - 데이터 캐싱 모듈
 // =========================
 
-export const CacheModule = {
+const CacheModule = {
     // 메모리 캐시 (페이지 새로고침 시 초기화)
     memoryCache: new Map(),
     

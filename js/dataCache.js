@@ -2,7 +2,7 @@
 // dataCache.js - 전체 데이터 캐싱 모듈
 // =========================
 
-export const DataCacheModule = {
+const DataCacheModule = {
     CACHE_KEY: 'hiring_data_cache_v2',
     CACHE_DURATION: 15 * 60 * 1000, // 15분
     

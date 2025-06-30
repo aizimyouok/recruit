@@ -2,7 +2,7 @@
 // data.js - 데이터 관련 모듈 (리포트 페이지 연동 최종 버전)
 // =========================
 
-export const DataModule = {
+const DataModule = {
     async fetch(appInstance) {
         if (appInstance.dataCache) {
             const loadedFromCache = await appInstance.dataCache.loadFromCache(appInstance);

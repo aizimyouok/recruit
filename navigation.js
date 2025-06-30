@@ -1,6 +1,6 @@
 // js/navigation.js (최종 안정화 버전)
 
-export const NavigationModule = {
+const NavigationModule = {
     // 각 페이지에 해당하는 모듈을 등록하는 객체
     pageModules: {
         report: null,

@@ -2,7 +2,7 @@
 // utils.js - 순수 유틸리티 함수들 (안전한 DOM 접근 및 시간 포맷 수정 버전)
 // =========================
 
-export const Utils = {
+const Utils = {
     /**
      * 다양한 시간 형식(예: "14:30", "14시 30분", "15시")을 "HH:mm" 형식으로 변환합니다.
      * @param {string | number} timeValue - 변환할 시간 값

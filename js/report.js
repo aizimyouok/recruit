@@ -5,7 +5,7 @@
  * @date 2025-06-30
  */
 
-export const ReportModule = {
+const ReportModule = {
     // 🔧 초기화 상태
     _isInitialized: false,
     _chartInstance: null,

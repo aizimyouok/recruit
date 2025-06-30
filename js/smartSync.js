@@ -2,7 +2,7 @@
 // smartSync.js - 스마트 준실시간 동기화 시스템 (빠른 반영 버전)
 // =========================
 
-export const SmartSyncModule = {
+const SmartSyncModule = {
     // 설정
     POLL_INTERVAL: 30000,        // 30초마다 확인
     FAST_POLL_INTERVAL: 2000,    // 🔥 수정 후 2초마다 (더 빠르게)

@@ -2,7 +2,7 @@
 // ui.js - UI 관련 모듈
 // =========================
 
-export const UIModule = {
+const UIModule = {
     toggleMobileMenu() {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.querySelector('.mobile-overlay');

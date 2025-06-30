@@ -2,7 +2,7 @@
 // theme.js - 테마 관련 모듈 (완전한 통합 버전)
 // =========================
 
-export const ThemeModule = {
+const ThemeModule = {
     // 테마 상수
     THEMES: {
         LIGHT: 'light',
