@@ -16,126 +16,29 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
-        /* 🚨 전체 레이아웃 최대 폭 제한 완전 제거 */
-        body, html {
-            width: 100% !important;
-            max-width: none !important;
-        }
-        
-        .app-container,
-        .main-content,
-        .content-area,
-        .content-container,
-        #report {
-            width: 100% !important;
-            max-width: none !important;
-        }
-        
-        /* 데이터 필터링 영역 강제 가로 배치 - 화면 끝까지 가득 채우기 */
+        /* 간단한 그리드 레이아웃 강제 적용 */
         #report .filter-grid {
             display: grid !important;
             grid-template-columns: 1fr 1fr 1fr !important;
             gap: 25px 20px !important;
-            width: 100% !important;
-            max-width: none !important;
         }
         
-        #report .period-filter-container {
-            grid-column: span 1 !important;
-            display: block !important;
-            width: 100% !important;
-        }
-        
-        #report .filter-section {
-            background: #ffffff !important;
-            border-radius: 12px !important;
-            padding: 20px !important;
-            margin-bottom: 20px !important;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
-            width: 100% !important;
-        }
-        
-        #report .filter-group {
-            margin-bottom: 15px !important;
-            width: 100% !important;
-        }
-        
-        #report .filter-group label {
-            display: block !important;
-            margin-bottom: 5px !important;
-            font-weight: 600 !important;
-            color: #374151 !important;
-            font-size: 14px !important;
-        }
-        
-        #report .filter-group select,
-        #report .filter-group input {
-            width: 100% !important;
-            padding: 8px 12px !important;
-            border: 1px solid #d1d5db !important;
-            border-radius: 6px !important;
-            font-size: 14px !important;
-            background: white !important;
-        }
-        
-        /* 실시간 미리보기 위치 고정 */
-        .live-preview-sidebar {
-            position: sticky !important;
-            top: 20px !important;
-            max-width: 320px !important;
-            flex-shrink: 0 !important;
-        }
-        
-        /* 모든 그리드 요소들이 화면 끝까지 가득 차도록 강제 적용 */
         #report .template-gallery {
             display: grid !important;
             grid-template-columns: 1fr 1fr 1fr !important;
             gap: 20px !important;
-            width: 100% !important;
-            max-width: none !important;
         }
         
         #report .format-selector {
             display: grid !important;
             grid-template-columns: 1fr 1fr 1fr 1fr !important;
             gap: 12px !important;
-            width: 100% !important;
-            max-width: none !important;
         }
         
         #report .ai-analysis-grid {
             display: grid !important;
             grid-template-columns: 1fr 1fr !important;
             gap: 20px !important;
-            width: 100% !important;
-            max-width: none !important;
-        }
-        
-        /* 모든 컨테이너들 강제 전체 폭 적용 */
-        .report-main-grid,
-        .report-builder-section,
-        #report .report-builder,
-        #report .option-group,
-        #report .report-container {
-            width: 100% !important;
-            max-width: none !important;
-        }
-        
-        /* 🚨 최우선 강제 적용 - 모든 요소를 화면 끝까지 */
-        #report * {
-            box-sizing: border-box !important;
-        }
-        
-        /* content-area의 padding을 리포트 페이지에서만 줄이기 */
-        #report.page {
-            margin: -30px !important; /* content-area의 30px 패딩 상쇄 */
-            padding: 15px !important; /* 최소한의 패딩만 유지 */
-            width: calc(100% + 60px) !important; /* 패딩 상쇄한 만큼 폭 확대 */
-        }
-        
-        #report .report-main-grid {
-            width: 100% !important;
-            max-width: none !important;
         }
     </style>
 </head>
@@ -738,56 +641,5 @@
     
     <!-- 메인 애플리케이션 마지막에 로드 -->
     <script src="script.js"></script>
-    
-    <!-- 🚨 강제 레이아웃 적용 스크립트 -->
-    <script>
-        // DOM 로드 완료 후 강제 스타일 적용
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(function() {
-                console.log('🔥 강제 레이아웃 적용 시작...');
-                
-                // 리포트 페이지 전체 폭 강제 적용
-                const reportPage = document.getElementById('report');
-                if (reportPage) {
-                    reportPage.style.margin = '-30px';
-                    reportPage.style.padding = '15px';
-                    reportPage.style.width = 'calc(100% + 60px)';
-                    reportPage.style.maxWidth = 'none';
-                    reportPage.style.boxSizing = 'border-box';
-                }
-                
-                // 모든 그리드 요소들 강제 적용
-                const elements = [
-                    { selector: '#report .filter-grid', columns: '1fr 1fr 1fr' },
-                    { selector: '#report .template-gallery', columns: '1fr 1fr 1fr' },
-                    { selector: '#report .format-selector', columns: '1fr 1fr 1fr 1fr' },
-                    { selector: '#report .ai-analysis-grid', columns: '1fr 1fr' }
-                ];
-                
-                elements.forEach(el => {
-                    const elements = document.querySelectorAll(el.selector);
-                    elements.forEach(element => {
-                        element.style.display = 'grid';
-                        element.style.gridTemplateColumns = el.columns;
-                        element.style.width = '100%';
-                        element.style.maxWidth = 'none';
-                        element.style.boxSizing = 'border-box';
-                        console.log(`✅ ${el.selector} 강제 적용 완료`);
-                    });
-                });
-                
-                // 메인 그리드도 강제 적용
-                const mainGrid = document.querySelector('.report-main-grid');
-                if (mainGrid) {
-                    mainGrid.style.width = '100%';
-                    mainGrid.style.maxWidth = 'none';
-                    mainGrid.style.gridTemplateColumns = '1fr 320px';
-                    console.log('✅ main-grid 강제 적용 완료');
-                }
-                
-                console.log('🎯 모든 강제 레이아웃 적용 완료!');
-            }, 2000); // 2초 후 실행하여 모든 요소가 로드된 후 적용
-        });
-    </script>
 </body>
 </html>
