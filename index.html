@@ -103,12 +103,14 @@
             display: flex !important;
             flex-direction: column !important;
             gap: 20px !important;
+            width: 100% !important; /* 전체 너비 사용 */
         }
         
         #report .live-preview-sidebar .report-content {
             display: flex !important;
             flex-direction: column !important;
             gap: 20px !important;
+            width: 100% !important; /* 전체 너비 사용 */
         }
         
         #report .live-preview-sidebar .report-section {
@@ -120,11 +122,17 @@
             width: 100% !important;
             margin-bottom: 20px !important;
             text-align: center !important;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed) !important; /* 보라색 배경 */
+            padding: 20px !important;
+            border-radius: 12px !important;
+            color: white !important; /* 흰색 텍스트로 변경 */
         }
         
         #report .live-preview-sidebar .report-title {
             font-size: 1.2rem !important;
             margin-bottom: 10px !important;
+            color: white !important; /* 제목도 흰색 */
+            font-weight: 700 !important;
         }
         
         #report .live-preview-sidebar .report-meta {
@@ -132,7 +140,47 @@
             justify-content: center !important;
             gap: 20px !important;
             font-size: 0.85rem !important;
-            color: #64748b !important;
+            color: rgba(255, 255, 255, 0.9) !important; /* 반투명 흰색 */
+        }
+        
+        #report .live-preview-sidebar .report-meta span {
+            background: rgba(255, 255, 255, 0.2) !important;
+            padding: 6px 12px !important;
+            border-radius: 20px !important;
+            color: white !important; /* 메타 정보도 흰색 */
+        }
+        
+        /* 🔥 모든 섹션 전체 너비 사용 */
+        #report .live-preview-sidebar .executive-summary {
+            width: 100% !important;
+        }
+        
+        #report .live-preview-sidebar .report-section h2 {
+            width: 100% !important;
+            font-size: 1.1rem !important;
+            margin-bottom: 15px !important;
+            color: #1e293b !important;
+            font-weight: 600 !important;
+        }
+        
+        #report .live-preview-sidebar .kpi-grid {
+            width: 100% !important;
+        }
+        
+        #report .live-preview-sidebar .kpi-card {
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        
+        /* 주요 성과, 이슈 섹션도 전체 너비 */
+        #report .live-preview-sidebar .report-section div[style*="padding"] {
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        
+        #report .live-preview-sidebar ul {
+            width: 100% !important;
+            box-sizing: border-box !important;
         }
     </style>
 </head>
