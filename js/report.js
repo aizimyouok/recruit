@@ -231,40 +231,40 @@ const ReportModule = {
         const joinRate = total > 0 ? ((joined / total) * 100).toFixed(1) : 0;
         
         return `
-            <div class="report-content executive-summary">
-                <div class="report-header">
-                    <h1 class="report-title">📈 CFC 채용 현황 경영진 요약 리포트</h1>
-                    <div class="report-meta">
-                        <span>기간: ${this.getSelectedPeriodText()}</span>
-                        <span>대상: ${total}명</span>
+            <div class="report-content executive-summary" style="width: 100%; display: flex; flex-direction: column; gap: 20px;">
+                <div class="report-header" style="width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 20px; border-radius: 12px; color: white; text-align: center;">
+                    <h1 class="report-title" style="color: white; font-size: 1.2rem; margin-bottom: 10px; font-weight: 700;">📈 CFC 채용 현황 경영진 요약 리포트</h1>
+                    <div class="report-meta" style="display: flex; justify-content: center; gap: 20px; font-size: 0.85rem;">
+                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white;">기간: ${this.getSelectedPeriodText()}</span>
+                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white;">대상: ${total}명</span>
                     </div>
                 </div>
                 
-                <div class="report-section">
-                    <h2>📊 핵심 KPI</h2>
-                    <div class="kpi-grid">
-                        <div class="kpi-card">
-                            <h3>총 지원자</h3>
-                            <div class="kpi-value">${total}명</div>
+                <div class="report-section" style="width: 100%;">
+                    <h2 style="width: 100%; font-size: 1.1rem; margin-bottom: 15px; color: #1e293b; font-weight: 600;">📊 핵심 KPI</h2>
+                    <div class="kpi-grid" style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
+                        <div class="kpi-card" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: white; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); width: 100%; box-sizing: border-box;">
+                            <h3 style="margin: 0; font-size: 0.9rem; color: #64748b; font-weight: 600;">총 지원자</h3>
+                            <div class="kpi-value" style="font-size: 1.5rem; font-weight: 700; color: #3b82f6;">${total}명</div>
                         </div>
-                        <div class="kpi-card">
-                            <h3>최종 합격</h3>
-                            <div class="kpi-value">${passed}명</div>
+                        <div class="kpi-card" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: white; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); width: 100%; box-sizing: border-box;">
+                            <h3 style="margin: 0; font-size: 0.9rem; color: #64748b; font-weight: 600;">최종 합격</h3>
+                            <div class="kpi-value" style="font-size: 1.5rem; font-weight: 700; color: #3b82f6;">${passed}명</div>
                         </div>
-                        <div class="kpi-card">
-                            <h3>합격률</h3>
-                            <div class="kpi-value">${passRate}%</div>
+                        <div class="kpi-card" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: white; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); width: 100%; box-sizing: border-box;">
+                            <h3 style="margin: 0; font-size: 0.9rem; color: #64748b; font-weight: 600;">합격률</h3>
+                            <div class="kpi-value" style="font-size: 1.5rem; font-weight: 700; color: #3b82f6;">${passRate}%</div>
                         </div>
-                        <div class="kpi-card">
-                            <h3>입과율</h3>
-                            <div class="kpi-value">${joinRate}%</div>
+                        <div class="kpi-card" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: white; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); width: 100%; box-sizing: border-box;">
+                            <h3 style="margin: 0; font-size: 0.9rem; color: #64748b; font-weight: 600;">입과율</h3>
+                            <div class="kpi-value" style="font-size: 1.5rem; font-weight: 700; color: #3b82f6;">${joinRate}%</div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="report-section">
-                    <h2>🎯 주요 성과</h2>
-                    <div style="padding: 20px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #4f46e5;">
+                <div class="report-section" style="width: 100%;">
+                    <h2 style="width: 100%; font-size: 1.1rem; margin-bottom: 15px; color: #1e293b; font-weight: 600;">🎯 주요 성과</h2>
+                    <div style="width: 100%; padding: 20px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #4f46e5; box-sizing: border-box;">
                         <ul style="margin: 0; padding-left: 20px;">
                             <li>온라인 지원 비중 증가 (전체의 ${this.calculateOnlinePercentage(data)}%)</li>
                             <li>평균 채용 기간 단축 (목표 대비 우수)</li>
@@ -273,9 +273,9 @@ const ReportModule = {
                     </div>
                 </div>
                 
-                <div class="report-section">
-                    <h2>⚠️ 주요 이슈 & 개선사항</h2>
-                    <div style="padding: 20px; background: #fef2f2; border-radius: 8px; border-left: 4px solid #ef4444;">
+                <div class="report-section" style="width: 100%;">
+                    <h2 style="width: 100%; font-size: 1.1rem; margin-bottom: 15px; color: #1e293b; font-weight: 600;">⚠️ 주요 이슈 & 개선사항</h2>
+                    <div style="width: 100%; padding: 20px; background: #fef2f2; border-radius: 8px; border-left: 4px solid #ef4444; box-sizing: border-box;">
                         <ul style="margin: 0; padding-left: 20px;">
                             <li>서류 검토 단계 병목 현상</li>
                             <li>면접관 스케줄 조정 필요</li>
