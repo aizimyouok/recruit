@@ -9,8 +9,8 @@
     <link rel="icon" href="data:;base64,=">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet">
-    <link href="styles.css" rel="stylesheet">
-    <link href="report.css" rel="stylesheet"> 
+    <link href="styles.css?v=20250630" rel="stylesheet">
+    <link href="report.css?v=20250630" rel="stylesheet"> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -738,5 +738,56 @@
     
     <!-- 메인 애플리케이션 마지막에 로드 -->
     <script src="script.js"></script>
+    
+    <!-- 🚨 강제 레이아웃 적용 스크립트 -->
+    <script>
+        // DOM 로드 완료 후 강제 스타일 적용
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                console.log('🔥 강제 레이아웃 적용 시작...');
+                
+                // 리포트 페이지 전체 폭 강제 적용
+                const reportPage = document.getElementById('report');
+                if (reportPage) {
+                    reportPage.style.margin = '-30px';
+                    reportPage.style.padding = '15px';
+                    reportPage.style.width = 'calc(100% + 60px)';
+                    reportPage.style.maxWidth = 'none';
+                    reportPage.style.boxSizing = 'border-box';
+                }
+                
+                // 모든 그리드 요소들 강제 적용
+                const elements = [
+                    { selector: '#report .filter-grid', columns: '1fr 1fr 1fr' },
+                    { selector: '#report .template-gallery', columns: '1fr 1fr 1fr' },
+                    { selector: '#report .format-selector', columns: '1fr 1fr 1fr 1fr' },
+                    { selector: '#report .ai-analysis-grid', columns: '1fr 1fr' }
+                ];
+                
+                elements.forEach(el => {
+                    const elements = document.querySelectorAll(el.selector);
+                    elements.forEach(element => {
+                        element.style.display = 'grid';
+                        element.style.gridTemplateColumns = el.columns;
+                        element.style.width = '100%';
+                        element.style.maxWidth = 'none';
+                        element.style.boxSizing = 'border-box';
+                        console.log(`✅ ${el.selector} 강제 적용 완료`);
+                    });
+                });
+                
+                // 메인 그리드도 강제 적용
+                const mainGrid = document.querySelector('.report-main-grid');
+                if (mainGrid) {
+                    mainGrid.style.width = '100%';
+                    mainGrid.style.maxWidth = 'none';
+                    mainGrid.style.gridTemplateColumns = '1fr 320px';
+                    console.log('✅ main-grid 강제 적용 완료');
+                }
+                
+                console.log('🎯 모든 강제 레이아웃 적용 완료!');
+            }, 2000); // 2초 후 실행하여 모든 요소가 로드된 후 적용
+        });
+    </script>
 </body>
 </html>

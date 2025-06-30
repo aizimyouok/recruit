@@ -2,6 +2,26 @@
    리포트 발행 페이지 전용 스타일 (수정본)
    ========================= */
 
+/* 🚨 최우선 강제 적용 - 캐시 방지 및 완전 폭 활용 */
+#report,
+#report *,
+#report .report-container,
+#report .report-main-grid,
+#report .report-builder-section,
+#report .report-builder,
+#report .filter-section,
+#report .option-group {
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+}
+
+#report {
+    margin: -30px !important;
+    padding: 15px !important;
+    width: calc(100% + 60px) !important;
+}
+
 #report .report-container {
     /* max-width를 유지하되, width를 100%로 설정하여 반응형으로 만듭니다. */
     width: 100% !important;
@@ -190,6 +210,17 @@
     width: 100% !important; /* 전체 폭 강제 사용 */
 }
 
+/* 🚨 더 구체적인 선택자로 강제 적용 */
+#report .filter-section .filter-grid,
+#report div.filter-grid,
+.page#report .filter-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
+}
+
 /* ▼▼▼▼▼ 핵심 수정 부분 ▼▼▼▼▼ */
 /* 기간 필터를 감싸는 새로운 컨테이너 스타일 */
 #report .period-filter-container {
@@ -325,6 +356,17 @@
     gap: 12px;
     margin-top: 15px;
     width: 100% !important; /* 전체 폭 강제 사용 */
+}
+
+/* 🚨 더 구체적인 선택자로 강제 적용 */
+#report .option-group .format-selector,
+#report div.format-selector,
+.page#report .format-selector {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr 1fr !important;
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
 }
 
 #report .format-option {
@@ -540,6 +582,17 @@
     gap: 20px; /* 간격도 조금 늘림 */
     margin-top: 20px;
     width: 100% !important; /* 전체 폭 강제 사용 */
+}
+
+/* 🚨 더 구체적인 선택자로 강제 적용 */
+#report .option-group .template-gallery,
+#report div.template-gallery,
+.page#report .template-gallery {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    width: 100% !important;
+    max-width: none !important;
+    box-sizing: border-box !important;
 }
 
 #report .template-card {
