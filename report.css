@@ -5306,3 +5306,27 @@
 #report .date-range-inputs input {
     flex: 1;
 }
+/* =======================================
+   🚀 리포트 페이지 레이아웃 긴급 복구 코드 🚀
+   ======================================= */
+
+/* 메인 컨텐츠 영역을 두 개의 컬럼으로 나누는 핵심 규칙 */
+#report .report-main-grid {
+    display: grid !important; /* 그리드 레이아웃을 강제로 활성화합니다. */
+    grid-template-columns: 1fr 350px !important; /* 왼쪽은 유동적인 공간, 오른쪽은 350px로 고정합니다. */
+    gap: 20px !important; /* 두 컬럼 사이의 간격을 줍니다. */
+    align-items: start; /* 컬럼들을 위쪽 기준으로 정렬합니다. */
+}
+
+/* 왼쪽 리포트 빌더 섹션이 넘치지 않도록 설정 */
+#report .report-builder-section {
+    min-width: 0; /* 내부 요소가 너무 클 때 레이아웃이 깨지는 것을 방지합니다. */
+}
+
+/* 오른쪽 실시간 미리보기 사이드바를 스크롤 따라오도록 고정 */
+#report .live-preview-sidebar {
+    position: sticky !important; /* 스크롤을 내려도 화면에 붙어있도록 설정합니다. */
+    top: 20px !important; /* 상단에서 20px 떨어진 위치에 고정합니다. */
+    max-height: calc(100vh - 40px); /* 화면 높이를 넘지 않도록 최대 높이를 제한합니다. */
+    overflow-y: auto; /* 내용이 길어지면 스크롤바가 생깁니다. */
+}
