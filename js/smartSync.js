@@ -437,3 +437,5 @@ export const SmartSyncModule = {
         };
     }
 };
+
+export { SmartSyncModule };

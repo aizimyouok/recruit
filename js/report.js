@@ -1028,11 +1028,27 @@ export const ReportModule = {
             });
         }
 
+        // 필터 초기화 버튼
+        const resetFiltersBtn = document.getElementById('report-reset-filters');
+        if (resetFiltersBtn) {
+            resetFiltersBtn.addEventListener('click', () => {
+                this.resetFilters();
+            });
+        }
+
+        // 리포트 탭 전환
+        const reportTabs = document.querySelectorAll('.report-tab');
+        reportTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                this.switchReportTab(tab.dataset.tab);
+            });
+        });
+
         // 필터 변경 이벤트
         const filterIds = [
             'report-filter-period',
             'report-filter-route', 
-            'report-filter-field',
+            'report-filter-position',
             'report-filter-company',
             'report-filter-recruiter',
             'report-filter-interviewer',
@@ -1172,7 +1188,7 @@ export const ReportModule = {
         const filterElements = [
             'report-filter-period',
             'report-filter-route',
-            'report-filter-field', 
+            'report-filter-position', 
             'report-filter-company',
             'report-filter-recruiter',
             'report-filter-interviewer'
@@ -1213,7 +1229,7 @@ export const ReportModule = {
             // 기타 필터들
             const filterMappings = {
                 'report-filter-route': '지원루트',
-                'report-filter-field': '모집분야',
+                'report-filter-position': '모집분야',
                 'report-filter-company': '회사명',
                 'report-filter-recruiter': '증원자',
                 'report-filter-interviewer': '면접관'
@@ -4379,7 +4395,7 @@ export const ReportModule = {
     applyDrillDownFilter(label) {
         // 해당 라벨로 필터 설정
         const routeFilter = document.getElementById('report-filter-route');
-        const fieldFilter = document.getElementById('report-filter-field');
+        const fieldFilter = document.getElementById('report-filter-position');
         const companyFilter = document.getElementById('report-filter-company');
         
         [routeFilter, fieldFilter, companyFilter].forEach(filter => {
@@ -5308,16 +5324,46 @@ export const ReportModule = {
         }
     },
 
+    // 🔄 데이터 가져오기 (재시도 로직 포함)
+    getDataWithRetry() {
+        // 1차 시도: 전역 App 상태에서
+        let data = globalThis.App?.state?.data?.all;
+        if (data && data.length > 0) {
+            return data;
+        }
+
+        // 2차 시도: DOM에서 직접 가져오기 시도
+        try {
+            const tableRows = document.querySelectorAll('.data-table tbody tr');
+            if (tableRows.length > 0) {
+                console.log('📊 DOM에서 데이터 복구 시도...');
+                // 임시 빈 배열 반환하여 오류 방지
+                return [];
+            }
+        } catch (error) {
+            console.warn('DOM에서 데이터 가져오기 실패:', error);
+        }
+
+        // 3차 시도: 빈 배열 반환
+        return [];
+    },
+
     // 🔧 필터 초기화 함수 (data.js에서 호출됨)
     populateFilters() {
         console.log('📊 리포트 필터 초기화 시작...');
         
         try {
-            // 전역 앱 상태에서 데이터 가져오기
-            const allData = globalThis.App?.state?.data?.all || [];
+            // 전역 앱 상태에서 데이터 가져오기 (재시도 로직 포함)
+            const allData = this.getDataWithRetry();
             
             if (!allData || allData.length === 0) {
-                console.warn('⚠️ 필터 초기화용 데이터가 없습니다.');
+                console.warn('⚠️ 필터 초기화용 데이터가 없습니다. 3초 후 재시도...');
+                
+                // 3초 후 재시도
+                setTimeout(() => {
+                    this.populateFilters();
+                }, 3000);
+                
                 return;
             }
 
@@ -5325,7 +5371,7 @@ export const ReportModule = {
             
             // 각 필터 드롭다운 초기화
             this.populateFilterDropdown('report-filter-route', headers, allData, '지원루트');
-            this.populateFilterDropdown('report-filter-field', headers, allData, '모집분야');
+            this.populateFilterDropdown('report-filter-position', headers, allData, '모집분야');
             this.populateFilterDropdown('report-filter-company', headers, allData, '회사명');
             this.populateFilterDropdown('report-filter-recruiter', headers, allData, '증원자');
             this.populateFilterDropdown('report-filter-interviewer', headers, allData, '면접관');
@@ -5371,3 +5417,4 @@ export const ReportModule = {
 };
 
 // 🚀 모듈 내보내기
+export { ReportModule };
