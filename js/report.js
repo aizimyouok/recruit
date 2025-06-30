@@ -109,6 +109,11 @@ const ReportModule = {
             // 10. 🚨 강제 레이아웃 수정 (CSS 적용 안될 때 대비)
             this.forceLayoutFix();
             
+            // 11. 🔧 필터 초기화 (데이터 로드 후)
+            setTimeout(() => {
+                this.populateFilters();
+            }, 1000); // 1초 후 실행하여 데이터 로드 완료 대기
+            
             this._isInitialized = true;
             console.log('✅ [ReportModule] B+C 고급 기능 전체 초기화 완료!');
             

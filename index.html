@@ -16,17 +16,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
-        /* 데이터 필터링 영역 강제 가로 배치 */
+        /* 데이터 필터링 영역 강제 가로 배치 - 화면 끝까지 가득 채우기 */
         #report .filter-grid {
             display: grid !important;
-            grid-template-columns: repeat(3, 1fr) !important;
-            gap: 20px !important;
-            max-width: 100% !important;
+            grid-template-columns: 1fr 1fr 1fr !important;
+            gap: 25px 20px !important;
+            width: 100% !important;
+            max-width: none !important;
         }
         
         #report .period-filter-container {
             grid-column: span 1 !important;
             display: block !important;
+            width: 100% !important;
         }
         
         #report .filter-section {
@@ -35,10 +37,12 @@
             padding: 20px !important;
             margin-bottom: 20px !important;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+            width: 100% !important;
         }
         
         #report .filter-group {
             margin-bottom: 15px !important;
+            width: 100% !important;
         }
         
         #report .filter-group label {
@@ -65,6 +69,40 @@
             top: 20px !important;
             max-width: 320px !important;
             flex-shrink: 0 !important;
+        }
+        
+        /* 모든 그리드 요소들이 화면 끝까지 가득 차도록 강제 적용 */
+        #report .template-gallery {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr 1fr !important;
+            gap: 20px !important;
+            width: 100% !important;
+            max-width: none !important;
+        }
+        
+        #report .format-selector {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr 1fr 1fr !important;
+            gap: 12px !important;
+            width: 100% !important;
+            max-width: none !important;
+        }
+        
+        #report .ai-analysis-grid {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 20px !important;
+            width: 100% !important;
+            max-width: none !important;
+        }
+        
+        /* 모든 컨테이너들 */
+        .report-main-grid,
+        .report-builder-section,
+        #report .report-builder,
+        #report .option-group {
+            width: 100% !important;
+            max-width: none !important;
         }
     </style>
 </head>
