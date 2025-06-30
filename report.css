@@ -5118,6 +5118,7 @@
 /* 전체 리포트 컨테이너 레이아웃 개선 */
 .report-builder {
     display: flex !important;
+    flex-direction: column;
     gap: 30px !important;
     align-items: flex-start !important;
 }
