@@ -101,31 +101,31 @@
             padding: 0 !important;
         }
         
-        /* 🔥 리포트 헤더 전체 너비 강제 적용 */
+        /* 🔥 리포트 헤더 텍스트 색상 강제 적용 */
         #livePreviewContent .report-header,
-        .preview-summary .report-header {
-            width: 100% !important;
-            max-width: 100% !important;
-            background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
-            padding: 20px !important;
-            border-radius: 12px !important;
+        .preview-summary .report-header,
+        #livePreviewContent .report-header *,
+        .preview-summary .report-header *,
+        .report-header,
+        .report-header * {
             color: white !important;
-            text-align: center !important;
-            box-sizing: border-box !important;
-            margin: 0 !important;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
         }
         
         #livePreviewContent .report-title,
-        .preview-summary .report-title {
+        .preview-summary .report-title,
+        .report-title {
             color: white !important;
             font-size: 1.2rem !important;
             margin: 0 0 10px 0 !important;
             font-weight: 700 !important;
             width: 100% !important;
+            text-shadow: none !important;
         }
         
         #livePreviewContent .report-meta,
-        .preview-summary .report-meta {
+        .preview-summary .report-meta,
+        .report-meta {
             display: flex !important;
             justify-content: center !important;
             gap: 20px !important;
@@ -136,11 +136,42 @@
         }
         
         #livePreviewContent .report-meta span,
-        .preview-summary .report-meta span {
+        .preview-summary .report-meta span,
+        .report-meta span {
             background: rgba(255, 255, 255, 0.2) !important;
             padding: 6px 12px !important;
             border-radius: 20px !important;
             color: white !important;
+            text-shadow: none !important;
+        }
+        
+        /* 🔥 미리보기 헤더 스타일링 강화 */
+        #livePreviewContent .preview-header {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            margin: 0 !important;
+            padding: 0 0 15px 0 !important;
+        }
+        
+        #livePreviewContent .preview-header h4 {
+            margin: 0 !important;
+            font-size: 1.1rem !important;
+            font-weight: 600 !important;
+            color: #1e293b !important;
+            text-align: center !important;
+        }
+        
+        #livePreviewContent .preview-count {
+            background: #3b82f6 !important;
+            color: white !important;
+            padding: 4px 12px !important;
+            border-radius: 20px !important;
+            font-size: 0.85rem !important;
+            font-weight: 500 !important;
+            display: inline-block !important;
+            width: auto !important;
+            text-align: center !important;
         }
         
         /* 🔥 리포트 섹션 전체 너비 강제 적용 */

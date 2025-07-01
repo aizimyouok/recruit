@@ -231,9 +231,9 @@ const ReportModule = {
         const filteredData = this.getFilteredReportData();
         
         previewContent.innerHTML = `
-            <div class="preview-header">
-                <h4>${template.name}</h4>
-                <span class="preview-count">${filteredData.length}명 대상</span>
+            <div class="preview-header" style="display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 15px 0; border-bottom: 1px solid #e2e8f0;">
+                <h4 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #1e293b; text-align: center;">${template.name}</h4>
+                <span class="preview-count" style="background: #3b82f6; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; display: inline-block; width: auto;">${filteredData.length}명 대상</span>
             </div>
             <div class="preview-summary" style="width: 100%; max-width: 100%; overflow-x: auto; box-sizing: border-box;">
                 ${this.generatePreviewSummary(filteredData)}
@@ -323,11 +323,11 @@ const ReportModule = {
         
         return `
             <div class="report-content executive-summary" style="width: 100%; display: flex; flex-direction: column; gap: 20px;">
-                <div class="report-header" style="width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 20px; border-radius: 12px; color: white; text-align: center;">
-                    <h1 class="report-title" style="color: white; font-size: 1.2rem; margin-bottom: 10px; font-weight: 700;">📈 CFC 채용 현황 경영진 요약 리포트</h1>
+                <div class="report-header" style="width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 20px; border-radius: 12px; color: white !important; text-align: center;">
+                    <h1 class="report-title" style="color: white !important; font-size: 1.2rem; margin-bottom: 10px; font-weight: 700;">📈 CFC 채용 현황 경영진 요약 리포트</h1>
                     <div class="report-meta" style="display: flex; justify-content: center; gap: 20px; font-size: 0.85rem;">
-                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white;">기간: ${this.getSelectedPeriodText()}</span>
-                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white;">대상: ${total}명</span>
+                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">기간: ${this.getSelectedPeriodText()}</span>
+                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">대상: ${total}명</span>
                     </div>
                 </div>
                 
@@ -385,11 +385,11 @@ const ReportModule = {
         
         return `
             <div class="report-content detailed-analysis">
-                <div class="report-header">
-                    <h1 class="report-title">📊 CFC 채용 상세 분석 리포트</h1>
-                    <div class="report-meta">
-                        <span>분석 기간: ${this.getSelectedPeriodText()}</span>
-                        <span>총 지원자: ${data.length}명</span>
+                <div class="report-header" style="width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 20px; border-radius: 12px; color: white !important; text-align: center;">
+                    <h1 class="report-title" style="color: white !important; font-size: 1.2rem; margin-bottom: 10px; font-weight: 700;">📊 CFC 채용 상세 분석 리포트</h1>
+                    <div class="report-meta" style="display: flex; justify-content: center; gap: 20px; font-size: 0.85rem;">
+                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">분석 기간: ${this.getSelectedPeriodText()}</span>
+                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">총 지원자: ${data.length}명</span>
                     </div>
                 </div>
                 
@@ -464,11 +464,11 @@ const ReportModule = {
         
         return `
             <div class="report-content recruitment-funnel">
-                <div class="report-header">
-                    <h1 class="report-title">🔄 채용 퍼널 분석 리포트</h1>
-                    <div class="report-meta">
-                        <span>분석 기간: ${this.getSelectedPeriodText()}</span>
-                        <span>전체 단계: 4단계</span>
+                <div class="report-header" style="width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 20px; border-radius: 12px; color: white !important; text-align: center;">
+                    <h1 class="report-title" style="color: white !important; font-size: 1.2rem; margin-bottom: 10px; font-weight: 700;">🔄 채용 퍼널 분석 리포트</h1>
+                    <div class="report-meta" style="display: flex; justify-content: center; gap: 20px; font-size: 0.85rem;">
+                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">분석 기간: ${this.getSelectedPeriodText()}</span>
+                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">전체 단계: 4단계</span>
                     </div>
                 </div>
                 
@@ -525,11 +525,11 @@ const ReportModule = {
         
         return `
             <div class="report-content monthly-report">
-                <div class="report-header">
-                    <h1 class="report-title">📅 ${currentMonth} 월간 채용 리포트</h1>
-                    <div class="report-meta">
-                        <span>보고 기간: ${currentMonth}</span>
-                        <span>목표 달성: ${achievement}%</span>
+                <div class="report-header" style="width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 20px; border-radius: 12px; color: white !important; text-align: center;">
+                    <h1 class="report-title" style="color: white !important; font-size: 1.2rem; margin-bottom: 10px; font-weight: 700;">📅 ${currentMonth} 월간 채용 리포트</h1>
+                    <div class="report-meta" style="display: flex; justify-content: center; gap: 20px; font-size: 0.85rem;">
+                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">보고 기간: ${currentMonth}</span>
+                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">목표 달성: ${achievement}%</span>
                     </div>
                 </div>
                 
@@ -613,11 +613,11 @@ const ReportModule = {
         
         return `
             <div class="report-content interviewer-performance">
-                <div class="report-header">
-                    <h1 class="report-title">👤 면접관별 성과 분석 리포트</h1>
-                    <div class="report-meta">
-                        <span>분석 기간: ${this.getSelectedPeriodText()}</span>
-                        <span>면접관 수: ${interviewerStats.length}명</span>
+                <div class="report-header" style="width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 20px; border-radius: 12px; color: white !important; text-align: center;">
+                    <h1 class="report-title" style="color: white !important; font-size: 1.2rem; margin-bottom: 10px; font-weight: 700;">👤 면접관별 성과 분석 리포트</h1>
+                    <div class="report-meta" style="display: flex; justify-content: center; gap: 20px; font-size: 0.85rem;">
+                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">분석 기간: ${this.getSelectedPeriodText()}</span>
+                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">면접관 수: ${interviewerStats.length}명</span>
                     </div>
                 </div>
                 
@@ -698,11 +698,11 @@ const ReportModule = {
     generateCostAnalysisPreview(data) {
         return `
             <div class="report-content cost-analysis">
-                <div class="report-header">
-                    <h1 class="report-title">💰 채용 비용 효율성 분석 리포트</h1>
-                    <div class="report-meta">
-                        <span>분석 기간: ${this.getSelectedPeriodText()}</span>
-                        <span>비용 절감: 16%</span>
+                <div class="report-header" style="width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 20px; border-radius: 12px; color: white !important; text-align: center;">
+                    <h1 class="report-title" style="color: white !important; font-size: 1.2rem; margin-bottom: 10px; font-weight: 700;">💰 채용 비용 효율성 분석 리포트</h1>
+                    <div class="report-meta" style="display: flex; justify-content: center; gap: 20px; font-size: 0.85rem;">
+                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">분석 기간: ${this.getSelectedPeriodText()}</span>
+                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">비용 절감: 16%</span>
                     </div>
                 </div>
                 
