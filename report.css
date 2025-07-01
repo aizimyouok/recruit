@@ -900,7 +900,7 @@
 #report .report-title {
     font-size: 1.8rem;
     font-weight: 700;
-    color: var(--text-primary);
+    color: #ffffff !important; /* CSS 변수 대신 명시적 흰색 */
     margin-bottom: 25px;
     padding-bottom: 15px;
     border-bottom: 2px solid var(--border-color);
@@ -1194,7 +1194,13 @@
 /* ▲▲▲▲▲ [새로 추가] 리포트 모달 스타일 끝 ▲▲▲▲▲ */
 
 /* 리포트 콘텐츠 스타일 (모달 내부) */
-.report-title { font-size: 2rem; font-weight: 800; text-align: center; margin-bottom: 30px; }
+.report-title { 
+    font-size: 2rem; 
+    font-weight: 800; 
+    text-align: center; 
+    margin-bottom: 30px; 
+    color: #ffffff !important; /* 명시적 흰색 */
+}
 .report-subtitle { font-size: 1.3rem; font-weight: 700; color: #374151; margin-top: 30px; margin-bottom: 15px; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
 .report-funnel { display: flex; flex-direction: column; gap: 15px; }
 .funnel-step { position: relative; padding: 10px 0; }
