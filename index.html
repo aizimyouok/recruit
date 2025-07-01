@@ -279,32 +279,20 @@
             color: #6b7280 !important;
         }
         
-        /* 🔥 리포트 모달 내부 헤더 텍스트 강제 적용 - 최종 버전 */
-        #reportModal,
-        #reportModal *,
-        .report-modal-content,
-        .report-modal-content * {
-            color: inherit !important;
-        }
-
+        /* 🔥 리포트 모달 - 헤더만 흰색, 콘텐츠는 원래 색상 */
+        /* 헤더 부분만 흰색 텍스트 */
         #reportModal .report-header,
         #reportModal .report-header *,
-        #reportModal .report-title,
-        #reportModal .report-meta,
-        #reportModal .report-meta span,
-        #reportModal h1,
-        #reportModal h1.report-title,
-        #reportModal .report-header h1,
         #reportModal .report-header .report-title,
+        #reportModal .report-header .report-meta,
+        #reportModal .report-header .report-meta span,
+        #reportModal .report-header h1,
         .report-modal-content .report-header,
         .report-modal-content .report-header *,
-        .report-modal-content .report-title,
-        .report-modal-content .report-meta,
-        .report-modal-content .report-meta span,
-        .report-modal-content h1,
-        .report-modal-content h1.report-title,
-        .report-modal-content .report-header h1,
-        .report-modal-content .report-header .report-title {
+        .report-modal-content .report-header .report-title,
+        .report-modal-content .report-header .report-meta,
+        .report-modal-content .report-header .report-meta span,
+        .report-modal-content .report-header h1 {
             color: #ffffff !important;
             text-shadow: none !important;
             opacity: 1 !important;
@@ -321,22 +309,19 @@
             margin-bottom: 20px !important;
         }
 
-        #reportModal .report-title,
-        #reportModal h1.report-title,
+        #reportModal .report-header .report-title,
         #reportModal .report-header h1,
-        .report-modal-content .report-title,
-        .report-modal-content h1.report-title,
+        .report-modal-content .report-header .report-title,
         .report-modal-content .report-header h1 {
             color: #ffffff !important;
             font-size: 1.2rem !important;
             font-weight: 700 !important;
             margin-bottom: 10px !important;
             text-align: center !important;
-            font-family: inherit !important;
         }
 
-        #reportModal .report-meta,
-        .report-modal-content .report-meta {
+        #reportModal .report-header .report-meta,
+        .report-modal-content .report-header .report-meta {
             display: flex !important;
             justify-content: center !important;
             gap: 20px !important;
@@ -344,12 +329,38 @@
             color: #ffffff !important;
         }
 
-        #reportModal .report-meta span,
-        .report-modal-content .report-meta span {
+        #reportModal .report-header .report-meta span,
+        .report-modal-content .report-header .report-meta span {
             background: rgba(255, 255, 255, 0.2) !important;
             padding: 6px 12px !important;
             border-radius: 20px !important;
             color: #ffffff !important;
+        }
+
+        /* 콘텐츠 부분은 원래 색상으로 */
+        #reportModal .report-section,
+        #reportModal .report-section *,
+        #reportModal .kpi-grid,
+        #reportModal .kpi-grid *,
+        #reportModal .kpi-card,
+        #reportModal .kpi-card *,
+        .report-modal-content .report-section,
+        .report-modal-content .report-section *,
+        .report-modal-content .kpi-grid,
+        .report-modal-content .kpi-grid *,
+        .report-modal-content .kpi-card,
+        .report-modal-content .kpi-card * {
+            color: #1e293b !important;
+        }
+
+        #reportModal .kpi-card h3,
+        .report-modal-content .kpi-card h3 {
+            color: #64748b !important;
+        }
+
+        #reportModal .kpi-value,
+        .report-modal-content .kpi-value {
+            color: #3b82f6 !important;
         }
 
         /* 🔥 컨테이너 자체의 패딩 제거 */
