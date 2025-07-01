@@ -266,11 +266,11 @@ const ReportModule = {
                     titles.forEach((title, index) => {
                         console.log(`🎯 미리보기 제목 요소 ${index + 1}:`, title.textContent?.substring(0, 50));
                         
-                        // 전문적이고 깔끔한 스타일 적용
+                        // 모던하고 세련된 스타일 적용
                         title.style.cssText = `
-                            color: #1e293b !important;
-                            font-size: 1.8rem !important;
-                            font-weight: 700 !important;
+                            color: #1a202c !important;
+                            font-size: 2.5rem !important;
+                            font-weight: 800 !important;
                             text-shadow: none !important;
                             background: transparent !important;
                             padding: 0 !important;
@@ -279,10 +279,11 @@ const ReportModule = {
                             visibility: visible !important;
                             display: block !important;
                             text-align: center !important;
-                            margin: 0 0 8px 0 !important;
+                            margin: 0 !important;
                             position: relative !important;
                             z-index: 1 !important;
-                            letter-spacing: -0.5px !important;
+                            letter-spacing: -1px !important;
+                            line-height: 1.1 !important;
                         `;
                     });
                 });
@@ -363,52 +364,445 @@ const ReportModule = {
         const joinRate = total > 0 ? ((joined / total) * 100).toFixed(1) : 0;
         
         return `
-            <div class="report-content executive-summary" style="width: 100%; max-width: 800px; margin: 0 auto; font-family: 'Noto Sans KR', sans-serif; background: #ffffff; padding: 40px; border-radius: 0; box-shadow: none;">
-                <div class="report-header" style="width: 100%; background: #ffffff; padding: 0; border-radius: 0; color: #1e293b; text-align: center; border-bottom: 3px solid #3b82f6; padding-bottom: 20px; margin-bottom: 30px;">
-                    <h1 style="color: #1e293b !important; font-size: 1.8rem !important; margin-bottom: 8px !important; font-weight: 700 !important; text-align: center !important; text-shadow: none !important; opacity: 1 !important; visibility: visible !important; display: block !important; letter-spacing: -0.5px;">CFC 채용 현황 경영진 요약 리포트</h1>
-                    <div class="report-meta" style="display: flex; justify-content: center; gap: 25px; font-size: 0.9rem; color: #64748b !important; margin-top: 10px;">
-                        <span style="background: #f1f5f9; padding: 8px 16px; border-radius: 6px; color: #475569 !important; font-weight: 500;">기간: ${this.getSelectedPeriodText()}</span>
-                        <span style="background: #f1f5f9; padding: 8px 16px; border-radius: 6px; color: #475569 !important; font-weight: 500;">대상: ${total}명</span>
+            <div class="report-content executive-summary" style="
+                width: 100%; 
+                max-width: 900px; 
+                margin: 0 auto; 
+                font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif; 
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border-radius: 24px;
+                padding: 0;
+                overflow: hidden;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+                position: relative;
+            ">
+                <!-- Animated Background Pattern -->
+                <div style="
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><defs><pattern id=\"grid\" width=\"20\" height=\"20\" patternUnits=\"userSpaceOnUse\"><path d=\"M 20 0 L 0 0 0 20\" fill=\"none\" stroke=\"rgba(255,255,255,0.1)\" stroke-width=\"1\"/></pattern></defs><rect width=\"100\" height=\"100\" fill=\"url(%23grid)\"/></svg>');
+                    opacity: 0.3;
+                "></div>
+                
+                <!-- Header Section -->
+                <div class="report-header" style="
+                    position: relative;
+                    z-index: 2;
+                    background: rgba(255, 255, 255, 0.95);
+                    backdrop-filter: blur(20px);
+                    padding: 40px;
+                    text-align: center;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+                ">
+                    <div style="
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 16px;
+                        background: linear-gradient(135deg, #667eea, #764ba2);
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                        background-clip: text;
+                        margin-bottom: 16px;
+                    ">
+                        <div style="
+                            width: 48px;
+                            height: 48px;
+                            background: linear-gradient(135deg, #667eea, #764ba2);
+                            border-radius: 16px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: white;
+                            font-size: 24px;
+                            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+                        ">📊</div>
+                        <h1 style="
+                            color: #1a202c !important; 
+                            font-size: 2.5rem !important; 
+                            font-weight: 800 !important; 
+                            margin: 0 !important;
+                            letter-spacing: -1px !important;
+                            line-height: 1.1 !important;
+                        ">CFC 채용 리포트</h1>
+                    </div>
+                    <p style="
+                        color: #64748b; 
+                        font-size: 1.1rem; 
+                        margin: 0 0 24px 0; 
+                        font-weight: 500;
+                    ">Executive Summary · ${this.getSelectedPeriodText()}</p>
+                    <div style="
+                        display: inline-flex;
+                        gap: 16px;
+                        flex-wrap: wrap;
+                        justify-content: center;
+                    ">
+                        <div style="
+                            background: rgba(102, 126, 234, 0.1);
+                            border: 1px solid rgba(102, 126, 234, 0.2);
+                            padding: 8px 20px;
+                            border-radius: 50px;
+                            color: #667eea;
+                            font-weight: 600;
+                            font-size: 0.9rem;
+                        ">총 ${total}명 분석</div>
+                        <div style="
+                            background: rgba(16, 185, 129, 0.1);
+                            border: 1px solid rgba(16, 185, 129, 0.2);
+                            padding: 8px 20px;
+                            border-radius: 50px;
+                            color: #10b981;
+                            font-weight: 600;
+                            font-size: 0.9rem;
+                        ">${passed}명 합격</div>
                     </div>
                 </div>
-                
-                <div class="report-section" style="width: 100%; margin-bottom: 35px;">
-                    <h2 style="width: 100%; font-size: 1.3rem; margin-bottom: 20px; color: #1e293b; font-weight: 600; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">📊 핵심 KPI</h2>
-                    <div class="kpi-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%;">
-                        <div class="kpi-card" style="padding: 25px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
-                            <div style="font-size: 2.5rem; font-weight: 700; color: #3b82f6; margin-bottom: 8px;">${total}</div>
-                            <div style="font-size: 0.95rem; color: #64748b; font-weight: 500;">총 지원자</div>
+
+                <!-- Content Section -->
+                <div style="
+                    position: relative;
+                    z-index: 2;
+                    background: #ffffff;
+                    padding: 48px 40px;
+                ">
+                    <!-- KPI Dashboard -->
+                    <div style="margin-bottom: 48px;">
+                        <h2 style="
+                            color: #1a202c;
+                            font-size: 1.5rem;
+                            font-weight: 700;
+                            margin-bottom: 24px;
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
+                        ">
+                            <div style="
+                                width: 6px;
+                                height: 24px;
+                                background: linear-gradient(135deg, #667eea, #764ba2);
+                                border-radius: 3px;
+                            "></div>
+                            핵심 성과 지표
+                        </h2>
+                        <div style="
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                            gap: 20px;
+                        ">
+                            <div style="
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                border-radius: 20px;
+                                padding: 32px 24px;
+                                text-align: center;
+                                color: white;
+                                position: relative;
+                                overflow: hidden;
+                                box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+                            ">
+                                <div style="
+                                    position: absolute;
+                                    top: -50%;
+                                    right: -30%;
+                                    width: 120px;
+                                    height: 120px;
+                                    background: rgba(255, 255, 255, 0.1);
+                                    border-radius: 50%;
+                                "></div>
+                                <div style="font-size: 3rem; font-weight: 800; margin-bottom: 8px; position: relative; z-index: 1;">${total}</div>
+                                <div style="font-size: 0.9rem; opacity: 0.9; font-weight: 500; position: relative; z-index: 1;">총 지원자</div>
+                            </div>
+                            <div style="
+                                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                                border-radius: 20px;
+                                padding: 32px 24px;
+                                text-align: center;
+                                color: white;
+                                position: relative;
+                                overflow: hidden;
+                                box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
+                            ">
+                                <div style="
+                                    position: absolute;
+                                    top: -50%;
+                                    right: -30%;
+                                    width: 120px;
+                                    height: 120px;
+                                    background: rgba(255, 255, 255, 0.1);
+                                    border-radius: 50%;
+                                "></div>
+                                <div style="font-size: 3rem; font-weight: 800; margin-bottom: 8px; position: relative; z-index: 1;">${passed}</div>
+                                <div style="font-size: 0.9rem; opacity: 0.9; font-weight: 500; position: relative; z-index: 1;">최종 합격</div>
+                            </div>
+                            <div style="
+                                background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+                                border-radius: 20px;
+                                padding: 32px 24px;
+                                text-align: center;
+                                color: white;
+                                position: relative;
+                                overflow: hidden;
+                                box-shadow: 0 10px 40px rgba(139, 92, 246, 0.3);
+                            ">
+                                <div style="
+                                    position: absolute;
+                                    top: -50%;
+                                    right: -30%;
+                                    width: 120px;
+                                    height: 120px;
+                                    background: rgba(255, 255, 255, 0.1);
+                                    border-radius: 50%;
+                                "></div>
+                                <div style="font-size: 3rem; font-weight: 800; margin-bottom: 8px; position: relative; z-index: 1;">${passRate}%</div>
+                                <div style="font-size: 0.9rem; opacity: 0.9; font-weight: 500; position: relative; z-index: 1;">합격률</div>
+                            </div>
+                            <div style="
+                                background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+                                border-radius: 20px;
+                                padding: 32px 24px;
+                                text-align: center;
+                                color: white;
+                                position: relative;
+                                overflow: hidden;
+                                box-shadow: 0 10px 40px rgba(245, 158, 11, 0.3);
+                            ">
+                                <div style="
+                                    position: absolute;
+                                    top: -50%;
+                                    right: -30%;
+                                    width: 120px;
+                                    height: 120px;
+                                    background: rgba(255, 255, 255, 0.1);
+                                    border-radius: 50%;
+                                "></div>
+                                <div style="font-size: 3rem; font-weight: 800; margin-bottom: 8px; position: relative; z-index: 1;">${joinRate}%</div>
+                                <div style="font-size: 0.9rem; opacity: 0.9; font-weight: 500; position: relative; z-index: 1;">입과율</div>
+                            </div>
                         </div>
-                        <div class="kpi-card" style="padding: 25px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
-                            <div style="font-size: 2.5rem; font-weight: 700; color: #10b981; margin-bottom: 8px;">${passed}</div>
-                            <div style="font-size: 0.95rem; color: #64748b; font-weight: 500;">최종 합격</div>
+                    </div>
+
+                    <!-- Success Highlights -->
+                    <div style="margin-bottom: 48px;">
+                        <h2 style="
+                            color: #1a202c;
+                            font-size: 1.5rem;
+                            font-weight: 700;
+                            margin-bottom: 24px;
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
+                        ">
+                            <div style="
+                                width: 6px;
+                                height: 24px;
+                                background: linear-gradient(135deg, #10b981, #059669);
+                                border-radius: 3px;
+                            "></div>
+                            주요 성과
+                        </h2>
+                        <div style="
+                            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+                            border-radius: 16px;
+                            padding: 32px;
+                            border-left: 4px solid #10b981;
+                            position: relative;
+                            overflow: hidden;
+                        ">
+                            <div style="
+                                position: absolute;
+                                top: -20px;
+                                right: -20px;
+                                width: 80px;
+                                height: 80px;
+                                background: rgba(16, 185, 129, 0.1);
+                                border-radius: 50%;
+                            "></div>
+                            <ul style="
+                                margin: 0;
+                                padding-left: 24px;
+                                line-height: 2;
+                                color: #065f46;
+                                font-weight: 500;
+                                list-style: none;
+                                position: relative;
+                                z-index: 1;
+                            ">
+                                <li style="
+                                    margin-bottom: 12px;
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 12px;
+                                ">
+                                    <div style="
+                                        width: 20px;
+                                        height: 20px;
+                                        background: #10b981;
+                                        border-radius: 50%;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        color: white;
+                                        font-size: 12px;
+                                        flex-shrink: 0;
+                                    ">✓</div>
+                                    온라인 지원 비중 증가 (전체의 ${this.calculateOnlinePercentage(data)}%)
+                                </li>
+                                <li style="
+                                    margin-bottom: 12px;
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 12px;
+                                ">
+                                    <div style="
+                                        width: 20px;
+                                        height: 20px;
+                                        background: #10b981;
+                                        border-radius: 50%;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        color: white;
+                                        font-size: 12px;
+                                        flex-shrink: 0;
+                                    ">✓</div>
+                                    평균 채용 기간 단축 (목표 대비 우수)
+                                </li>
+                                <li style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 12px;
+                                ">
+                                    <div style="
+                                        width: 20px;
+                                        height: 20px;
+                                        background: #10b981;
+                                        border-radius: 50%;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        color: white;
+                                        font-size: 12px;
+                                        flex-shrink: 0;
+                                    ">✓</div>
+                                    면접 진행률 향상
+                                </li>
+                            </ul>
                         </div>
-                        <div class="kpi-card" style="padding: 25px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
-                            <div style="font-size: 2.5rem; font-weight: 700; color: #8b5cf6; margin-bottom: 8px;">${passRate}%</div>
-                            <div style="font-size: 0.95rem; color: #64748b; font-weight: 500;">합격률</div>
-                        </div>
-                        <div class="kpi-card" style="padding: 25px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
-                            <div style="font-size: 2.5rem; font-weight: 700; color: #f59e0b; margin-bottom: 8px;">${joinRate}%</div>
-                            <div style="font-size: 0.95rem; color: #64748b; font-weight: 500;">입과율</div>
+                    </div>
+
+                    <!-- Action Items -->
+                    <div>
+                        <h2 style="
+                            color: #1a202c;
+                            font-size: 1.5rem;
+                            font-weight: 700;
+                            margin-bottom: 24px;
+                            display: flex;
+                            align-items: center;
+                            gap: 12px;
+                        ">
+                            <div style="
+                                width: 6px;
+                                height: 24px;
+                                background: linear-gradient(135deg, #ef4444, #dc2626);
+                                border-radius: 3px;
+                            "></div>
+                            개선 포인트
+                        </h2>
+                        <div style="
+                            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+                            border-radius: 16px;
+                            padding: 32px;
+                            border-left: 4px solid #ef4444;
+                            position: relative;
+                            overflow: hidden;
+                        ">
+                            <div style="
+                                position: absolute;
+                                top: -20px;
+                                right: -20px;
+                                width: 80px;
+                                height: 80px;
+                                background: rgba(239, 68, 68, 0.1);
+                                border-radius: 50%;
+                            "></div>
+                            <ul style="
+                                margin: 0;
+                                padding-left: 24px;
+                                line-height: 2;
+                                color: #7f1d1d;
+                                font-weight: 500;
+                                list-style: none;
+                                position: relative;
+                                z-index: 1;
+                            ">
+                                <li style="
+                                    margin-bottom: 12px;
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 12px;
+                                ">
+                                    <div style="
+                                        width: 20px;
+                                        height: 20px;
+                                        background: #ef4444;
+                                        border-radius: 50%;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        color: white;
+                                        font-size: 12px;
+                                        flex-shrink: 0;
+                                    ">!</div>
+                                    서류 통과율 개선 필요
+                                </li>
+                                <li style="
+                                    margin-bottom: 12px;
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 12px;
+                                ">
+                                    <div style="
+                                        width: 20px;
+                                        height: 20px;
+                                        background: #ef4444;
+                                        border-radius: 50%;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        color: white;
+                                        font-size: 12px;
+                                        flex-shrink: 0;
+                                    ">!</div>
+                                    면접 후 입과율 향상 방안 검토
+                                </li>
+                                <li style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 12px;
+                                ">
+                                    <div style="
+                                        width: 20px;
+                                        height: 20px;
+                                        background: #ef4444;
+                                        border-radius: 50%;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        color: white;
+                                        font-size: 12px;
+                                        flex-shrink: 0;
+                                    ">!</div>
+                                    지원 채널 다양화 추진
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
-                
-                <div class="report-section" style="width: 100%; margin-bottom: 35px;">
-                    <h2 style="width: 100%; font-size: 1.3rem; margin-bottom: 20px; color: #1e293b; font-weight: 600; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">🎯 주요 성과</h2>
-                    <div style="width: 100%; padding: 25px; background: #ecfdf5; border-radius: 8px; border-left: 4px solid #10b981;">
-                        <ul style="margin: 0; padding-left: 20px; line-height: 1.6; color: #374151;">
-                            <li style="margin-bottom: 8px;">온라인 지원 비중 증가 (전체의 ${this.calculateOnlinePercentage(data)}%)</li>
-                            <li style="margin-bottom: 8px;">평균 채용 기간 단축 (목표 대비 우수)</li>
-                            <li style="margin-bottom: 0;">면접 진행률 향상</li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <div class="report-section" style="width: 100%;">
-                    <h2 style="width: 100%; font-size: 1.3rem; margin-bottom: 20px; color: #1e293b; font-weight: 600; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">⚠️ 주요 이슈 & 개선사항</h2>
-                    <div style="width: 100%; padding: 25px; background: #fef2f2; border-radius: 8px; border-left: 4px solid #ef4444;">
-                        <ul style="margin: 0; padding-left: 20px; line-height: 1.6; color: #374151;">
+            </div>
+        `;
                             <li>서류 검토 단계 병목 현상</li>
                             <li>면접관 스케줄 조정 필요</li>
                             <li>채용 채널 다양화 검토</li>
@@ -425,12 +819,66 @@ const ReportModule = {
         const regionStats = this.calculateRegionStats(data);
         
         return `
-            <div class="report-content detailed-analysis" style="width: 100%; max-width: 800px; margin: 0 auto; font-family: 'Noto Sans KR', sans-serif; background: #ffffff; padding: 40px; border-radius: 0; box-shadow: none;">
-                <div class="report-header" style="width: 100%; background: #ffffff; padding: 0; border-radius: 0; color: #1e293b; text-align: center; border-bottom: 3px solid #3b82f6; padding-bottom: 20px; margin-bottom: 30px;">
-                    <h1 style="color: #1e293b !important; font-size: 1.8rem !important; margin-bottom: 8px !important; font-weight: 700 !important; text-align: center !important; text-shadow: none !important; opacity: 1 !important; visibility: visible !important; display: block !important; letter-spacing: -0.5px;">CFC 채용 상세 분석 리포트</h1>
-                    <div class="report-meta" style="display: flex; justify-content: center; gap: 25px; font-size: 0.9rem; color: #64748b !important; margin-top: 10px;">
-                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">분석 기간: ${this.getSelectedPeriodText()}</span>
-                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">총 지원자: ${data.length}명</span>
+            <div class="report-content detailed-analysis" style="
+                width: 100%; 
+                max-width: 900px; 
+                margin: 0 auto; 
+                font-family: 'Inter', 'Noto Sans KR', sans-serif; 
+                background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+                border-radius: 24px;
+                padding: 0;
+                overflow: hidden;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            ">
+                <div class="report-header" style="
+                    background: rgba(255, 255, 255, 0.95);
+                    backdrop-filter: blur(20px);
+                    padding: 40px;
+                    text-align: center;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+                ">
+                    <div style="
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 16px;
+                        margin-bottom: 16px;
+                    ">
+                        <div style="
+                            width: 48px;
+                            height: 48px;
+                            background: linear-gradient(135deg, #4f46e5, #06b6d4);
+                            border-radius: 16px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: white;
+                            font-size: 24px;
+                            box-shadow: 0 8px 32px rgba(79, 70, 229, 0.3);
+                        ">📊</div>
+                        <h1 style="
+                            color: #1a202c !important; 
+                            font-size: 2.5rem !important; 
+                            font-weight: 800 !important; 
+                            margin: 0 !important;
+                            letter-spacing: -1px !important;
+                        ">채용 상세 분석</h1>
+                    </div>
+                    <p style="color: #64748b; font-size: 1.1rem; margin: 0 0 24px 0; font-weight: 500;">Detailed Analysis · ${this.getSelectedPeriodText()}</p>
+                    <div style="
+                        display: inline-flex;
+                        gap: 16px;
+                        flex-wrap: wrap;
+                        justify-content: center;
+                    ">
+                        <div style="
+                            background: rgba(79, 70, 229, 0.1);
+                            border: 1px solid rgba(79, 70, 229, 0.2);
+                            padding: 8px 20px;
+                            border-radius: 50px;
+                            color: #4f46e5;
+                            font-weight: 600;
+                            font-size: 0.9rem;
+                        ">총 ${data.length}명 분석</div>
                     </div>
                 </div>
                 
