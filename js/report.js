@@ -1263,37 +1263,76 @@ const ReportModule = {
         let reportHtml = this.generateReportContent(template, data);
         modalBody.innerHTML = reportHtml;
         
-        // 🔥 모달 내 리포트 헤더 텍스트 색상 강제 적용
+        // 🔥 모달 내 리포트 헤더 텍스트 색상 강제 적용 - 더 강력한 방법
         setTimeout(() => {
-            const reportHeaders = modalBody.querySelectorAll('.report-header, .report-title, .report-meta, .report-meta span');
-            reportHeaders.forEach(element => {
-                element.style.color = 'white';
-                element.style.textShadow = 'none';
+            const modal = document.getElementById('reportModal');
+            const modalBody = document.getElementById('reportModalBody');
+            
+            if (modal && modalBody) {
+                // 모든 가능한 헤더 관련 요소들을 찾아서 강제 적용
+                const selectors = [
+                    '.report-header',
+                    '.report-title', 
+                    'h1.report-title',
+                    '.report-header h1',
+                    '.report-header .report-title',
+                    '.report-meta',
+                    '.report-meta span',
+                    'h1', 'h2', 'h3'
+                ];
                 
-                // 헤더 배경 확실히 적용
-                if (element.classList.contains('report-header')) {
-                    element.style.background = 'linear-gradient(135deg, #4f46e5, #7c3aed)';
-                    element.style.textAlign = 'center';
-                    element.style.padding = '20px';
-                    element.style.borderRadius = '12px';
-                    element.style.marginBottom = '20px';
-                }
+                selectors.forEach(selector => {
+                    const elements = modalBody.querySelectorAll(selector);
+                    elements.forEach(element => {
+                        // 강력한 인라인 스타일 적용
+                        element.style.setProperty('color', 'white', 'important');
+                        element.style.setProperty('text-shadow', 'none', 'important');
+                        element.style.setProperty('opacity', '1', 'important');
+                        element.style.setProperty('visibility', 'visible', 'important');
+                        element.style.setProperty('display', 'block', 'important');
+                        
+                        // 특별히 제목 요소들에 대해
+                        if (element.classList.contains('report-title') || element.tagName === 'H1') {
+                            element.style.setProperty('color', '#ffffff', 'important');
+                            element.style.setProperty('font-size', '1.2rem', 'important');
+                            element.style.setProperty('font-weight', '700', 'important');
+                            element.style.setProperty('margin-bottom', '10px', 'important');
+                            element.style.setProperty('text-align', 'center', 'important');
+                        }
+                        
+                        // 헤더 배경
+                        if (element.classList.contains('report-header')) {
+                            element.style.setProperty('background', 'linear-gradient(135deg, #4f46e5, #7c3aed)', 'important');
+                            element.style.setProperty('padding', '20px', 'important');
+                            element.style.setProperty('border-radius', '12px', 'important');
+                            element.style.setProperty('margin-bottom', '20px', 'important');
+                        }
+                        
+                        // 메타 정보 스타일
+                        if (element.classList.contains('report-meta')) {
+                            element.style.setProperty('display', 'flex', 'important');
+                            element.style.setProperty('justify-content', 'center', 'important');
+                            element.style.setProperty('gap', '20px', 'important');
+                            element.style.setProperty('font-size', '0.85rem', 'important');
+                        }
+                        
+                        // 메타 정보 배지
+                        if (element.parentElement && element.parentElement.classList.contains('report-meta')) {
+                            element.style.setProperty('background', 'rgba(255, 255, 255, 0.2)', 'important');
+                            element.style.setProperty('padding', '6px 12px', 'important');
+                            element.style.setProperty('border-radius', '20px', 'important');
+                            element.style.setProperty('color', 'white', 'important');
+                        }
+                    });
+                });
                 
-                // 메타 정보 배지 스타일
-                if (element.classList.contains('report-meta')) {
-                    element.style.display = 'flex';
-                    element.style.justifyContent = 'center';
-                    element.style.gap = '20px';
-                    element.style.fontSize = '0.85rem';
-                }
+                // 모달 전체에 대해서도 텍스트 색상 강제 적용
+                modal.style.setProperty('color', 'white', 'important');
+                modalBody.style.setProperty('color', 'white', 'important');
                 
-                if (element.parentElement && element.parentElement.classList.contains('report-meta')) {
-                    element.style.background = 'rgba(255, 255, 255, 0.2)';
-                    element.style.padding = '6px 12px';
-                    element.style.borderRadius = '20px';
-                }
-            });
-        }, 50);
+                console.log('🎯 모달 헤더 스타일 강제 적용 완료');
+            }
+        }, 100);
         
         // 모달 표시
         modal.style.display = 'flex';

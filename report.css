@@ -1246,23 +1246,34 @@
    리포트 모달 최소 스타일 추가 (기존 HTML용)
    ========================= */
 
-/* 🔥 리포트 모달 내부 헤더 텍스트 색상 강제 적용 */
+/* 🔥 리포트 모달 내부 헤더 텍스트 색상 강제 적용 - 더 강력한 버전 */
 #reportModal .report-header,
 #reportModal .report-header *,
 #reportModal .report-title,
 #reportModal .report-meta,
 #reportModal .report-meta span,
+#reportModal h1,
+#reportModal h1.report-title,
+#reportModal .report-header h1,
+#reportModal .report-header .report-title,
 .report-modal-content .report-header,
 .report-modal-content .report-header *,
 .report-modal-content .report-title,
 .report-modal-content .report-meta,
-.report-modal-content .report-meta span {
+.report-modal-content .report-meta span,
+.report-modal-content h1,
+.report-modal-content h1.report-title,
+.report-modal-content .report-header h1,
+.report-modal-content .report-header .report-title {
     color: white !important;
     text-shadow: none !important;
-    background: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
 }
 
-#reportModal .report-header {
+#reportModal .report-header,
+.report-modal-content .report-header {
     background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
     color: white !important;
     text-align: center !important;
@@ -1271,25 +1282,42 @@
     margin-bottom: 20px !important;
 }
 
-#reportModal .report-title {
+#reportModal .report-title,
+#reportModal h1.report-title,
+#reportModal .report-header h1,
+.report-modal-content .report-title,
+.report-modal-content h1.report-title,
+.report-modal-content .report-header h1 {
     color: white !important;
     font-size: 1.2rem !important;
     font-weight: 700 !important;
     margin-bottom: 10px !important;
+    text-align: center !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
-#reportModal .report-meta {
+#reportModal .report-meta,
+.report-modal-content .report-meta {
     display: flex !important;
     justify-content: center !important;
     gap: 20px !important;
     font-size: 0.85rem !important;
+    color: white !important;
 }
 
-#reportModal .report-meta span {
+#reportModal .report-meta span,
+.report-modal-content .report-meta span {
     background: rgba(255, 255, 255, 0.2) !important;
     padding: 6px 12px !important;
     border-radius: 20px !important;
     color: white !important;
+}
+
+/* 추가 강제 적용 */
+#reportModal *,
+.report-modal-content * {
+    text-rendering: optimizeLegibility !important;
 }
 
 /* 🔥 모달 기본 스타일 강화 */
