@@ -1592,7 +1592,7 @@
 .live-preview-sidebar {
     background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
     border-radius: 16px;
-    padding: 25px;
+    padding: 15px; /* 패딩을 25px에서 15px로 줄임 */
     border: 1px solid #e2e8f0;
     position: sticky;
     top: 20px;
@@ -1604,6 +1604,7 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     width: 100%; /* 명시적으로 전체 너비 사용 */
     min-width: 0; /* 그리드 아이템이 너무 좁아지지 않도록 */
+    box-sizing: border-box; /* 박스 크기 계산 방식 명시 */
 }
 
 .live-preview-sidebar.collapsed {
@@ -6624,6 +6625,66 @@
     color: #1f2937;
     font-size: 0.9rem;
     line-height: 1.4;
+}
+
+/* 🔥 실시간 미리보기 콘텐츠 전체 너비 사용 강화 */
+.preview-content {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.preview-content * {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* 리포트 콘텐츠 전체 너비 강화 */
+.preview-content .report-content,
+.preview-content .executive-summary {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.preview-content .report-header {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 0 20px 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.preview-content .report-section {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 0 20px 0;
+    padding: 0;
+}
+
+.preview-content .kpi-grid {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 0;
+    padding: 0;
+}
+
+.preview-content .kpi-card {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 15px 20px;
+    box-sizing: border-box;
 }
 
 /* 반응형 조정 */

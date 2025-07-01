@@ -67,47 +67,61 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
         }
         
-        /* 🔥 실시간 미리보기 콘텐츠 전체 스타일 강화 */
+        /* 🔥 실시간 미리보기 전체 너비 사용 강화 */
         #livePreviewContent,
-        #livePreviewContent *,
+        #livePreviewContent > *,
+        #livePreviewContent .preview-header,
+        #livePreviewContent .preview-summary,
+        #livePreviewContent .preview-actions,
         .preview-content,
-        .preview-content *,
+        .preview-content > *,
         .preview-summary,
-        .preview-summary * {
+        .preview-summary > * {
             width: 100% !important;
             max-width: 100% !important;
             box-sizing: border-box !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
         }
         
         /* 🔥 리포트 콘텐츠 전체 레이아웃 강화 */
         #livePreviewContent .report-content,
-        .preview-summary .report-content {
+        .preview-summary .report-content,
+        #livePreviewContent .executive-summary,
+        .preview-summary .executive-summary {
             display: flex !important;
             flex-direction: column !important;
             gap: 20px !important;
             width: 100% !important;
             max-width: 100% !important;
             box-sizing: border-box !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
         
-        /* 🔥 리포트 헤더 스타일 강화 */
+        /* 🔥 리포트 헤더 전체 너비 강제 적용 */
         #livePreviewContent .report-header,
         .preview-summary .report-header {
             width: 100% !important;
+            max-width: 100% !important;
             background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
             padding: 20px !important;
             border-radius: 12px !important;
             color: white !important;
             text-align: center !important;
             box-sizing: border-box !important;
+            margin: 0 !important;
         }
         
         #livePreviewContent .report-title,
         .preview-summary .report-title {
             color: white !important;
             font-size: 1.2rem !important;
-            margin-bottom: 10px !important;
+            margin: 0 0 10px 0 !important;
             font-weight: 700 !important;
+            width: 100% !important;
         }
         
         #livePreviewContent .report-meta,
@@ -117,6 +131,8 @@
             gap: 20px !important;
             font-size: 0.85rem !important;
             color: rgba(255, 255, 255, 0.9) !important;
+            width: 100% !important;
+            margin: 0 !important;
         }
         
         #livePreviewContent .report-meta span,
@@ -127,11 +143,13 @@
             color: white !important;
         }
         
-        /* 🔥 리포트 섹션 스타일 강화 */
+        /* 🔥 리포트 섹션 전체 너비 강제 적용 */
         #livePreviewContent .report-section,
         .preview-summary .report-section {
             width: 100% !important;
-            margin-bottom: 20px !important;
+            max-width: 100% !important;
+            margin: 0 0 20px 0 !important;
+            padding: 0 !important;
             box-sizing: border-box !important;
         }
         
@@ -139,18 +157,21 @@
         .preview-summary .report-section h2 {
             width: 100% !important;
             font-size: 1.1rem !important;
-            margin-bottom: 15px !important;
+            margin: 0 0 15px 0 !important;
             color: #1e293b !important;
             font-weight: 600 !important;
         }
         
-        /* 🔥 KPI 그리드 세로 정렬 강화 */
+        /* 🔥 KPI 그리드 전체 너비 강제 적용 */
         #livePreviewContent .kpi-grid,
         .preview-summary .kpi-grid {
             display: flex !important;
             flex-direction: column !important;
             gap: 15px !important;
             width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
         
         #livePreviewContent .kpi-card,
@@ -164,7 +185,9 @@
             border: 1px solid #e2e8f0 !important;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
             width: 100% !important;
+            max-width: 100% !important;
             box-sizing: border-box !important;
+            margin: 0 !important;
         }
         
         #livePreviewContent .kpi-card h3,
@@ -182,16 +205,59 @@
             color: #3b82f6 !important;
         }
         
-        /* 🔥 모든 하위 요소 전체 너비 사용 */
+        /* 🔥 모든 하위 요소 전체 너비 강제 적용 */
         #livePreviewContent div,
         #livePreviewContent ul,
         #livePreviewContent p,
+        #livePreviewContent li,
         .preview-summary div,
         .preview-summary ul,
-        .preview-summary p {
+        .preview-summary p,
+        .preview-summary li {
             width: 100% !important;
             max-width: 100% !important;
             box-sizing: border-box !important;
+        }
+        
+        /* 🔥 특별한 패딩이 있는 섹션들도 전체 너비 사용 */
+        #livePreviewContent div[style*="padding"],
+        .preview-summary div[style*="padding"] {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        
+        /* 🔥 미리보기 헤더와 액션 버튼도 전체 너비 사용 */
+        #livePreviewContent .preview-header,
+        #livePreviewContent .preview-actions {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            margin: 0 !important;
+            padding: 0 0 15px 0 !important;
+        }
+        
+        #livePreviewContent .preview-header h4 {
+            margin: 0 !important;
+            font-size: 1.1rem !important;
+            font-weight: 600 !important;
+        }
+        
+        #livePreviewContent .preview-count {
+            font-size: 0.85rem !important;
+            color: #6b7280 !important;
+        }
+        
+        /* 🔥 컨테이너 자체의 패딩 제거 */
+        .live-preview-sidebar {
+            padding: 20px !important;
+        }
+        
+        .live-preview-sidebar .preview-content {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
     </style>
 </head>

@@ -245,21 +245,46 @@ const ReportModule = {
             </div>
         `;
         
-        // 🔥 DOM 삽입 후 추가 스타일 강제 적용
+        // 🔥 DOM 삽입 후 전체 너비 사용 강제 적용
         setTimeout(() => {
-            const allElements = previewContent.querySelectorAll('*');
-            allElements.forEach(el => {
-                if (el.classList.contains('report-content') || 
-                    el.classList.contains('report-header') || 
-                    el.classList.contains('report-section') ||
-                    el.classList.contains('kpi-grid') ||
-                    el.classList.contains('kpi-card')) {
+            const previewContent = document.getElementById('livePreviewContent');
+            const previewSidebar = document.getElementById('livePreviewSidebar');
+            
+            if (previewContent && previewSidebar) {
+                // 미리보기 사이드바 패딩 최소화
+                previewSidebar.style.padding = '15px';
+                
+                // 모든 요소에 전체 너비 강제 적용
+                const allElements = previewContent.querySelectorAll('*');
+                allElements.forEach(el => {
                     el.style.width = '100%';
                     el.style.maxWidth = '100%';
                     el.style.boxSizing = 'border-box';
-                }
-            });
-        }, 50);
+                    el.style.marginLeft = '0';
+                    el.style.marginRight = '0';
+                    
+                    // 특별히 리포트 관련 요소들
+                    if (el.classList.contains('report-content') || 
+                        el.classList.contains('report-header') || 
+                        el.classList.contains('report-section') ||
+                        el.classList.contains('kpi-grid') ||
+                        el.classList.contains('kpi-card') ||
+                        el.classList.contains('executive-summary')) {
+                        el.style.width = '100%';
+                        el.style.maxWidth = '100%';
+                        el.style.margin = '0';
+                        el.style.padding = el.classList.contains('report-header') ? '20px' : 
+                                          el.classList.contains('kpi-card') ? '15px 20px' : '0';
+                    }
+                });
+                
+                // 미리보기 콘텐츠 자체도 전체 너비 사용
+                previewContent.style.width = '100%';
+                previewContent.style.maxWidth = '100%';
+                previewContent.style.margin = '0';
+                previewContent.style.padding = '0';
+            }
+        }, 100);
     },
 
     // 미리보기 요약 생성
