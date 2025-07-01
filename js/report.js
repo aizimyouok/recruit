@@ -803,14 +803,6 @@ const ReportModule = {
                 </div>
             </div>
         `;
-                            <li>서류 검토 단계 병목 현상</li>
-                            <li>면접관 스케줄 조정 필요</li>
-                            <li>채용 채널 다양화 검토</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        `;
     },
 
     // 상세 분석 미리보기
