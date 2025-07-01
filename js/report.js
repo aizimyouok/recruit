@@ -245,69 +245,86 @@ const ReportModule = {
             </div>
         `;
         
-        // 🔥 DOM 삽입 후 전체 너비 사용 및 제목 색상 강제 적용
+        // 🔥 DOM 삽입 후 전체 너비 사용 및 제목 색상 극강 테스트
         setTimeout(() => {
             const previewContent = document.getElementById('livePreviewContent');
             const previewSidebar = document.getElementById('livePreviewSidebar');
             
             if (previewContent && previewSidebar) {
+                console.log('🔍 미리보기 콘텐츠 발견:', previewContent);
+                
+                // 🎯 모든 가능한 제목 요소를 찾아서 극강 스타일 테스트
+                const titleSelectors = [
+                    '.report-title', 'h1.report-title', '.report-header h1', 
+                    'h1', 'h2', 'h3', '.report-header .report-title'
+                ];
+                
+                titleSelectors.forEach(selector => {
+                    const titles = previewContent.querySelectorAll(selector);
+                    console.log(`🔍 미리보기 ${selector} 선택자로 찾은 요소:`, titles.length);
+                    
+                    titles.forEach((title, index) => {
+                        console.log(`🎯 미리보기 제목 요소 ${index + 1}:`, title.textContent?.substring(0, 50));
+                        
+                        // 매우 강력한 스타일 적용
+                        title.style.cssText = `
+                            color: #ff0000 !important;
+                            font-size: 2rem !important;
+                            font-weight: 900 !important;
+                            text-shadow: 2px 2px 4px #000000 !important;
+                            background: #ffff00 !important;
+                            padding: 10px !important;
+                            border: 3px solid #00ff00 !important;
+                            opacity: 1 !important;
+                            visibility: visible !important;
+                            display: block !important;
+                            text-align: center !important;
+                            margin: 10px 0 !important;
+                            position: relative !important;
+                            z-index: 999999 !important;
+                        `;
+                    });
+                });
+                
+                // 🎯 리포트 헤더 전체도 강력하게 스타일링
+                const reportHeaders = previewContent.querySelectorAll('.report-header');
+                console.log('🔍 미리보기 리포트 헤더 발견:', reportHeaders.length);
+                
+                reportHeaders.forEach((header, index) => {
+                    console.log(`🎯 미리보기 헤더 ${index + 1}:`, header.innerHTML?.substring(0, 100));
+                    
+                    // 헤더 자체를 매우 눈에 띄게
+                    header.style.cssText = `
+                        background: #ff0000 !important;
+                        padding: 30px !important;
+                        border: 5px solid #00ff00 !important;
+                        border-radius: 12px !important;
+                        margin: 20px 0 !important;
+                        text-align: center !important;
+                        color: #ffffff !important;
+                        font-size: 2rem !important;
+                        z-index: 999999 !important;
+                        position: relative !important;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        box-sizing: border-box !important;
+                    `;
+                });
+                
                 // 미리보기 사이드바 패딩 최소화
                 previewSidebar.style.padding = '15px';
                 
-                // 🎯 모든 .report-title 요소를 찾아서 강력하게 흰색 적용 (실시간 미리보기)
-                const allTitles = previewContent.querySelectorAll('.report-title, h1.report-title, .report-header h1');
-                allTitles.forEach(title => {
-                    // CSS 변수를 무시하고 직접 색상 설정
-                    title.style.removeProperty('color'); // 기존 color 제거
-                    title.style.setProperty('color', '#ffffff', 'important');
-                    title.style.setProperty('text-shadow', 'none', 'important');
-                    title.style.setProperty('opacity', '1', 'important');
-                    title.style.setProperty('visibility', 'visible', 'important');
-                    title.style.setProperty('font-size', '1.2rem', 'important');
-                    title.style.setProperty('font-weight', '700', 'important');
-                    title.style.setProperty('text-align', 'center', 'important');
-                    
-                    console.log('🎯 실시간 미리보기 제목 요소 발견 및 스타일 적용:', title.textContent);
-                });
-                
-                // 모든 요소에 전체 너비 강제 적용
+                // 전체 너비 적용
                 const allElements = previewContent.querySelectorAll('*');
                 allElements.forEach(el => {
                     el.style.width = '100%';
                     el.style.maxWidth = '100%';
                     el.style.boxSizing = 'border-box';
-                    el.style.marginLeft = '0';
-                    el.style.marginRight = '0';
-                    
-                    // 특별히 리포트 관련 요소들
-                    if (el.classList.contains('report-content') || 
-                        el.classList.contains('report-header') || 
-                        el.classList.contains('report-section') ||
-                        el.classList.contains('kpi-grid') ||
-                        el.classList.contains('kpi-card') ||
-                        el.classList.contains('executive-summary')) {
-                        el.style.width = '100%';
-                        el.style.maxWidth = '100%';
-                        el.style.margin = '0';
-                        el.style.padding = el.classList.contains('report-header') ? '20px' : 
-                                          el.classList.contains('kpi-card') ? '15px 20px' : '0';
-                        
-                        // 리포트 헤더는 강제로 흰색 텍스트
-                        if (el.classList.contains('report-header')) {
-                            el.style.removeProperty('color');
-                            el.style.setProperty('color', '#ffffff', 'important');
-                            el.style.setProperty('background', 'linear-gradient(135deg, #4f46e5, #7c3aed)', 'important');
-                        }
-                    }
                 });
                 
-                // 미리보기 콘텐츠 자체도 전체 너비 사용
-                previewContent.style.width = '100%';
-                previewContent.style.maxWidth = '100%';
-                previewContent.style.margin = '0';
-                previewContent.style.padding = '0';
+                console.log('🎯 미리보기 극강 스타일 적용 완료!');
             }
-        }, 200); // 200ms로 늘려서 DOM 완전 렌더링 후 적용
+        }, 300); // 300ms로 늘림
     },
 
     // 미리보기 요약 생성
@@ -347,7 +364,7 @@ const ReportModule = {
         return `
             <div class="report-content executive-summary" style="width: 100%; display: flex; flex-direction: column; gap: 20px;">
                 <div class="report-header" style="width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 20px; border-radius: 12px; color: white !important; text-align: center;">
-                    <h1 class="report-title" style="color: white !important; font-size: 1.2rem; margin-bottom: 10px; font-weight: 700;">📈 CFC 채용 현황 경영진 요약 리포트</h1>
+                    <h1 class="report-title" style="color: #ff0000 !important; font-size: 2rem !important; margin-bottom: 10px; font-weight: 900 !important; text-shadow: 2px 2px 4px #000000;">📈 CFC 채용 현황 경영진 요약 리포트</h1>
                     <div class="report-meta" style="display: flex; justify-content: center; gap: 20px; font-size: 0.85rem;">
                         <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">기간: ${this.getSelectedPeriodText()}</span>
                         <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">대상: ${total}명</span>
@@ -409,7 +426,7 @@ const ReportModule = {
         return `
             <div class="report-content detailed-analysis">
                 <div class="report-header" style="width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 20px; border-radius: 12px; color: white !important; text-align: center;">
-                    <h1 class="report-title" style="color: white !important; font-size: 1.2rem; margin-bottom: 10px; font-weight: 700;">📊 CFC 채용 상세 분석 리포트</h1>
+                    <h1 class="report-title" style="color: #ff0000 !important; font-size: 2rem !important; margin-bottom: 10px; font-weight: 900 !important; text-shadow: 2px 2px 4px #000000;">📊 CFC 채용 상세 분석 리포트</h1>
                     <div class="report-meta" style="display: flex; justify-content: center; gap: 20px; font-size: 0.85rem;">
                         <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">분석 기간: ${this.getSelectedPeriodText()}</span>
                         <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">총 지원자: ${data.length}명</span>
@@ -1286,72 +1303,89 @@ const ReportModule = {
         let reportHtml = this.generateReportContent(template, data);
         modalBody.innerHTML = reportHtml;
         
-        // 🔥 모달 내 리포트 헤더 텍스트 색상 선택적 적용 - 더 강력한 CSS 변수 무시
+        // 🔥 모달 내 리포트 헤더 텍스트 색상 선택적 적용 - 빨간색 테스트
         setTimeout(() => {
             const modal = document.getElementById('reportModal');
             const modalBody = document.getElementById('reportModalBody');
             
             if (modal && modalBody) {
-                // 🎯 모든 .report-title 요소를 찾아서 강력하게 흰색 적용
-                const allTitles = modalBody.querySelectorAll('.report-title, h1.report-title, .report-header h1');
-                allTitles.forEach(title => {
-                    // CSS 변수를 무시하고 직접 색상 설정
-                    title.style.removeProperty('color'); // 기존 color 제거
-                    title.style.setProperty('color', '#ffffff', 'important');
-                    title.style.setProperty('text-shadow', 'none', 'important');
-                    title.style.setProperty('opacity', '1', 'important');
-                    title.style.setProperty('visibility', 'visible', 'important');
-                    title.style.setProperty('font-size', '1.2rem', 'important');
-                    title.style.setProperty('font-weight', '700', 'important');
-                    title.style.setProperty('text-align', 'center', 'important');
+                console.log('🔍 모달 바디 발견:', modalBody);
+                
+                // 🎯 모든 가능한 제목 요소를 찾아서 빨간색으로 테스트
+                const titleSelectors = [
+                    '.report-title', 'h1.report-title', '.report-header h1', 
+                    'h1', 'h2', 'h3', '.report-header .report-title'
+                ];
+                
+                titleSelectors.forEach(selector => {
+                    const titles = modalBody.querySelectorAll(selector);
+                    console.log(`🔍 ${selector} 선택자로 찾은 요소:`, titles.length);
                     
-                    console.log('🎯 제목 요소 발견 및 스타일 적용:', title.textContent);
+                    titles.forEach((title, index) => {
+                        console.log(`🎯 제목 요소 ${index + 1}:`, title.textContent?.substring(0, 50));
+                        
+                        // 매우 강력한 스타일 적용
+                        title.style.cssText = `
+                            color: #ff0000 !important;
+                            font-size: 2rem !important;
+                            font-weight: 900 !important;
+                            text-shadow: 2px 2px 4px #000000 !important;
+                            background: #ffff00 !important;
+                            padding: 10px !important;
+                            border: 3px solid #00ff00 !important;
+                            opacity: 1 !important;
+                            visibility: visible !important;
+                            display: block !important;
+                            text-align: center !important;
+                            margin: 10px 0 !important;
+                            position: relative !important;
+                            z-index: 999999 !important;
+                        `;
+                    });
                 });
                 
-                // 🎯 오직 리포트 헤더 내부의 제목과 메타 정보만 흰색으로 적용
+                // 🎯 리포트 헤더 전체도 강력하게 스타일링
                 const reportHeaders = modalBody.querySelectorAll('.report-header');
+                console.log('🔍 리포트 헤더 발견:', reportHeaders.length);
                 
-                reportHeaders.forEach(header => {
-                    // 헤더 배경 확실히 적용
-                    header.style.setProperty('background', 'linear-gradient(135deg, #4f46e5, #7c3aed)', 'important');
-                    header.style.setProperty('padding', '20px', 'important');
-                    header.style.setProperty('border-radius', '12px', 'important');
-                    header.style.setProperty('margin-bottom', '20px', 'important');
-                    header.style.setProperty('text-align', 'center', 'important');
+                reportHeaders.forEach((header, index) => {
+                    console.log(`🎯 헤더 ${index + 1}:`, header.innerHTML?.substring(0, 100));
                     
-                    // 헤더 내부의 모든 요소를 흰색으로
+                    // 헤더 자체를 매우 눈에 띄게
+                    header.style.cssText = `
+                        background: #ff0000 !important;
+                        padding: 30px !important;
+                        border: 5px solid #00ff00 !important;
+                        border-radius: 12px !important;
+                        margin: 20px 0 !important;
+                        text-align: center !important;
+                        color: #ffffff !important;
+                        font-size: 2rem !important;
+                        z-index: 999999 !important;
+                        position: relative !important;
+                    `;
+                    
+                    // 헤더 내부의 모든 요소도 강력하게
                     const headerElements = header.querySelectorAll('*');
                     headerElements.forEach(element => {
-                        element.style.removeProperty('color'); // 기존 color 제거
-                        element.style.setProperty('color', '#ffffff', 'important');
-                        element.style.setProperty('text-shadow', 'none', 'important');
-                        element.style.setProperty('opacity', '1', 'important');
-                        element.style.setProperty('visibility', 'visible', 'important');
+                        element.style.cssText = `
+                            color: #ffff00 !important;
+                            font-size: 2rem !important;
+                            font-weight: 900 !important;
+                            text-shadow: 2px 2px 4px #000000 !important;
+                            background: #0000ff !important;
+                            padding: 10px !important;
+                            border: 2px solid #ffffff !important;
+                            opacity: 1 !important;
+                            visibility: visible !important;
+                            display: block !important;
+                        `;
                     });
-                    
-                    // 헤더 자체도 흰색으로
-                    header.style.removeProperty('color'); // 기존 color 제거
-                    header.style.setProperty('color', '#ffffff', 'important');
                 });
                 
-                // 🎯 나머지 콘텐츠 영역은 원래 색상으로 유지
-                const otherSections = modalBody.querySelectorAll('.report-section, .kpi-grid, .kpi-card');
-                otherSections.forEach(section => {
-                    if (!section.closest('.report-header')) {
-                        section.style.setProperty('color', '#1e293b', 'important');
-                        
-                        const sectionElements = section.querySelectorAll('*');
-                        sectionElements.forEach(element => {
-                            if (!element.closest('.report-header')) {
-                                element.style.setProperty('color', '#1e293b', 'important');
-                            }
-                        });
-                    }
-                });
-                
-                console.log('🎯 리포트 헤더만 흰색 텍스트 적용 완료');
+                console.log('🎯 극강 스타일 적용 완료 - 이제 보여야 함!');
             }
-        }, 200); // 200ms로 늘려서 DOM 완전 렌더링 후 적용
+        }, 300); // 300ms로 늘림
         
         // 모달 표시
         modal.style.display = 'flex';
