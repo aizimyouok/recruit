@@ -236,7 +236,7 @@ const ReportModule = {
                 <span class="preview-count">${filteredData.length}명 대상</span>
             </div>
             <div class="preview-summary" style="width: 100%; max-width: 100%; overflow-x: auto; box-sizing: border-box;">
-                ${this.generateReportContent(template, filteredData)}
+                ${this.generatePreviewSummary(filteredData)}
             </div>
             <div class="preview-actions">
                 <button class="btn-preview-ai" onclick="globalThis.App.report.runAIAnalysis()">

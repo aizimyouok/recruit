@@ -67,14 +67,94 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
         }
         
-        /* 🔥 미리보기 내부 KPI 항목들 세로 정렬 */
-        #report .live-preview-sidebar .kpi-grid {
+        /* 🔥 실시간 미리보기 콘텐츠 전체 스타일 강화 */
+        #livePreviewContent,
+        #livePreviewContent *,
+        .preview-content,
+        .preview-content *,
+        .preview-summary,
+        .preview-summary * {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        
+        /* 🔥 리포트 콘텐츠 전체 레이아웃 강화 */
+        #livePreviewContent .report-content,
+        .preview-summary .report-content {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 20px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        
+        /* 🔥 리포트 헤더 스타일 강화 */
+        #livePreviewContent .report-header,
+        .preview-summary .report-header {
+            width: 100% !important;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+            padding: 20px !important;
+            border-radius: 12px !important;
+            color: white !important;
+            text-align: center !important;
+            box-sizing: border-box !important;
+        }
+        
+        #livePreviewContent .report-title,
+        .preview-summary .report-title {
+            color: white !important;
+            font-size: 1.2rem !important;
+            margin-bottom: 10px !important;
+            font-weight: 700 !important;
+        }
+        
+        #livePreviewContent .report-meta,
+        .preview-summary .report-meta {
+            display: flex !important;
+            justify-content: center !important;
+            gap: 20px !important;
+            font-size: 0.85rem !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+        
+        #livePreviewContent .report-meta span,
+        .preview-summary .report-meta span {
+            background: rgba(255, 255, 255, 0.2) !important;
+            padding: 6px 12px !important;
+            border-radius: 20px !important;
+            color: white !important;
+        }
+        
+        /* 🔥 리포트 섹션 스타일 강화 */
+        #livePreviewContent .report-section,
+        .preview-summary .report-section {
+            width: 100% !important;
+            margin-bottom: 20px !important;
+            box-sizing: border-box !important;
+        }
+        
+        #livePreviewContent .report-section h2,
+        .preview-summary .report-section h2 {
+            width: 100% !important;
+            font-size: 1.1rem !important;
+            margin-bottom: 15px !important;
+            color: #1e293b !important;
+            font-weight: 600 !important;
+        }
+        
+        /* 🔥 KPI 그리드 세로 정렬 강화 */
+        #livePreviewContent .kpi-grid,
+        .preview-summary .kpi-grid {
             display: flex !important;
             flex-direction: column !important;
             gap: 15px !important;
+            width: 100% !important;
         }
         
-        #report .live-preview-sidebar .kpi-card {
+        #livePreviewContent .kpi-card,
+        .preview-summary .kpi-card {
             display: flex !important;
             justify-content: space-between !important;
             align-items: center !important;
@@ -83,140 +163,32 @@
             border-radius: 10px !important;
             border: 1px solid #e2e8f0 !important;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
         }
         
-        #report .live-preview-sidebar .kpi-card h3 {
+        #livePreviewContent .kpi-card h3,
+        .preview-summary .kpi-card h3 {
             margin: 0 !important;
             font-size: 0.9rem !important;
             color: #64748b !important;
             font-weight: 600 !important;
         }
         
-        #report .live-preview-sidebar .kpi-value {
+        #livePreviewContent .kpi-value,
+        .preview-summary .kpi-value {
             font-size: 1.5rem !important;
             font-weight: 700 !important;
             color: #3b82f6 !important;
         }
         
-        /* 🔥 전체 미리보기 콘텐츠 세로 정렬 */
-        #report .live-preview-sidebar .preview-content {
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 20px !important;
-            width: 100% !important; /* 전체 너비 사용 */
-        }
-        
-        #report .live-preview-sidebar .report-content {
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 20px !important;
-            width: 100% !important; /* 전체 너비 사용 */
-        }
-        
-        #report .live-preview-sidebar .report-section {
-            width: 100% !important;
-            margin-bottom: 20px !important;
-        }
-        
-        #report .live-preview-sidebar .report-header {
-            width: 100% !important;
-            margin-bottom: 20px !important;
-            text-align: center !important;
-            background: linear-gradient(135deg, #4f46e5, #7c3aed) !important; /* 보라색 배경 */
-            padding: 20px !important;
-            border-radius: 12px !important;
-            color: white !important; /* 흰색 텍스트로 변경 */
-        }
-        
-        #report .live-preview-sidebar .report-title {
-            font-size: 1.2rem !important;
-            margin-bottom: 10px !important;
-            color: white !important; /* 제목도 흰색 */
-            font-weight: 700 !important;
-        }
-        
-        #report .live-preview-sidebar .report-meta {
-            display: flex !important;
-            justify-content: center !important;
-            gap: 20px !important;
-            font-size: 0.85rem !important;
-            color: rgba(255, 255, 255, 0.9) !important; /* 반투명 흰색 */
-        }
-        
-        #report .live-preview-sidebar .report-meta span {
-            background: rgba(255, 255, 255, 0.2) !important;
-            padding: 6px 12px !important;
-            border-radius: 20px !important;
-            color: white !important; /* 메타 정보도 흰색 */
-        }
-        
-        /* 🔥 모든 섹션 전체 너비 사용 */
-        #report .live-preview-sidebar .executive-summary {
-            width: 100% !important;
-        }
-        
-        #report .live-preview-sidebar .report-section h2 {
-            width: 100% !important;
-            font-size: 1.1rem !important;
-            margin-bottom: 15px !important;
-            color: #1e293b !important;
-            font-weight: 600 !important;
-        }
-        
-        #report .live-preview-sidebar .kpi-grid {
-            width: 100% !important;
-        }
-        
-        #report .live-preview-sidebar .kpi-card {
-            width: 100% !important;
-            box-sizing: border-box !important;
-        }
-        
-        /* 주요 성과, 이슈 섹션도 전체 너비 */
-        #report .live-preview-sidebar .report-section div[style*="padding"] {
-            width: 100% !important;
-            box-sizing: border-box !important;
-        }
-        
-        #report .live-preview-sidebar ul {
-            width: 100% !important;
-            box-sizing: border-box !important;
-        }
-        
-        /* 🔥 더 강력한 텍스트 색상 및 레이아웃 강제 적용 */
-        #livePreviewSidebar .report-header,
-        #livePreviewSidebar .report-header *,
-        .live-preview-sidebar .report-header,
-        .live-preview-sidebar .report-header * {
-            color: white !important;
-            background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
-        }
-        
-        #livePreviewSidebar .report-title,
-        .live-preview-sidebar .report-title,
-        #livePreviewContent .report-title {
-            color: white !important;
-            font-weight: 700 !important;
-        }
-        
-        #livePreviewSidebar .report-meta,
-        .live-preview-sidebar .report-meta,
-        #livePreviewContent .report-meta {
-            color: white !important;
-        }
-        
-        #livePreviewSidebar .report-meta span,
-        .live-preview-sidebar .report-meta span,
-        #livePreviewContent .report-meta span {
-            color: white !important;
-            background: rgba(255, 255, 255, 0.2) !important;
-        }
-        
-        /* 전체 콘텐츠 너비 강제 적용 */
-        #livePreviewContent,
-        #livePreviewContent *,
-        .preview-content,
-        .preview-content * {
+        /* 🔥 모든 하위 요소 전체 너비 사용 */
+        #livePreviewContent div,
+        #livePreviewContent ul,
+        #livePreviewContent p,
+        .preview-summary div,
+        .preview-summary ul,
+        .preview-summary p {
             width: 100% !important;
             max-width: 100% !important;
             box-sizing: border-box !important;
