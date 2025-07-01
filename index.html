@@ -417,6 +417,62 @@
         #report .report-header i.fas {
             color: #ffffff !important;
         }
+
+        /* 🎨 전문적인 비즈니스 리포트 스타일 */
+        .report-content {
+            background: #ffffff !important;
+            border: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            font-family: 'Noto Sans KR', sans-serif !important;
+            line-height: 1.6 !important;
+            color: #374151 !important;
+        }
+
+        /* 프린트 최적화 */
+        @media print {
+            .report-content {
+                background: #ffffff !important;
+                box-shadow: none !important;
+                border: none !important;
+                padding: 20mm !important;
+                margin: 0 !important;
+                max-width: none !important;
+                width: 100% !important;
+            }
+            
+            .report-header {
+                background: #ffffff !important;
+                color: #1e293b !important;
+                border-bottom: 3px solid #3b82f6 !important;
+                page-break-after: avoid !important;
+            }
+            
+            .report-section {
+                page-break-inside: avoid !important;
+                margin-bottom: 20px !important;
+            }
+            
+            .kpi-grid {
+                page-break-inside: avoid !important;
+            }
+        }
+
+        /* 모달 리포트 스타일 */
+        .report-modal-content .report-content {
+            background: #ffffff !important;
+            padding: 40px !important;
+            max-width: 800px !important;
+            margin: 0 auto !important;
+        }
+
+        .report-modal-content .report-header {
+            background: #ffffff !important;
+            color: #1e293b !important;
+            border-bottom: 3px solid #3b82f6 !important;
+            padding-bottom: 20px !important;
+            margin-bottom: 30px !important;
+        }
     </style>
 </head>
 <body>

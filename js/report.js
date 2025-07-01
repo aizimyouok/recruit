@@ -266,10 +266,10 @@ const ReportModule = {
                     titles.forEach((title, index) => {
                         console.log(`🎯 미리보기 제목 요소 ${index + 1}:`, title.textContent?.substring(0, 50));
                         
-                        // 매우 강력한 스타일 적용 - 흰색 텍스트로 수정
+                        // 전문적이고 깔끔한 스타일 적용
                         title.style.cssText = `
-                            color: #ffffff !important;
-                            font-size: 1.2rem !important;
+                            color: #1e293b !important;
+                            font-size: 1.8rem !important;
                             font-weight: 700 !important;
                             text-shadow: none !important;
                             background: transparent !important;
@@ -279,9 +279,10 @@ const ReportModule = {
                             visibility: visible !important;
                             display: block !important;
                             text-align: center !important;
-                            margin: 0 0 10px 0 !important;
+                            margin: 0 0 8px 0 !important;
                             position: relative !important;
                             z-index: 1 !important;
+                            letter-spacing: -0.5px !important;
                         `;
                     });
                 });
@@ -362,52 +363,52 @@ const ReportModule = {
         const joinRate = total > 0 ? ((joined / total) * 100).toFixed(1) : 0;
         
         return `
-            <div class="report-content executive-summary" style="width: 100%; display: flex; flex-direction: column; gap: 20px;">
-                <div class="report-header" style="width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 20px; border-radius: 12px; color: #ffffff !important; text-align: center;">
-                    <h1 style="color: #ffffff !important; font-size: 1.2rem !important; margin-bottom: 10px !important; font-weight: 700 !important; text-align: center !important; text-shadow: none !important; opacity: 1 !important; visibility: visible !important; display: block !important;">📈 CFC 채용 현황 경영진 요약 리포트</h1>
-                    <div class="report-meta" style="display: flex; justify-content: center; gap: 20px; font-size: 0.85rem; color: #ffffff !important;">
-                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: #ffffff !important;">기간: ${this.getSelectedPeriodText()}</span>
-                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: #ffffff !important;">대상: ${total}명</span>
+            <div class="report-content executive-summary" style="width: 100%; max-width: 800px; margin: 0 auto; font-family: 'Noto Sans KR', sans-serif; background: #ffffff; padding: 40px; border-radius: 0; box-shadow: none;">
+                <div class="report-header" style="width: 100%; background: #ffffff; padding: 0; border-radius: 0; color: #1e293b; text-align: center; border-bottom: 3px solid #3b82f6; padding-bottom: 20px; margin-bottom: 30px;">
+                    <h1 style="color: #1e293b !important; font-size: 1.8rem !important; margin-bottom: 8px !important; font-weight: 700 !important; text-align: center !important; text-shadow: none !important; opacity: 1 !important; visibility: visible !important; display: block !important; letter-spacing: -0.5px;">CFC 채용 현황 경영진 요약 리포트</h1>
+                    <div class="report-meta" style="display: flex; justify-content: center; gap: 25px; font-size: 0.9rem; color: #64748b !important; margin-top: 10px;">
+                        <span style="background: #f1f5f9; padding: 8px 16px; border-radius: 6px; color: #475569 !important; font-weight: 500;">기간: ${this.getSelectedPeriodText()}</span>
+                        <span style="background: #f1f5f9; padding: 8px 16px; border-radius: 6px; color: #475569 !important; font-weight: 500;">대상: ${total}명</span>
                     </div>
                 </div>
                 
-                <div class="report-section" style="width: 100%;">
-                    <h2 style="width: 100%; font-size: 1.1rem; margin-bottom: 15px; color: #1e293b; font-weight: 600;">📊 핵심 KPI</h2>
-                    <div class="kpi-grid" style="display: flex; flex-direction: column; gap: 15px; width: 100%;">
-                        <div class="kpi-card" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: white; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); width: 100%; box-sizing: border-box;">
-                            <h3 style="margin: 0; font-size: 0.9rem; color: #64748b; font-weight: 600;">총 지원자</h3>
-                            <div class="kpi-value" style="font-size: 1.5rem; font-weight: 700; color: #3b82f6;">${total}명</div>
+                <div class="report-section" style="width: 100%; margin-bottom: 35px;">
+                    <h2 style="width: 100%; font-size: 1.3rem; margin-bottom: 20px; color: #1e293b; font-weight: 600; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">📊 핵심 KPI</h2>
+                    <div class="kpi-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%;">
+                        <div class="kpi-card" style="padding: 25px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
+                            <div style="font-size: 2.5rem; font-weight: 700; color: #3b82f6; margin-bottom: 8px;">${total}</div>
+                            <div style="font-size: 0.95rem; color: #64748b; font-weight: 500;">총 지원자</div>
                         </div>
-                        <div class="kpi-card" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: white; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); width: 100%; box-sizing: border-box;">
-                            <h3 style="margin: 0; font-size: 0.9rem; color: #64748b; font-weight: 600;">최종 합격</h3>
-                            <div class="kpi-value" style="font-size: 1.5rem; font-weight: 700; color: #3b82f6;">${passed}명</div>
+                        <div class="kpi-card" style="padding: 25px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
+                            <div style="font-size: 2.5rem; font-weight: 700; color: #10b981; margin-bottom: 8px;">${passed}</div>
+                            <div style="font-size: 0.95rem; color: #64748b; font-weight: 500;">최종 합격</div>
                         </div>
-                        <div class="kpi-card" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: white; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); width: 100%; box-sizing: border-box;">
-                            <h3 style="margin: 0; font-size: 0.9rem; color: #64748b; font-weight: 600;">합격률</h3>
-                            <div class="kpi-value" style="font-size: 1.5rem; font-weight: 700; color: #3b82f6;">${passRate}%</div>
+                        <div class="kpi-card" style="padding: 25px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
+                            <div style="font-size: 2.5rem; font-weight: 700; color: #8b5cf6; margin-bottom: 8px;">${passRate}%</div>
+                            <div style="font-size: 0.95rem; color: #64748b; font-weight: 500;">합격률</div>
                         </div>
-                        <div class="kpi-card" style="display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: white; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); width: 100%; box-sizing: border-box;">
-                            <h3 style="margin: 0; font-size: 0.9rem; color: #64748b; font-weight: 600;">입과율</h3>
-                            <div class="kpi-value" style="font-size: 1.5rem; font-weight: 700; color: #3b82f6;">${joinRate}%</div>
+                        <div class="kpi-card" style="padding: 25px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center;">
+                            <div style="font-size: 2.5rem; font-weight: 700; color: #f59e0b; margin-bottom: 8px;">${joinRate}%</div>
+                            <div style="font-size: 0.95rem; color: #64748b; font-weight: 500;">입과율</div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="report-section" style="width: 100%;">
-                    <h2 style="width: 100%; font-size: 1.1rem; margin-bottom: 15px; color: #1e293b; font-weight: 600;">🎯 주요 성과</h2>
-                    <div style="width: 100%; padding: 20px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #4f46e5; box-sizing: border-box;">
-                        <ul style="margin: 0; padding-left: 20px;">
-                            <li>온라인 지원 비중 증가 (전체의 ${this.calculateOnlinePercentage(data)}%)</li>
-                            <li>평균 채용 기간 단축 (목표 대비 우수)</li>
-                            <li>면접 진행률 향상</li>
+                <div class="report-section" style="width: 100%; margin-bottom: 35px;">
+                    <h2 style="width: 100%; font-size: 1.3rem; margin-bottom: 20px; color: #1e293b; font-weight: 600; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">🎯 주요 성과</h2>
+                    <div style="width: 100%; padding: 25px; background: #ecfdf5; border-radius: 8px; border-left: 4px solid #10b981;">
+                        <ul style="margin: 0; padding-left: 20px; line-height: 1.6; color: #374151;">
+                            <li style="margin-bottom: 8px;">온라인 지원 비중 증가 (전체의 ${this.calculateOnlinePercentage(data)}%)</li>
+                            <li style="margin-bottom: 8px;">평균 채용 기간 단축 (목표 대비 우수)</li>
+                            <li style="margin-bottom: 0;">면접 진행률 향상</li>
                         </ul>
                     </div>
                 </div>
                 
                 <div class="report-section" style="width: 100%;">
-                    <h2 style="width: 100%; font-size: 1.1rem; margin-bottom: 15px; color: #1e293b; font-weight: 600;">⚠️ 주요 이슈 & 개선사항</h2>
-                    <div style="width: 100%; padding: 20px; background: #fef2f2; border-radius: 8px; border-left: 4px solid #ef4444; box-sizing: border-box;">
-                        <ul style="margin: 0; padding-left: 20px;">
+                    <h2 style="width: 100%; font-size: 1.3rem; margin-bottom: 20px; color: #1e293b; font-weight: 600; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px;">⚠️ 주요 이슈 & 개선사항</h2>
+                    <div style="width: 100%; padding: 25px; background: #fef2f2; border-radius: 8px; border-left: 4px solid #ef4444;">
+                        <ul style="margin: 0; padding-left: 20px; line-height: 1.6; color: #374151;">
                             <li>서류 검토 단계 병목 현상</li>
                             <li>면접관 스케줄 조정 필요</li>
                             <li>채용 채널 다양화 검토</li>
@@ -424,10 +425,10 @@ const ReportModule = {
         const regionStats = this.calculateRegionStats(data);
         
         return `
-            <div class="report-content detailed-analysis">
-                <div class="report-header" style="width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 20px; border-radius: 12px; color: #ffffff !important; text-align: center;">
-                    <h1 style="color: #ffffff !important; font-size: 1.2rem !important; margin-bottom: 10px !important; font-weight: 700 !important; text-align: center !important; text-shadow: none !important; opacity: 1 !important; visibility: visible !important; display: block !important;">📊 CFC 채용 상세 분석 리포트</h1>
-                    <div class="report-meta" style="display: flex; justify-content: center; gap: 20px; font-size: 0.85rem; color: #ffffff !important;">
+            <div class="report-content detailed-analysis" style="width: 100%; max-width: 800px; margin: 0 auto; font-family: 'Noto Sans KR', sans-serif; background: #ffffff; padding: 40px; border-radius: 0; box-shadow: none;">
+                <div class="report-header" style="width: 100%; background: #ffffff; padding: 0; border-radius: 0; color: #1e293b; text-align: center; border-bottom: 3px solid #3b82f6; padding-bottom: 20px; margin-bottom: 30px;">
+                    <h1 style="color: #1e293b !important; font-size: 1.8rem !important; margin-bottom: 8px !important; font-weight: 700 !important; text-align: center !important; text-shadow: none !important; opacity: 1 !important; visibility: visible !important; display: block !important; letter-spacing: -0.5px;">CFC 채용 상세 분석 리포트</h1>
+                    <div class="report-meta" style="display: flex; justify-content: center; gap: 25px; font-size: 0.9rem; color: #64748b !important; margin-top: 10px;">
                         <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">분석 기간: ${this.getSelectedPeriodText()}</span>
                         <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">총 지원자: ${data.length}명</span>
                     </div>
@@ -503,11 +504,11 @@ const ReportModule = {
         const funnelData = this.calculateFunnelData(data);
         
         return `
-            <div class="report-content recruitment-funnel">
-                <div class="report-header" style="width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 20px; border-radius: 12px; color: #ffffff !important; text-align: center;">
-                    <h1 class="report-title" style="color: #ffffff !important; font-size: 1.2rem !important; margin-bottom: 10px !important; font-weight: 700 !important; text-shadow: none !important; opacity: 1 !important; visibility: visible !important; display: block !important;">🔄 채용 퍼널 분석 리포트</h1>
-                    <div class="report-meta" style="display: flex; justify-content: center; gap: 20px; font-size: 0.85rem; color: #ffffff !important;">
-                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: #ffffff !important;">분석 기간: ${this.getSelectedPeriodText()}</span>
+            <div class="report-content recruitment-funnel" style="width: 100%; max-width: 800px; margin: 0 auto; font-family: 'Noto Sans KR', sans-serif; background: #ffffff; padding: 40px; border-radius: 0; box-shadow: none;">
+                <div class="report-header" style="width: 100%; background: #ffffff; padding: 0; border-radius: 0; color: #1e293b; text-align: center; border-bottom: 3px solid #3b82f6; padding-bottom: 20px; margin-bottom: 30px;">
+                    <h1 class="report-title" style="color: #1e293b !important; font-size: 1.8rem !important; margin-bottom: 8px !important; font-weight: 700 !important; text-shadow: none !important; opacity: 1 !important; visibility: visible !important; display: block !important; letter-spacing: -0.5px;">채용 퍼널 분석 리포트</h1>
+                    <div class="report-meta" style="display: flex; justify-content: center; gap: 25px; font-size: 0.9rem; color: #64748b !important; margin-top: 10px;">
+                        <span style="background: #f1f5f9; padding: 8px 16px; border-radius: 6px; color: #475569 !important; font-weight: 500;">분석 기간: ${this.getSelectedPeriodText()}</span>
                         <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">전체 단계: 4단계</span>
                     </div>
                 </div>
@@ -564,10 +565,10 @@ const ReportModule = {
         const achievement = ((actual / target) * 100).toFixed(0);
         
         return `
-            <div class="report-content monthly-report">
-                <div class="report-header" style="width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 20px; border-radius: 12px; color: #ffffff !important; text-align: center;">
-                    <h1 class="report-title" style="color: #ffffff !important; font-size: 1.2rem !important; margin-bottom: 10px !important; font-weight: 700 !important; text-shadow: none !important; opacity: 1 !important; visibility: visible !important; display: block !important;">📅 ${currentMonth} 월간 채용 리포트</h1>
-                    <div class="report-meta" style="display: flex; justify-content: center; gap: 20px; font-size: 0.85rem; color: #ffffff !important;">
+            <div class="report-content monthly-report" style="width: 100%; max-width: 800px; margin: 0 auto; font-family: 'Noto Sans KR', sans-serif; background: #ffffff; padding: 40px; border-radius: 0; box-shadow: none;">
+                <div class="report-header" style="width: 100%; background: #ffffff; padding: 0; border-radius: 0; color: #1e293b; text-align: center; border-bottom: 3px solid #3b82f6; padding-bottom: 20px; margin-bottom: 30px;">
+                    <h1 class="report-title" style="color: #1e293b !important; font-size: 1.8rem !important; margin-bottom: 8px !important; font-weight: 700 !important; text-shadow: none !important; opacity: 1 !important; visibility: visible !important; display: block !important; letter-spacing: -0.5px;">${currentMonth} 월간 채용 리포트</h1>
+                    <div class="report-meta" style="display: flex; justify-content: center; gap: 25px; font-size: 0.9rem; color: #64748b !important; margin-top: 10px;">
                         <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">보고 기간: ${currentMonth}</span>
                         <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">목표 달성: ${achievement}%</span>
                     </div>
@@ -652,12 +653,12 @@ const ReportModule = {
         const interviewerStats = this.calculateInterviewerStats(data);
         
         return `
-            <div class="report-content interviewer-performance">
-                <div class="report-header" style="width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 20px; border-radius: 12px; color: #ffffff !important; text-align: center;">
-                    <h1 class="report-title" style="color: #ffffff !important; font-size: 1.2rem !important; margin-bottom: 10px !important; font-weight: 700 !important; text-shadow: none !important; opacity: 1 !important; visibility: visible !important; display: block !important;">👤 면접관별 성과 분석 리포트</h1>
-                    <div class="report-meta" style="display: flex; justify-content: center; gap: 20px; font-size: 0.85rem; color: #ffffff !important;">
-                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: #ffffff !important;">분석 기간: ${this.getSelectedPeriodText()}</span>
-                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: #ffffff !important;">면접관 수: ${interviewerStats.length}명</span>
+            <div class="report-content interviewer-performance" style="width: 100%; max-width: 800px; margin: 0 auto; font-family: 'Noto Sans KR', sans-serif; background: #ffffff; padding: 40px; border-radius: 0; box-shadow: none;">
+                <div class="report-header" style="width: 100%; background: #ffffff; padding: 0; border-radius: 0; color: #1e293b; text-align: center; border-bottom: 3px solid #3b82f6; padding-bottom: 20px; margin-bottom: 30px;">
+                    <h1 class="report-title" style="color: #1e293b !important; font-size: 1.8rem !important; margin-bottom: 8px !important; font-weight: 700 !important; text-shadow: none !important; opacity: 1 !important; visibility: visible !important; display: block !important; letter-spacing: -0.5px;">면접관별 성과 분석 리포트</h1>
+                    <div class="report-meta" style="display: flex; justify-content: center; gap: 25px; font-size: 0.9rem; color: #64748b !important; margin-top: 10px;">
+                        <span style="background: #f1f5f9; padding: 8px 16px; border-radius: 6px; color: #475569 !important; font-weight: 500;">분석 기간: ${this.getSelectedPeriodText()}</span>
+                        <span style="background: #f1f5f9; padding: 8px 16px; border-radius: 6px; color: #475569 !important; font-weight: 500;">면접관 수: ${interviewerStats.length}명</span>
                     </div>
                 </div>
                 
@@ -737,12 +738,12 @@ const ReportModule = {
     // 비용 효율성 미리보기
     generateCostAnalysisPreview(data) {
         return `
-            <div class="report-content cost-analysis">
-                <div class="report-header" style="width: 100%; background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 20px; border-radius: 12px; color: #ffffff !important; text-align: center;">
-                    <h1 class="report-title" style="color: #ffffff !important; font-size: 1.2rem !important; margin-bottom: 10px !important; font-weight: 700 !important; text-shadow: none !important; opacity: 1 !important; visibility: visible !important; display: block !important;">💰 채용 비용 효율성 분석 리포트</h1>
-                    <div class="report-meta" style="display: flex; justify-content: center; gap: 20px; font-size: 0.85rem; color: #ffffff !important;">
-                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: #ffffff !important;">분석 기간: ${this.getSelectedPeriodText()}</span>
-                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: #ffffff !important;">비용 절감: 16%</span>
+            <div class="report-content cost-analysis" style="width: 100%; max-width: 800px; margin: 0 auto; font-family: 'Noto Sans KR', sans-serif; background: #ffffff; padding: 40px; border-radius: 0; box-shadow: none;">
+                <div class="report-header" style="width: 100%; background: #ffffff; padding: 0; border-radius: 0; color: #1e293b; text-align: center; border-bottom: 3px solid #3b82f6; padding-bottom: 20px; margin-bottom: 30px;">
+                    <h1 class="report-title" style="color: #1e293b !important; font-size: 1.8rem !important; margin-bottom: 8px !important; font-weight: 700 !important; text-shadow: none !important; opacity: 1 !important; visibility: visible !important; display: block !important; letter-spacing: -0.5px;">채용 비용 효율성 분석 리포트</h1>
+                    <div class="report-meta" style="display: flex; justify-content: center; gap: 25px; font-size: 0.9rem; color: #64748b !important; margin-top: 10px;">
+                        <span style="background: #f1f5f9; padding: 8px 16px; border-radius: 6px; color: #475569 !important; font-weight: 500;">분석 기간: ${this.getSelectedPeriodText()}</span>
+                        <span style="background: #f1f5f9; padding: 8px 16px; border-radius: 6px; color: #475569 !important; font-weight: 500;">비용 절감: 16%</span>
                     </div>
                 </div>
                 
