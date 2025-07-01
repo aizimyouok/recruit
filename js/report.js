@@ -1263,6 +1263,38 @@ const ReportModule = {
         let reportHtml = this.generateReportContent(template, data);
         modalBody.innerHTML = reportHtml;
         
+        // 🔥 모달 내 리포트 헤더 텍스트 색상 강제 적용
+        setTimeout(() => {
+            const reportHeaders = modalBody.querySelectorAll('.report-header, .report-title, .report-meta, .report-meta span');
+            reportHeaders.forEach(element => {
+                element.style.color = 'white';
+                element.style.textShadow = 'none';
+                
+                // 헤더 배경 확실히 적용
+                if (element.classList.contains('report-header')) {
+                    element.style.background = 'linear-gradient(135deg, #4f46e5, #7c3aed)';
+                    element.style.textAlign = 'center';
+                    element.style.padding = '20px';
+                    element.style.borderRadius = '12px';
+                    element.style.marginBottom = '20px';
+                }
+                
+                // 메타 정보 배지 스타일
+                if (element.classList.contains('report-meta')) {
+                    element.style.display = 'flex';
+                    element.style.justifyContent = 'center';
+                    element.style.gap = '20px';
+                    element.style.fontSize = '0.85rem';
+                }
+                
+                if (element.parentElement && element.parentElement.classList.contains('report-meta')) {
+                    element.style.background = 'rgba(255, 255, 255, 0.2)';
+                    element.style.padding = '6px 12px';
+                    element.style.borderRadius = '20px';
+                }
+            });
+        }, 50);
+        
         // 모달 표시
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';

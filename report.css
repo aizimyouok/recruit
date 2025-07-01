@@ -1246,6 +1246,52 @@
    리포트 모달 최소 스타일 추가 (기존 HTML용)
    ========================= */
 
+/* 🔥 리포트 모달 내부 헤더 텍스트 색상 강제 적용 */
+#reportModal .report-header,
+#reportModal .report-header *,
+#reportModal .report-title,
+#reportModal .report-meta,
+#reportModal .report-meta span,
+.report-modal-content .report-header,
+.report-modal-content .report-header *,
+.report-modal-content .report-title,
+.report-modal-content .report-meta,
+.report-modal-content .report-meta span {
+    color: white !important;
+    text-shadow: none !important;
+    background: none !important;
+}
+
+#reportModal .report-header {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+    color: white !important;
+    text-align: center !important;
+    padding: 20px !important;
+    border-radius: 12px !important;
+    margin-bottom: 20px !important;
+}
+
+#reportModal .report-title {
+    color: white !important;
+    font-size: 1.2rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 10px !important;
+}
+
+#reportModal .report-meta {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 20px !important;
+    font-size: 0.85rem !important;
+}
+
+#reportModal .report-meta span {
+    background: rgba(255, 255, 255, 0.2) !important;
+    padding: 6px 12px !important;
+    border-radius: 20px !important;
+    color: white !important;
+}
+
 /* 🔥 모달 기본 스타일 강화 */
 #reportModal {
     display: none !important;
