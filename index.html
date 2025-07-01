@@ -374,6 +374,49 @@
             margin: 0 !important;
             padding: 0 !important;
         }
+
+        /* 🔥🔥🔥 텍스트 색상 문제 해결을 위한 강력한 스타일 추가 🔥🔥🔥 */
+        .report-header,
+        .report-header *,
+        .report-header h1,
+        .report-header h2,
+        .report-header h3,
+        .report-header i,
+        .report-header span,
+        .report-header div,
+        #report .report-header,
+        #report .report-header *,
+        #report .report-header h1,
+        #report .report-header h2,
+        #report .report-header h3,
+        #report .report-header i,
+        #report .report-header span,
+        #report .report-header div {
+            color: #ffffff !important;
+            text-shadow: none !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: inline !important;
+        }
+
+        /* 🔥 리포트 헤더 h1 태그 특별 처리 */
+        .report-header h1,
+        #report .report-header h1 {
+            color: #ffffff !important;
+            display: block !important;
+            font-weight: 700 !important;
+            text-align: center !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /* 🔥 리포트 헤더 아이콘도 흰색으로 */
+        .report-header .fas,
+        .report-header i.fas,
+        #report .report-header .fas,
+        #report .report-header i.fas {
+            color: #ffffff !important;
+        }
     </style>
 </head>
 <body>
@@ -901,8 +944,8 @@
 
                 <div id="report" class="page">
                     <div class="report-container">
-                        <div class="report-header">
-                            <h1><i class="fas fa-chart-line"></i> CFC 채용 리포트</h1>
+                        <div class="report-header" style="color: white !important;">
+                            <h1 style="color: white !important;"><i class="fas fa-chart-line" style="color: white !important;"></i> CFC 채용 리포트</h1>
                         </div>
 
                         <div class="report-tabs-container">
