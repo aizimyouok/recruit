@@ -231,17 +231,8 @@ const ReportModule = {
         const filteredData = this.getFilteredReportData();
         
         previewContent.innerHTML = `
-            <div class="preview-header" style="display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 15px 0; border-bottom: 1px solid #e2e8f0;">
-                <h4 style="margin: 0; font-size: 1.1rem; font-weight: 600; color: #1e293b; text-align: center;">${template.name}</h4>
-                <span class="preview-count" style="background: #3b82f6; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; display: inline-block; width: auto;">${filteredData.length}명 대상</span>
-            </div>
             <div class="preview-summary" style="width: 100%; max-width: 100%; overflow-x: auto; box-sizing: border-box;">
                 ${this.generatePreviewSummary(filteredData)}
-            </div>
-            <div class="preview-actions">
-                <button class="btn-preview-ai" onclick="globalThis.App.report.runAIAnalysis()">
-                    <i class="fas fa-magic"></i> 분석 실행
-                </button>
             </div>
         `;
         
@@ -370,21 +361,21 @@ const ReportModule = {
                 margin: 0 auto; 
                 font-family: 'Noto Sans KR', sans-serif; 
                 background: #F4F4F4;
-                padding: 32px 16px;
+                padding: 24px 16px;
                 min-height: 100vh;
             ">
                 <!-- 헤더 섹션 -->
-                <header style="text-align: center; padding: 32px 0;">
+                <header style="text-align: center; padding: 24px 0;">
                     <h1 style="
-                        font-size: 2.5rem; 
-                        font-weight: 900; 
+                        font-size: 1.8rem; 
+                        font-weight: 700; 
                         color: #0B4F6C; 
                         margin: 0 0 8px 0;
-                        letter-spacing: -1px;
+                        letter-spacing: -0.5px;
                     ">CFC 채용 분석 리포트</h1>
                     <p style="
-                        font-size: 1.25rem; 
-                        font-weight: 700; 
+                        font-size: 1rem; 
+                        font-weight: 600; 
                         color: #01BAEF; 
                         margin: 0;
                     ">경영진 요약 | ${this.getSelectedPeriodText()}</p>
@@ -395,31 +386,31 @@ const ReportModule = {
                     background: white;
                     border-radius: 16px;
                     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-                    padding: 32px 24px;
-                    margin-bottom: 32px;
+                    padding: 24px;
+                    margin-bottom: 24px;
                 ">
                     <h2 style="
-                        font-size: 1.5rem;
-                        font-weight: 700;
+                        font-size: 1.2rem;
+                        font-weight: 600;
                         text-align: center;
-                        margin-bottom: 24px;
+                        margin-bottom: 20px;
                         color: #0B4F6C;
                     ">📊 한눈에 보는 핵심 요약</h2>
                     <div style="
                         display: grid;
                         grid-template-columns: 1fr 1fr;
-                        gap: 24px;
+                        gap: 20px;
                         text-align: center;
                     ">
                         <div style="
                             background: #F4F4F4;
-                            padding: 24px;
+                            padding: 20px;
                             border-radius: 12px;
-                            border-left: 8px solid #0B4F6C;
+                            border-left: 6px solid #0B4F6C;
                         ">
                             <h3 style="
-                                font-size: 1.125rem;
-                                font-weight: 700;
+                                font-size: 1rem;
+                                font-weight: 600;
                                 color: #374151;
                                 margin: 0 0 8px 0;
                             ">👍 강점: 지원자 확보</h3>
@@ -427,17 +418,18 @@ const ReportModule = {
                                 margin: 0;
                                 color: #6B7280;
                                 line-height: 1.5;
+                                font-size: 0.9rem;
                             ">총 ${total}명의 지원자가 몰려 브랜드 인지도와 채용 경쟁력이 높음을 보여줍니다.</p>
                         </div>
                         <div style="
                             background: #F4F4F4;
-                            padding: 24px;
+                            padding: 20px;
                             border-radius: 12px;
-                            border-left: 8px solid #FF6B6B;
+                            border-left: 6px solid #FF6B6B;
                         ">
                             <h3 style="
-                                font-size: 1.125rem;
-                                font-weight: 700;
+                                font-size: 1rem;
+                                font-weight: 600;
                                 color: #374151;
                                 margin: 0 0 8px 0;
                             ">👎 약점: 낮은 입과율</h3>
@@ -445,6 +437,7 @@ const ReportModule = {
                                 margin: 0;
                                 color: #6B7280;
                                 line-height: 1.5;
+                                font-size: 0.9rem;
                             ">입과율 ${joinRate}%로 개선이 필요하며, 채용 프로세스 효율화가 시급합니다.</p>
                         </div>
                     </div>
@@ -454,75 +447,77 @@ const ReportModule = {
                 <div style="
                     display: grid;
                     grid-template-columns: 1fr 1fr;
-                    gap: 32px;
-                    margin-bottom: 32px;
+                    gap: 24px;
+                    margin-bottom: 24px;
                 ">
                     <!-- 채용 성과 분석 -->
                     <section style="
                         background: white;
                         border-radius: 16px;
                         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-                        padding: 32px 24px;
+                        padding: 24px;
                     ">
                         <h2 style="
-                            font-size: 1.25rem;
-                            font-weight: 700;
+                            font-size: 1.1rem;
+                            font-weight: 600;
                             color: #0B4F6C;
                             margin: 0 0 8px 0;
                         ">I. 채용 성과 분석: 목표 달성 📈</h2>
                         <p style="
                             color: #6B7280;
-                            margin: 0 0 24px 0;
+                            margin: 0 0 20px 0;
                             line-height: 1.5;
+                            font-size: 0.9rem;
                         ">지원자 확보는 성공적이었으나, 최종 입과까지 이어지는 전환율 개선이 필요한 상황입니다.</p>
                         
                         <!-- KPI 카드들 -->
                         <div style="
                             display: grid;
                             grid-template-columns: 1fr 1fr;
-                            gap: 16px;
-                            margin-bottom: 24px;
+                            gap: 12px;
+                            margin-bottom: 20px;
                         ">
                             <div style="
                                 text-align: center;
-                                padding: 20px;
+                                padding: 16px;
                                 background: #F0F9FF;
                                 border-radius: 8px;
                             ">
-                                <p style="margin: 0 0 4px 0; color: #6B7280; font-size: 0.875rem;">총 지원자</p>
+                                <p style="margin: 0 0 4px 0; color: #6B7280; font-size: 0.8rem;">총 지원자</p>
                                 <p style="
                                     margin: 0;
-                                    font-size: 2rem;
-                                    font-weight: 900;
+                                    font-size: 1.5rem;
+                                    font-weight: 700;
                                     color: #0B4F6C;
                                 ">${total}명</p>
                             </div>
                             <div style="
                                 text-align: center;
-                                padding: 20px;
+                                padding: 16px;
                                 background: #ECFDF5;
                                 border-radius: 8px;
                             ">
-                                <p style="margin: 0 0 4px 0; color: #6B7280; font-size: 0.875rem;">최종 합격</p>
+                                <p style="margin: 0 0 4px 0; color: #6B7280; font-size: 0.8rem;">최종 합격</p>
                                 <p style="
                                     margin: 0;
-                                    font-size: 2rem;
-                                    font-weight: 900;
+                                    font-size: 1.5rem;
+                                    font-weight: 700;
                                     color: #059669;
                                 ">${passed}명</p>
                             </div>
                         </div>
                         
                         <div style="
-                            padding: 16px;
+                            padding: 12px;
                             background: rgba(1, 186, 239, 0.1);
                             border-radius: 8px;
                             text-align: center;
                         ">
                             <p style="
                                 margin: 0;
-                                font-weight: 700;
+                                font-weight: 600;
                                 color: #0B4F6C;
+                                font-size: 0.9rem;
                             ">합격률 ${passRate}%는 업계 평균 수준이지만, 입과율 개선을 통해 효율성을 높일 수 있습니다.</p>
                         </div>
                     </section>
@@ -532,76 +527,77 @@ const ReportModule = {
                         background: white;
                         border-radius: 16px;
                         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-                        padding: 32px 24px;
+                        padding: 24px;
                     ">
                         <h2 style="
-                            font-size: 1.25rem;
-                            font-weight: 700;
+                            font-size: 1.1rem;
+                            font-weight: 600;
                             color: #0B4F6C;
                             margin: 0 0 8px 0;
                         ">II. 채용 효율성 분석: 개선 필요 ⚠️</h2>
                         <p style="
                             color: #6B7280;
-                            margin: 0 0 24px 0;
+                            margin: 0 0 20px 0;
                             line-height: 1.5;
+                            font-size: 0.9rem;
                         ">전체적인 채용 프로세스에서 단계별 이탈률이 높아 효율성 개선이 시급합니다.</p>
                         
                         <!-- 프로세스 단계 -->
-                        <div style="margin-bottom: 24px;">
+                        <div style="margin-bottom: 20px;">
                             <h3 style="
-                                font-size: 1rem;
-                                font-weight: 700;
+                                font-size: 0.95rem;
+                                font-weight: 600;
                                 color: #374151;
-                                margin: 0 0 16px 0;
+                                margin: 0 0 12px 0;
                             ">채용 단계별 현황</h3>
                             
-                            <div style="space-y: 12px;">
+                            <div style="space-y: 8px;">
                                 <div style="
                                     display: flex;
                                     justify-content: space-between;
                                     align-items: center;
-                                    padding: 12px 16px;
+                                    padding: 10px 12px;
                                     background: #F9FAFB;
-                                    border-radius: 8px;
-                                    margin-bottom: 12px;
+                                    border-radius: 6px;
+                                    margin-bottom: 8px;
                                 ">
-                                    <span style="font-weight: 600; color: #374151;">지원 접수</span>
-                                    <span style="font-weight: 700; color: #0B4F6C;">${total}명</span>
+                                    <span style="font-weight: 500; color: #374151; font-size: 0.9rem;">지원 접수</span>
+                                    <span style="font-weight: 600; color: #0B4F6C; font-size: 0.9rem;">${total}명</span>
                                 </div>
                                 <div style="
                                     display: flex;
                                     justify-content: space-between;
                                     align-items: center;
-                                    padding: 12px 16px;
+                                    padding: 10px 12px;
                                     background: #F9FAFB;
-                                    border-radius: 8px;
-                                    margin-bottom: 12px;
+                                    border-radius: 6px;
+                                    margin-bottom: 8px;
                                 ">
-                                    <span style="font-weight: 600; color: #374151;">서류 통과</span>
-                                    <span style="font-weight: 700; color: #059669;">약 ${Math.round(total * 0.6)}명</span>
+                                    <span style="font-weight: 500; color: #374151; font-size: 0.9rem;">서류 통과</span>
+                                    <span style="font-weight: 600; color: #059669; font-size: 0.9rem;">약 ${Math.round(total * 0.6)}명</span>
                                 </div>
                                 <div style="
                                     display: flex;
                                     justify-content: space-between;
                                     align-items: center;
-                                    padding: 12px 16px;
+                                    padding: 10px 12px;
                                     background: #F9FAFB;
-                                    border-radius: 8px;
-                                    margin-bottom: 12px;
+                                    border-radius: 6px;
+                                    margin-bottom: 8px;
                                 ">
-                                    <span style="font-weight: 600; color: #374151;">면접 합격</span>
-                                    <span style="font-weight: 700; color: #F59E0B;">${passed}명</span>
+                                    <span style="font-weight: 500; color: #374151; font-size: 0.9rem;">면접 합격</span>
+                                    <span style="font-weight: 600; color: #F59E0B; font-size: 0.9rem;">${passed}명</span>
                                 </div>
                                 <div style="
                                     display: flex;
                                     justify-content: space-between;
                                     align-items: center;
-                                    padding: 12px 16px;
+                                    padding: 10px 12px;
                                     background: #FEF2F2;
-                                    border-radius: 8px;
+                                    border-radius: 6px;
                                 ">
-                                    <span style="font-weight: 600; color: #374151;">최종 입과</span>
-                                    <span style="font-weight: 700; color: #DC2626;">${Math.round(total * joinRate / 100)}명</span>
+                                    <span style="font-weight: 500; color: #374151; font-size: 0.9rem;">최종 입과</span>
+                                    <span style="font-weight: 600; color: #DC2626; font-size: 0.9rem;">${Math.round(total * joinRate / 100)}명</span>
                                 </div>
                             </div>
                         </div>
@@ -613,48 +609,51 @@ const ReportModule = {
                     background: white;
                     border-radius: 16px;
                     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-                    padding: 32px 24px;
+                    padding: 24px;
                 ">
                     <h2 style="
-                        font-size: 1.5rem;
-                        font-weight: 700;
+                        font-size: 1.2rem;
+                        font-weight: 600;
                         text-align: center;
-                        margin-bottom: 24px;
+                        margin-bottom: 20px;
                         color: #0B4F6C;
                     ">III. 문제 원인 및 개선 제안 💡</h2>
                     
                     <div style="
                         display: grid;
                         grid-template-columns: 1fr 1fr;
-                        gap: 32px;
+                        gap: 24px;
                     ">
                         <!-- 문제점 1 -->
                         <div>
                             <h3 style="
-                                font-size: 1.125rem;
-                                font-weight: 700;
+                                font-size: 1rem;
+                                font-weight: 600;
                                 color: #374151;
-                                margin: 0 0 12px 0;
+                                margin: 0 0 10px 0;
                             ">1. 문제: 높은 단계별 이탈률</h3>
                             <p style="
                                 color: #6B7280;
-                                margin: 0 0 16px 0;
+                                margin: 0 0 12px 0;
                                 line-height: 1.5;
+                                font-size: 0.9rem;
                             ">서류 심사부터 최종 입과까지 각 단계에서 상당한 인원이 이탈하고 있어 전체적인 효율성이 떨어집니다.</p>
                             
                             <div style="
-                                padding: 16px;
+                                padding: 12px;
                                 background: rgba(1, 186, 239, 0.1);
                                 border-radius: 8px;
                             ">
                                 <p style="
                                     margin: 0;
-                                    font-weight: 700;
+                                    font-weight: 600;
                                     color: #0B4F6C;
+                                    font-size: 0.9rem;
                                 ">💡 제안: 프로세스 개선</p>
                                 <p style="
-                                    margin: 8px 0 0 0;
+                                    margin: 6px 0 0 0;
                                     color: #374151;
+                                    font-size: 0.85rem;
                                 ">각 단계별 이탈 원인을 분석하고 개선 방안을 마련해야 합니다.</p>
                             </div>
                         </div>
@@ -662,51 +661,54 @@ const ReportModule = {
                         <!-- 문제점 2 -->
                         <div>
                             <h3 style="
-                                font-size: 1.125rem;
-                                font-weight: 700;
+                                font-size: 1rem;
+                                font-weight: 600;
                                 color: #374151;
-                                margin: 0 0 12px 0;
+                                margin: 0 0 10px 0;
                             ">2. 문제: 채용 채널 의존도</h3>
                             <p style="
                                 color: #6B7280;
-                                margin: 0 0 16px 0;
+                                margin: 0 0 12px 0;
                                 line-height: 1.5;
+                                font-size: 0.9rem;
                             ">특정 채용 채널에 대한 의존도가 높아 다양한 인재 확보에 제약이 있을 수 있습니다.</p>
                             
                             <div style="
                                 text-align: center;
-                                padding: 24px;
+                                padding: 16px;
                                 background: #F4F4F4;
                                 border-radius: 12px;
-                                margin-bottom: 16px;
+                                margin-bottom: 12px;
                             ">
                                 <p style="
-                                    margin: 0 0 8px 0;
-                                    font-size: 1rem;
-                                    font-weight: 700;
+                                    margin: 0 0 6px 0;
+                                    font-size: 0.9rem;
+                                    font-weight: 600;
                                     color: #374151;
                                 ">온라인 채용 비중</p>
                                 <p style="
                                     margin: 0;
-                                    font-size: 2.5rem;
-                                    font-weight: 900;
+                                    font-size: 2rem;
+                                    font-weight: 800;
                                     color: #FF6B6B;
                                 ">${this.calculateOnlinePercentage(data)}%</p>
                             </div>
                             
                             <div style="
-                                padding: 16px;
+                                padding: 12px;
                                 background: rgba(1, 186, 239, 0.1);
                                 border-radius: 8px;
                             ">
                                 <p style="
                                     margin: 0;
-                                    font-weight: 700;
+                                    font-weight: 600;
                                     color: #0B4F6C;
+                                    font-size: 0.9rem;
                                 ">💡 제안: 채널 다양화</p>
                                 <p style="
-                                    margin: 8px 0 0 0;
+                                    margin: 6px 0 0 0;
                                     color: #374151;
+                                    font-size: 0.85rem;
                                 ">채용 채널을 다양화하여 더 폭넓은 인재풀을 확보해야 합니다.</p>
                             </div>
                         </div>
@@ -728,21 +730,21 @@ const ReportModule = {
                 margin: 0 auto; 
                 font-family: 'Noto Sans KR', sans-serif; 
                 background: #F4F4F4;
-                padding: 32px 16px;
+                padding: 24px 16px;
                 min-height: 100vh;
             ">
                 <!-- 헤더 섹션 -->
-                <header style="text-align: center; padding: 32px 0;">
+                <header style="text-align: center; padding: 24px 0;">
                     <h1 style="
-                        font-size: 2.5rem; 
-                        font-weight: 900; 
+                        font-size: 1.8rem; 
+                        font-weight: 700; 
                         color: #0B4F6C; 
                         margin: 0 0 8px 0;
-                        letter-spacing: -1px;
+                        letter-spacing: -0.5px;
                     ">CFC 채용 상세 분석</h1>
                     <p style="
-                        font-size: 1.25rem; 
-                        font-weight: 700; 
+                        font-size: 1rem; 
+                        font-weight: 600; 
                         color: #01BAEF; 
                         margin: 0;
                     ">Detailed Analysis | ${this.getSelectedPeriodText()}</p>
@@ -752,77 +754,79 @@ const ReportModule = {
                 <div style="
                     display: grid;
                     grid-template-columns: 1fr 1fr;
-                    gap: 32px;
-                    margin-bottom: 32px;
+                    gap: 24px;
+                    margin-bottom: 24px;
                 ">
                     <!-- 지원자 현황 분석 -->
                     <section style="
                         background: white;
                         border-radius: 16px;
                         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-                        padding: 32px 24px;
+                        padding: 24px;
                     ">
                         <h2 style="
-                            font-size: 1.25rem;
-                            font-weight: 700;
+                            font-size: 1.1rem;
+                            font-weight: 600;
                             color: #0B4F6C;
                             margin: 0 0 8px 0;
                         ">I. 지원자 현황 분석 📈</h2>
                         <p style="
                             color: #6B7280;
-                            margin: 0 0 24px 0;
+                            margin: 0 0 20px 0;
                             line-height: 1.5;
+                            font-size: 0.9rem;
                         ">월별 지원자 추이와 지원루트별 분포를 통해 채용 마케팅 효과를 분석합니다.</p>
                         
                         <!-- 차트 정보 -->
                         <div style="
                             display: grid;
                             grid-template-columns: 1fr 1fr;
-                            gap: 16px;
-                            margin-bottom: 24px;
+                            gap: 12px;
+                            margin-bottom: 20px;
                         ">
                             <div style="
                                 text-align: center;
-                                padding: 20px;
+                                padding: 16px;
                                 background: #F0F9FF;
                                 border-radius: 8px;
                             ">
-                                <p style="margin: 0 0 4px 0; color: #6B7280; font-size: 0.875rem;">월별 추이</p>
+                                <p style="margin: 0 0 4px 0; color: #6B7280; font-size: 0.8rem;">월별 추이</p>
                                 <p style="
                                     margin: 0;
                                     font-size: 1.5rem;
-                                    font-weight: 900;
+                                    font-weight: 700;
                                     color: #0B4F6C;
                                 ">+15%</p>
-                                <p style="margin: 4px 0 0 0; color: #6B7280; font-size: 0.75rem;">상승 트렌드</p>
+                                <p style="margin: 4px 0 0 0; color: #6B7280; font-size: 0.7rem;">상승 트렌드</p>
                             </div>
                             <div style="
                                 text-align: center;
-                                padding: 20px;
+                                padding: 16px;
                                 background: #ECFDF5;
                                 border-radius: 8px;
                             ">
-                                <p style="margin: 0 0 4px 0; color: #6B7280; font-size: 0.875rem;">지원 채널</p>
+                                <p style="margin: 0 0 4px 0; color: #6B7280; font-size: 0.8rem;">지원 채널</p>
                                 <p style="
                                     margin: 0;
                                     font-size: 1.5rem;
-                                    font-weight: 900;
+                                    font-weight: 700;
                                     color: #059669;
                                 ">${Object.keys(routeStats).length}개</p>
-                                <p style="margin: 4px 0 0 0; color: #6B7280; font-size: 0.75rem;">활성 채널</p>
+                                <p style="margin: 4px 0 0 0; color: #6B7280; font-size: 0.7rem;">활성 채널</p>
                             </div>
                         </div>
                         
                         <div style="
-                            padding: 16px;
+                            padding: 12px;
                             background: rgba(1, 186, 239, 0.1);
                             border-radius: 8px;
                             text-align: center;
                         ">
                             <p style="
                                 margin: 0;
-                                font-weight: 700;
+                                font-weight: 600;
                                 color: #0B4F6C;
+                                font-size: 0.9rem;
                             ">서울/경기 지역이 전체의 ${this.calculateSeoulPercentage(data)}%를 차지하며 주요 지원 지역입니다.</p>
                         </div>
                     </section>
@@ -832,80 +836,81 @@ const ReportModule = {
                         background: white;
                         border-radius: 16px;
                         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-                        padding: 32px 24px;
+                        padding: 24px;
                     ">
                         <h2 style="
-                            font-size: 1.25rem;
-                            font-weight: 700;
+                            font-size: 1.1rem;
+                            font-weight: 600;
                             color: #0B4F6C;
                             margin: 0 0 8px 0;
                         ">II. 전환율 분석 🔍</h2>
                         <p style="
                             color: #6B7280;
-                            margin: 0 0 24px 0;
+                            margin: 0 0 20px 0;
                             line-height: 1.5;
+                            font-size: 0.9rem;
                         ">각 채용 단계별 통과율을 분석하여 프로세스 개선점을 파악합니다.</p>
                         
                         <!-- KPI 그리드 -->
                         <div style="
                             display: grid;
                             grid-template-columns: 1fr 1fr;
-                            gap: 16px;
-                            margin-bottom: 24px;
+                            gap: 12px;
+                            margin-bottom: 20px;
                         ">
                             <div style="
                                 text-align: center;
-                                padding: 20px;
+                                padding: 16px;
                                 background: #FEF3C7;
                                 border-radius: 8px;
                             ">
-                                <p style="margin: 0 0 4px 0; color: #92400E; font-size: 0.875rem; font-weight: 600;">서류 통과율</p>
+                                <p style="margin: 0 0 4px 0; color: #92400E; font-size: 0.8rem; font-weight: 600;">서류 통과율</p>
                                 <p style="
                                     margin: 0;
-                                    font-size: 2rem;
-                                    font-weight: 900;
+                                    font-size: 1.5rem;
+                                    font-weight: 700;
                                     color: #D97706;
                                 ">42%</p>
                             </div>
                             <div style="
                                 text-align: center;
-                                padding: 20px;
+                                padding: 16px;
                                 background: #DBEAFE;
                                 border-radius: 8px;
                             ">
-                                <p style="margin: 0 0 4px 0; color: #1E40AF; font-size: 0.875rem; font-weight: 600;">1차 면접</p>
+                                <p style="margin: 0 0 4px 0; color: #1E40AF; font-size: 0.8rem; font-weight: 600;">1차 면접</p>
                                 <p style="
                                     margin: 0;
-                                    font-size: 2rem;
-                                    font-weight: 900;
+                                    font-size: 1.5rem;
+                                    font-weight: 700;
                                     color: #2563EB;
                                 ">68%</p>
                             </div>
                             <div style="
                                 text-align: center;
-                                padding: 20px;
+                                padding: 16px;
                                 background: #ECFDF5;
                                 border-radius: 8px;
                             ">
-                                <p style="margin: 0 0 4px 0; color: #166534; font-size: 0.875rem; font-weight: 600;">최종 합격률</p>
+                                <p style="margin: 0 0 4px 0; color: #166534; font-size: 0.8rem; font-weight: 600;">최종 합격률</p>
                                 <p style="
                                     margin: 0;
-                                    font-size: 2rem;
-                                    font-weight: 900;
+                                    font-size: 1.5rem;
+                                    font-weight: 700;
                                     color: #059669;
                                 ">7.9%</p>
                             </div>
                             <div style="
                                 text-align: center;
-                                padding: 20px;
+                                padding: 16px;
                                 background: #F3E8FF;
                                 border-radius: 8px;
                             ">
-                                <p style="margin: 0 0 4px 0; color: #7C2D92; font-size: 0.875rem; font-weight: 600;">업계 대비</p>
+                                <p style="margin: 0 0 4px 0; color: #7C2D92; font-size: 0.8rem; font-weight: 600;">업계 대비</p>
                                 <p style="
                                     margin: 0;
-                                    font-size: 2rem;
-                                    font-weight: 900;
+                                    font-size: 1.5rem;
+                                    font-weight: 700;
                                     color: #9333EA;
                                 ">+4%</p>
                             </div>
@@ -918,86 +923,86 @@ const ReportModule = {
                     background: white;
                     border-radius: 16px;
                     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-                    padding: 32px 24px;
+                    padding: 24px;
                 ">
                     <h2 style="
-                        font-size: 1.5rem;
-                        font-weight: 700;
+                        font-size: 1.2rem;
+                        font-weight: 600;
                         text-align: center;
-                        margin-bottom: 24px;
+                        margin-bottom: 20px;
                         color: #0B4F6C;
                     ">III. 인구통계 분석 👥</h2>
                     
                     <div style="
                         display: grid;
                         grid-template-columns: repeat(3, 1fr);
-                        gap: 20px;
+                        gap: 16px;
                     ">
                         <div style="
                             text-align: center;
-                            padding: 24px;
+                            padding: 20px;
                             background: #F4F4F4;
                             border-radius: 12px;
                         ">
                             <p style="
-                                margin: 0 0 8px 0;
+                                margin: 0 0 6px 0;
                                 color: #6B7280;
-                                font-size: 1rem;
+                                font-size: 0.9rem;
                                 font-weight: 600;
                             ">평균 연령</p>
                             <p style="
                                 margin: 0;
-                                font-size: 2.5rem;
-                                font-weight: 900;
+                                font-size: 2rem;
+                                font-weight: 800;
                                 color: #0B4F6C;
                             ">28.5세</p>
                         </div>
                         <div style="
                             text-align: center;
-                            padding: 24px;
+                            padding: 20px;
                             background: #F4F4F4;
                             border-radius: 12px;
                         ">
                             <p style="
-                                margin: 0 0 8px 0;
+                                margin: 0 0 6px 0;
                                 color: #6B7280;
-                                font-size: 1rem;
+                                font-size: 0.9rem;
                                 font-weight: 600;
                             ">성별 비율</p>
                             <p style="
                                 margin: 0;
-                                font-size: 1.5rem;
-                                font-weight: 900;
+                                font-size: 1.3rem;
+                                font-weight: 700;
                                 color: #0B4F6C;
                             ">58% : 42%</p>
                             <p style="
                                 margin: 4px 0 0 0;
                                 color: #6B7280;
-                                font-size: 0.875rem;
+                                font-size: 0.8rem;
                             ">남성 : 여성</p>
                         </div>
                         <div style="
                             text-align: center;
-                            padding: 24px;
+                            padding: 20px;
                             background: #F4F4F4;
                             border-radius: 12px;
                         ">
                             <p style="
-                                margin: 0 0 8px 0;
+                                margin: 0 0 6px 0;
                                 color: #6B7280;
-                                font-size: 1rem;
+                                font-size: 0.9rem;
                                 font-weight: 600;
                             ">경력 구분</p>
                             <p style="
                                 margin: 0;
-                                font-size: 1.5rem;
-                                font-weight: 900;
+                                font-size: 1.3rem;
+                                font-weight: 700;
                                 color: #0B4F6C;
                             ">35% : 65%</p>
                             <p style="
                                 margin: 4px 0 0 0;
                                 color: #6B7280;
-                                font-size: 0.875rem;
+                                font-size: 0.8rem;
                             ">신입 : 경력</p>
                         </div>
                     </div>
@@ -1011,13 +1016,31 @@ const ReportModule = {
         const funnelData = this.calculateFunnelData(data);
         
         return `
-            <div class="report-content recruitment-funnel" style="width: 100%; max-width: 800px; margin: 0 auto; font-family: 'Noto Sans KR', sans-serif; background: #ffffff; padding: 40px; border-radius: 0; box-shadow: none;">
-                <div class="report-header" style="width: 100%; background: #ffffff; padding: 0; border-radius: 0; color: #1e293b; text-align: center; border-bottom: 3px solid #3b82f6; padding-bottom: 20px; margin-bottom: 30px;">
-                    <h1 class="report-title" style="color: #1e293b !important; font-size: 1.8rem !important; margin-bottom: 8px !important; font-weight: 700 !important; text-shadow: none !important; opacity: 1 !important; visibility: visible !important; display: block !important; letter-spacing: -0.5px;">채용 퍼널 분석 리포트</h1>
-                    <div class="report-meta" style="display: flex; justify-content: center; gap: 25px; font-size: 0.9rem; color: #64748b !important; margin-top: 10px;">
-                        <span style="background: #f1f5f9; padding: 8px 16px; border-radius: 6px; color: #475569 !important; font-weight: 500;">분석 기간: ${this.getSelectedPeriodText()}</span>
-                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">전체 단계: 4단계</span>
-                    </div>
+            <div class="report-content recruitment-funnel" style="
+                width: 100%; 
+                max-width: 1200px; 
+                margin: 0 auto; 
+                font-family: 'Noto Sans KR', sans-serif; 
+                background: #F4F4F4;
+                padding: 24px 16px;
+                min-height: 100vh;
+            ">
+                <!-- 헤더 섹션 -->
+                <header style="text-align: center; padding: 24px 0;">
+                    <h1 style="
+                        font-size: 1.8rem; 
+                        font-weight: 700; 
+                        color: #0B4F6C; 
+                        margin: 0 0 8px 0;
+                        letter-spacing: -0.5px;
+                    ">채용 퍼널 분석 리포트</h1>
+                    <p style="
+                        font-size: 1rem; 
+                        font-weight: 600; 
+                        color: #01BAEF; 
+                        margin: 0;
+                    ">Recruitment Funnel | ${this.getSelectedPeriodText()}</p>
+                </header>
                 </div>
                 
                 <div class="report-section">
@@ -1072,14 +1095,31 @@ const ReportModule = {
         const achievement = ((actual / target) * 100).toFixed(0);
         
         return `
-            <div class="report-content monthly-report" style="width: 100%; max-width: 800px; margin: 0 auto; font-family: 'Noto Sans KR', sans-serif; background: #ffffff; padding: 40px; border-radius: 0; box-shadow: none;">
-                <div class="report-header" style="width: 100%; background: #ffffff; padding: 0; border-radius: 0; color: #1e293b; text-align: center; border-bottom: 3px solid #3b82f6; padding-bottom: 20px; margin-bottom: 30px;">
-                    <h1 class="report-title" style="color: #1e293b !important; font-size: 1.8rem !important; margin-bottom: 8px !important; font-weight: 700 !important; text-shadow: none !important; opacity: 1 !important; visibility: visible !important; display: block !important; letter-spacing: -0.5px;">${currentMonth} 월간 채용 리포트</h1>
-                    <div class="report-meta" style="display: flex; justify-content: center; gap: 25px; font-size: 0.9rem; color: #64748b !important; margin-top: 10px;">
-                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">보고 기간: ${currentMonth}</span>
-                        <span style="background: rgba(255, 255, 255, 0.2); padding: 6px 12px; border-radius: 20px; color: white !important;">목표 달성: ${achievement}%</span>
-                    </div>
-                </div>
+            <div class="report-content monthly-report" style="
+                width: 100%; 
+                max-width: 1200px; 
+                margin: 0 auto; 
+                font-family: 'Noto Sans KR', sans-serif; 
+                background: #F4F4F4;
+                padding: 24px 16px;
+                min-height: 100vh;
+            ">
+                <!-- 헤더 섹션 -->
+                <header style="text-align: center; padding: 24px 0;">
+                    <h1 style="
+                        font-size: 1.8rem; 
+                        font-weight: 700; 
+                        color: #0B4F6C; 
+                        margin: 0 0 8px 0;
+                        letter-spacing: -0.5px;
+                    ">${currentMonth} 월간 채용 리포트</h1>
+                    <p style="
+                        font-size: 1rem; 
+                        font-weight: 600; 
+                        color: #01BAEF; 
+                        margin: 0;
+                    ">Monthly Report | 목표 달성 ${achievement}%</p>
+                </header>
                 
                 <div class="report-section">
                     <h2>🎯 이번 달 목표 vs 실적</h2>
@@ -1160,14 +1200,31 @@ const ReportModule = {
         const interviewerStats = this.calculateInterviewerStats(data);
         
         return `
-            <div class="report-content interviewer-performance" style="width: 100%; max-width: 800px; margin: 0 auto; font-family: 'Noto Sans KR', sans-serif; background: #ffffff; padding: 40px; border-radius: 0; box-shadow: none;">
-                <div class="report-header" style="width: 100%; background: #ffffff; padding: 0; border-radius: 0; color: #1e293b; text-align: center; border-bottom: 3px solid #3b82f6; padding-bottom: 20px; margin-bottom: 30px;">
-                    <h1 class="report-title" style="color: #1e293b !important; font-size: 1.8rem !important; margin-bottom: 8px !important; font-weight: 700 !important; text-shadow: none !important; opacity: 1 !important; visibility: visible !important; display: block !important; letter-spacing: -0.5px;">면접관별 성과 분석 리포트</h1>
-                    <div class="report-meta" style="display: flex; justify-content: center; gap: 25px; font-size: 0.9rem; color: #64748b !important; margin-top: 10px;">
-                        <span style="background: #f1f5f9; padding: 8px 16px; border-radius: 6px; color: #475569 !important; font-weight: 500;">분석 기간: ${this.getSelectedPeriodText()}</span>
-                        <span style="background: #f1f5f9; padding: 8px 16px; border-radius: 6px; color: #475569 !important; font-weight: 500;">면접관 수: ${interviewerStats.length}명</span>
-                    </div>
-                </div>
+            <div class="report-content interviewer-performance" style="
+                width: 100%; 
+                max-width: 1200px; 
+                margin: 0 auto; 
+                font-family: 'Noto Sans KR', sans-serif; 
+                background: #F4F4F4;
+                padding: 24px 16px;
+                min-height: 100vh;
+            ">
+                <!-- 헤더 섹션 -->
+                <header style="text-align: center; padding: 24px 0;">
+                    <h1 style="
+                        font-size: 1.8rem; 
+                        font-weight: 700; 
+                        color: #0B4F6C; 
+                        margin: 0 0 8px 0;
+                        letter-spacing: -0.5px;
+                    ">면접관별 성과 분석 리포트</h1>
+                    <p style="
+                        font-size: 1rem; 
+                        font-weight: 600; 
+                        color: #01BAEF; 
+                        margin: 0;
+                    ">Interviewer Performance | 면접관 ${interviewerStats.length}명</p>
+                </header>
                 
                 <div class="report-section">
                     <h2>🏆 TOP 면접관 (합격자 배출 기준)</h2>
@@ -1245,14 +1302,31 @@ const ReportModule = {
     // 비용 효율성 미리보기
     generateCostAnalysisPreview(data) {
         return `
-            <div class="report-content cost-analysis" style="width: 100%; max-width: 800px; margin: 0 auto; font-family: 'Noto Sans KR', sans-serif; background: #ffffff; padding: 40px; border-radius: 0; box-shadow: none;">
-                <div class="report-header" style="width: 100%; background: #ffffff; padding: 0; border-radius: 0; color: #1e293b; text-align: center; border-bottom: 3px solid #3b82f6; padding-bottom: 20px; margin-bottom: 30px;">
-                    <h1 class="report-title" style="color: #1e293b !important; font-size: 1.8rem !important; margin-bottom: 8px !important; font-weight: 700 !important; text-shadow: none !important; opacity: 1 !important; visibility: visible !important; display: block !important; letter-spacing: -0.5px;">채용 비용 효율성 분석 리포트</h1>
-                    <div class="report-meta" style="display: flex; justify-content: center; gap: 25px; font-size: 0.9rem; color: #64748b !important; margin-top: 10px;">
-                        <span style="background: #f1f5f9; padding: 8px 16px; border-radius: 6px; color: #475569 !important; font-weight: 500;">분석 기간: ${this.getSelectedPeriodText()}</span>
-                        <span style="background: #f1f5f9; padding: 8px 16px; border-radius: 6px; color: #475569 !important; font-weight: 500;">비용 절감: 16%</span>
-                    </div>
-                </div>
+            <div class="report-content cost-analysis" style="
+                width: 100%; 
+                max-width: 1200px; 
+                margin: 0 auto; 
+                font-family: 'Noto Sans KR', sans-serif; 
+                background: #F4F4F4;
+                padding: 24px 16px;
+                min-height: 100vh;
+            ">
+                <!-- 헤더 섹션 -->
+                <header style="text-align: center; padding: 24px 0;">
+                    <h1 style="
+                        font-size: 1.8rem; 
+                        font-weight: 700; 
+                        color: #0B4F6C; 
+                        margin: 0 0 8px 0;
+                        letter-spacing: -0.5px;
+                    ">채용 비용 효율성 분석 리포트</h1>
+                    <p style="
+                        font-size: 1rem; 
+                        font-weight: 600; 
+                        color: #01BAEF; 
+                        margin: 0;
+                    ">Cost Analysis | 비용 절감 16%</p>
+                </header>
                 
                 <div class="report-section">
                     <h2>💵 채용 비용 현황</h2>
