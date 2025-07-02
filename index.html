@@ -10,8 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet">
-    <link href="styles.css?v=20250702-3" rel="stylesheet">
-    <link href="report.css?v=20250702-3" rel="stylesheet"> 
+    <link href="styles.css?v=20250702-4" rel="stylesheet">
+    <link href="report.css?v=20250702-4" rel="stylesheet"> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -92,244 +92,46 @@
             overflow-y: auto !important;
         }
         
-        /* 실시간 미리보기 내용을 리포트 모달과 동일하게 스타일링 */
-        #livePreviewContent {
-            background: #F4F4F4 !important;
-            padding: 20px !important;
-            font-family: 'Noto Sans KR', sans-serif !important;
-            min-height: 100% !important;
-        }
+        /* ============================================
+           실시간 미리보기 핵심 스타일 (간소화)
+           ============================================ */
         
-        /* 리포트 헤더 스타일 통일 */
-        #livePreviewContent .report-header {
-            text-align: center !important;
-            padding: 24px 0 !important;
-            background: transparent !important;
-            border: none !important;
-            color: #0B4F6C !important;
-            margin-bottom: 24px !important;
-        }
-        
-        #livePreviewContent .report-title {
-            font-size: 1.8rem !important;
-            font-weight: 600 !important;
-            color: #0B4F6C !important;
-            margin: 0 0 8px 0 !important;
-            letter-spacing: -0.5px !important;
-        }
-        
-        #livePreviewContent .report-subtitle {
-            font-size: 1rem !important;
-            font-weight: 500 !important;
-            color: #01BAEF !important;
-            margin: 0 !important;
-        }
-        
-        /* KPI 카드 스타일 통일 - 원래 그리드 레이아웃 유지 */
-        #livePreviewContent .kpi-grid {
-            display: grid !important;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
-            gap: 16px !important;
-            margin-bottom: 24px !important;
-        }
-        
-        #livePreviewContent .kpi-card {
-            display: block !important;
-            text-align: center !important;
-            padding: 20px !important;
-            background: #F0F9FF !important;
-            border-radius: 8px !important;
-            border: none !important;
-            box-shadow: none !important;
-        }
-        
-        #livePreviewContent .kpi-card h3 {
-            margin: 0 !important;
-            color: #6B7280 !important;
-            font-size: 0.875rem !important;
-            font-weight: 600 !important;
-        }
-        
-        #livePreviewContent .kpi-value {
-            margin: 0 !important;
-            font-size: 2rem !important;
-            font-weight: 900 !important;
-            color: #0B4F6C !important;
-        }
-        
-        /* 섹션 헤딩 스타일 통일 */
-        #livePreviewContent .report-section h2 {
-            font-size: 1.25rem !important;
-            font-weight: 700 !important;
-            color: #0B4F6C !important;
-            margin: 0 0 16px 0 !important;
-        }
-        
-        /* 강점/약점 카드 스타일 통일 */
-        #livePreviewContent .strength-card {
-            background: white !important;
-            padding: 20px !important;
-            border-radius: 12px !important;
-            border-left: 8px solid #0B4F6C !important;
-            margin-bottom: 16px !important;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
-        }
-        
-        #livePreviewContent .weakness-card {
-            background: white !important;
-            padding: 20px !important;
-            border-radius: 12px !important;
-            border-left: 8px solid #FF6B6B !important;
-            margin-bottom: 16px !important;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
-        }
-        
-        /* 제안 박스 스타일 통일 */
-        #livePreviewContent .suggestion-box {
-            padding: 16px !important;
-            background: rgba(1, 186, 239, 0.1) !important;
-            border-radius: 8px !important;
-            text-align: center !important;
-            margin-top: 20px !important;
-        }
-        
-        #livePreviewContent .suggestion-text {
-            margin: 0 !important;
-            font-weight: 700 !important;
-            color: #0B4F6C !important;
-        }
-        
-        /* 템플릿 갤러리 6개 한줄에 배치 */
-        #report .template-gallery {
-            display: grid !important;
-            grid-template-columns: repeat(6, 1fr) !important; /* 6개 한줄에 배치 */
-            gap: 15px !important;
-        }
-        
-        /* 템플릿 카드 높이 줄이기 */
-        #report .template-card {
-            border: 2px solid var(--border-color, #e5e7eb) !important;
-            border-radius: 12px !important;
-            padding: 12px !important; /* 패딩 더 줄임 */
-            cursor: pointer !important;
-            transition: all 0.3s ease !important;
-            text-align: center !important;
-            min-height: 70px !important; /* 최소 높이 더 줄임 */
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: center !important;
+        /* 실시간 미리보기 사이드바 */
+        #report .live-preview-sidebar {
+            width: 100% !important;
+            min-width: 0 !important;
             background: #ffffff !important;
+            border-radius: 16px !important;
+            padding: 0 !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+            position: sticky !important;
+            top: 20px !important;
+            max-height: calc(100vh - 40px) !important;
+            overflow: hidden !important;
         }
         
-        #report .template-card:hover {
-            border-color: #a855f7 !important;
-            transform: translateY(-2px) !important;
-            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.15) !important;
-        }
-        
-        #report .template-card.selected {
-            border-color: #a855f7 !important;
-            background: linear-gradient(135deg, #faf5ff, #f3e8ff) !important;
-            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.2) !important;
-        }
-        
-        #report .template-icon {
-            font-size: 1.3rem !important; /* 아이콘 크기 조금 줄임 */
-            margin-bottom: 6px !important;
-            /* 밝은 파스텔 톤 아이콘 색상들 */
-        }
-        
-        /* 각 템플릿별 파스텔 아이콘 색상 */
-        #report .template-card[data-template="executive-summary"] .template-icon {
-            color: #f472b6 !important; /* 밝은 핑크 */
-        }
-        
-        #report .template-card[data-template="detailed-analysis"] .template-icon {
-            color: #06b6d4 !important; /* 밝은 시아 */
-        }
-        
-        #report .template-card[data-template="recruitment-funnel"] .template-icon {
-            color: #8b5cf6 !important; /* 밝은 보라 */
-        }
-        
-        #report .template-card[data-template="monthly-report"] .template-icon {
-            color: #10b981 !important; /* 밝은 초록 */
-        }
-        
-        #report .template-card[data-template="interviewer-performance"] .template-icon {
-            color: #f59e0b !important; /* 밝은 주황 */
-        }
-        
-        #report .template-card[data-template="cost-analysis"] .template-icon {
-            color: #ef4444 !important; /* 밝은 빨강 */
-        }
-        
-        #report .template-name {
-            font-weight: 600 !important;
-            margin-bottom: 0 !important; /* 하단 여백 제거 */
-            font-size: 0.8rem !important; /* 폰트 크기 줄임 */
-            color: #374151 !important;
-            line-height: 1.2 !important;
-        }
-        
-        /* 실시간 미리보기 헤더 개선 - 토글 버튼 제거, 저장/인쇄 버튼 추가 */
+        /* 실시간 미리보기 헤더 */
         #report .preview-header {
             background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
             color: white !important;
             padding: 12px 20px !important;
             margin: 0 !important;
             border-radius: 16px 16px 0 0 !important;
-            border-bottom: none !important;
             display: flex !important;
             justify-content: space-between !important;
             align-items: center !important;
         }
         
-        #report .preview-header h3 {
+        /* 실시간 미리보기 내용 영역 */
+        #report .preview-content {
+            padding: 0 !important;
             margin: 0 !important;
-            font-size: 1.1rem !important;
-            font-weight: 600 !important;
-            color: white !important;
-            display: flex !important;
-            align-items: center !important;
-            gap: 8px !important;
+            height: calc(100vh - 120px) !important;
+            overflow-y: auto !important;
         }
         
-        #report .preview-actions {
-            display: flex !important;
-            gap: 8px !important;
-        }
-        
-        #report .preview-action-btn {
-            background: rgba(255, 255, 255, 0.2) !important;
-            color: white !important;
-            border: none !important;
-            padding: 8px 12px !important;
-            border-radius: 6px !important;
-            cursor: pointer !important;
-            font-size: 0.85rem !important;
-            font-weight: 500 !important;
-            transition: all 0.2s ease !important;
-            display: flex !important;
-            align-items: center !important;
-            gap: 5px !important;
-        }
-        
-        #report .preview-action-btn:hover {
-            background: rgba(255, 255, 255, 0.3) !important;
-            transform: translateY(-1px) !important;
-        }
-        
-        /* 템플릿 카드의 불필요한 요소들 숨기기 */
-        #report .template-description,
-        #report .template-time,
-        #report .template-difficulty,
-        #report .template-header,
-        #report .template-meta {
-            display: none !important;
-        }
-        
-        /* 실시간 미리보기 내용 영역 최대 폭 사용 */
+        /* 실시간 미리보기 콘텐츠 기본 스타일 */
         #livePreviewContent {
             background: #F4F4F4 !important;
             padding: 20px !important;
@@ -340,44 +142,35 @@
             box-sizing: border-box !important;
         }
         
-        /* 원본 스타일을 유지하면서 최대 폭만 조정 */
-        #livePreviewContent *,
-        #livePreviewContent .report-content,
-        #livePreviewContent .report-section,
-        #livePreviewContent .executive-summary {
-            max-width: 100% !important;
-            box-sizing: border-box !important;
-        }
+        /* ============================================
+           핵심 그리드 레이아웃 강제 적용
+           ============================================ */
         
-        /* 인라인 그리드 스타일 강제 적용 */
+        /* 모든 그리드 요소 강제 적용 */
         #livePreviewContent div[style*="display: grid"] {
             display: grid !important;
         }
         
+        /* 2열 그리드 강제 적용 */
         #livePreviewContent div[style*="grid-template-columns: 1fr 1fr"] {
             grid-template-columns: 1fr 1fr !important;
+            gap: 24px !important;
         }
         
-        /* 메인 분석 그리드와 개선 제안 그리드 강제 적용 */
-        #livePreviewContent div[style*="display: grid"][style*="gap: 24px"] {
+        /* ============================================
+           강제 그리드 레이아웃 클래스 (새로운 접근)
+           ============================================ */
+        
+        .force-grid-2col {
             display: grid !important;
             grid-template-columns: 1fr 1fr !important;
             gap: 24px !important;
         }
         
-        /* 2열 그리드가 있는 모든 div 요소에 강제 적용 - 최대 우선순위 */
-        #livePreviewContent section div[style*="display: grid"],
-        #livePreviewContent .report-content div[style*="display: grid"],
-        #livePreviewContent .executive-summary div[style*="display: grid"] {
+        .force-grid-auto {
             display: grid !important;
-            grid-template-columns: 1fr 1fr !important;
-        }
-        
-        /* 특정 클래스와 상관없이 모든 그리드 요소에 강제 적용 */
-        #report #livePreviewContent div[style*="display: grid"][style*="1fr 1fr"] {
-            display: grid !important;
-            grid-template-columns: 1fr 1fr !important;
-            gap: 24px !important;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+            gap: 16px !important;
         }
         
         /* AI 분석 관련 섹션들도 데이터 필터링과 동일한 폭으로 조정 */

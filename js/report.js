@@ -239,57 +239,122 @@ const ReportModule = {
         // 미리보기 내용을 리포트 모달과 동일하게 생성
         previewContent.innerHTML = this.generatePreviewSummary(filteredData);
         
-        // DOM 삽입 후 추가 스타일 강제 적용
+        // 🔍 디버깅을 위한 콘솔 로그 추가
+        console.log('🔍 실시간 미리보기 렌더링 완료');
+        console.log('📊 생성된 HTML:', previewContent.innerHTML.substring(0, 500) + '...');
+        
+        // DOM 삽입 후 그리드 레이아웃 즉시 확인 및 강제 적용
         setTimeout(() => {
+            console.log('🔍 DOM 후처리 시작...');
+            
             if (previewContent && previewSidebar) {
-                // 모든 내부 요소들의 max-width 제거
-                const allElements = previewContent.querySelectorAll('*');
-                allElements.forEach(el => {
-                    if (el.style.maxWidth) {
-                        el.style.maxWidth = 'none';
-                    }
-                    if (el.style.margin && el.style.margin.includes('auto')) {
-                        el.style.margin = el.style.margin.replace(/auto/g, '0');
-                    }
-                });
+                // 🔥 새로운 접근: CSS 클래스로 강제 적용
                 
-                // 그리드 레이아웃 강제 적용 - 더 구체적으로
+                // 1. 모든 2열 그리드 요소에 클래스 추가
                 const gridElements = previewContent.querySelectorAll('div[style*="display: grid"]');
-                gridElements.forEach(gridEl => {
-                    gridEl.style.setProperty('display', 'grid', 'important');
+                console.log(`🔍 찾은 그리드 요소 개수: ${gridElements.length}`);
+                
+                gridElements.forEach((gridEl, index) => {
+                    const hasColumns = gridEl.style.gridTemplateColumns;
+                    const hasTwoColumns = hasColumns && hasColumns.includes('1fr 1fr');
                     
-                    // 2열 그리드가 포함된 요소들 특별 처리
-                    if (gridEl.style.gridTemplateColumns && gridEl.style.gridTemplateColumns.includes('1fr 1fr')) {
-                        gridEl.style.setProperty('grid-template-columns', '1fr 1fr', 'important');
-                        gridEl.style.setProperty('gap', '24px', 'important');
-                    }
+                    console.log(`🔍 그리드 요소 ${index + 1}:`, {
+                        display: gridEl.style.display,
+                        gridTemplateColumns: gridEl.style.gridTemplateColumns,
+                        gap: gridEl.style.gap,
+                        hasTwoColumns: hasTwoColumns
+                    });
                     
-                    // repeat 그리드가 포함된 요소들 처리
-                    if (gridEl.style.gridTemplateColumns && gridEl.style.gridTemplateColumns.includes('repeat')) {
-                        gridEl.style.setProperty('grid-template-columns', gridEl.style.gridTemplateColumns, 'important');
+                    if (hasTwoColumns) {
+                        // 인라인 스타일 제거하고 클래스 적용
+                        gridEl.style.removeProperty('display');
+                        gridEl.style.removeProperty('grid-template-columns');
+                        gridEl.style.removeProperty('gap');
+                        gridEl.classList.add('force-grid-2col');
+                        console.log(`✅ 그리드 요소 ${index + 1}에 force-grid-2col 클래스 적용 완료`);
+                    } else if (hasColumns && hasColumns.includes('repeat')) {
+                        // auto-fit 그리드의 경우
+                        gridEl.style.removeProperty('display');
+                        gridEl.style.removeProperty('grid-template-columns');
+                        gridEl.style.removeProperty('gap');
+                        gridEl.classList.add('force-grid-auto');
+                        console.log(`✅ 그리드 요소 ${index + 1}에 force-grid-auto 클래스 적용 완료`);
                     }
                 });
                 
-                // 메인 분석 그리드 특별 처리 (텍스트 기반 검색)
-                const mainGridSections = previewContent.querySelectorAll('div');
-                mainGridSections.forEach(section => {
-                    const hasGridStyle = section.style.display === 'grid';
-                    const hasGap24 = section.style.gap === '24px';
-                    const hasMarginBottom = section.style.marginBottom === '24px';
-                    
-                    if (hasGridStyle && hasGap24 && hasMarginBottom) {
-                        section.style.setProperty('display', 'grid', 'important');
-                        section.style.setProperty('grid-template-columns', '1fr 1fr', 'important');
-                        section.style.setProperty('gap', '24px', 'important');
+                // 2. 추가로 메인 분석 그리드 검색 (스타일 패턴 기반)
+                const potentialGrids = previewContent.querySelectorAll('div');
+                let additionalGridsFound = 0;
+                
+                potentialGrids.forEach(div => {
+                    const style = div.style;
+                    if (style.display === 'grid' && 
+                        style.gap === '24px' && 
+                        style.marginBottom === '24px' &&
+                        !div.classList.contains('force-grid-2col')) {
+                        
+                        div.style.removeProperty('display');
+                        div.style.removeProperty('grid-template-columns');
+                        div.style.removeProperty('gap');
+                        div.classList.add('force-grid-2col');
+                        additionalGridsFound++;
+                        console.log(`✅ 추가 그리드 요소에 force-grid-2col 클래스 적용`);
                     }
                 });
                 
-                // 전체 너비 재적용
-                previewContent.style.width = '100%';
-                previewContent.style.maxWidth = 'none';
-                previewSidebar.style.maxWidth = 'none';
+                console.log(`🔍 추가로 찾은 그리드 요소: ${additionalGridsFound}개`);
+                console.log('🔍 DOM 후처리 완료');
             }
         }, 100);
+        }, 100);
+    },
+
+    // 🧪 테스트 함수 - 콘솔에서 globalThis.App.report.testGridLayout() 호출
+    testGridLayout() {
+        const previewContent = document.getElementById('livePreviewContent');
+        if (!previewContent) {
+            console.error('❌ livePreviewContent를 찾을 수 없습니다.');
+            return;
+        }
+        
+        console.log('🧪 그리드 레이아웃 테스트 시작...');
+        
+        // 간단한 2열 그리드 테스트 HTML
+        const testHtml = `
+            <div style="padding: 20px; background: #F4F4F4;">
+                <h2>🧪 그리드 레이아웃 테스트</h2>
+                
+                <!-- 인라인 스타일로 2열 그리드 -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                    <div style="background: white; padding: 20px; border-radius: 8px;">
+                        <h3>인라인 스타일 - 왼쪽</h3>
+                        <p>이 영역은 인라인 스타일로 grid를 적용했습니다.</p>
+                    </div>
+                    <div style="background: white; padding: 20px; border-radius: 8px;">
+                        <h3>인라인 스타일 - 오른쪽</h3>
+                        <p>2열로 나타나면 그리드가 정상 작동하는 것입니다.</p>
+                    </div>
+                </div>
+                
+                <!-- CSS 클래스로 2열 그리드 -->
+                <div class="force-grid-2col">
+                    <div style="background: #e3f2fd; padding: 20px; border-radius: 8px;">
+                        <h3>CSS 클래스 - 왼쪽</h3>
+                        <p>이 영역은 force-grid-2col 클래스를 사용했습니다.</p>
+                    </div>
+                    <div style="background: #e3f2fd; padding: 20px; border-radius: 8px;">
+                        <h3>CSS 클래스 - 오른쪽</h3>
+                        <p>2열로 나타나면 CSS 클래스가 정상 작동하는 것입니다.</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        previewContent.innerHTML = testHtml;
+        
+        console.log('🧪 테스트 HTML 삽입 완료');
+        console.log('👁️ 실시간 미리보기에서 2열 그리드가 나타나는지 확인하세요.');
+        console.log('📝 인라인 스타일과 CSS 클래스 모두 2열로 나타나야 합니다.');
     },
 
     // 미리보기 요약 생성 - 각 템플릿별로 직접 호출
