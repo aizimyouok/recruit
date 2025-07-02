@@ -236,88 +236,20 @@ const ReportModule = {
             </div>
         `;
         
-        // 🔥 DOM 삽입 후 전체 너비 사용 및 제목 색상 극강 테스트
-        setTimeout(() => {
-            const previewContent = document.getElementById('livePreviewContent');
-            const previewSidebar = document.getElementById('livePreviewSidebar');
+        // DOM 삽입 후 기본 레이아웃 적용
+        // setTimeout을 제거하여 즉시 적용하고, 과도한 스타일 오버라이드 제거
+        const previewContent = document.getElementById('livePreviewContent');
+        const previewSidebar = document.getElementById('livePreviewSidebar');
+        
+        if (previewContent && previewSidebar) {
+            // 미리보기 사이드바 기본 패딩만 적용
+            previewSidebar.style.padding = '20px';
             
-            if (previewContent && previewSidebar) {
-                console.log('🔍 미리보기 콘텐츠 발견:', previewContent);
-                
-                // 🎯 모든 가능한 제목 요소를 찾아서 극강 스타일 테스트
-                const titleSelectors = [
-                    '.report-title', 'h1.report-title', '.report-header h1', 
-                    'h1', 'h2', 'h3', '.report-header .report-title'
-                ];
-                
-                titleSelectors.forEach(selector => {
-                    const titles = previewContent.querySelectorAll(selector);
-                    console.log(`🔍 미리보기 ${selector} 선택자로 찾은 요소:`, titles.length);
-                    
-                    titles.forEach((title, index) => {
-                        console.log(`🎯 미리보기 제목 요소 ${index + 1}:`, title.textContent?.substring(0, 50));
-                        
-                        // 모던하고 세련된 스타일 적용
-                        title.style.cssText = `
-                            color: #1a202c !important;
-                            font-size: 2.5rem !important;
-                            font-weight: 800 !important;
-                            text-shadow: none !important;
-                            background: transparent !important;
-                            padding: 0 !important;
-                            border: none !important;
-                            opacity: 1 !important;
-                            visibility: visible !important;
-                            display: block !important;
-                            text-align: center !important;
-                            margin: 0 !important;
-                            position: relative !important;
-                            z-index: 1 !important;
-                            letter-spacing: -1px !important;
-                            line-height: 1.1 !important;
-                        `;
-                    });
-                });
-                
-                // 🎯 리포트 헤더 전체도 강력하게 스타일링
-                const reportHeaders = previewContent.querySelectorAll('.report-header');
-                console.log('🔍 미리보기 리포트 헤더 발견:', reportHeaders.length);
-                
-                reportHeaders.forEach((header, index) => {
-                    console.log(`🎯 미리보기 헤더 ${index + 1}:`, header.innerHTML?.substring(0, 100));
-                    
-                    // 헤더 자체를 매우 눈에 띄게
-                    header.style.cssText = `
-                        background: #ff0000 !important;
-                        padding: 30px !important;
-                        border: 5px solid #00ff00 !important;
-                        border-radius: 12px !important;
-                        margin: 20px 0 !important;
-                        text-align: center !important;
-                        color: #ffffff !important;
-                        font-size: 2rem !important;
-                        z-index: 999999 !important;
-                        position: relative !important;
-                        width: 100% !important;
-                        max-width: 100% !important;
-                        box-sizing: border-box !important;
-                    `;
-                });
-                
-                // 미리보기 사이드바 패딩 최소화
-                previewSidebar.style.padding = '15px';
-                
-                // 전체 너비 적용
-                const allElements = previewContent.querySelectorAll('*');
-                allElements.forEach(el => {
-                    el.style.width = '100%';
-                    el.style.maxWidth = '100%';
-                    el.style.boxSizing = 'border-box';
-                });
-                
-                console.log('🎯 미리보기 극강 스타일 적용 완료!');
-            }
-        }, 300); // 300ms로 늘림
+            // 전체 너비 적용 (과도하지 않게)
+            previewContent.style.width = '100%';
+            previewContent.style.maxWidth = '100%';
+            previewContent.style.boxSizing = 'border-box';
+        }
     },
 
     // 미리보기 요약 생성
@@ -733,18 +665,18 @@ const ReportModule = {
                 padding: 24px 16px;
                 min-height: 100vh;
             ">
-                <!-- 헤더 섹션 -->
+                <!-- 리포트 제목만 -->
                 <header style="text-align: center; padding: 24px 0;">
                     <h1 style="
                         font-size: 1.8rem; 
-                        font-weight: 700; 
+                        font-weight: 600; 
                         color: #0B4F6C; 
                         margin: 0 0 8px 0;
                         letter-spacing: -0.5px;
                     ">CFC 채용 상세 분석</h1>
                     <p style="
                         font-size: 1rem; 
-                        font-weight: 600; 
+                        font-weight: 500; 
                         color: #01BAEF; 
                         margin: 0;
                     ">Detailed Analysis | ${this.getSelectedPeriodText()}</p>
