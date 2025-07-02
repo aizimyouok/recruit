@@ -481,7 +481,7 @@ const InterviewScheduleModule = {
                 list.appendChild(group);
             });
         } else {
-            list.innerHTML = '<div style="text-align:center; font-size: 0.9rem; color: var(--text-secondary); padding: 10px;">입과 예정자가 없습니다</div>';
+            list.innerHTML = '<div style="text-align:center; font-size: 0.9rem; color: var(--text-secondary); padding: 20px; width: 100%;">입과 예정자가 없습니다</div>';
         }
 
         container.appendChild(list);
