@@ -264,11 +264,11 @@ const ReportModule = {
         return `
             <div class="report-content executive-summary" style="
                 width: 100%; 
-                max-width: 1200px; 
-                margin: 0 auto; 
+                max-width: none; 
+                margin: 0; 
                 font-family: 'Noto Sans KR', sans-serif; 
                 background: #F4F4F4;
-                padding: 24px 16px;
+                padding: 24px;
                 min-height: 100vh;
             ">
                 <!-- 헤더 섹션 -->
@@ -633,11 +633,11 @@ const ReportModule = {
         return `
             <div class="report-content detailed-analysis" style="
                 width: 100%; 
-                max-width: 1200px; 
-                margin: 0 auto; 
+                max-width: none; 
+                margin: 0; 
                 font-family: 'Noto Sans KR', sans-serif; 
                 background: #F4F4F4;
-                padding: 24px 16px;
+                padding: 24px;
                 min-height: 100vh;
             ">
                 <!-- 리포트 제목만 -->
@@ -925,11 +925,11 @@ const ReportModule = {
         return `
             <div class="report-content recruitment-funnel" style="
                 width: 100%; 
-                max-width: 1200px; 
-                margin: 0 auto; 
+                max-width: none; 
+                margin: 0; 
                 font-family: 'Noto Sans KR', sans-serif; 
                 background: #F4F4F4;
-                padding: 24px 16px;
+                padding: 24px;
                 min-height: 100vh;
             ">
                 <!-- 헤더 섹션 -->
@@ -1004,11 +1004,11 @@ const ReportModule = {
         return `
             <div class="report-content monthly-report" style="
                 width: 100%; 
-                max-width: 1200px; 
-                margin: 0 auto; 
+                max-width: none; 
+                margin: 0; 
                 font-family: 'Noto Sans KR', sans-serif; 
                 background: #F4F4F4;
-                padding: 24px 16px;
+                padding: 24px;
                 min-height: 100vh;
             ">
                 <!-- 헤더 섹션 -->
@@ -1109,11 +1109,11 @@ const ReportModule = {
         return `
             <div class="report-content interviewer-performance" style="
                 width: 100%; 
-                max-width: 1200px; 
-                margin: 0 auto; 
+                max-width: none; 
+                margin: 0; 
                 font-family: 'Noto Sans KR', sans-serif; 
                 background: #F4F4F4;
-                padding: 24px 16px;
+                padding: 24px;
                 min-height: 100vh;
             ">
                 <!-- 헤더 섹션 -->
@@ -1211,11 +1211,11 @@ const ReportModule = {
         return `
             <div class="report-content cost-analysis" style="
                 width: 100%; 
-                max-width: 1200px; 
-                margin: 0 auto; 
+                max-width: none; 
+                margin: 0; 
                 font-family: 'Noto Sans KR', sans-serif; 
                 background: #F4F4F4;
-                padding: 24px 16px;
+                padding: 24px;
                 min-height: 100vh;
             ">
                 <!-- 헤더 섹션 -->

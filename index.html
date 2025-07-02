@@ -17,15 +17,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
-        /* 리포트 페이지 레이아웃 - 0.8:1.2 비율 */
+        /* 리포트 페이지 레이아웃 - 1:1.5 비율로 미리보기를 더 크게 */
         #report .report-main-grid {
             display: grid !important;
-            grid-template-columns: 0.8fr 1.2fr !important; /* 왼쪽을 더 작게, 오른쪽을 더 크게 */
-            gap: 30px !important;
-            max-width: 1800px !important;
-            margin: 0 auto !important;
+            grid-template-columns: 1fr 1.5fr !important; /* 미리보기를 더 크게 */
+            gap: 20px !important;
+            max-width: none !important; /* 최대 폭 제한 제거 */
+            margin: 0 !important;
             width: 100% !important;
             align-items: start !important;
+            padding: 0 20px !important;
         }
         
         #report .report-builder-section {
@@ -79,7 +80,7 @@
         #report .preview-content {
             padding: 0 !important;
             margin: 0 !important;
-            height: calc(100vh - 140px) !important;
+            height: calc(100vh - 120px) !important;
             overflow-y: auto !important;
         }
         
@@ -268,7 +269,7 @@
         #report .preview-header {
             background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
             color: white !important;
-            padding: 15px 25px !important;
+            padding: 12px 20px !important;
             margin: 0 !important;
             border-radius: 16px 16px 0 0 !important;
             border-bottom: none !important;
@@ -321,20 +322,24 @@
             display: none !important;
         }
         
-        /* 실시간 미리보기 내 모든 그리드를 세로 배열로 강제 변환 */
-        #livePreviewContent div[style*="display: grid"],
-        #livePreviewContent div[style*="grid-template-columns"] {
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 16px !important;
+        /* 실시간 미리보기 내용 영역 최대 폭 사용 */
+        #livePreviewContent {
+            background: #F4F4F4 !important;
+            padding: 20px !important;
+            font-family: 'Noto Sans KR', sans-serif !important;
+            min-height: 100% !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
         }
         
-        /* 실시간 미리보기 내 모든 카드가 세로로 배치되도록 */
-        #livePreviewContent div[style*="text-align: center"] {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            text-align: left !important;
+        /* 모든 하위 요소들이 전체 폭을 사용하도록 강제 */
+        #livePreviewContent *,
+        #livePreviewContent .report-content,
+        #livePreviewContent .report-section,
+        #livePreviewContent .executive-summary {
+            max-width: 100% !important;
+            box-sizing: border-box !important;
         }
         
         /* AI 분석 관련 섹션들도 데이터 필터링과 동일한 폭으로 조정 */
@@ -355,10 +360,11 @@
         }
         
         /* 반응형 레이아웃 */
-        @media (max-width: 1200px) {
+        @media (max-width: 1400px) {
             #report .report-main-grid {
-                grid-template-columns: 1fr 400px !important;
-                gap: 20px !important;
+                grid-template-columns: 1fr 1.2fr !important;
+                gap: 15px !important;
+                padding: 0 15px !important;
             }
         }
         
