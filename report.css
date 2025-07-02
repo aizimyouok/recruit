@@ -168,7 +168,7 @@ html body #report .filter-grid[style] {
 
 /* 필터 섹션 */
 #report .filter-section {
-    margin-bottom: 30px;
+    margin-bottom: 20px; /* 여백 줄임 */
 }
 
 #report .filter-section-header {
@@ -259,7 +259,7 @@ html body #report .filter-grid {
 }
 
 #report .option-group {
-    margin-bottom: 20px;
+    margin-bottom: 15px; /* 여백 줄임 */
 }
 
 #report .option-group:last-child {
@@ -361,7 +361,57 @@ html body #report .filter-grid {
 #report .action-buttons {
     display: flex;
     gap: 15px;
-    margin-top: 30px;
+    margin-top: 25px; /* 상단 여백 줄임 */
+    justify-content: center; /* 중앙 정렬 */
+}
+
+/* 플로팅 버튼 스타일 */
+#report .floating-btn {
+    position: relative;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: white;
+    border: none;
+    padding: 16px 32px; /* 패딩 증가로 더 큰 버튼 */
+    border-radius: 50px; /* 완전한 둥근 모서리 */
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-width: 200px;
+    
+    /* 플로팅 효과 - 강한 그림자 */
+    box-shadow: 
+        0 10px 25px rgba(79, 70, 229, 0.3),
+        0 6px 12px rgba(79, 70, 229, 0.2),
+        0 2px 4px rgba(0, 0, 0, 0.1);
+    
+    /* 미세한 상승 효과 */
+    transform: translateY(-2px);
+}
+
+#report .floating-btn:hover {
+    transform: translateY(-6px) scale(1.02); /* 더 높이 상승하고 살짝 확대 */
+    box-shadow: 
+        0 20px 40px rgba(79, 70, 229, 0.4),
+        0 12px 24px rgba(79, 70, 229, 0.3),
+        0 4px 8px rgba(0, 0, 0, 0.15);
+    
+    /* 그라데이션 변화 */
+    background: linear-gradient(135deg, #5b52f0, #8b47f5);
+}
+
+#report .floating-btn:active {
+    transform: translateY(-3px) scale(0.98); /* 클릭 시 살짝 눌리는 효과 */
+    transition: all 0.1s ease;
+}
+
+#report .floating-btn i {
+    font-size: 1.2rem;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
 }
 
 #report .btn {
