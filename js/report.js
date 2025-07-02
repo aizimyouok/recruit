@@ -2415,6 +2415,13 @@ const ReportModule = {
     
     // 🔥 그리드 레이아웃 강제 적용 함수
     forceGridLayout() {
+        // 리포트 컨테이너 최대 넓이 제거
+        const reportContainer = document.querySelector('#report .report-container');
+        if (reportContainer) {
+            reportContainer.style.setProperty('max-width', 'none', 'important');
+            reportContainer.style.setProperty('width', '100%', 'important');
+        }
+        
         // 템플릿 갤러리 강제 6열 적용
         const templateGallery = document.querySelector('.template-gallery');
         if (templateGallery) {
@@ -2432,7 +2439,7 @@ const ReportModule = {
             filterGrid.style.setProperty('align-items', 'end', 'important');
         }
         
-        console.log('🔥 그리드 레이아웃 강제 적용 완료');
+        console.log('🔥 그리드 레이아웃 및 최대 넓이 제거 강제 적용 완료');
     },
     
     // 최대 너비 제거 함수

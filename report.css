@@ -25,9 +25,9 @@ html body #report .filter-grid[style] {
    ========================= */
 
 #report .report-container {
-    /* max-width를 유지하되, width를 100%로 설정하여 반응형으로 만듭니다. */
+    /* 최대 넓이 제한 완전 제거하여 화면 끝까지 사용 */
     width: 100%;
-    max-width: 2000px; 
+    max-width: none; /* 최대 넓이 제한 제거 */
     margin: 0 auto;
     background: var(--content-bg, white); /* 기존 대시보드의 컨텐츠 배경색 변수 활용 */
     border-radius: var(--border-radius, 8px); /* 기존 대시보드의 테두리 둥글기 변수 활용 */
@@ -233,14 +233,14 @@ html body #report .filter-grid {
 
 #report .filter-group select,
 #report .filter-group input {
-    padding: 8px 10px; /* 패딩 줄임 */
+    padding: 10px 12px; /* 패딩 늘림 */
     border: 2px solid var(--border-color, #e5e7eb);
     border-radius: 6px; /* 둥글기 줄임 */
-    font-size: 0.85rem; /* 폰트 크기 줄임 */
+    font-size: 0.9rem; /* 폰트 크기 조금 늘림 */
     transition: all 0.3s ease;
     background: var(--content-bg, white);
     color: var(--text-primary);
-    height: 38px; /* 높이 줄임 */
+    height: 42px; /* 높이 늘림 */
     min-width: 0; /* 최소 너비 제거 */
 }
 
@@ -542,41 +542,69 @@ html body #report .template-gallery {
 
 #report .template-card {
     border: 2px solid var(--border-color, #e5e7eb);
-    border-radius: 6px; /* 더 작은 둥글기 */
-    padding: 8px 6px; /* 패딩 더 줄임 */
+    border-radius: 8px; /* 둥글기 복원 */
+    padding: 12px; /* 패딩 복원 */
     cursor: pointer;
     transition: all 0.3s ease;
-    text-align: center;
-    min-height: 65px; /* 최소 높이 더 줄임 */
+    text-align: left; /* 왼쪽 정렬로 변경 */
+    min-height: 60px; /* 최소 높이 조정 */
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    font-size: 0.75rem; /* 폰트 크기 더 줄임 */
+    flex-direction: row; /* 가로 배치로 변경 */
+    align-items: center; /* 세로 중앙 정렬 */
+    gap: 10px; /* 아이콘과 텍스트 간격 */
+    font-size: 0.85rem; /* 폰트 크기 복원 */
     min-width: 0; /* 최소 너비 제거 */
 }
 
 #report .template-card:hover {
     border-color: #4f46e5;
-    transform: translateY(-3px);
+    transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(79, 70, 229, 0.1);
 }
 
 #report .template-card.selected {
     border-color: #4f46e5;
-    background: #f0f9ff;
+    background: linear-gradient(135deg, #f0f9ff, #e0e7ff); /* 그라데이션 배경 */
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.15);
 }
 
 #report .template-icon {
-    font-size: 1.2rem; /* 아이콘 크기 더 줄임 */
-    margin-bottom: 4px; /* 마진 더 줄임 */
-    color: #4f46e5;
+    font-size: 1.4rem; /* 아이콘 크기 늘림 */
+    margin-bottom: 0; /* 마진 제거 */
+    flex-shrink: 0; /* 아이콘 크기 고정 */
 }
 
 #report .template-name {
     font-weight: 600;
-    margin-bottom: 2px; /* 마진 더 줄임 */
-    font-size: 0.7rem; /* 폰트 크기 더 줄임 */
-    line-height: 1.1; /* 줄 간격 줄임 */
+    margin-bottom: 0; /* 마진 제거 */
+    font-size: 0.9rem; /* 폰트 크기 늘림 */
+    line-height: 1.2; /* 줄 간격 조정 */
+    flex-grow: 1; /* 텍스트 영역 확장 */
+}
+
+/* 템플릿별 파스텔 색상 적용 */
+#report .template-card[data-template="executive-summary"] .template-icon {
+    color: #ff9a9e; /* 파스텔 핑크 */
+}
+
+#report .template-card[data-template="detailed-analysis"] .template-icon {
+    color: #a8e6cf; /* 파스텔 그린 */
+}
+
+#report .template-card[data-template="recruitment-funnel"] .template-icon {
+    color: #ffd3a5; /* 파스텔 오렌지 */
+}
+
+#report .template-card[data-template="monthly-report"] .template-icon {
+    color: #a8c8ec; /* 파스텔 블루 */
+}
+
+#report .template-card[data-template="interviewer-performance"] .template-icon {
+    color: #d4a4eb; /* 파스텔 퍼플 */
+}
+
+#report .template-card[data-template="cost-analysis"] .template-icon {
+    color: #ffd93d; /* 파스텔 옐로우 */
 }
 
 #report .template-description {
