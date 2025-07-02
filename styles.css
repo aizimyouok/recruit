@@ -3936,6 +3936,107 @@ div[style*="grid-template-columns"] {
    면접일정 페이지 - 면접관 요약 카드 스타일 (최종 수정)
    ========================= */
 
+/* =========================
+면접일정 페이지 - 요약 카드들 컨테이너 및 입과 일정 카드 스타일
+========================= */
+
+.summary-cards-container {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    align-items: flex-start;
+}
+
+.admission-summary-card {
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    border: 1px solid #bfdbfe;
+    padding: 25px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.08);
+    min-width: 280px;
+    flex: 1;
+}
+
+.admission-summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1e40af;
+}
+
+.admission-summary-header .total-count {
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
+.admission-summary-header .badge {
+    background-color: #3b82f6;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 16px;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-left: 5px;
+}
+
+.admission-date-group {
+    margin-bottom: 15px;
+    padding: 15px;
+    background: rgba(59, 130, 246, 0.05);
+    border-radius: 8px;
+    border-left: 4px solid #3b82f6;
+}
+
+.admission-date-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #1e40af;
+}
+
+.admission-date-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+}
+
+.admission-count-badge {
+    background-color: #3b82f6;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.admission-names-list {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* 반응형 스타일 */
+@media (max-width: 768px) {
+    .summary-cards-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .interviewer-summary-card,
+    .admission-summary-card {
+        min-width: auto;
+        width: 100%;
+    }
+}
+
 .interviewer-summary-card {
     /* [수정] 연한 분홍색 파스텔 톤 배경 적용 */
     background: linear-gradient(135deg, #fff0f5, #fde7f3);

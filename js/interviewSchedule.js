@@ -224,6 +224,7 @@ const InterviewScheduleModule = {
         this.state.interviews = this.sortData(filtered);
         this.renderTable();
         this.renderInterviewerCounts(filtered, indices.interviewer);
+        this.renderAdmissionSchedule(filtered, headers);
     },
 
     sortData(data) {
@@ -388,6 +389,103 @@ const InterviewScheduleModule = {
         return `<tr onclick="globalThis.App.modal.openDetail(JSON.parse(decodeURIComponent('${rowDataEncoded}')))">${rowHtml}</tr>`;
     },
     // ▲▲▲▲▲ [수정된 함수] ▲▲▲▲▲
+
+    renderAdmissionSchedule(filteredData, headers) {
+        const container = document.getElementById('admissionScheduleContainer');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        const indices = {
+            name: headers.indexOf('이름'),
+            interviewResult: headers.indexOf('면접결과'),
+            admissionDate: headers.indexOf('입과일')
+        };
+
+        // 면접결과가 '합격'이고 입과일이 있는 사람들 필터링
+        const admissionData = filteredData.filter(row => {
+            const interviewResult = (row[indices.interviewResult] || '').trim();
+            const admissionDate = (row[indices.admissionDate] || '').trim();
+            return interviewResult === '합격' && admissionDate;
+        });
+
+        // 입과일별로 그룹핑
+        const admissionGroups = {};
+        let totalCount = 0;
+
+        admissionData.forEach(row => {
+            const admissionDate = row[indices.admissionDate];
+            const name = row[indices.name] || '이름 없음';
+            
+            if (admissionDate) {
+                if (!admissionGroups[admissionDate]) {
+                    admissionGroups[admissionDate] = [];
+                }
+                admissionGroups[admissionDate].push(name);
+                totalCount++;
+            }
+        });
+
+        // 헤더 생성
+        const header = document.createElement('div');
+        header.className = 'admission-summary-header';
+        header.innerHTML = `
+            <span><i class="fas fa-graduation-cap"></i> 입과 일정</span>
+            <span class="total-count">총 <span class="badge">${totalCount}명</span></span>
+        `;
+        container.appendChild(header);
+
+        // 입과일별 그룹 생성
+        const list = document.createElement('div');
+        list.className = 'admission-summary-list';
+
+        if (Object.keys(admissionGroups).length > 0) {
+            // 날짜 정렬 (오름차순)
+            const sortedDates = Object.keys(admissionGroups).sort((a, b) => {
+                try {
+                    return new Date(a) - new Date(b);
+                } catch {
+                    return a.localeCompare(b);
+                }
+            });
+
+            sortedDates.forEach(date => {
+                const names = admissionGroups[date];
+                const count = names.length;
+                
+                // 날짜 포맷팅
+                let formattedDate = date;
+                try {
+                    const dateObj = new Date(date);
+                    const month = dateObj.getMonth() + 1;
+                    const day = dateObj.getDate();
+                    const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+                    const weekday = weekdays[dateObj.getDay()];
+                    formattedDate = `${month}/${day}(${weekday})`;
+                } catch {
+                    // 날짜 파싱 실패 시 원래 값 사용
+                }
+
+                const group = document.createElement('div');
+                group.className = 'admission-date-group';
+                group.innerHTML = `
+                    <div class="admission-date-header">
+                        <div class="admission-date-title">
+                            <i class="fas fa-calendar-day" style="color: #3b82f6;"></i>
+                            ${formattedDate}
+                        </div>
+                        <span class="admission-count-badge">${count}명</span>
+                    </div>
+                    <div class="admission-names-list">${names.join(', ')}</div>
+                `;
+                list.appendChild(group);
+            });
+        } else {
+            list.innerHTML = '<div style="text-align:center; font-size: 0.9rem; color: var(--text-secondary); padding: 10px;">입과 예정자가 없습니다</div>';
+        }
+
+        container.appendChild(list);
+    },
 
     renderInterviewerCounts(filteredData, interviewerIndex) {
         const container = document.getElementById('interviewerCountsContainer');
