@@ -19,7 +19,7 @@ const ReportModule = {
     templates: {
         'executive-summary': {
             name: '경영진 요약',
-            icon: 'fas fa-chart-pie',
+            icon: 'fas fa-rocket', // 🚀 성장과 성과를 상징하는 트렌디한 아이콘
             description: '핵심 KPI와 트렌드 분석',
             sections: ['kpi', 'funnel', 'topSources', 'trends'],
             estimatedTime: '30초',
@@ -27,7 +27,7 @@ const ReportModule = {
         },
         'detailed-analysis': {
             name: '상세 분석', 
-            icon: 'fas fa-chart-bar',
+            icon: 'fas fa-microscope', // 🔬 깊이 있는 분석을 나타내는 아이콘
             description: '깊이 있는 데이터 분석',
             sections: ['kpi', 'charts', 'demographics', 'efficiency'],
             estimatedTime: '45초',
@@ -35,7 +35,7 @@ const ReportModule = {
         },
         'recruitment-funnel': {
             name: '채용 퍼널',
-            icon: 'fas fa-funnel-dollar', 
+            icon: 'fas fa-filter', // 🎯 필터링과 퍼널을 직관적으로 표현
             description: '단계별 전환율 집중 분석',
             sections: ['funnel', 'bottleneck', 'optimization'],
             estimatedTime: '20초',
@@ -43,7 +43,7 @@ const ReportModule = {
         },
         'monthly-report': {
             name: '월간 리포트',
-            icon: 'fas fa-calendar-alt',
+            icon: 'fas fa-chart-line', // 📈 트렌드와 성장을 나타내는 모던한 아이콘
             description: '월별 성과 종합 분석', 
             sections: ['monthly-kpi', 'comparison', 'trends', 'goals'],
             estimatedTime: '1분',
@@ -51,7 +51,7 @@ const ReportModule = {
         },
         'interviewer-performance': {
             name: '면접관 성과',
-            icon: 'fas fa-user-tie',
+            icon: 'fas fa-users-cog', // ⚙️👥 사람 관리와 성과 최적화를 표현
             description: '면접관별 효율성 분석',
             sections: ['interviewer-stats', 'comparison', 'recommendations'], 
             estimatedTime: '35초',
@@ -59,7 +59,7 @@ const ReportModule = {
         },
         'cost-analysis': {
             name: '비용 효율성',
-            icon: 'fas fa-dollar-sign',
+            icon: 'fas fa-coins', // 💰 비용을 모던하게 표현하는 아이콘
             description: '채용 비용 대비 효과 분석',
             sections: ['cost-breakdown', 'roi-analysis', 'optimization'],
             estimatedTime: '40초', 
