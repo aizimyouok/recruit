@@ -224,7 +224,7 @@ const InterviewScheduleModule = {
         this.state.interviews = this.sortData(filtered);
         this.renderTable();
         this.renderInterviewerCounts(filtered, indices.interviewer);
-        this.renderAdmissionSchedule(filtered, headers);
+        this.renderAdmissionSchedule(headers); // 전체 데이터에서 별도로 필터링
     },
 
     sortData(data) {
@@ -390,30 +390,71 @@ const InterviewScheduleModule = {
     },
     // ▲▲▲▲▲ [수정된 함수] ▲▲▲▲▲
 
-    renderAdmissionSchedule(filteredData, headers) {
+    renderAdmissionSchedule(headers) {
         const container = document.getElementById('admissionScheduleContainer');
         if (!container) return;
 
         container.innerHTML = '';
 
+        const { all } = this.app.state.data;
         const indices = {
             name: headers.indexOf('이름'),
             interviewResult: headers.indexOf('면접결과'),
-            admissionDate: headers.indexOf('입과일')
+            admissionDate: headers.indexOf('입과일'),
+            interviewer: headers.indexOf('면접관'),
+            company: headers.indexOf('회사명'),
+            route: headers.indexOf('지원루트'),
+            position: headers.indexOf('모집분야')
         };
 
-        // 면접결과가 '합격'이고 입과일이 있는 사람들 필터링
-        const admissionData = filteredData.filter(row => {
+        // 전체 데이터에서 면접결과가 '합격'이고 입과일이 있는 사람들 필터링
+        let admissionCandidates = all.filter(row => {
             const interviewResult = (row[indices.interviewResult] || '').trim();
             const admissionDate = (row[indices.admissionDate] || '').trim();
             return interviewResult === '합격' && admissionDate;
         });
 
+        // 입과일 기준으로 날짜 필터링 적용
+        if (this.state.dateMode !== 'all') {
+            admissionCandidates = admissionCandidates.filter(row => {
+                const admissionDateStr = row[indices.admissionDate];
+                if (!admissionDateStr) return false;
+
+                try {
+                    const admissionDate = this.formatDateForInput(new Date(admissionDateStr));
+
+                    switch (this.state.dateMode) {
+                        case 'year':
+                            return admissionDate.startsWith(this.state.dateValue);
+                        case 'month':
+                            return admissionDate.substring(0, 7) === this.state.dateValue;
+                        case 'day':
+                             return admissionDate === this.state.dateValue;
+                        case 'range':
+                             if (!this.state.startDate || !this.state.endDate) return true;
+                             return admissionDate >= this.state.startDate && admissionDate <= this.state.endDate;
+                    }
+                } catch {
+                    return false;
+                }
+                return true;
+            });
+        }
+
+        // 다른 필터 조건들 적용 (면접관, 회사명, 지원루트, 모집분야, 검색어)
+        if (this.state.interviewer !== 'all') admissionCandidates = admissionCandidates.filter(row => (row[indices.interviewer] || '').includes(this.state.interviewer));
+        if (this.state.company !== 'all') admissionCandidates = admissionCandidates.filter(row => row[indices.company] === this.state.company);
+        if (this.state.route !== 'all') admissionCandidates = admissionCandidates.filter(row => row[indices.route] === this.state.route);
+        if (this.state.position !== 'all') admissionCandidates = admissionCandidates.filter(row => row[indices.position] === this.state.position);
+        if (this.state.searchTerm) {
+            admissionCandidates = admissionCandidates.filter(row => row.some(cell => String(cell).toLowerCase().includes(this.state.searchTerm)));
+        }
+
         // 입과일별로 그룹핑
         const admissionGroups = {};
         let totalCount = 0;
 
-        admissionData.forEach(row => {
+        admissionCandidates.forEach(row => {
             const admissionDate = row[indices.admissionDate];
             const name = row[indices.name] || '이름 없음';
             
