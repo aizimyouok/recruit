@@ -10,8 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet">
-    <link href="styles.css?v=20250702-1" rel="stylesheet">
-    <link href="report.css?v=20250702-1" rel="stylesheet"> 
+    <link href="styles.css?v=20250702-3" rel="stylesheet">
+    <link href="report.css?v=20250702-3" rel="stylesheet"> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -349,13 +349,35 @@
             box-sizing: border-box !important;
         }
         
-        /* 인라인 그리드 스타일 보존 */
+        /* 인라인 그리드 스타일 강제 적용 */
         #livePreviewContent div[style*="display: grid"] {
             display: grid !important;
         }
         
         #livePreviewContent div[style*="grid-template-columns: 1fr 1fr"] {
             grid-template-columns: 1fr 1fr !important;
+        }
+        
+        /* 메인 분석 그리드와 개선 제안 그리드 강제 적용 */
+        #livePreviewContent div[style*="display: grid"][style*="gap: 24px"] {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 24px !important;
+        }
+        
+        /* 2열 그리드가 있는 모든 div 요소에 강제 적용 - 최대 우선순위 */
+        #livePreviewContent section div[style*="display: grid"],
+        #livePreviewContent .report-content div[style*="display: grid"],
+        #livePreviewContent .executive-summary div[style*="display: grid"] {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+        }
+        
+        /* 특정 클래스와 상관없이 모든 그리드 요소에 강제 적용 */
+        #report #livePreviewContent div[style*="display: grid"][style*="1fr 1fr"] {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 24px !important;
         }
         
         /* AI 분석 관련 섹션들도 데이터 필터링과 동일한 폭으로 조정 */

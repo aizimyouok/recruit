@@ -253,16 +253,34 @@ const ReportModule = {
                     }
                 });
                 
-                // 그리드 레이아웃 강제 적용
+                // 그리드 레이아웃 강제 적용 - 더 구체적으로
                 const gridElements = previewContent.querySelectorAll('div[style*="display: grid"]');
                 gridElements.forEach(gridEl => {
-                    if (gridEl.style.display) {
-                        gridEl.style.display = 'grid';
+                    gridEl.style.setProperty('display', 'grid', 'important');
+                    
+                    // 2열 그리드가 포함된 요소들 특별 처리
+                    if (gridEl.style.gridTemplateColumns && gridEl.style.gridTemplateColumns.includes('1fr 1fr')) {
+                        gridEl.style.setProperty('grid-template-columns', '1fr 1fr', 'important');
+                        gridEl.style.setProperty('gap', '24px', 'important');
                     }
-                    if (gridEl.style.gridTemplateColumns) {
-                        // 기존 그리드 컬럼 설정 유지
-                        const originalColumns = gridEl.style.gridTemplateColumns;
-                        gridEl.style.gridTemplateColumns = originalColumns;
+                    
+                    // repeat 그리드가 포함된 요소들 처리
+                    if (gridEl.style.gridTemplateColumns && gridEl.style.gridTemplateColumns.includes('repeat')) {
+                        gridEl.style.setProperty('grid-template-columns', gridEl.style.gridTemplateColumns, 'important');
+                    }
+                });
+                
+                // 메인 분석 그리드 특별 처리 (텍스트 기반 검색)
+                const mainGridSections = previewContent.querySelectorAll('div');
+                mainGridSections.forEach(section => {
+                    const hasGridStyle = section.style.display === 'grid';
+                    const hasGap24 = section.style.gap === '24px';
+                    const hasMarginBottom = section.style.marginBottom === '24px';
+                    
+                    if (hasGridStyle && hasGap24 && hasMarginBottom) {
+                        section.style.setProperty('display', 'grid', 'important');
+                        section.style.setProperty('grid-template-columns', '1fr 1fr', 'important');
+                        section.style.setProperty('gap', '24px', 'important');
                     }
                 });
                 
