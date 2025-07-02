@@ -4005,8 +4005,9 @@ div[style*="grid-template-columns"] {
 
 .admission-summary-list {
     display: flex;
+    flex-direction: column; /* 날짜별로 세로 배치 */
     gap: 15px;
-    overflow-x: auto;
+    overflow-y: auto;
     padding-bottom: 10px;
     -webkit-overflow-scrolling: touch;
     flex: 1; /* 남은 공간을 모두 차지 */
