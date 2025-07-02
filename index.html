@@ -17,15 +17,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
-        /* 리포트 페이지 레이아웃 기본 설정 */
+        /* 리포트 페이지 레이아웃 기본 설정 - 세로 배열로 변경 */
         #report .report-main-grid {
-            display: grid !important;
-            grid-template-columns: 1fr 1fr !important;
-            gap: 20px !important;
-            max-width: 2800px !important;
+            display: block !important;
+            max-width: 1400px !important;
             margin: 0 auto !important;
             width: 100% !important;
-            align-items: start !important;
+        }
+        
+        #report .report-builder-section {
+            margin-bottom: 30px !important;
         }
         
         #report .live-preview-sidebar {
@@ -38,18 +39,28 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
         }
         
-        /* 반응형 레이아웃 */
-        @media (max-width: 1200px) {
-            #report .report-main-grid {
-                grid-template-columns: 1fr 280px !important;
-                gap: 20px !important;
-            }
+        /* 실시간 미리보기 내용 세로 배열로 정렬 */
+        #livePreviewContent .kpi-grid {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 15px !important;
         }
         
-        @media (max-width: 1024px) {
-            #report .report-main-grid {
-                grid-template-columns: 1fr !important;
-                gap: 20px !important;
+        #livePreviewContent .kpi-card {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 15px 20px !important;
+            background: white !important;
+            border-radius: 10px !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+        }
+        
+        /* 반응형 레이아웃 */
+        @media (max-width: 768px) {
+            #report .live-preview-sidebar {
+                padding: 15px !important;
             }
         }
     </style>
@@ -582,52 +593,37 @@
                         <div class="report-header" style="color: white !important;">
                             <h1 style="color: white !important;"><i class="fas fa-chart-line" style="color: white !important;"></i> CFC 채용 리포트</h1>
                         </div>
-
-                        <div class="report-tabs-container">
-                            <div class="report-tabs">
-                                <button class="report-tab active" data-tab="templates">
-                                    <i class="fas fa-layer-group"></i> 템플릿 선택
-                                </button>
-                                <button class="report-tab" data-tab="custom">
-                                    <i class="fas fa-cogs"></i> 커스텀 리포트
-                                </button>
-                                <button class="report-tab" data-tab="ai">
-                                    <i class="fas fa-magic"></i> AI 분석 가이드
-                                </button>
-                            </div>
-                        </div>
                         
                         <div class="report-main-grid">
                             <div class="report-builder-section">
                                 <div class="report-builder">
-                                    <div id="templates-tab" class="tab-content active">
-                                        <div class="filter-section">
-                                            <div class="filter-section-header">
-                                                <h3><i class="fas fa-filter"></i> 데이터 필터링</h3>
-                                                <button class="btn-reset-filters" id="report-reset-filters">
-                                                    <i class="fas fa-undo"></i> 초기화
-                                                </button>
+                                    <div class="filter-section">
+                                        <div class="filter-section-header">
+                                            <h3><i class="fas fa-filter"></i> 데이터 필터링</h3>
+                                            <button class="btn-reset-filters" id="report-reset-filters">
+                                                <i class="fas fa-undo"></i> 초기화
+                                            </button>
+                                        </div>
+                                        <div class="filter-grid">
+                                            <div class="filter-group">
+                                                <label>기간 선택</label>
+                                                <select id="report-filter-period">
+                                                    <option value="all">전체 기간</option>
+                                                    <option value="this-month">이번달</option>
+                                                    <option value="last-30">최근 30일</option>
+                                                    <option value="last-90">최근 3개월</option>
+                                                    <option value="this-year">올해</option>
+                                                    <option value="custom">사용자 지정</option>
+                                                </select>
                                             </div>
-                                            <div class="filter-grid">
-                                                <div class="filter-group">
-                                                    <label>기간 선택</label>
-                                                    <select id="report-filter-period">
-                                                        <option value="all">전체 기간</option>
-                                                        <option value="this-month">이번달</option>
-                                                        <option value="last-30">최근 30일</option>
-                                                        <option value="last-90">최근 3개월</option>
-                                                        <option value="this-year">올해</option>
-                                                        <option value="custom">사용자 지정</option>
-                                                    </select>
+                                            <div class="filter-group date-range-picker" id="report-custom-date-range" style="display: none;">
+                                                <label>날짜 범위 입력</label> 
+                                                <div class="date-range-inputs">
+                                                    <input type="date" id="report-start-date">
+                                                    <span>-</span>
+                                                    <input type="date" id="report-end-date">
                                                 </div>
-                                                <div class="filter-group date-range-picker" id="report-custom-date-range" style="display: none;">
-                                                    <label>날짜 범위 입력</label> 
-                                                    <div class="date-range-inputs">
-                                                        <input type="date" id="report-start-date">
-                                                        <span>-</span>
-                                                        <input type="date" id="report-end-date">
-                                                    </div>
-                                                </div>
+                                            </div>
                                                 <div class="filter-group">
                                                     <label>지원루트</label>
                                                     <select id="report-filter-route">
@@ -725,11 +721,6 @@
                                         <div class="action-buttons">
                                             <button class="btn btn-primary" id="generateReportBtn"><i class="fas fa-magic"></i> 리포트 생성</button>
                                         </div>
-                                    </div>
-                                    <div id="custom-tab" class="tab-content">
-                                    </div>
-                                    <div id="ai-tab" class="tab-content">
-                                    </div>
                                 </div>
                             </div>
 

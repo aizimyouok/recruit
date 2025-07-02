@@ -1814,54 +1814,6 @@ const ReportModule = {
         let reportHtml = this.generateReportContent(template, data);
         modalBody.innerHTML = reportHtml;
         
-        // 🔥 모달 내 모든 텍스트 요소 강제 스타일 적용 - 단순하고 강력하게
-        setTimeout(() => {
-            const modalBody = document.getElementById('reportModalBody');
-            
-            if (modalBody) {
-                console.log('🔍 모달 바디 발견, 내용:', modalBody.innerHTML.substring(0, 200));
-                
-                // 모든 요소를 찾아서 강제로 스타일 적용
-                const allElements = modalBody.querySelectorAll('*');
-                console.log('🔍 모달 내 전체 요소 개수:', allElements.length);
-                
-                allElements.forEach((element, index) => {
-                    // h1 태그이거나 제목과 관련된 요소라면
-                    if (element.tagName === 'H1' || 
-                        element.classList.contains('report-title') ||
-                        element.textContent?.includes('CFC 채용') ||
-                        element.textContent?.includes('리포트')) {
-                        
-                        console.log(`🎯 제목 요소 발견 ${index}:`, element.tagName, element.textContent?.substring(0, 30));
-                        
-                        // 모든 스타일을 cssText로 한 번에 적용
-                        element.style.cssText = `
-                            color: #ff0000 !important;
-                            font-size: 2rem !important;
-                            font-weight: 900 !important;
-                            text-shadow: 2px 2px 4px #000000 !important;
-                            background: #ffff00 !important;
-                            padding: 10px !important;
-                            border: 3px solid #00ff00 !important;
-                            opacity: 1 !important;
-                            visibility: visible !important;
-                            display: block !important;
-                            text-align: center !important;
-                            margin: 10px 0 !important;
-                            position: relative !important;
-                            z-index: 999999 !important;
-                            width: 100% !important;
-                            box-sizing: border-box !important;
-                        `;
-                    }
-                });
-                
-                console.log('🎯 모든 요소에 강제 스타일 적용 완료!');
-            } else {
-                console.log('❌ 모달 바디를 찾을 수 없음');
-            }
-        }, 500); // 500ms로 더 늘림
-        
         // 모달 표시
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
