@@ -4056,9 +4056,10 @@ div[style*="grid-template-columns"] {
     max-height: 120px; /* 높이 제한 늘림 */
     overflow-y: auto; /* 세로 스크롤 */
     font-weight: 500; /* 약간의 굵기 추가 */
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* 가로 배치 */
-    gap: 8px;
+    display: flex;
+    flex-wrap: wrap; /* 가로 배치 후 줄바꿈 */
+    gap: 12px;
+    align-items: flex-start;
 }
 
 /* 증원자별 색상 태그 스타일 */
@@ -4067,6 +4068,9 @@ div[style*="grid-template-columns"] {
     display: flex;
     align-items: flex-start;
     gap: 8px;
+    max-width: 250px; /* 각 그룹의 최대 너비 */
+    min-width: 200px; /* 최소 너비 */
+    flex: 0 1 auto; /* 크기 조정 가능 */
 }
 
 .recruiter-tag {
@@ -4092,13 +4096,14 @@ div[style*="grid-template-columns"] {
 .recruiter-names {
     flex: 1;
     font-size: 0.8rem;
-    line-height: 1.3;
-    max-height: 2.6em; /* 2줄 제한 (1.3 line-height * 2) */
+    line-height: 1.2; /* 줄 높이 조정 */
+    max-height: 2.4em; /* 2줄 제한 (1.2 * 2) */
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     text-overflow: ellipsis;
+    word-break: break-word;
 }
 
 /* 반응형 스타일 */
