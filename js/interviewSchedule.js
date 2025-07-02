@@ -404,7 +404,8 @@ const InterviewScheduleModule = {
             interviewer: headers.indexOf('면접관'),
             company: headers.indexOf('회사명'),
             route: headers.indexOf('지원루트'),
-            position: headers.indexOf('모집분야')
+            position: headers.indexOf('모집분야'),
+            recruiter: headers.indexOf('증원자')
         };
 
         // 전체 데이터에서 면접결과가 '합격'이고 입과일이 있는 사람들 필터링
@@ -457,12 +458,16 @@ const InterviewScheduleModule = {
         admissionCandidates.forEach(row => {
             const admissionDate = row[indices.admissionDate];
             const name = row[indices.name] || '이름 없음';
+            const recruiter = row[indices.recruiter] || '미정';
             
             if (admissionDate) {
                 if (!admissionGroups[admissionDate]) {
                     admissionGroups[admissionDate] = [];
                 }
-                admissionGroups[admissionDate].push(name);
+                admissionGroups[admissionDate].push({
+                    name: name,
+                    recruiter: recruiter
+                });
                 totalCount++;
             }
         });
@@ -507,6 +512,29 @@ const InterviewScheduleModule = {
                     // 날짜 파싱 실패 시 원래 값 사용
                 }
 
+                // 증원자별로 그룹핑
+                const recruiterGroups = {};
+                names.forEach(nameData => {
+                    const name = nameData.name;
+                    const recruiter = nameData.recruiter || '미정';
+                    if (!recruiterGroups[recruiter]) {
+                        recruiterGroups[recruiter] = [];
+                    }
+                    recruiterGroups[recruiter].push(name);
+                });
+
+                // 증원자별 HTML 생성
+                let recruiterHtml = '';
+                Object.keys(recruiterGroups).forEach(recruiter => {
+                    const recruiterNames = recruiterGroups[recruiter];
+                    recruiterHtml += `
+                        <div class="recruiter-group">
+                            <span class="recruiter-tag ${recruiter}">${recruiter}</span>
+                            <span class="recruiter-names">${recruiterNames.join(', ')}</span>
+                        </div>
+                    `;
+                });
+
                 const group = document.createElement('div');
                 group.className = 'admission-date-group';
                 group.innerHTML = `
@@ -517,7 +545,7 @@ const InterviewScheduleModule = {
                         </div>
                         <span class="admission-count-badge">${count}명</span>
                     </div>
-                    <div class="admission-names-list">${names.join(', ')}</div>
+                    <div class="admission-names-list">${recruiterHtml}</div>
                 `;
                 list.appendChild(group);
             });

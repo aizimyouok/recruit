@@ -1309,7 +1309,7 @@ body {
     display: flex; 
     flex-direction: column; 
     flex-grow: 1;
-    flex-basis: 160px;
+    flex-basis: 130px; /* 160px에서 130px로 줄임 */
 }
 
 .filter-group label { 
@@ -1338,7 +1338,7 @@ body {
 
 .search-input { 
     position: relative;
-    flex-basis: 220px;
+    flex-basis: 180px; /* 220px에서 180px로 줄임 */
 }
 
 .search-input input { 
@@ -1442,8 +1442,16 @@ body {
     flex-basis: 350px;
 }
 
+/* 필터 영역 버튼 배치 스타일 */
+.filter-actions-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
 .filter-group.reset-group {
     flex-grow: 0;
+    flex-shrink: 0;
 }
 
 
@@ -3955,7 +3963,7 @@ div[style*="grid-template-columns"] {
     box-shadow: 0 4px 15px rgba(59, 130, 246, 0.08);
     min-width: 280px;
     flex: 1;
-    height: auto; /* 내용에 따라 높이 조정 */
+    min-height: 300px; /* 면접일정 카드와 높이 맞춤 */
     display: flex;
     flex-direction: column;
 }
@@ -4035,11 +4043,44 @@ div[style*="grid-template-columns"] {
 .admission-names-list {
     color: var(--text-primary); /* 더 진한 색상으로 변경 */
     font-size: 0.85rem;
-    line-height: 1.3;
+    line-height: 1.4;
     word-break: break-word;
-    max-height: 60px; /* 최대 높이 제한 */
+    max-height: 120px; /* 높이 제한 늘림 */
     overflow-y: auto; /* 세로 스크롤 */
     font-weight: 500; /* 약간의 굵기 추가 */
+}
+
+/* 증원자별 색상 태그 스타일 */
+.recruiter-group {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.recruiter-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.recruiter-tag.이성진 { background-color: #3b82f6; } /* 파란색 */
+.recruiter-tag.김영빈 { background-color: #10b981; } /* 초록색 */
+.recruiter-tag.최혜진 { background-color: #f59e0b; } /* 노란색 */
+.recruiter-tag.김동민 { background-color: #ef4444; } /* 빨간색 */
+.recruiter-tag.양하늘 { background-color: #8b5cf6; } /* 보라색 */
+.recruiter-tag.최재영 { background-color: #06b6d4; } /* 하늘색 */
+
+.recruiter-names {
+    flex: 1;
+    font-size: 0.8rem;
+    line-height: 1.3;
 }
 
 /* 반응형 스타일 */
@@ -4064,7 +4105,7 @@ div[style*="grid-template-columns"] {
     border-radius: var(--border-radius);
     box-shadow: 0 4px 15px rgba(236, 72, 153, 0.08);
     min-width: 280px;
-    min-height: 200px; /* 최소 높이 설정으로 입과 일정 카드와 맞춤 */
+    min-height: 300px; /* 높이를 더 늘려서 입과 일정과 맞춤 */
     display: flex;
     flex-direction: column;
 }
