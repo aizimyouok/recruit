@@ -17,16 +17,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
-        /* 리포트 페이지 레이아웃 기본 설정 - 세로 배열로 변경 */
+        /* 리포트 페이지 레이아웃 기본 설정 - 다시 좌우 배치 */
         #report .report-main-grid {
-            display: block !important;
-            max-width: 1400px !important;
+            display: grid !important;
+            grid-template-columns: 1fr 450px !important; /* 미리보기 영역을 더 넉넉하게 */
+            gap: 30px !important;
+            max-width: 1600px !important;
             margin: 0 auto !important;
             width: 100% !important;
+            align-items: start !important;
         }
         
         #report .report-builder-section {
-            margin-bottom: 30px !important;
+            min-width: 0 !important;
         }
         
         #report .live-preview-sidebar {
@@ -37,27 +40,136 @@
             padding: 25px !important;
             border: 1px solid #e2e8f0 !important;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+            position: sticky !important;
+            top: 20px !important;
+            max-height: calc(100vh - 40px) !important;
+            overflow-y: auto !important;
         }
         
-        /* 실시간 미리보기 내용 세로 배열로 정렬 */
+        /* 실시간 미리보기 내용을 리포트 모달과 동일하게 스타일링 */
+        #livePreviewContent {
+            background: #F4F4F4 !important;
+            border-radius: 12px !important;
+            padding: 20px !important;
+            font-family: 'Noto Sans KR', sans-serif !important;
+        }
+        
+        /* 리포트 헤더 스타일 통일 */
+        #livePreviewContent .report-header {
+            text-align: center !important;
+            padding: 24px 0 !important;
+            background: transparent !important;
+            border: none !important;
+            color: #0B4F6C !important;
+            margin-bottom: 24px !important;
+        }
+        
+        #livePreviewContent .report-title {
+            font-size: 1.8rem !important;
+            font-weight: 600 !important;
+            color: #0B4F6C !important;
+            margin: 0 0 8px 0 !important;
+            letter-spacing: -0.5px !important;
+        }
+        
+        #livePreviewContent .report-subtitle {
+            font-size: 1rem !important;
+            font-weight: 500 !important;
+            color: #01BAEF !important;
+            margin: 0 !important;
+        }
+        
+        /* KPI 카드 스타일 통일 */
         #livePreviewContent .kpi-grid {
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 15px !important;
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 16px !important;
+            margin-bottom: 24px !important;
         }
         
         #livePreviewContent .kpi-card {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            padding: 15px 20px !important;
-            background: white !important;
-            border-radius: 10px !important;
-            border: 1px solid #e2e8f0 !important;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+            text-align: center !important;
+            padding: 20px !important;
+            background: #F0F9FF !important;
+            border-radius: 8px !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        
+        #livePreviewContent .kpi-card h3 {
+            margin: 0 0 4px 0 !important;
+            color: #6B7280 !important;
+            font-size: 0.875rem !important;
+            font-weight: 600 !important;
+        }
+        
+        #livePreviewContent .kpi-value {
+            margin: 0 !important;
+            font-size: 2rem !important;
+            font-weight: 900 !important;
+            color: #0B4F6C !important;
+        }
+        
+        /* 섹션 헤딩 스타일 통일 */
+        #livePreviewContent .report-section h2 {
+            font-size: 1.25rem !important;
+            font-weight: 700 !important;
+            color: #0B4F6C !important;
+            margin: 0 0 16px 0 !important;
+        }
+        
+        /* 강점/약점 카드 스타일 통일 */
+        #livePreviewContent .strength-card {
+            background: #F4F4F4 !important;
+            padding: 20px !important;
+            border-radius: 12px !important;
+            border-left: 8px solid #0B4F6C !important;
+            margin-bottom: 16px !important;
+        }
+        
+        #livePreviewContent .weakness-card {
+            background: #F4F4F4 !important;
+            padding: 20px !important;
+            border-radius: 12px !important;
+            border-left: 8px solid #FF6B6B !important;
+            margin-bottom: 16px !important;
+        }
+        
+        /* 제안 박스 스타일 통일 */
+        #livePreviewContent .suggestion-box {
+            padding: 16px !important;
+            background: rgba(1, 186, 239, 0.1) !important;
+            border-radius: 8px !important;
+            text-align: center !important;
+            margin-top: 20px !important;
+        }
+        
+        #livePreviewContent .suggestion-text {
+            margin: 0 !important;
+            font-weight: 700 !important;
+            color: #0B4F6C !important;
         }
         
         /* 반응형 레이아웃 */
+        @media (max-width: 1200px) {
+            #report .report-main-grid {
+                grid-template-columns: 1fr 350px !important;
+                gap: 20px !important;
+            }
+        }
+        
+        @media (max-width: 1024px) {
+            #report .report-main-grid {
+                grid-template-columns: 1fr !important;
+                gap: 20px !important;
+            }
+            
+            #report .live-preview-sidebar {
+                position: static !important;
+                max-height: none !important;
+            }
+        }
+        
         @media (max-width: 768px) {
             #report .live-preview-sidebar {
                 padding: 15px !important;

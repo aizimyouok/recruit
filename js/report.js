@@ -230,11 +230,8 @@ const ReportModule = {
         
         const filteredData = this.getFilteredReportData();
         
-        previewContent.innerHTML = `
-            <div class="preview-summary" style="width: 100%; max-width: 100%; overflow-x: auto; box-sizing: border-box;">
-                ${this.generatePreviewSummary(filteredData)}
-            </div>
-        `;
+        // 미리보기 내용을 리포트 모달과 동일하게 생성
+        previewContent.innerHTML = this.generatePreviewSummary(filteredData);
         
         // DOM 삽입 후 기본 레이아웃 적용
         // setTimeout을 제거하여 즉시 적용하고, 과도한 스타일 오버라이드 제거
@@ -249,29 +246,15 @@ const ReportModule = {
         }
     },
 
-    // 미리보기 요약 생성
+    // 미리보기 요약 생성 - 리포트 모달과 동일한 내용 사용
     generatePreviewSummary(data) {
         if (data.length === 0) {
-            return '<p class="no-data">필터 조건에 맞는 데이터가 없습니다.</p>';
+            return '<div class="no-data" style="text-align: center; padding: 40px; color: #6b7280;">필터 조건에 맞는 데이터가 없습니다.</div>';
         }
         
+        // 리포트 모달과 동일한 생성 방식 사용
         const template = this.templates[this._currentTemplate];
-        switch (this._currentTemplate) {
-            case 'executive-summary':
-                return this.generateExecutiveSummaryPreview(data);
-            case 'detailed-analysis':
-                return this.generateDetailedAnalysisPreview(data);
-            case 'recruitment-funnel':
-                return this.generateFunnelPreview(data);
-            case 'monthly-report':
-                return this.generateMonthlyReportPreview(data);
-            case 'interviewer-performance':
-                return this.generateInterviewerPerformancePreview(data);
-            case 'cost-analysis':
-                return this.generateCostAnalysisPreview(data);
-            default:
-                return `<p>${template.name} 미리보기 준비 중...</p>`;
-        }
+        return this.generateReportContent(template, data);
     },
 
     // 경영진 요약 미리보기
