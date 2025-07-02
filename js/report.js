@@ -148,6 +148,12 @@ const ReportModule = {
         });
 
         this.selectTemplate('executive-summary');
+        
+        // 🔥 템플릿 갤러리 렌더링 후 강제 레이아웃 적용
+        setTimeout(() => {
+            this.forceGridLayout();
+        }, 50);
+        
         console.log('✅ 템플릿 갤러리 렌더링 완료');
     },
 
@@ -2405,6 +2411,37 @@ const ReportModule = {
         URL.revokeObjectURL(url);
         
         this.showAlert(`리포트가 ${fileName} 파일로 저장되었습니다.`);
+    },
+    
+    // 🔥 그리드 레이아웃 강제 적용 함수
+    forceGridLayout() {
+        // 템플릿 갤러리 강제 6열 적용
+        const templateGallery = document.querySelector('.template-gallery');
+        if (templateGallery) {
+            templateGallery.style.setProperty('display', 'grid', 'important');
+            templateGallery.style.setProperty('grid-template-columns', 'repeat(6, 1fr)', 'important');
+            templateGallery.style.setProperty('gap', '12px', 'important');
+        }
+        
+        // 필터 그리드 강제 6열 적용
+        const filterGrid = document.querySelector('#report .filter-grid');
+        if (filterGrid) {
+            filterGrid.style.setProperty('display', 'grid', 'important');
+            filterGrid.style.setProperty('grid-template-columns', 'repeat(6, 1fr)', 'important');
+            filterGrid.style.setProperty('gap', '10px 8px', 'important');
+            filterGrid.style.setProperty('align-items', 'end', 'important');
+        }
+        
+        console.log('🔥 그리드 레이아웃 강제 적용 완료');
+    },
+    
+    // 최대 너비 제거 함수
+    forceMaxWidthRemoval() {
+        const reportMainGrid = document.querySelector('.report-main-grid');
+        if (reportMainGrid) {
+            reportMainGrid.style.setProperty('max-width', 'none', 'important');
+            reportMainGrid.style.setProperty('grid-template-columns', '1fr', 'important');
+        }
     },
     
     // 인쇄 기능
