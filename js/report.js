@@ -226,15 +226,30 @@ const ReportModule = {
         }
     },
 
-    // 미리보기 요약 생성 - 리포트 모달과 동일한 내용 사용
+    // 미리보기 요약 생성 - 각 템플릿별로 직접 호출
     generatePreviewSummary(data) {
         if (data.length === 0) {
             return '<div class="no-data" style="text-align: center; padding: 40px; color: #6b7280;">필터 조건에 맞는 데이터가 없습니다.</div>';
         }
         
-        // 리포트 모달과 동일한 생성 방식 사용
-        const template = this.templates[this._currentTemplate];
-        return this.generateReportContent(template, data);
+        // 각 템플릿별로 미리보기 함수 직접 호출
+        switch (this._currentTemplate) {
+            case 'executive-summary':
+                return this.generateExecutiveSummaryPreview(data);
+            case 'detailed-analysis':
+                return this.generateDetailedAnalysisPreview(data);
+            case 'recruitment-funnel':
+                return this.generateFunnelPreview(data);
+            case 'monthly-report':
+                return this.generateMonthlyReportPreview(data);
+            case 'interviewer-performance':
+                return this.generateInterviewerPerformancePreview(data);
+            case 'cost-analysis':
+                return this.generateCostAnalysisPreview(data);
+            default:
+                const template = this.templates[this._currentTemplate];
+                return `<div class="no-data" style="text-align: center; padding: 40px; color: #6b7280;">${template.name} 미리보기 준비 중...</div>`;
+        }
     },
 
     // 경영진 요약 미리보기
@@ -1446,19 +1461,27 @@ const ReportModule = {
             });
         }
 
-        // 미리보기 토글
-        const previewToggle = document.getElementById('previewToggle');
-        if (previewToggle) {
-            previewToggle.addEventListener('click', () => {
-                this.togglePreviewSidebar();
-            });
-        }
-
         // 필터 초기화
         const resetBtn = document.getElementById('report-reset-filters');
         if (resetBtn) {
             resetBtn.addEventListener('click', () => {
                 this.resetFilters();
+            });
+        }
+        
+        // 저장 버튼
+        const saveBtn = document.getElementById('saveReportBtn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => {
+                this.saveReport();
+            });
+        }
+        
+        // 인쇄 버튼
+        const printBtn = document.getElementById('printReportBtn');
+        if (printBtn) {
+            printBtn.addEventListener('click', () => {
+                this.printReport();
             });
         }
     },
@@ -2175,5 +2198,132 @@ const ReportModule = {
                 overlay.remove();
             }
         }, 3000);
+    },
+    
+    // 저장 기능
+    saveReport() {
+        const previewContent = document.getElementById('livePreviewContent');
+        if (!previewContent || !previewContent.innerHTML.trim()) {
+            this.showAlert('저장할 리포트가 없습니다. 먼저 템플릿을 선택해주세요.');
+            return;
+        }
+        
+        const template = this.templates[this._currentTemplate];
+        const fileName = `${template.name}_${new Date().toLocaleDateString('ko-KR').replace(/\./g, '_')}.html`;
+        
+        // HTML 파일로 저장
+        const htmlContent = `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${template.name} - CFC 채용 리포트</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Noto Sans KR', sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: #f5f5f5; 
+        }
+        .report-container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 40px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        ${previewContent.innerHTML}
+    </div>
+</body>
+</html>`;
+        
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        this.showAlert(`리포트가 ${fileName} 파일로 저장되었습니다.`);
+    },
+    
+    // 인쇄 기능
+    printReport() {
+        const previewContent = document.getElementById('livePreviewContent');
+        if (!previewContent || !previewContent.innerHTML.trim()) {
+            this.showAlert('인쇄할 리포트가 없습니다. 먼저 템플릿을 선택해주세요.');
+            return;
+        }
+        
+        // 새 창에서 인쇄용 페이지 열기
+        const printWindow = window.open('', '_blank');
+        const template = this.templates[this._currentTemplate];
+        
+        printWindow.document.write(`
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>${template.name} - CFC 채용 리포트</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Noto Sans KR', sans-serif; 
+            margin: 0; 
+            padding: 20mm; 
+            font-size: 12pt; 
+            line-height: 1.5; 
+        }
+        .report-header { 
+            text-align: center; 
+            border-bottom: 2px solid #333; 
+            padding-bottom: 20px; 
+            margin-bottom: 30px; 
+        }
+        .kpi-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 15px; 
+            margin: 20px 0; 
+        }
+        .kpi-card { 
+            border: 1px solid #ddd; 
+            padding: 15px; 
+            text-align: center; 
+            border-radius: 8px; 
+        }
+        .report-section { 
+            margin-bottom: 25px; 
+            page-break-inside: avoid; 
+        }
+        @media print {
+            body { margin: 0; padding: 15mm; }
+            .report-section { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    ${previewContent.innerHTML}
+</body>
+</html>`);
+        
+        printWindow.document.close();
+        
+        // 문서 로드 완료 후 인쇄
+        printWindow.onload = () => {
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
+        };
     }
 };

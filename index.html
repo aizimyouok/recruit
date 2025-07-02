@@ -189,36 +189,133 @@
             color: #0B4F6C !important;
         }
         
+        /* 템플릿 갤러리 6개 한줄에 배치 */
+        #report .template-gallery {
+            display: grid !important;
+            grid-template-columns: repeat(6, 1fr) !important; /* 6개 한줄에 배치 */
+            gap: 15px !important;
+        }
+        
         /* 템플릿 카드 높이 줄이기 */
         #report .template-card {
             border: 2px solid var(--border-color, #e5e7eb) !important;
             border-radius: 12px !important;
-            padding: 15px !important; /* 패딩 줄임 */
+            padding: 12px !important; /* 패딩 더 줄임 */
             cursor: pointer !important;
             transition: all 0.3s ease !important;
             text-align: center !important;
-            min-height: 80px !important; /* 최소 높이 대폭 줄임 */
+            min-height: 70px !important; /* 최소 높이 더 줄임 */
             display: flex !important;
             flex-direction: column !important;
             justify-content: center !important;
+            background: #ffffff !important;
+        }
+        
+        #report .template-card:hover {
+            border-color: #a855f7 !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.15) !important;
+        }
+        
+        #report .template-card.selected {
+            border-color: #a855f7 !important;
+            background: linear-gradient(135deg, #faf5ff, #f3e8ff) !important;
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.2) !important;
         }
         
         #report .template-icon {
-            font-size: 1.5rem !important; /* 아이콘 크기 줄임 */
-            margin-bottom: 8px !important;
-            color: #4f46e5 !important;
+            font-size: 1.3rem !important; /* 아이콘 크기 조금 줄임 */
+            margin-bottom: 6px !important;
+            /* 밝은 파스텔 톤 아이콘 색상들 */
+        }
+        
+        /* 각 템플릿별 파스텔 아이콘 색상 */
+        #report .template-card[data-template="executive-summary"] .template-icon {
+            color: #f472b6 !important; /* 밝은 핑크 */
+        }
+        
+        #report .template-card[data-template="detailed-analysis"] .template-icon {
+            color: #06b6d4 !important; /* 밝은 시아 */
+        }
+        
+        #report .template-card[data-template="recruitment-funnel"] .template-icon {
+            color: #8b5cf6 !important; /* 밝은 보라 */
+        }
+        
+        #report .template-card[data-template="monthly-report"] .template-icon {
+            color: #10b981 !important; /* 밝은 초록 */
+        }
+        
+        #report .template-card[data-template="interviewer-performance"] .template-icon {
+            color: #f59e0b !important; /* 밝은 주황 */
+        }
+        
+        #report .template-card[data-template="cost-analysis"] .template-icon {
+            color: #ef4444 !important; /* 밝은 빨강 */
         }
         
         #report .template-name {
             font-weight: 600 !important;
             margin-bottom: 0 !important; /* 하단 여백 제거 */
-            font-size: 0.9rem !important;
+            font-size: 0.8rem !important; /* 폰트 크기 줄임 */
+            color: #374151 !important;
+            line-height: 1.2 !important;
+        }
+        
+        /* 실시간 미리보기 헤더 개선 - 토글 버튼 제거, 저장/인쇄 버튼 추가 */
+        #report .preview-header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+            color: white !important;
+            padding: 15px 25px !important;
+            margin: 0 !important;
+            border-radius: 16px 16px 0 0 !important;
+            border-bottom: none !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+        }
+        
+        #report .preview-header h3 {
+            margin: 0 !important;
+            font-size: 1.1rem !important;
+            font-weight: 600 !important;
+            color: white !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+        }
+        
+        #report .preview-actions {
+            display: flex !important;
+            gap: 8px !important;
+        }
+        
+        #report .preview-action-btn {
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: white !important;
+            border: none !important;
+            padding: 8px 12px !important;
+            border-radius: 6px !important;
+            cursor: pointer !important;
+            font-size: 0.85rem !important;
+            font-weight: 500 !important;
+            transition: all 0.2s ease !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 5px !important;
+        }
+        
+        #report .preview-action-btn:hover {
+            background: rgba(255, 255, 255, 0.3) !important;
+            transform: translateY(-1px) !important;
         }
         
         /* 템플릿 카드의 불필요한 요소들 숨기기 */
         #report .template-description,
         #report .template-time,
-        #report .template-difficulty {
+        #report .template-difficulty,
+        #report .template-header,
+        #report .template-meta {
             display: none !important;
         }
         
@@ -915,9 +1012,14 @@
                             <div class="live-preview-sidebar" id="livePreviewSidebar">
                                 <div class="preview-header">
                                     <h3><i class="fas fa-eye"></i> 실시간 미리보기</h3>
-                                    <button class="preview-toggle" id="previewToggle">
-                                        <i class="fas fa-chevron-left"></i>
-                                    </button>
+                                    <div class="preview-actions">
+                                        <button class="preview-action-btn" id="saveReportBtn" onclick="globalThis.App.report.saveReport()">
+                                            <i class="fas fa-save"></i> 저장
+                                        </button>
+                                        <button class="preview-action-btn" id="printReportBtn" onclick="globalThis.App.report.printReport()">
+                                            <i class="fas fa-print"></i> 인쇄
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="preview-content" id="livePreviewContent">
                                 </div>
