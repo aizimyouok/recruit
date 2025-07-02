@@ -58,7 +58,7 @@ const NavigationModule = {
         // 4. 페이지 제목 업데이트
         const titles = { 
             dashboard: '지원자 현황', stats: '채용 통계 분석', efficiency: '효율성 분석',
-            interviewSchedule: '면접관별 상세 일정', report: '리포트 발행', costManagement: '비용 관리'
+            interviewSchedule: '면접관별 상세 일정 및 입과 일정', report: '리포트 발행', costManagement: '비용 관리'
         };
         document.getElementById('pageTitle').textContent = titles[newPageId] || '대시보드';
 
