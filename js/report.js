@@ -238,9 +238,6 @@ const ReportModule = {
         
         // DOM 삽입 후 기본 레이아웃 적용
         // setTimeout을 제거하여 즉시 적용하고, 과도한 스타일 오버라이드 제거
-        const previewContent = document.getElementById('livePreviewContent');
-        const previewSidebar = document.getElementById('livePreviewSidebar');
-        
         if (previewContent && previewSidebar) {
             // 미리보기 사이드바 기본 패딩만 적용
             previewSidebar.style.padding = '20px';
