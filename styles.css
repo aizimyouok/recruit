@@ -4023,7 +4023,7 @@ div[style*="grid-template-columns"] {
 .admission-date-inline {
     display: flex;
     align-items: center;
-    gap: 12px; /* 8px에서 12px로 늘림 - 증원자별 간격 더 띄우기 */
+    gap: 8px; /* 12px에서 8px로 다시 조정 */
     font-size: 0.85rem;
     line-height: 1.3;
     flex-wrap: wrap;
@@ -4050,6 +4050,10 @@ div[style*="grid-template-columns"] {
     color: white;
     white-space: nowrap;
     margin-right: 6px; /* 4px에서 6px로 늘림 - 태그와 이름 사이 간격 */
+}
+
+.recruiter-group-inline {
+    margin-right: 20px; /* 각 증원자 그룹 간의 간격 */
 }
 
 .admission-date-header {

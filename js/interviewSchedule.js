@@ -527,7 +527,7 @@ const InterviewScheduleModule = {
                 let recruiterHtml = '';
                 Object.keys(recruiterGroups).forEach(recruiter => {
                     const recruiterNames = recruiterGroups[recruiter];
-                    recruiterHtml += `<span class="recruiter-tag ${recruiter}">${recruiter}</span> ${recruiterNames.join(', ')} `;
+                    recruiterHtml += `<span class="recruiter-group-inline"><span class="recruiter-tag ${recruiter}">${recruiter}</span> ${recruiterNames.join(', ')}</span>`;
                 });
 
                 const group = document.createElement('div');
