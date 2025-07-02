@@ -17,10 +17,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
-        /* 리포트 페이지 레이아웃 - 완전 1:1 비율 */
+        /* 리포트 페이지 레이아웃 - 0.8:1.2 비율 */
         #report .report-main-grid {
             display: grid !important;
-            grid-template-columns: 1fr 1fr !important; /* 완전 동일한 1:1 비율 */
+            grid-template-columns: 0.8fr 1.2fr !important; /* 왼쪽을 더 작게, 오른쪽을 더 크게 */
             gap: 30px !important;
             max-width: 1800px !important;
             margin: 0 auto !important;
@@ -116,16 +116,18 @@
             margin: 0 !important;
         }
         
-        /* KPI 카드 스타일 통일 */
+        /* KPI 카드 스타일 통일 - 세로 배열로 변경 */
         #livePreviewContent .kpi-grid {
-            display: grid !important;
-            grid-template-columns: repeat(2, 1fr) !important;
+            display: flex !important;
+            flex-direction: column !important;
             gap: 16px !important;
             margin-bottom: 24px !important;
         }
         
         #livePreviewContent .kpi-card {
-            text-align: center !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
             padding: 20px !important;
             background: #F0F9FF !important;
             border-radius: 8px !important;
@@ -134,7 +136,7 @@
         }
         
         #livePreviewContent .kpi-card h3 {
-            margin: 0 0 4px 0 !important;
+            margin: 0 !important;
             color: #6B7280 !important;
             font-size: 0.875rem !important;
             font-weight: 600 !important;
@@ -317,6 +319,39 @@
         #report .template-header,
         #report .template-meta {
             display: none !important;
+        }
+        
+        /* 실시간 미리보기 내 모든 그리드를 세로 배열로 강제 변환 */
+        #livePreviewContent div[style*="display: grid"],
+        #livePreviewContent div[style*="grid-template-columns"] {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 16px !important;
+        }
+        
+        /* 실시간 미리보기 내 모든 카드가 세로로 배치되도록 */
+        #livePreviewContent div[style*="text-align: center"] {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            text-align: left !important;
+        }
+        
+        /* AI 분석 관련 섹션들도 데이터 필터링과 동일한 폭으로 조정 */
+        #report .ai-analysis-security-info,
+        #report .ai-analysis-notice {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            margin-bottom: 15px !important;
+        }
+        
+        /* 모든 option-group이 동일한 폭을 갖도록 조정 */
+        #report .option-group {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            margin-bottom: 25px !important;
         }
         
         /* 반응형 레이아웃 */

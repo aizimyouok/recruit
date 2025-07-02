@@ -957,7 +957,7 @@ const ReportModule = {
                 
                 <div class="report-section">
                     <h2>📉 단계별 탈락 분석</h2>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
                         <div style="padding: 20px; background: #fef2f2; border-radius: 8px; border-left: 4px solid #ef4444;">
                             <h3 style="margin-top: 0; color: #dc2626;">서류 탈락 분석</h3>
                             <ul style="margin: 0; padding-left: 20px;">
@@ -1030,7 +1030,7 @@ const ReportModule = {
                 
                 <div class="report-section">
                     <h2>🎯 이번 달 목표 vs 실적</h2>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
                         <div style="text-align: center; padding: 20px; background: #dbeafe; border-radius: 8px;">
                             <div style="font-size: 1.5rem; font-weight: 700; color: #1e40af;">${target}명</div>
                             <div style="color: #6b7280;">목표</div>
@@ -1082,7 +1082,7 @@ const ReportModule = {
                 <div class="report-section">
                     <h2>📝 다음 달 계획</h2>
                     <div style="padding: 20px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #4f46e5;">
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div style="display: flex; flex-direction: column; gap: 20px;">
                             <div>
                                 <div style="font-weight: 600; margin-bottom: 10px;">📈 목표</div>
                                 <div>20명 채용</div>
@@ -2291,15 +2291,17 @@ const ReportModule = {
             margin-bottom: 30px; 
         }
         .kpi-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
+            display: flex; 
+            flex-direction: column; 
             gap: 15px; 
             margin: 20px 0; 
         }
         .kpi-card { 
             border: 1px solid #ddd; 
             padding: 15px; 
-            text-align: center; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             border-radius: 8px; 
         }
         .report-section { 
