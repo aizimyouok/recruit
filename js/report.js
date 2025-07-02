@@ -641,13 +641,16 @@ const ReportModule = {
                     </section>
                 </div>
 
-                <!-- 개선 제안 섹션 -->
-                <section style="
-                    background: white;
-                    border-radius: 16px;
-                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-                    padding: 24px;
-                ">
+                <!-- 개선 제안 섹션 - 전체 폭 사용 -->
+                <div style="clear: both; width: 100%; margin-top: 24px;">
+                    <section style="
+                        background: white;
+                        border-radius: 16px;
+                        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+                        padding: 24px;
+                        width: 100%;
+                        display: block;
+                    ">
                     <h2 style="
                         font-size: 1.2rem;
                         font-weight: 600;

@@ -173,6 +173,27 @@
             gap: 16px !important;
         }
         
+        /* 실시간 미리보기 내 섹션 배치 강제 조정 */
+        #livePreviewContent section {
+            width: 100% !important;
+            margin-bottom: 24px !important;
+            clear: both !important;
+        }
+        
+        /* 메인 분석 그리드만 2열로, 나머지는 전체 폭 */
+        #livePreviewContent .executive-summary > div:nth-child(4) {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 24px !important;
+            margin-bottom: 24px !important;
+        }
+        
+        /* 개선 제안 섹션은 전체 폭 */
+        #livePreviewContent .executive-summary > section:last-child {
+            width: 100% !important;
+            grid-column: 1 / -1 !important;
+        }
+        
         /* AI 분석 관련 섹션들도 데이터 필터링과 동일한 폭으로 조정 */
         #report .ai-analysis-security-info,
         #report .ai-analysis-notice {
