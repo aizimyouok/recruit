@@ -3966,12 +3966,11 @@ div[style*="grid-template-columns"] {
 .admission-summary-card {
     background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
     border: 1px solid #bfdbfe;
-    padding: 25px;
+    padding: 20px 25px 15px 25px; /* 아래 패딩 줄임 (25px → 15px) */
     border-radius: var(--border-radius);
     box-shadow: 0 4px 15px rgba(59, 130, 246, 0.08);
     min-width: 280px;
     flex: 1;
-    min-height: 200px; /* 300px에서 200px로 줄임 */
     display: flex;
     flex-direction: column;
 }
@@ -4006,16 +4005,16 @@ div[style*="grid-template-columns"] {
 .admission-summary-list {
     display: flex;
     flex-direction: column; /* 날짜별로 세로 배치 */
-    gap: 15px;
+    gap: 10px; /* 15px에서 10px로 줄임 */
     overflow-y: auto;
-    padding-bottom: 10px;
+    padding-bottom: 5px; /* 10px에서 5px로 줄임 */
     -webkit-overflow-scrolling: touch;
     flex: 1; /* 남은 공간을 모두 차지 */
 }
 
 .admission-date-group-inline {
-    margin-bottom: 10px;
-    padding: 10px 15px;
+    margin-bottom: 6px; /* 10px에서 6px로 줄임 - 날짜별 간격 줄이기 */
+    padding: 8px 15px; /* 상하 패딩도 줄임 (10px → 8px) */
     background: rgba(59, 130, 246, 0.05);
     border-radius: 8px;
     border-left: 4px solid #3b82f6;
@@ -4024,7 +4023,7 @@ div[style*="grid-template-columns"] {
 .admission-date-inline {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px; /* 8px에서 12px로 늘림 - 증원자별 간격 더 띄우기 */
     font-size: 0.85rem;
     line-height: 1.3;
     flex-wrap: wrap;
@@ -4050,7 +4049,7 @@ div[style*="grid-template-columns"] {
     font-weight: 600;
     color: white;
     white-space: nowrap;
-    margin-right: 4px;
+    margin-right: 6px; /* 4px에서 6px로 늘림 - 태그와 이름 사이 간격 */
 }
 
 .admission-date-header {

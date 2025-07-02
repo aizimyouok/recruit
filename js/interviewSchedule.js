@@ -476,7 +476,7 @@ const InterviewScheduleModule = {
         const header = document.createElement('div');
         header.className = 'admission-summary-header';
         header.innerHTML = `
-            <span><i class="fas fa-graduation-cap"></i> 입과 일정</span>
+            <span><i class="fas fa-graduation-cap"></i> 입과 일정별 인원 현황</span>
             <span class="total-count">총 <span class="badge">${totalCount}명</span></span>
         `;
         container.appendChild(header);
