@@ -549,7 +549,7 @@ const InterviewScheduleModule = {
         const header = document.createElement('div');
         header.className = 'interviewer-summary-header';
         header.innerHTML = `
-            <span><i class="fas fa-user-tie"></i> 면접 일정</span>
+            <span><i class="fas fa-user-tie"></i> 면접관별 상세 일정 및 입과 일정</span>
             <span class="total-count">총 <span class="badge">${totalCount}건</span></span>
         `;
         container.appendChild(header);
