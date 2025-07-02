@@ -71,7 +71,7 @@ const ReportModule = {
     init() {
         if (this._isInitialized) return;
         
-        console.log('🚀 [ReportModule v6.0] 초기화 시작...');
+        console.log('🚀 [ReportModule v6.1] 초기화 시작...');
         
         try {
             this.renderTemplateGallery();
@@ -80,21 +80,44 @@ const ReportModule = {
             this.initFormatSelector();
             this.initSecureAISystem();
             
-            // 🔥 그리드 레이아웃 강제 적용
+            // 🔥 그리드 레이아웃 강제 적용 - 즉시 실행
+            this.forceGridLayout();
+            
+            // 🔥 추가적인 레이아웃 강제 적용
             setTimeout(() => {
                 this.forceGridLayout();
-            }, 500);
+                this.forceMaxWidthRemoval();
+            }, 100);
             
             setTimeout(() => {
                 this.populateFilters();
                 this.setupPeriodFilterListener();
+                this.forceGridLayout(); // 한 번 더 적용
             }, 1000);
             
             this._isInitialized = true;
-            console.log('✅ [ReportModule v6.0] 초기화 완료!');
+            console.log('✅ [ReportModule v6.1] 초기화 완료!');
             
         } catch (error) {
             console.error('❌ [ReportModule] 초기화 실패:', error);
+        }
+    },
+    
+    // 🔥 최대 폭 제한 강제 제거 함수
+    forceMaxWidthRemoval() {
+        const elements = document.querySelectorAll('#report *');
+        elements.forEach(el => {
+            if (el.style.maxWidth && el.style.maxWidth !== 'none') {
+                el.style.maxWidth = 'none';
+            }
+        });
+        
+        // 메인 그리드 다시 강제 적용
+        const reportMainGrid = document.querySelector('.report-main-grid');
+        if (reportMainGrid) {
+            reportMainGrid.style.gridTemplateColumns = '1fr 1.5fr';
+            reportMainGrid.style.maxWidth = 'none';
+            reportMainGrid.style.margin = '0';
         }
     },
 
@@ -150,12 +173,13 @@ const ReportModule = {
         const reportMainGrid = document.querySelector('.report-main-grid');
         if (reportMainGrid) {
             reportMainGrid.style.display = 'grid';
-            reportMainGrid.style.gridTemplateColumns = '1fr 1fr';
+            reportMainGrid.style.gridTemplateColumns = '1fr 1.5fr'; // 미리보기를 더 크게
             reportMainGrid.style.gap = '20px';
             reportMainGrid.style.width = '100%';
-            reportMainGrid.style.maxWidth = '2800px';
-            reportMainGrid.style.margin = '0 auto';
+            reportMainGrid.style.maxWidth = 'none'; // 최대 폭 제한 제거
+            reportMainGrid.style.margin = '0'; // 중앙 정렬 제거
             reportMainGrid.style.alignItems = 'start';
+            reportMainGrid.style.padding = '0 20px'; // 좌우 여백 추가
         }
         
         const reportBuilderSection = document.querySelector('.report-builder-section');
@@ -195,15 +219,17 @@ const ReportModule = {
         // 🔥 미리보기 사이드바 스타일 강제 적용
         if (previewSidebar) {
             previewSidebar.style.width = '100%';
-            previewSidebar.style.maxWidth = '100%';
+            previewSidebar.style.maxWidth = 'none';
             previewSidebar.style.minWidth = '0';
             previewSidebar.style.boxSizing = 'border-box';
+            previewSidebar.style.flex = '1.5'; // flexbox에서도 더 크게
         }
         
         // 🔥 미리보기 콘텐츠 스타일 강제 적용  
         previewContent.style.width = '100%';
-        previewContent.style.maxWidth = '100%';
+        previewContent.style.maxWidth = 'none';
         previewContent.style.boxSizing = 'border-box';
+        previewContent.style.padding = '24px';
         
         const template = this.templates[this._currentTemplate];
         if (!template) return;
@@ -213,17 +239,39 @@ const ReportModule = {
         // 미리보기 내용을 리포트 모달과 동일하게 생성
         previewContent.innerHTML = this.generatePreviewSummary(filteredData);
         
-        // DOM 삽입 후 기본 레이아웃 적용
-        // setTimeout을 제거하여 즉시 적용하고, 과도한 스타일 오버라이드 제거
-        if (previewContent && previewSidebar) {
-            // 미리보기 사이드바 기본 패딩만 적용
-            previewSidebar.style.padding = '20px';
-            
-            // 전체 너비 적용 (과도하지 않게)
-            previewContent.style.width = '100%';
-            previewContent.style.maxWidth = '100%';
-            previewContent.style.boxSizing = 'border-box';
-        }
+        // DOM 삽입 후 추가 스타일 강제 적용
+        setTimeout(() => {
+            if (previewContent && previewSidebar) {
+                // 모든 내부 요소들의 max-width 제거
+                const allElements = previewContent.querySelectorAll('*');
+                allElements.forEach(el => {
+                    if (el.style.maxWidth) {
+                        el.style.maxWidth = 'none';
+                    }
+                    if (el.style.margin && el.style.margin.includes('auto')) {
+                        el.style.margin = el.style.margin.replace(/auto/g, '0');
+                    }
+                });
+                
+                // 그리드 레이아웃 강제 적용
+                const gridElements = previewContent.querySelectorAll('div[style*="display: grid"]');
+                gridElements.forEach(gridEl => {
+                    if (gridEl.style.display) {
+                        gridEl.style.display = 'grid';
+                    }
+                    if (gridEl.style.gridTemplateColumns) {
+                        // 기존 그리드 컬럼 설정 유지
+                        const originalColumns = gridEl.style.gridTemplateColumns;
+                        gridEl.style.gridTemplateColumns = originalColumns;
+                    }
+                });
+                
+                // 전체 너비 재적용
+                previewContent.style.width = '100%';
+                previewContent.style.maxWidth = 'none';
+                previewSidebar.style.maxWidth = 'none';
+            }
+        }, 100);
     },
 
     // 미리보기 요약 생성 - 각 템플릿별로 직접 호출

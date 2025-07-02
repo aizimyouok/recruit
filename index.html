@@ -10,15 +10,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet">
-    <link href="styles.css?v=20250701-2" rel="stylesheet">
-    <link href="report.css?v=20250701-2" rel="stylesheet"> 
+    <link href="styles.css?v=20250702-1" rel="stylesheet">
+    <link href="report.css?v=20250702-1" rel="stylesheet"> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
-        /* 리포트 페이지 레이아웃 - 1:1.5 비율로 미리보기를 더 크게 */
-        #report .report-main-grid {
+        /* 리포트 페이지 레이아웃 - 1:1.5 비율로 미리보기를 더 크게 - 강제 적용 */
+        #report .report-main-grid,
+        .report-main-grid {
             display: grid !important;
             grid-template-columns: 1fr 1.5fr !important; /* 미리보기를 더 크게 */
             gap: 20px !important;
@@ -27,6 +28,13 @@
             width: 100% !important;
             align-items: start !important;
             padding: 0 20px !important;
+        }
+        
+        /* JavaScript 오버라이드 방지를 위한 더 강력한 선택자 */
+        body #report .report-main-grid[style] {
+            grid-template-columns: 1fr 1.5fr !important;
+            max-width: none !important;
+            margin: 0 !important;
         }
         
         #report .report-builder-section {
@@ -117,18 +125,17 @@
             margin: 0 !important;
         }
         
-        /* KPI 카드 스타일 통일 - 세로 배열로 변경 */
+        /* KPI 카드 스타일 통일 - 원래 그리드 레이아웃 유지 */
         #livePreviewContent .kpi-grid {
-            display: flex !important;
-            flex-direction: column !important;
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
             gap: 16px !important;
             margin-bottom: 24px !important;
         }
         
         #livePreviewContent .kpi-card {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
+            display: block !important;
+            text-align: center !important;
             padding: 20px !important;
             background: #F0F9FF !important;
             border-radius: 8px !important;
@@ -333,13 +340,22 @@
             box-sizing: border-box !important;
         }
         
-        /* 모든 하위 요소들이 전체 폭을 사용하도록 강제 */
+        /* 원본 스타일을 유지하면서 최대 폭만 조정 */
         #livePreviewContent *,
         #livePreviewContent .report-content,
         #livePreviewContent .report-section,
         #livePreviewContent .executive-summary {
             max-width: 100% !important;
             box-sizing: border-box !important;
+        }
+        
+        /* 인라인 그리드 스타일 보존 */
+        #livePreviewContent div[style*="display: grid"] {
+            display: grid !important;
+        }
+        
+        #livePreviewContent div[style*="grid-template-columns: 1fr 1fr"] {
+            grid-template-columns: 1fr 1fr !important;
         }
         
         /* AI 분석 관련 섹션들도 데이터 필터링과 동일한 폭으로 조정 */
