@@ -17,11 +17,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
-        /* 리포트 페이지 레이아웃 - 1:1.5 비율로 미리보기를 더 크게 - 강제 적용 */
+        /* 리포트 페이지 레이아웃 - 미리보기를 훨씬 더 크게 - 강제 적용 */
         #report .report-main-grid,
         .report-main-grid {
             display: grid !important;
-            grid-template-columns: 1fr 1.5fr !important; /* 미리보기를 더 크게 */
+            grid-template-columns: 0.7fr 2fr !important; /* 미리보기를 훨씬 더 크게 */
             gap: 20px !important;
             max-width: none !important; /* 최대 폭 제한 제거 */
             margin: 0 !important;
@@ -131,15 +131,18 @@
             overflow-y: auto !important;
         }
         
-        /* 실시간 미리보기 콘텐츠 기본 스타일 */
+        /* 실시간 미리보기 콘텐츠 기본 스타일 - 리포트 모달과 동일하게 */
         #livePreviewContent {
-            background: #F4F4F4 !important;
-            padding: 20px !important;
+            background: #ffffff !important; /* 리포트 모달과 동일한 흰색 배경 */
+            padding: 30px !important; /* 리포트 모달과 동일한 패딩 */
+            color: #111827 !important; /* 리포트 모달과 동일한 텍스트 색상 */
             font-family: 'Noto Sans KR', sans-serif !important;
             min-height: 100% !important;
             width: 100% !important;
             max-width: 100% !important;
             box-sizing: border-box !important;
+            /* 🔥 핵심: 최소 폭 보장 */
+            min-width: 600px !important;
         }
         
         /* ============================================
@@ -206,6 +209,7 @@
             margin-bottom: 24px !important;
             width: 100% !important;
             clear: both !important;
+            min-width: 500px !important; /* 최소 폭 보장 */
         }
         
         /* 개선 제안 섹션 - 전체 폭 강제 */
@@ -239,12 +243,20 @@
             margin-bottom: 25px !important;
         }
         
-        /* 반응형 레이아웃 */
-        @media (max-width: 1400px) {
+        /* 반응형 레이아웃 - 미리보기 우선으로 조정 */
+        @media (max-width: 1600px) {
             #report .report-main-grid {
-                grid-template-columns: 1fr 1.2fr !important;
+                grid-template-columns: 0.8fr 1.8fr !important;
                 gap: 15px !important;
                 padding: 0 15px !important;
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            #report .report-main-grid {
+                grid-template-columns: 1fr 1.5fr !important;
+                gap: 15px !important;
+                padding: 0 10px !important;
             }
         }
         
