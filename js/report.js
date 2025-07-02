@@ -110,31 +110,11 @@ const ReportModule = {
             card.className = 'template-card';
             card.dataset.template = key;
             
-            const difficultyColors = {
-                'easy': '#10b981',
-                'medium': '#f59e0b', 
-                'hard': '#ef4444'
-            };
-            
             card.innerHTML = `
-                <div class="template-header">
-                    <div class="template-icon">
-                        <i class="${template.icon}"></i>
-                    </div>
-                    <div class="template-info">
-                        <h4 class="template-name">${template.name}</h4>
-                        <p>${template.description}</p>
-                    </div>
+                <div class="template-icon">
+                    <i class="${template.icon}"></i>
                 </div>
-                <div class="template-meta">
-                    <div class="meta-item">
-                        <i class="fas fa-clock"></i>
-                        <span>${template.estimatedTime}</span>
-                    </div>
-                    <div class="difficulty-badge" style="background: ${difficultyColors[template.difficulty]}">
-                        ${template.difficulty === 'easy' ? '간단' : template.difficulty === 'medium' ? '보통' : '상세'}
-                    </div>
-                </div>
+                <div class="template-name">${template.name}</div>
             `;
             
             card.addEventListener('click', () => {
