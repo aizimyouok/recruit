@@ -168,14 +168,14 @@ html body #report .filter-grid[style] {
 
 /* 필터 섹션 */
 #report .filter-section {
-    margin-bottom: 20px; /* 여백 줄임 */
+    margin-bottom: 15px; /* 여백 더 줄임 */
 }
 
 #report .filter-section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 15px; /* 헤더 아래 여백도 줄임 */
 }
 
 #report .filter-section h3 {
@@ -215,7 +215,7 @@ html body #report .filter-grid {
     /* 6개 컬럼으로 변경하여 모든 필터를 한 줄에 배치 */
     grid-template-columns: repeat(6, 1fr) !important;
     align-items: end !important;
-    gap: 10px 8px !important; /* 간격을 더 줄임 */
+    gap: 8px 8px !important; /* 세로 간격을 더 줄임 */
 }
 
 #report .filter-group {
