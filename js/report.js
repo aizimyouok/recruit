@@ -306,7 +306,6 @@ const ReportModule = {
                 console.log('🔍 DOM 후처리 완료');
             }
         }, 100);
-        }, 100);
     },
 
     // 🧪 테스트 함수 - 콘솔에서 globalThis.App.report.testGridLayout() 호출
