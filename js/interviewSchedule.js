@@ -523,29 +523,22 @@ const InterviewScheduleModule = {
                     recruiterGroups[recruiter].push(name);
                 });
 
-                // 증원자별 HTML 생성
+                // 증원자별 HTML 생성 (한 줄로 연결)
                 let recruiterHtml = '';
                 Object.keys(recruiterGroups).forEach(recruiter => {
                     const recruiterNames = recruiterGroups[recruiter];
-                    recruiterHtml += `
-                        <div class="recruiter-group">
-                            <span class="recruiter-tag ${recruiter}">${recruiter}</span>
-                            <span class="recruiter-names">${recruiterNames.join(', ')}</span>
-                        </div>
-                    `;
+                    recruiterHtml += `<span class="recruiter-tag ${recruiter}">${recruiter}</span> ${recruiterNames.join(', ')} `;
                 });
 
                 const group = document.createElement('div');
-                group.className = 'admission-date-group';
+                group.className = 'admission-date-group-inline';
                 group.innerHTML = `
-                    <div class="admission-date-header">
-                        <div class="admission-date-title">
-                            <i class="fas fa-calendar-day" style="color: #3b82f6;"></i>
-                            ${formattedDate}
-                        </div>
-                        <span class="admission-count-badge">${count}명</span>
+                    <div class="admission-date-inline">
+                        <i class="fas fa-calendar-day" style="color: #3b82f6;"></i>
+                        ${formattedDate}
+                        <span class="admission-count-badge-inline">${count}명</span>
+                        ${recruiterHtml}
                     </div>
-                    <div class="admission-names-list">${recruiterHtml}</div>
                 `;
                 list.appendChild(group);
             });
