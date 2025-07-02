@@ -21,7 +21,7 @@
         #report .report-main-grid,
         .report-main-grid {
             display: grid !important;
-            grid-template-columns: 0.7fr 2fr !important; /* 미리보기를 훨씬 더 크게 */
+            grid-template-columns: 1fr !important; /* 1열로 변경: 실시간 미리보기 삭제 후 전체 폭 사용 */
             gap: 20px !important;
             max-width: none !important; /* 최대 폭 제한 제거 */
             margin: 0 !important;
@@ -32,7 +32,7 @@
         
         /* JavaScript 오버라이드 방지를 위한 더 강력한 선택자 */
         body #report .report-main-grid[style] {
-            grid-template-columns: 1fr 1.5fr !important;
+            grid-template-columns: 1fr !important; /* 1열로 변경 */
             max-width: none !important;
             margin: 0 !important;
         }
@@ -943,21 +943,7 @@
                                 </div>
                             </div>
 
-                            <div class="live-preview-sidebar" id="livePreviewSidebar">
-                                <div class="preview-header">
-                                    <h3><i class="fas fa-eye"></i> 실시간 미리보기</h3>
-                                    <div class="preview-actions">
-                                        <button class="preview-action-btn" id="saveReportBtn" onclick="globalThis.App.report.saveReport()">
-                                            <i class="fas fa-save"></i> 저장
-                                        </button>
-                                        <button class="preview-action-btn" id="printReportBtn" onclick="globalThis.App.report.printReport()">
-                                            <i class="fas fa-print"></i> 인쇄
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="preview-content" id="livePreviewContent">
-                                </div>
-                            </div>
+
                         </div> </div>
                 </div>
                 </div>

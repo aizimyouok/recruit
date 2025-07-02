@@ -187,10 +187,10 @@
 
 #report .filter-grid {
     display: grid !important;
-    /* 3개 컬럼으로 고정하여 화면 끝까지 가득 채우기 */
-    grid-template-columns: 1fr 1fr 1fr !important;
+    /* 6개 컬럼으로 변경하여 모든 필터를 한 줄에 배치 */
+    grid-template-columns: repeat(6, 1fr) !important;
     align-items: end !important;
-    gap: 25px 20px !important; /* 세로/가로 간격 조정 */
+    gap: 20px 15px !important; /* 세로/가로 간격 조정 */
 }
 
 /* ▼▼▼▼▼ 핵심 수정 부분 ▼▼▼▼▼ */
@@ -649,25 +649,16 @@
 
 /* 반응형 */
 @media (max-width: 1200px) {
-    .report-main-grid {
-        grid-template-columns: 1fr 280px; /* 중간 크기에서 사이드바 더 줄임 */
-        gap: 20px;
+    #report .filter-grid {
+        grid-template-columns: repeat(3, 1fr) !important; /* 중간 화면에서는 3열 */
+        gap: 15px !important;
     }
 }
 
 @media (max-width: 1024px) {
-    .report-main-grid {
-        grid-template-columns: 1fr; /* 작은 화면에서는 세로로 배치 */
-        gap: 20px;
-    }
-    
-    #report .report-content {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-
     #report .filter-grid {
-        grid-template-columns: 1fr 1fr !important; /* 중간 화면에서는 2열 */
+        grid-template-columns: 1fr 1fr !important; /* 작은 화면에서는 2열 */
+        gap: 15px !important;
     }
 
     #report .template-gallery {
