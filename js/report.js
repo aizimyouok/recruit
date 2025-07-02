@@ -250,7 +250,22 @@ const ReportModule = {
             if (previewContent && previewSidebar) {
                 // 🔥 새로운 접근: CSS 클래스로 강제 적용
                 
-                // 1. 모든 2열 그리드 요소에 클래스 추가
+                // 1. 명확한 클래스가 있는 요소들 처리
+                const mainAnalysisGrid = previewContent.querySelector('.main-analysis-grid');
+                if (mainAnalysisGrid) {
+                    mainAnalysisGrid.classList.add('force-grid-2col');
+                    console.log('✅ main-analysis-grid에 force-grid-2col 클래스 적용 완료');
+                }
+                
+                const improvementSection = previewContent.querySelector('.improvement-proposal-section');
+                if (improvementSection) {
+                    improvementSection.style.display = 'block';
+                    improvementSection.style.width = '100%';
+                    improvementSection.style.clear = 'both';
+                    console.log('✅ improvement-proposal-section 전체 폭 적용 완료');
+                }
+                
+                // 2. 모든 2열 그리드 요소에 클래스 추가
                 const gridElements = previewContent.querySelectorAll('div[style*="display: grid"]');
                 console.log(`🔍 찾은 그리드 요소 개수: ${gridElements.length}`);
                 
@@ -480,12 +495,14 @@ const ReportModule = {
                     </div>
                 </section>
 
-                <!-- 메인 분석 그리드 -->
-                <div style="
+                <!-- 메인 분석 그리드 - 명확한 클래스 추가 -->
+                <div class="main-analysis-grid" style="
                     display: grid;
                     grid-template-columns: 1fr 1fr;
                     gap: 24px;
                     margin-bottom: 24px;
+                    width: 100%;
+                    clear: both;
                 ">
                     <!-- 채용 성과 분석 -->
                     <section style="
@@ -642,7 +659,7 @@ const ReportModule = {
                 </div>
 
                 <!-- 개선 제안 섹션 - 전체 폭 사용 -->
-                <div style="clear: both; width: 100%; margin-top: 24px;">
+                <div class="improvement-proposal-section" style="clear: both; width: 100%; margin-top: 24px;">
                     <section style="
                         background: white;
                         border-radius: 16px;

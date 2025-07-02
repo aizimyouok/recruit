@@ -10,8 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet">
-    <link href="styles.css?v=20250702-4" rel="stylesheet">
-    <link href="report.css?v=20250702-4" rel="stylesheet"> 
+    <link href="styles.css?v=20250702-5" rel="stylesheet">
+    <link href="report.css?v=20250702-5" rel="stylesheet"> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -192,6 +192,34 @@
         #livePreviewContent .executive-summary > section:last-child {
             width: 100% !important;
             grid-column: 1 / -1 !important;
+        }
+        
+        /* ============================================
+           명확한 클래스 기반 레이아웃 강제 적용
+           ============================================ */
+        
+        /* 메인 분석 그리드 - 2열 강제 */
+        #livePreviewContent .main-analysis-grid {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 24px !important;
+            margin-bottom: 24px !important;
+            width: 100% !important;
+            clear: both !important;
+        }
+        
+        /* 개선 제안 섹션 - 전체 폭 강제 */
+        #livePreviewContent .improvement-proposal-section {
+            display: block !important;
+            width: 100% !important;
+            clear: both !important;
+            margin-top: 24px !important;
+        }
+        
+        /* 개선 제안 섹션 내부도 전체 폭 */
+        #livePreviewContent .improvement-proposal-section section {
+            width: 100% !important;
+            display: block !important;
         }
         
         /* AI 분석 관련 섹션들도 데이터 필터링과 동일한 폭으로 조정 */
