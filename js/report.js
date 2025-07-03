@@ -412,23 +412,118 @@ const ReportModule = {
     generateExecutiveSummaryPreview(data) {
         const funnelData = this.calculateFunnelData(data);
         const total = data.length;
-        // 퍼널과 동일한 방식으로 전체 합격자/입과자 수 계산
+        
+        // 🔧 강화된 디버깅: 실제 데이터 구조 완전 분석
+        console.log('🔍🔍🔍 === 강화된 데이터 구조 분석 시작 ===');
+        console.log('📊 총 데이터 개수:', data.length);
+        
+        if (data.length > 0) {
+            console.log('📝 첫 번째 데이터 행 (완전):', data[0]);
+            console.log('📝 첫 번째 데이터 타입:', typeof data[0]);
+            console.log('📝 첫 번째 데이터가 배열인가?', Array.isArray(data[0]));
+            console.log('📝 첫 번째 데이터 길이:', data[0]?.length);
+            
+            // 두 번째 데이터도 확인
+            if (data.length > 1) {
+                console.log('📝 두 번째 데이터 행 (완전):', data[1]);
+            }
+        }
+        
         const app = globalThis.App;
-        const { headers } = app.state.data;
-        const indices = {
-            interviewResult: headers.indexOf('면접결과'),
-            joinDate: headers.indexOf('입과일')
-        };
+        let passed = 0, joined = 0;
         
-        const passed = data.filter(row => {
-            const result = row[indices.interviewResult] || '';
-            return result.trim() === '합격';
-        }).length;
+        if (!app || !app.state || !app.state.data || !app.state.data.headers) {
+            console.error('❌ 앱 데이터를 찾을 수 없습니다!');
+            console.log('app:', app);
+            console.log('app.state:', app?.state);
+            console.log('app.state.data:', app?.state?.data);
+        } else {
+            const { headers } = app.state.data;
+            console.log('📝 전체 헤더 목록 (완전):', headers);
+            console.log('📝 헤더 개수:', headers.length);
+            console.log('📝 헤더 타입:', typeof headers);
+            
+            // 면접 관련 헤더 찾기
+            const interviewHeaders = headers.filter(h => 
+                h && (h.includes('면접') || h.includes('결과') || h.includes('합격'))
+            );
+            console.log('📝 면접 관련 헤더들:', interviewHeaders);
+            
+            // 입과 관련 헤더 찾기
+            const joinHeaders = headers.filter(h => 
+                h && (h.includes('입과') || h.includes('일') || h.includes('날짜'))
+            );
+            console.log('📝 입과 관련 헤더들:', joinHeaders);
+            
+            // 정확한 헤더 이름으로 인덱스 찾기
+            const interviewResultIndex = headers.indexOf('면접결과');
+            const joinDateIndex = headers.indexOf('입과일');
+            
+            console.log('📝 면접결과 인덱스:', interviewResultIndex);
+            console.log('📝 입과일 인덱스:', joinDateIndex);
+            
+            // 실제 데이터에서 해당 인덱스의 값들 확인
+            if (data.length > 0 && interviewResultIndex !== -1) {
+                console.log('📝 면접결과 샘플 값들:');
+                for (let i = 0; i < Math.min(5, data.length); i++) {
+                    const value = data[i][interviewResultIndex];
+                    console.log(`  - 행 ${i}: "${value}" (타입: ${typeof value})`);
+                }
+                
+                // 고유한 면접결과 값들 확인
+                const uniqueResults = [...new Set(data.map(row => row[interviewResultIndex]).filter(v => v))];
+                console.log('📝 고유한 면접결과 값들:', uniqueResults);
+            }
+            
+            if (data.length > 0 && joinDateIndex !== -1) {
+                console.log('📝 입과일 샘플 값들:');
+                for (let i = 0; i < Math.min(5, data.length); i++) {
+                    const value = data[i][joinDateIndex];
+                    console.log(`  - 행 ${i}: "${value}" (타입: ${typeof value})`);
+                }
+                
+                // 비어있지 않은 입과일 값들 확인
+                const nonEmptyJoinDates = data.map(row => row[joinDateIndex]).filter(v => v && v.trim() && v.trim() !== '-');
+                console.log('📝 비어있지 않은 입과일 개수:', nonEmptyJoinDates.length);
+                console.log('📝 비어있지 않은 입과일 샘플:', nonEmptyJoinDates.slice(0, 3));
+            }
+            
+            // 합격자 수 계산
+            if (interviewResultIndex !== -1) {
+                console.log('🔄 합격자 수 계산 중...');
+                const passedList = [];
+                data.forEach((row, index) => {
+                    const result = (row[interviewResultIndex] || '').toString().trim();
+                    if (result === '합격') {
+                        passedList.push({ index, result });
+                    }
+                });
+                passed = passedList.length;
+                console.log('📊 합격자 목록:', passedList);
+            }
+            
+            // 입과자 수 계산  
+            if (joinDateIndex !== -1) {
+                console.log('🔄 입과자 수 계산 중...');
+                const joinedList = [];
+                data.forEach((row, index) => {
+                    const joinDate = (row[joinDateIndex] || '').toString().trim();
+                    if (joinDate && joinDate !== '-' && joinDate !== '') {
+                        joinedList.push({ index, joinDate });
+                    }
+                });
+                joined = joinedList.length;
+                console.log('📊 입과자 목록:', joinedList);
+            }
+            
+            console.log('📊 🎯 최종 계산 결과:', { 
+                총지원자: total,
+                합격자: passed, 
+                입과자: joined 
+            });
+        }
+        console.log('🔍🔍🔍 === 강화된 데이터 구조 분석 끝 ===');
         
-        const joined = data.filter(row => {
-            const joinDate = row[indices.joinDate] || '';
-            return joinDate.trim() && joinDate.trim() !== '-';
-        }).length;
         const passRate = total > 0 ? ((passed / total) * 100).toFixed(1) : 0;
         const joinRate = total > 0 ? ((joined / total) * 100).toFixed(1) : 0;
         
@@ -698,27 +793,59 @@ const ReportModule = {
                         </thead>
                         <tbody>
                             ${Object.entries(routeStats).map((route, index) => {
-                                const routeData = data.filter(item => item.지원루트 === route[0]);
-                                
-                                // 퍼널과 동일한 방식으로 데이터 계산
+                                // 🔧 수정된 데이터 접근 방식: 헤더 인덱스를 사용하여 배열 데이터에 접근
                                 const app = globalThis.App;
+                                if (!app || !app.state || !app.state.data || !app.state.data.headers) {
+                                    return `<tr><td colspan="6">데이터를 불러올 수 없습니다.</td></tr>`;
+                                }
+                                
                                 const { headers } = app.state.data;
-                                const indices = {
-                                    interviewResult: headers.indexOf('면접결과'),
-                                    joinDate: headers.indexOf('입과일')
-                                };
+                                const routeIndex = headers.indexOf('지원루트');
+                                const interviewResultIndex = headers.indexOf('면접결과');
+                                const joinDateIndex = headers.indexOf('입과일');
                                 
-                                // 면접결과가 '합격'인 데이터 카운트 (배열 인덱스 방식)
-                                const routePassed = routeData.filter(row => {
-                                    const result = row[indices.interviewResult] || '';
-                                    return result.trim() === '합격';
-                                }).length;
+                                console.log(`🔍 [${route[0]}] 헤더 인덱스 확인:`, {
+                                    지원루트: routeIndex,
+                                    면접결과: interviewResultIndex, 
+                                    입과일: joinDateIndex
+                                });
                                 
-                                // 입과일이 있는 데이터 카운트 (배열 인덱스 방식)
-                                const routeJoined = routeData.filter(row => {
-                                    const joinDate = row[indices.joinDate] || '';
-                                    return joinDate.trim() && joinDate.trim() !== '-';
-                                }).length;
+                                if (routeIndex === -1) {
+                                    console.warn('지원루트 컬럼을 찾을 수 없습니다.');
+                                    return `<tr><td colspan="6">지원루트 데이터 오류</td></tr>`;
+                                }
+                                
+                                // 해당 지원루트의 데이터만 필터링
+                                const routeData = data.filter(row => {
+                                    const routeValue = row[routeIndex] || '';
+                                    return routeValue.trim() === route[0];
+                                });
+                                
+                                console.log(`🔍 [${route[0]}] 루트 데이터:`, routeData.length, '개');
+                                
+                                // 합격자 수 계산 (정확한 배열 인덱스 사용)
+                                let routePassed = 0;
+                                if (interviewResultIndex !== -1) {
+                                    routePassed = routeData.filter(row => {
+                                        const result = (row[interviewResultIndex] || '').toString().trim();
+                                        return result === '합격';
+                                    }).length;
+                                }
+                                
+                                // 입과자 수 계산 (정확한 배열 인덱스 사용)
+                                let routeJoined = 0;
+                                if (joinDateIndex !== -1) {
+                                    routeJoined = routeData.filter(row => {
+                                        const joinDate = (row[joinDateIndex] || '').toString().trim();
+                                        return joinDate && joinDate !== '-' && joinDate !== '';
+                                    }).length;
+                                }
+                                
+                                console.log(`📊 [${route[0]}] 최종 계산 결과:`, {
+                                    총지원자: route[1],
+                                    합격자: routePassed,
+                                    입과자: routeJoined
+                                });
                                 
                                 const routePassRate = route[1] > 0 ? ((routePassed / route[1]) * 100).toFixed(1) : 0;
                                 const routeJoinRate = route[1] > 0 ? ((routeJoined / route[1]) * 100).toFixed(1) : 0;
