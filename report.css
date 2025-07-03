@@ -1283,27 +1283,27 @@ html body #report .template-gallery {
     min-height: 297mm; /* A4 높이에 맞게 조정 */
     animation: modalSlideIn 0.3s ease;
 }
-.report-modal-header {
+.report-modal .report-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 15px 25px;
     border-bottom: 1px solid #e5e7eb;
-    background-color: #4f46e5; /* 보라색 배경으로 변경 */
+    background-color: #4f46e5 !important; /* 보라색 배경으로 변경 */
     border-radius: 8px 8px 0 0;
 }
-.report-modal-title { 
+.report-modal .report-modal-title { 
     font-size: 1.2rem; 
     color: white !important; /* 흰색 텍스트로 변경 */
     font-weight: 600;
 }
-.report-modal-actions { 
+.report-modal .report-modal-actions { 
     display: flex; 
     gap: 15px; 
 }
 
 /* 리포트 모달 버튼 스타일 */
-.report-modal-actions .btn {
+.report-modal .report-modal-actions .btn {
     padding: 8px 16px;
     border: 2px solid white;
     background-color: transparent;
@@ -1318,15 +1318,15 @@ html body #report .template-gallery {
     transition: all 0.2s ease;
 }
 
-.report-modal-actions .btn:hover {
-    background-color: white;
+.report-modal .report-modal-actions .btn:hover {
+    background-color: white !important;
     color: #4f46e5 !important;
     transform: translateY(-1px);
 }
 
-.report-modal-actions .close-btn {
-    background: none;
-    border: none;
+.report-modal .report-modal-actions .close-btn {
+    background: none !important;
+    border: none !important;
     color: white !important;
     font-size: 1.5rem;
     cursor: pointer;
@@ -1340,8 +1340,8 @@ html body #report .template-gallery {
     transition: all 0.2s ease;
 }
 
-.report-modal-actions .close-btn:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+.report-modal .report-modal-actions .close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2) !important;
     transform: scale(1.1);
 }
 .report-modal-body {
@@ -7000,4 +7000,30 @@ html body #report .template-gallery {
         position: static;
         max-height: none;
     }
+}
+
+
+/* ===== 강력한 우선순위를 위한 ID 선택자 추가 ===== */
+#reportModal .report-modal-header,
+#reportModal .report-modal-header * {
+    background-color: #4f46e5 !important;
+    color: white !important;
+}
+
+#reportModal .report-modal-title {
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+#reportModal .report-modal-actions .btn {
+    border: 2px solid white !important;
+    background-color: transparent !important;
+    color: white !important;
+}
+
+#reportModal .report-modal-actions .close-btn {
+    color: white !important;
+    background: none !important;
+    border: none !important;
+    font-size: 1.5rem !important;
 }
