@@ -459,8 +459,30 @@ const ReportModule = {
             const interviewResultIndex = headers.indexOf('면접결과');
             const joinDateIndex = headers.indexOf('입과일');
             
+            // 🔧 최종결과 관련 컬럼 찾기 (여러 가능성 체크)
+            const finalResultCandidates = ['최종결과', '입과/출근', '입과출근', '결과', '상태'];
+            let finalResultIndex = -1;
+            for (const candidate of finalResultCandidates) {
+                const index = headers.indexOf(candidate);
+                if (index !== -1) {
+                    finalResultIndex = index;
+                    console.log(`📝 최종결과 컬럼 발견: "${candidate}" (인덱스: ${index})`);
+                    break;
+                }
+            }
+            
+            if (finalResultIndex === -1) {
+                console.log('📝 최종결과 관련 컬럼을 찾을 수 없습니다. 가능한 컬럼명들:');
+                headers.forEach((header, index) => {
+                    if (header && (header.includes('결과') || header.includes('상태') || header.includes('입과') || header.includes('출근'))) {
+                        console.log(`  - "${header}" (인덱스: ${index})`);
+                    }
+                });
+            }
+            
             console.log('📝 면접결과 인덱스:', interviewResultIndex);
             console.log('📝 입과일 인덱스:', joinDateIndex);
+            console.log('📝 최종결과 인덱스:', finalResultIndex);
             
             // 실제 데이터에서 해당 인덱스의 값들 확인
             if (data.length > 0 && interviewResultIndex !== -1) {
@@ -502,30 +524,49 @@ const ReportModule = {
                 console.log('📊 합격자 목록:', passedList);
             }
             
-            // 입과자 수 계산  
+            // 입과자 수 계산 (수정된 로직: 입과일 있고 최종결과 없는 사람)
+            let joined = 0, joinCanceled = 0;
             if (joinDateIndex !== -1) {
-                console.log('🔄 입과자 수 계산 중...');
+                console.log('🔄 입과자 및 입과취소자 수 계산 중...');
                 const joinedList = [];
+                const joinCanceledList = [];
+                
                 data.forEach((row, index) => {
                     const joinDate = (row[joinDateIndex] || '').toString().trim();
+                    
+                    // 입과일이 있는 사람들만 대상
                     if (joinDate && joinDate !== '-' && joinDate !== '') {
-                        joinedList.push({ index, joinDate });
+                        const finalResult = finalResultIndex !== -1 ? 
+                            (row[finalResultIndex] || '').toString().trim() : '';
+                        
+                        // 최종결과가 비어있으면 실제 입과자, 값이 있으면 입과 취소자
+                        if (!finalResult || finalResult === '-') {
+                            joined++;
+                            joinedList.push({ index, joinDate });
+                        } else {
+                            joinCanceled++;
+                            joinCanceledList.push({ index, joinDate, cancelReason: finalResult });
+                        }
                     }
                 });
-                joined = joinedList.length;
-                console.log('📊 입과자 목록:', joinedList);
+                
+                console.log('📊 실제 입과자 목록:', joinedList);
+                console.log('📊 입과 취소자 목록:', joinCanceledList);
             }
             
             console.log('📊 🎯 최종 계산 결과:', { 
                 총지원자: total,
                 합격자: passed, 
-                입과자: joined 
+                실제_입과자: joined,
+                입과_취소자: joinCanceled,
+                입과_취소율: joined + joinCanceled > 0 ? ((joinCanceled / (joined + joinCanceled)) * 100).toFixed(1) + '%' : '0%'
             });
         }
         console.log('🔍🔍🔍 === 강화된 데이터 구조 분석 끝 ===');
         
         const passRate = total > 0 ? ((passed / total) * 100).toFixed(1) : 0;
         const joinRate = total > 0 ? ((joined / total) * 100).toFixed(1) : 0;
+        const cancelRate = joined + joinCanceled > 0 ? ((joinCanceled / (joined + joinCanceled)) * 100).toFixed(1) : 0;
         
         // 지원루트별 통계
         const routeStats = this.calculateRouteStats(data);
@@ -618,11 +659,11 @@ const ReportModule = {
                     </div>
                 </div>
 
-                <!-- 🚀 개선된 KPI 대시보드 -->
+                <!-- 🚀 개선된 KPI 대시보드 (입과 취소율 추가) -->
                 <div style="
                     display: grid;
-                    grid-template-columns: repeat(4, 1fr);
-                    gap: 20px;
+                    grid-template-columns: repeat(5, 1fr);
+                    gap: 15px;
                     margin-bottom: 30px;
                     padding: 0 20px;
                 ">
@@ -701,6 +742,25 @@ const ReportModule = {
                         <div style="font-size: 1.4rem; font-weight: 700; color: #8b5cf6; margin-bottom: 4px;">${topRoute ? topRoute[0] : 'N/A'}</div>
                         <div style="color: #64748b; font-size: 0.8rem;">${topRoute ? topRoute[1] : 0}명</div>
                     </div>
+                    
+                    <div style="
+                        background: white;
+                        border: 2px solid #ef4444;
+                        border-radius: 12px;
+                        text-align: center;
+                        padding: 20px 15px;
+                        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+                        transition: transform 0.2s ease;
+                    ">
+                        <div style="
+                            color: #ef4444;
+                            font-size: 2rem;
+                            margin-bottom: 5px;
+                        ">⚠️</div>
+                        <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 8px;">입과 취소율</div>
+                        <div style="font-size: 1.8rem; font-weight: 700; color: #ef4444; margin-bottom: 4px;">${cancelRate}%</div>
+                        <div style="color: #64748b; font-size: 0.8rem;">${joinCanceled}명 취소</div>
+                    </div>
                 </div>
 
                 <!-- 📊 채용 퍼널 시각화 -->
@@ -750,9 +810,13 @@ const ReportModule = {
                                     <div style="font-size: 0.9rem; color: #64748b;">면접 → 합격</div>
                                     <div style="font-size: 1.4rem; font-weight: 700; color: #10b981;">${passRate}%</div>
                                 </div>
-                                <div>
+                                <div style="margin-bottom: 12px;">
                                     <div style="font-size: 0.9rem; color: #64748b;">합격 → 입과</div>
                                     <div style="font-size: 1.4rem; font-weight: 700; color: #f59e0b;">${passed > 0 ? ((joined / passed) * 100).toFixed(0) : 0}%</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.9rem; color: #64748b;">입과 취소율</div>
+                                    <div style="font-size: 1.4rem; font-weight: 700; color: #ef4444;">${cancelRate}%</div>
                                 </div>
                             </div>
                         </div>
@@ -789,6 +853,7 @@ const ReportModule = {
                                 <th style="padding: 12px; text-align: center; font-weight: 600; color: #334155; border-bottom: 2px solid #cbd5e1;">합격률</th>
                                 <th style="padding: 12px; text-align: center; font-weight: 600; color: #334155; border-bottom: 2px solid #cbd5e1;">입과자 수</th>
                                 <th style="padding: 12px; text-align: center; font-weight: 600; color: #334155; border-bottom: 2px solid #cbd5e1;">입과율</th>
+                                <th style="padding: 12px; text-align: center; font-weight: 600; color: #334155; border-bottom: 2px solid #cbd5e1;">입과 취소율</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -796,7 +861,7 @@ const ReportModule = {
                                 // 🔧 수정된 데이터 접근 방식: 헤더 인덱스를 사용하여 배열 데이터에 접근
                                 const app = globalThis.App;
                                 if (!app || !app.state || !app.state.data || !app.state.data.headers) {
-                                    return `<tr><td colspan="6">데이터를 불러올 수 없습니다.</td></tr>`;
+                                    return `<tr><td colspan="7">데이터를 불러올 수 없습니다.</td></tr>`;
                                 }
                                 
                                 const { headers } = app.state.data;
@@ -804,15 +869,27 @@ const ReportModule = {
                                 const interviewResultIndex = headers.indexOf('면접결과');
                                 const joinDateIndex = headers.indexOf('입과일');
                                 
+                                // 최종결과 컬럼 찾기 (전역에서 이미 정의됨)
+                                const finalResultCandidates = ['최종결과', '입과/출근', '입과출근', '결과', '상태'];
+                                let finalResultIndex = -1;
+                                for (const candidate of finalResultCandidates) {
+                                    const index = headers.indexOf(candidate);
+                                    if (index !== -1) {
+                                        finalResultIndex = index;
+                                        break;
+                                    }
+                                }
+                                
                                 console.log(`🔍 [${route[0]}] 헤더 인덱스 확인:`, {
                                     지원루트: routeIndex,
                                     면접결과: interviewResultIndex, 
-                                    입과일: joinDateIndex
+                                    입과일: joinDateIndex,
+                                    최종결과: finalResultIndex
                                 });
                                 
                                 if (routeIndex === -1) {
                                     console.warn('지원루트 컬럼을 찾을 수 없습니다.');
-                                    return `<tr><td colspan="6">지원루트 데이터 오류</td></tr>`;
+                                    return `<tr><td colspan="7">지원루트 데이터 오류</td></tr>`;
                                 }
                                 
                                 // 해당 지원루트의 데이터만 필터링
@@ -832,23 +909,37 @@ const ReportModule = {
                                     }).length;
                                 }
                                 
-                                // 입과자 수 계산 (정확한 배열 인덱스 사용)
-                                let routeJoined = 0;
+                                // 입과자 및 입과 취소자 수 계산 (수정된 로직)
+                                let routeJoined = 0, routeJoinCanceled = 0;
                                 if (joinDateIndex !== -1) {
-                                    routeJoined = routeData.filter(row => {
+                                    routeData.forEach(row => {
                                         const joinDate = (row[joinDateIndex] || '').toString().trim();
-                                        return joinDate && joinDate !== '-' && joinDate !== '';
-                                    }).length;
+                                        
+                                        // 입과일이 있는 사람들만 대상
+                                        if (joinDate && joinDate !== '-' && joinDate !== '') {
+                                            const finalResult = finalResultIndex !== -1 ? 
+                                                (row[finalResultIndex] || '').toString().trim() : '';
+                                            
+                                            // 최종결과가 비어있으면 실제 입과자, 값이 있으면 입과 취소자
+                                            if (!finalResult || finalResult === '-') {
+                                                routeJoined++;
+                                            } else {
+                                                routeJoinCanceled++;
+                                            }
+                                        }
+                                    });
                                 }
                                 
                                 console.log(`📊 [${route[0]}] 최종 계산 결과:`, {
                                     총지원자: route[1],
                                     합격자: routePassed,
-                                    입과자: routeJoined
+                                    실제_입과자: routeJoined,
+                                    입과_취소자: routeJoinCanceled
                                 });
                                 
                                 const routePassRate = route[1] > 0 ? ((routePassed / route[1]) * 100).toFixed(1) : 0;
                                 const routeJoinRate = route[1] > 0 ? ((routeJoined / route[1]) * 100).toFixed(1) : 0;
+                                const routeCancelRate = routeJoined + routeJoinCanceled > 0 ? ((routeJoinCanceled / (routeJoined + routeJoinCanceled)) * 100).toFixed(1) : 0;
                                 
                                 return `
                                     <tr style="border-bottom: 1px solid #e2e8f0; ${index % 2 === 0 ? 'background: #fafafa;' : 'background: white;'}">
@@ -858,6 +949,7 @@ const ReportModule = {
                                         <td style="padding: 10px; text-align: center; font-weight: 600; color: #10b981;">${routePassRate}%</td>
                                         <td style="padding: 10px; text-align: center; font-weight: 600; color: #f59e0b;">${routeJoined}</td>
                                         <td style="padding: 10px; text-align: center; font-weight: 600; color: #f59e0b;">${routeJoinRate}%</td>
+                                        <td style="padding: 10px; text-align: center; font-weight: 600; color: #ef4444;">${routeCancelRate}%</td>
                                     </tr>
                                 `;
                             }).join('')}
@@ -923,6 +1015,7 @@ const ReportModule = {
                                 ">⚠️ 개선 필요 영역</h3>
                                 <ul style="margin: 0; padding-left: 20px; color: #374151;">
                                     <li style="margin-bottom: 8px;">입과율 개선 필요 (현재 ${joinRate}%)</li>
+                                    <li style="margin-bottom: 8px;">입과 취소율 관리 필요 (현재 ${cancelRate}%)</li>
                                     <li style="margin-bottom: 8px;">채용 채널 다양화 검토</li>
                                     <li style="margin-bottom: 8px;">후보자 경험 향상 방안 마련</li>
                                 </ul>
@@ -964,8 +1057,8 @@ const ReportModule = {
                                     margin: 0 auto 10px auto;
                                     font-weight: bold;
                                 ">1</div>
-                                <div style="font-weight: 600; color: #1e293b; margin-bottom: 5px;">입과율 분석</div>
-                                <div style="font-size: 0.9rem; color: #64748b;">합격 후 이탈 원인 파악</div>
+                                <div style="font-weight: 600; color: #1e293b; margin-bottom: 5px;">입과 취소율 분석</div>
+                                <div style="font-size: 0.9rem; color: #64748b;">입과 취소 원인 파악 및 개선</div>
                             </div>
                             <div style="text-align: center;">
                                 <div style="
@@ -2317,7 +2410,7 @@ const ReportModule = {
         return this.generateCostAnalysisPreview(data);
     },
 
-    // 퍼널 데이터 계산
+    // 퍼널 데이터 계산 (수정된 로직: 입과 취소자 제외)
     calculateFunnelData(data) {
         const app = globalThis.App;
         if (!app || !app.state || !app.state.data) return [];
@@ -2329,6 +2422,17 @@ const ReportModule = {
             joinDate: headers.indexOf('입과일')
         };
         
+        // 최종결과 컬럼 찾기
+        const finalResultCandidates = ['최종결과', '입과/출근', '입과출근', '결과', '상태'];
+        let finalResultIndex = -1;
+        for (const candidate of finalResultCandidates) {
+            const index = headers.indexOf(candidate);
+            if (index !== -1) {
+                finalResultIndex = index;
+                break;
+            }
+        }
+        
         const total = data.length;
         const interviewConfirmed = data.filter(row => 
             (row[indices.contactResult] || '') === '면접확정'
@@ -2336,10 +2440,23 @@ const ReportModule = {
         const passed = data.filter(row => 
             (row[indices.interviewResult] || '') === '합격'
         ).length;
-        const joined = data.filter(row => {
-            const joinDate = row[indices.joinDate] || '';
-            return joinDate.trim() && joinDate.trim() !== '-';
-        }).length;
+        
+        // 🔧 수정된 입과자 계산: 입과일이 있으면서 최종결과가 없는 사람만
+        let joined = 0;
+        if (indices.joinDate !== -1) {
+            data.forEach(row => {
+                const joinDate = (row[indices.joinDate] || '').toString().trim();
+                if (joinDate && joinDate !== '-' && joinDate !== '') {
+                    const finalResult = finalResultIndex !== -1 ? 
+                        (row[finalResultIndex] || '').toString().trim() : '';
+                    
+                    // 최종결과가 비어있으면 실제 입과자
+                    if (!finalResult || finalResult === '-') {
+                        joined++;
+                    }
+                }
+            });
+        }
         
         return [
             { 
@@ -2359,6 +2476,11 @@ const ReportModule = {
             },
             { 
                 stage: '최종 입과', 
+                count: joined, 
+                conversion: passed > 0 ? (joined / passed * 100) : 0 
+            }
+        ];
+    },
                 count: joined, 
                 conversion: passed > 0 ? (joined / passed * 100) : 0 
             }
