@@ -570,22 +570,24 @@ const ReportModule = {
         }
         console.log('🔍🔍🔍 === 강화된 데이터 구조 분석 끝 ===');
         
-        const passRate = total > 0 ? ((passed / total) * 100).toFixed(1) : 0;
-        const joinRate = total > 0 ? ((joined / total) * 100).toFixed(1) : 0;
-        const cancelRate = (joined + joinCanceled) > 0 ? ((joinCanceled / (joined + joinCanceled)) * 100).toFixed(1) : 0;
-        
-        // 🔧 변수 안전성 확보 (undefined 방지)
+        // 🔧 변수 안전성 확보 - joined와 joinCanceled가 정의되지 않은 경우를 위한 기본값
+        const safeJoined = joined || 0;
         const safeJoinCanceled = joinCanceled || 0;
+        
+        const passRate = total > 0 ? ((passed / total) * 100).toFixed(1) : 0;
+        const joinRate = total > 0 ? ((safeJoined / total) * 100).toFixed(1) : 0;
+        const cancelRate = (safeJoined + safeJoinCanceled) > 0 ? ((safeJoinCanceled / (safeJoined + safeJoinCanceled)) * 100).toFixed(1) : 0;
+        
         const safeCancelRate = cancelRate || 0;
-        const safeTopRoute = topRoute || ['미지정', 0];
         
         // 지원루트별 통계
         const routeStats = this.calculateRouteStats(data);
         const topRoute = Object.entries(routeStats).sort((a, b) => b[1] - a[1])[0];
+        const safeTopRoute = topRoute || ['미지정', 0];
         
         console.log('🔍 [경영진 요약] 계산된 변수들:', {
             passRate, joinRate, safeCancelRate, 
-            passed, joined, safeJoinCanceled,
+            passed, safeJoined, safeJoinCanceled,
             safeTopRoute
         });
         
@@ -738,7 +740,7 @@ const ReportModule = {
                         ">🎯</div>
                         <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 8px;">입과율</div>
                         <div style="font-size: 1.8rem; font-weight: 700; color: #f59e0b; margin-bottom: 4px;">${joinRate}%</div>
-                        <div style="color: #64748b; font-size: 0.8rem;">${joined}명 입과</div>
+                        <div style="color: #64748b; font-size: 0.8rem;">${safeJoined}명 입과</div>
                     </div>
                     
                     <div style="
@@ -829,7 +831,7 @@ const ReportModule = {
                                 </div>
                                 <div style="margin-bottom: 12px;">
                                     <div style="font-size: 0.9rem; color: #64748b;">합격 → 입과</div>
-                                    <div style="font-size: 1.4rem; font-weight: 700; color: #f59e0b;">${passed > 0 ? ((joined / passed) * 100).toFixed(0) : 0}%</div>
+                                    <div style="font-size: 1.4rem; font-weight: 700; color: #f59e0b;">${passed > 0 ? ((safeJoined / passed) * 100).toFixed(0) : 0}%</div>
                                 </div>
                                 <div>
                                     <div style="font-size: 0.9rem; color: #64748b;">입과 취소율</div>
