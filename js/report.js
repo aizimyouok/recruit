@@ -2473,15 +2473,194 @@ const ReportModule = {
     
     // 인쇄 기능
     printReport() {
-        const previewContent = document.getElementById('livePreviewContent');
-        if (!previewContent || !previewContent.innerHTML.trim()) {
-            this.showAlert('인쇄할 리포트가 없습니다. 먼저 템플릿을 선택해주세요.');
+        // 리포트 모달이 열려있는지 확인
+        const reportModal = document.getElementById('reportModal');
+        const reportModalBody = document.getElementById('reportModalBody');
+        
+        // 리포트 모달이 열려있고 내용이 있는지 확인
+        if (reportModal && reportModal.style.display !== 'none' && reportModalBody && reportModalBody.innerHTML.trim()) {
+            // 리포트 모달의 내용을 인쇄
+            this.printModalContent(reportModalBody);
             return;
         }
         
+        // 실시간 미리보기 내용 확인
+        const previewContent = document.getElementById('livePreviewContent');
+        if (previewContent && previewContent.innerHTML.trim() && !previewContent.innerHTML.includes('템플릿을 선택하면')) {
+            this.printPreviewContent(previewContent);
+            return;
+        }
+        
+        // 인쇄할 내용이 없는 경우
+        this.showAlert('인쇄할 리포트가 없습니다. 먼저 리포트를 생성해주세요.');
+    },
+    
+    // 고우선순위 알림창 표시
+    showAlert(message) {
+        // 기존 알림창이 있으면 제거
+        const existingAlert = document.getElementById('reportAlert');
+        if (existingAlert) {
+            existingAlert.remove();
+        }
+        
+        // 새 알림창 생성
+        const alertDiv = document.createElement('div');
+        alertDiv.id = 'reportAlert';
+        alertDiv.innerHTML = `
+            <div style="
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.7);
+                z-index: 999999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            ">
+                <div style="
+                    background: white;
+                    padding: 30px;
+                    border-radius: 12px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                    max-width: 400px;
+                    text-align: center;
+                    border: 2px solid #4f46e5;
+                ">
+                    <div style="
+                        color: #4f46e5;
+                        font-size: 2rem;
+                        margin-bottom: 15px;
+                    ">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <p style="
+                        margin: 0 0 20px 0;
+                        font-size: 1.1rem;
+                        color: #374151;
+                        line-height: 1.5;
+                    ">${message}</p>
+                    <button onclick="document.getElementById('reportAlert').remove()" style="
+                        background: #4f46e5;
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 6px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        font-size: 1rem;
+                    ">확인</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        // 3초 후 자동 제거
+        setTimeout(() => {
+            if (document.getElementById('reportAlert')) {
+                document.getElementById('reportAlert').remove();
+            }
+        }, 3000);
+    },
+    
+    // 모달 내용 인쇄
+    printModalContent(content) {
+        const template = this.templates[this._currentTemplate] || { name: 'CFC 채용 리포트' };
+        
         // 새 창에서 인쇄용 페이지 열기
         const printWindow = window.open('', '_blank');
-        const template = this.templates[this._currentTemplate];
+        
+        printWindow.document.write(`
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>${template.name} - CFC 채용 리포트</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+        body { 
+            font-family: 'Noto Sans KR', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            font-size: 11pt; 
+            line-height: 1.4; 
+            color: black !important;
+        }
+        * {
+            color: black !important;
+            background: white !important;
+        }
+        .report-header {
+            background: white !important;
+            color: black !important;
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #333;
+        }
+        .report-title, .report-header h1 {
+            color: black !important;
+            font-size: 16pt;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .report-subtitle {
+            font-size: 14pt;
+            color: black !important;
+            page-break-after: avoid;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            page-break-inside: avoid;
+            font-size: 9pt;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background: #f0f0f0 !important;
+            font-weight: bold;
+        }
+        .chart-container {
+            page-break-inside: avoid;
+            text-align: center;
+            margin: 20px 0;
+        }
+        section {
+            page-break-inside: avoid;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    ${content.innerHTML}
+</body>
+</html>
+        `);
+        
+        printWindow.document.close();
+        
+        // 로딩 후 인쇄 대화상자 열기
+        printWindow.onload = () => {
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 100);
+        };
+    },
+    
+    // 미리보기 내용 인쇄
+    printPreviewContent(content) {
+        const template = this.templates[this._currentTemplate] || { name: 'CFC 채용 리포트' };
         
         printWindow.document.write(`
 <!DOCTYPE html>
