@@ -2481,11 +2481,6 @@ const ReportModule = {
             }
         ];
     },
-                count: joined, 
-                conversion: passed > 0 ? (joined / passed * 100) : 0 
-            }
-        ];
-    },
 
     // 퍼널 HTML 생성
     generateFunnelHtml(funnelData) {
