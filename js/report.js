@@ -89,6 +89,11 @@ const ReportModule = {
                 this.forceMaxWidthRemoval();
             }, 100);
             
+            // 🔥 더 늦은 타이밍에도 한 번 더 적용
+            setTimeout(() => {
+                this.forceGridLayout();
+            }, 500);
+            
             setTimeout(() => {
                 this.populateFilters();
                 this.setupPeriodFilterListener();
@@ -2415,19 +2420,25 @@ const ReportModule = {
     
     // 🔥 그리드 레이아웃 강제 적용 함수
     forceGridLayout() {
-        // 리포트 컨테이너 최대 넓이 제거
-        const reportContainer = document.querySelector('#report .report-container');
-        if (reportContainer) {
-            reportContainer.style.setProperty('max-width', 'none', 'important');
-            reportContainer.style.setProperty('width', '100%', 'important');
-        }
+        // 모든 상위 요소 넓이 제한 해제
+        const elementsToResize = [
+            '#report',
+            '#report .report-container',
+            '#report .report-main-grid', 
+            '#report .report-builder-section',
+            '#report .report-builder',
+            '#report .filter-section',
+            '.content-area',
+            '.main-content'
+        ];
         
-        // 리포트 빌더 최대 넓이 제거
-        const reportBuilder = document.querySelector('#report .report-builder');
-        if (reportBuilder) {
-            reportBuilder.style.setProperty('max-width', 'none', 'important');
-            reportBuilder.style.setProperty('width', '100%', 'important');
-        }
+        elementsToResize.forEach(selector => {
+            const element = document.querySelector(selector);
+            if (element) {
+                element.style.setProperty('max-width', 'none', 'important');
+                element.style.setProperty('width', '100%', 'important');
+            }
+        });
         
         // 템플릿 갤러리 강제 6열 적용
         const templateGallery = document.querySelector('.template-gallery');
@@ -2448,7 +2459,7 @@ const ReportModule = {
             filterGrid.style.setProperty('width', '100%', 'important');
         }
         
-        console.log('🔥 그리드 레이아웃 및 최대 넓이 제거 강제 적용 완료');
+        console.log('🔥 모든 요소 넓이 제한 해제 및 그리드 레이아웃 강제 적용 완료');
     },
     
     // 최대 너비 제거 함수

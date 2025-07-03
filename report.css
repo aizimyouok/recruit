@@ -2,6 +2,17 @@
    강제 레이아웃 override (최우선순위)
    ========================= */
 
+/* 모든 상위 요소 넓이 제한 해제 */
+#report,
+#report .report-container,
+#report .report-main-grid,
+#report .report-builder-section,
+#report .report-builder,
+#report .filter-section {
+    max-width: none !important;
+    width: 100% !important;
+}
+
 /* 템플릿 갤러리 강제 6열 */
 .template-gallery[style],
 #report .template-gallery[style],
