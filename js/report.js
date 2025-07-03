@@ -431,86 +431,147 @@ const ReportModule = {
                 padding: 0;
                 line-height: 1.5;
             ">
-                <!-- 🎯 임팩트 헤더 -->
+                <!-- 🎯 개선된 헤더 -->
                 <div class="report-header" style="
                     background: linear-gradient(135deg, #4f46e5, #7c3aed);
                     color: white;
-                    text-align: center;
-                    padding: 20px;
-                    margin-bottom: 0;
+                    padding: 30px;
+                    margin-bottom: 25px;
                     border-radius: 0;
+                    display: grid;
+                    grid-template-columns: 1fr auto;
+                    align-items: center;
+                    gap: 30px;
                 ">
-                    <h1 style="
-                        font-size: 1.6rem; 
-                        font-weight: 700; 
-                        color: white; 
-                        margin: 0 0 8px 0;
-                    ">CFC 채용 분석 리포트</h1>
-                    <div class="report-meta" style="
+                    <!-- 중앙 제목 -->
+                    <div style="text-align: center;">
+                        <h1 style="
+                            font-size: 2.2rem; 
+                            font-weight: 800; 
+                            color: white; 
+                            margin: 0;
+                            letter-spacing: -0.5px;
+                        ">CFC 채용 분석 리포트</h1>
+                    </div>
+                    
+                    <!-- 오른쪽 메타 정보 -->
+                    <div style="
                         display: flex;
-                        justify-content: center;
-                        gap: 20px;
+                        flex-direction: column;
+                        gap: 8px;
+                        text-align: right;
                         font-size: 0.9rem;
-                        color: white;
+                        min-width: 150px;
                     ">
-                        <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 15px;">
+                        <div style="
+                            background: rgba(255,255,255,0.15); 
+                            padding: 6px 12px; 
+                            border-radius: 20px;
+                            border: 1px solid rgba(255,255,255,0.2);
+                        ">
                             📊 경영진 요약
-                        </span>
-                        <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 15px;">
+                        </div>
+                        <div style="
+                            background: rgba(255,255,255,0.15); 
+                            padding: 6px 12px; 
+                            border-radius: 20px;
+                            border: 1px solid rgba(255,255,255,0.2);
+                        ">
                             📅 ${this.getSelectedPeriodText()}
-                        </span>
-                        <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 15px;">
+                        </div>
+                        <div style="
+                            background: rgba(255,255,255,0.15); 
+                            padding: 6px 12px; 
+                            border-radius: 20px;
+                            border: 1px solid rgba(255,255,255,0.2);
+                        ">
                             👥 총 ${total}명
-                        </span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- 🚀 핵심 KPI 대시보드 -->
+                <!-- 🚀 개선된 KPI 대시보드 -->
                 <div style="
                     display: grid;
-                    grid-template-columns: 1fr 1fr 1fr 1fr;
-                    gap: 0;
-                    margin-bottom: 0;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 20px;
+                    margin-bottom: 30px;
+                    padding: 0 20px;
                 ">
                     <div style="
-                        background: linear-gradient(135deg, #3b82f6, #1e40af);
-                        color: white;
+                        background: white;
+                        border: 2px solid #3b82f6;
+                        border-radius: 12px;
                         text-align: center;
-                        padding: 20px;
+                        padding: 20px 15px;
+                        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+                        transition: transform 0.2s ease;
                     ">
-                        <div style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 8px;">총 지원자</div>
-                        <div style="font-size: 2.2rem; font-weight: 800; margin-bottom: 4px;">${total}</div>
-                        <div style="font-size: 0.8rem; opacity: 0.8;">명</div>
+                        <div style="
+                            color: #3b82f6;
+                            font-size: 2rem;
+                            margin-bottom: 5px;
+                        ">👥</div>
+                        <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 8px;">총 지원자</div>
+                        <div style="font-size: 1.8rem; font-weight: 700; color: #3b82f6; margin-bottom: 4px;">${total}</div>
+                        <div style="color: #64748b; font-size: 0.8rem;">명</div>
                     </div>
+                    
                     <div style="
-                        background: linear-gradient(135deg, #10b981, #047857);
-                        color: white;
+                        background: white;
+                        border: 2px solid #10b981;
+                        border-radius: 12px;
                         text-align: center;
-                        padding: 20px;
+                        padding: 20px 15px;
+                        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+                        transition: transform 0.2s ease;
                     ">
-                        <div style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 8px;">합격률</div>
-                        <div style="font-size: 2.2rem; font-weight: 800; margin-bottom: 4px;">${passRate}%</div>
-                        <div style="font-size: 0.8rem; opacity: 0.8;">${passed}명 합격</div>
+                        <div style="
+                            color: #10b981;
+                            font-size: 2rem;
+                            margin-bottom: 5px;
+                        ">✅</div>
+                        <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 8px;">합격률</div>
+                        <div style="font-size: 1.8rem; font-weight: 700; color: #10b981; margin-bottom: 4px;">${passRate}%</div>
+                        <div style="color: #64748b; font-size: 0.8rem;">${passed}명 합격</div>
                     </div>
+                    
                     <div style="
-                        background: linear-gradient(135deg, #f59e0b, #d97706);
-                        color: white;
+                        background: white;
+                        border: 2px solid #f59e0b;
+                        border-radius: 12px;
                         text-align: center;
-                        padding: 20px;
+                        padding: 20px 15px;
+                        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+                        transition: transform 0.2s ease;
                     ">
-                        <div style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 8px;">입과율</div>
-                        <div style="font-size: 2.2rem; font-weight: 800; margin-bottom: 4px;">${joinRate}%</div>
-                        <div style="font-size: 0.8rem; opacity: 0.8;">${Math.round(total * joinRate / 100)}명 입과</div>
+                        <div style="
+                            color: #f59e0b;
+                            font-size: 2rem;
+                            margin-bottom: 5px;
+                        ">🎯</div>
+                        <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 8px;">입과율</div>
+                        <div style="font-size: 1.8rem; font-weight: 700; color: #f59e0b; margin-bottom: 4px;">${joinRate}%</div>
+                        <div style="color: #64748b; font-size: 0.8rem;">${Math.round(total * joinRate / 100)}명 입과</div>
                     </div>
+                    
                     <div style="
-                        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-                        color: white;
+                        background: white;
+                        border: 2px solid #8b5cf6;
+                        border-radius: 12px;
                         text-align: center;
-                        padding: 20px;
+                        padding: 20px 15px;
+                        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+                        transition: transform 0.2s ease;
                     ">
-                        <div style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 8px;">주요 채널</div>
-                        <div style="font-size: 1.4rem; font-weight: 700; margin-bottom: 4px;">${topRoute ? topRoute[0] : 'N/A'}</div>
-                        <div style="font-size: 0.8rem; opacity: 0.8;">${topRoute ? topRoute[1] : 0}명</div>
+                        <div style="
+                            color: #8b5cf6;
+                            font-size: 2rem;
+                            margin-bottom: 5px;
+                        ">📍</div>
+                        <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 8px;">주요 채널</div>
+                        <div style="font-size: 1.4rem; font-weight: 700; color: #8b5cf6; margin-bottom: 4px;">${topRoute ? topRoute[0] : 'N/A'}</div>
+                        <div style="color: #64748b; font-size: 0.8rem;">${topRoute ? topRoute[1] : 0}명</div>
                     </div>
                 </div>
 
@@ -525,7 +586,7 @@ const ReportModule = {
                         font-weight: 700;
                         color: #1e293b;
                         margin: 0 0 20px 0;
-                        text-align: center;
+                        text-align: left;
                     ">📈 채용 프로세스 퍼널</h2>
                     
                     <div style="
@@ -581,7 +642,7 @@ const ReportModule = {
                         font-weight: 700;
                         color: #1e293b;
                         margin: 0 0 20px 0;
-                        text-align: center;
+                        text-align: left;
                     ">📋 지원루트별 상세 현황</h2>
                     
                     <table style="
@@ -605,8 +666,30 @@ const ReportModule = {
                         <tbody>
                             ${Object.entries(routeStats).map((route, index) => {
                                 const routeData = data.filter(item => item.지원루트 === route[0]);
-                                const routePassed = routeData.filter(item => ['최종합격', '입과확정', '입과완료'].includes(item.진행상황)).length;
-                                const routeJoined = routeData.filter(item => ['입과확정', '입과완료'].includes(item.진행상황)).length;
+                                // 더 넓은 범위의 합격 상태 포함
+                                const routePassed = routeData.filter(item => 
+                                    item.진행상황 && (
+                                        item.진행상황.includes('합격') || 
+                                        item.진행상황.includes('통과') || 
+                                        item.진행상황.includes('선발') ||
+                                        item.진행상황.includes('입과') ||
+                                        item.진행상황 === '최종합격' ||
+                                        item.진행상황 === '1차합격' ||
+                                        item.진행상황 === '2차합격' ||
+                                        item.진행상황 === '면접합격'
+                                    )
+                                ).length;
+                                // 입과 관련 상태들
+                                const routeJoined = routeData.filter(item => 
+                                    item.진행상황 && (
+                                        item.진행상황.includes('입과') ||
+                                        item.진행상황.includes('수료') ||
+                                        item.진행상황 === '입과확정' ||
+                                        item.진행상황 === '입과완료' ||
+                                        item.진행상황 === '교육중' ||
+                                        item.진행상황 === '교육완료'
+                                    )
+                                ).length;
                                 const routePassRate = route[1] > 0 ? ((routePassed / route[1]) * 100).toFixed(1) : 0;
                                 const routeJoinRate = route[1] > 0 ? ((routeJoined / route[1]) * 100).toFixed(1) : 0;
                                 
@@ -635,7 +718,7 @@ const ReportModule = {
                         font-weight: 700;
                         color: #1e293b;
                         margin: 0 0 20px 0;
-                        text-align: center;
+                        text-align: left;
                     ">💡 핵심 인사이트 & 액션 플랜</h2>
                     
                     <div style="
@@ -703,7 +786,7 @@ const ReportModule = {
                             font-weight: 700;
                             color: #6d28d9;
                             margin: 0 0 15px 0;
-                            text-align: center;
+                            text-align: left;
                         ">🎯 즉시 실행 가능한 액션 아이템</h3>
                         
                         <div style="
