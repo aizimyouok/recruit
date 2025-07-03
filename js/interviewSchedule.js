@@ -18,6 +18,62 @@ const InterviewScheduleModule = {
         visibleColumns: {}
     },
 
+    // 증원자 태그 색상 생성 함수
+    getRecruiterTagColor(recruiterName) {
+        // 고정 색상 지정
+        const fixedColors = {
+            '회사': '#3b82f6',      // 파란색
+            '김영빈': '#10b981',    // 초록색  
+            '최혜진': '#f59e0b',    // 주황색
+            '이성진': '#8b5cf6'     // 보라색
+        };
+        
+        // 고정 색상이 있으면 사용
+        if (fixedColors[recruiterName]) {
+            return fixedColors[recruiterName];
+        }
+        
+        // 사용된 색상들 (고정 색상 + 이미 할당된 랜덤 색상)
+        const usedColors = new Set(Object.values(fixedColors));
+        
+        // 가능한 랜덤 색상 팔레트 (고정 색상과 겹치지 않게)
+        const availableColors = [
+            '#ef4444', '#f97316', '#eab308', '#84cc16', 
+            '#06b6d4', '#6366f1', '#a855f7', '#ec4899',
+            '#64748b', '#dc2626', '#ea580c', '#ca8a04',
+            '#65a30d', '#0891b2', '#4f46e5', '#9333ea',
+            '#be185d', '#475569', '#991b1b', '#9a3412'
+        ].filter(color => !usedColors.has(color));
+        
+        // 이름을 기반으로 해시 생성하여 일관된 색상 할당
+        let hash = 0;
+        for (let i = 0; i < recruiterName.length; i++) {
+            hash = recruiterName.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        
+        // 사용 가능한 색상에서 선택
+        const colorIndex = Math.abs(hash) % availableColors.length;
+        return availableColors[colorIndex] || '#64748b'; // 기본 회색
+    },
+
+    // 증원자 태그 HTML 생성 함수
+    generateRecruiterTag(recruiterName) {
+        const color = this.getRecruiterTagColor(recruiterName);
+        
+        return `<span class="recruiter-tag-dynamic" style="
+            background: ${color}; 
+            color: white; 
+            padding: 2px 6px; 
+            border-radius: 10px; 
+            font-size: 0.75rem; 
+            font-weight: 600;
+            white-space: nowrap;
+            margin-right: 6px;
+            display: inline-flex;
+            align-items: center;
+        ">${recruiterName}</span>`;
+    },
+
     initialize(appInstance) {
         console.log('📅 면접일정 페이지 초기화');
         this.app = appInstance;
@@ -523,11 +579,12 @@ const InterviewScheduleModule = {
                     recruiterGroups[recruiter].push(name);
                 });
 
-                // 증원자별 HTML 생성 (한 줄로 연결)
+                // 증원자별 HTML 생성 (한 줄로 연결) - 동적 색상 적용
                 let recruiterHtml = '';
                 Object.keys(recruiterGroups).forEach(recruiter => {
                     const recruiterNames = recruiterGroups[recruiter];
-                    recruiterHtml += `<span class="recruiter-group-inline"><span class="recruiter-tag ${recruiter}">${recruiter}</span> ${recruiterNames.join(', ')}</span>`;
+                    const tagHtml = this.generateRecruiterTag(recruiter);
+                    recruiterHtml += `<span class="recruiter-group-inline">${tagHtml} ${recruiterNames.join(', ')}</span>`;
                 });
 
                 const group = document.createElement('div');

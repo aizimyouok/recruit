@@ -412,14 +412,23 @@ const ReportModule = {
     generateExecutiveSummaryPreview(data) {
         const funnelData = this.calculateFunnelData(data);
         const total = data.length;
-        // 면접결과가 '합격'인 데이터 카운트
-        const passed = data.filter(item => 
-            item.면접결과 && item.면접결과.trim() === '합격'
-        ).length;
-        // 입과일이 있는 데이터 카운트
-        const joined = data.filter(item => 
-            item.입과일 && item.입과일.trim() !== '' && item.입과일.trim() !== '-'
-        ).length;
+        // 퍼널과 동일한 방식으로 전체 합격자/입과자 수 계산
+        const app = globalThis.App;
+        const { headers } = app.state.data;
+        const indices = {
+            interviewResult: headers.indexOf('면접결과'),
+            joinDate: headers.indexOf('입과일')
+        };
+        
+        const passed = data.filter(row => {
+            const result = row[indices.interviewResult] || '';
+            return result.trim() === '합격';
+        }).length;
+        
+        const joined = data.filter(row => {
+            const joinDate = row[indices.joinDate] || '';
+            return joinDate.trim() && joinDate.trim() !== '-';
+        }).length;
         const passRate = total > 0 ? ((passed / total) * 100).toFixed(1) : 0;
         const joinRate = total > 0 ? ((joined / total) * 100).toFixed(1) : 0;
         
@@ -690,14 +699,27 @@ const ReportModule = {
                         <tbody>
                             ${Object.entries(routeStats).map((route, index) => {
                                 const routeData = data.filter(item => item.지원루트 === route[0]);
-                                // 면접결과가 '합격'인 데이터 카운트
-                                const routePassed = routeData.filter(item => 
-                                    item.면접결과 && item.면접결과.trim() === '합격'
-                                ).length;
-                                // 입과일이 있는 데이터 카운트 (빈 값이 아닌 경우)
-                                const routeJoined = routeData.filter(item => 
-                                    item.입과일 && item.입과일.trim() !== '' && item.입과일.trim() !== '-'
-                                ).length;
+                                
+                                // 퍼널과 동일한 방식으로 데이터 계산
+                                const app = globalThis.App;
+                                const { headers } = app.state.data;
+                                const indices = {
+                                    interviewResult: headers.indexOf('면접결과'),
+                                    joinDate: headers.indexOf('입과일')
+                                };
+                                
+                                // 면접결과가 '합격'인 데이터 카운트 (배열 인덱스 방식)
+                                const routePassed = routeData.filter(row => {
+                                    const result = row[indices.interviewResult] || '';
+                                    return result.trim() === '합격';
+                                }).length;
+                                
+                                // 입과일이 있는 데이터 카운트 (배열 인덱스 방식)
+                                const routeJoined = routeData.filter(row => {
+                                    const joinDate = row[indices.joinDate] || '';
+                                    return joinDate.trim() && joinDate.trim() !== '-';
+                                }).length;
+                                
                                 const routePassRate = route[1] > 0 ? ((routePassed / route[1]) * 100).toFixed(1) : 0;
                                 const routeJoinRate = route[1] > 0 ? ((routeJoined / route[1]) * 100).toFixed(1) : 0;
                                 
