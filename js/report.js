@@ -1985,10 +1985,15 @@ const ReportModule = {
 
         // 리포트 생성 버튼
         const generateBtn = document.getElementById('generateReportBtn');
+        console.log('🔍 리포트 생성 버튼 찾기:', generateBtn);
         if (generateBtn) {
+            console.log('✅ 리포트 생성 버튼 이벤트 리스너 등록');
             generateBtn.addEventListener('click', () => {
+                console.log('🔥 리포트 생성 버튼 클릭됨!');
                 this.generateReport();
             });
+        } else {
+            console.error('❌ generateReportBtn 요소를 찾을 수 없습니다!');
         }
 
         // 필터 초기화
@@ -2296,10 +2301,16 @@ const ReportModule = {
 
     // 리포트 생성
     generateReport() {
+        console.log('🔍 generateReport 함수 호출됨');
+        
         const filteredData = this.getFilteredReportData();
         const template = this.templates[this._currentTemplate];
         
+        console.log('🔍 필터된 데이터 개수:', filteredData.length);
+        console.log('🔍 현재 템플릿:', this._currentTemplate, template);
+        
         if (filteredData.length === 0) {
+            console.log('⚠️ 데이터가 없어서 알림 표시');
             this.showAlert('리포트를 생성할 데이터가 없습니다. 필터 설정을 확인해주세요.');
             return;
         }
@@ -2312,10 +2323,15 @@ const ReportModule = {
 
     // 리포트 모달 열기
     openReportModal(template, data) {
+        console.log('🔍 openReportModal 함수 호출됨');
+        
         const modal = document.getElementById('reportModal');
         const modalBody = document.getElementById('reportModalBody');
         
+        console.log('🔍 모달 요소들:', { modal, modalBody });
+        
         if (!modal || !modalBody) {
+            console.error('❌ 리포트 모달 요소를 찾을 수 없습니다:', { modal, modalBody });
             this.showAlert('리포트 모달을 찾을 수 없습니다.');
             return;
         }
