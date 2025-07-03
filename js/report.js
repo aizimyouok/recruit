@@ -412,8 +412,14 @@ const ReportModule = {
     generateExecutiveSummaryPreview(data) {
         const funnelData = this.calculateFunnelData(data);
         const total = data.length;
-        const passed = funnelData[2]?.count || 0;
-        const joined = funnelData[3]?.count || 0;
+        // 면접결과가 '합격'인 데이터 카운트
+        const passed = data.filter(item => 
+            item.면접결과 && item.면접결과.trim() === '합격'
+        ).length;
+        // 입과일이 있는 데이터 카운트
+        const joined = data.filter(item => 
+            item.입과일 && item.입과일.trim() !== '' && item.입과일.trim() !== '-'
+        ).length;
         const passRate = total > 0 ? ((passed / total) * 100).toFixed(1) : 0;
         const joinRate = total > 0 ? ((joined / total) * 100).toFixed(1) : 0;
         
@@ -446,11 +452,12 @@ const ReportModule = {
                     <!-- 중앙 제목 -->
                     <div style="text-align: center;">
                         <h1 style="
-                            font-size: 2.2rem; 
-                            font-weight: 800; 
+                            font-size: 2.8rem; 
+                            font-weight: 900; 
                             color: white; 
                             margin: 0;
-                            letter-spacing: -0.5px;
+                            letter-spacing: -1px;
+                            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
                         ">CFC 채용 분석 리포트</h1>
                     </div>
                     
@@ -458,34 +465,51 @@ const ReportModule = {
                     <div style="
                         display: flex;
                         flex-direction: column;
-                        gap: 8px;
-                        text-align: right;
-                        font-size: 0.9rem;
-                        min-width: 150px;
+                        gap: 10px;
+                        text-align: center;
+                        min-width: 180px;
                     ">
                         <div style="
                             background: rgba(255,255,255,0.15); 
-                            padding: 6px 12px; 
-                            border-radius: 20px;
+                            padding: 8px 16px; 
+                            border-radius: 25px;
                             border: 1px solid rgba(255,255,255,0.2);
+                            font-size: 0.9rem;
+                            font-weight: 600;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            min-height: 40px;
                         ">
                             📊 경영진 요약
                         </div>
                         <div style="
                             background: rgba(255,255,255,0.15); 
-                            padding: 6px 12px; 
-                            border-radius: 20px;
+                            padding: 8px 16px; 
+                            border-radius: 25px;
                             border: 1px solid rgba(255,255,255,0.2);
+                            font-size: 0.9rem;
+                            font-weight: 600;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            min-height: 40px;
                         ">
-                            📅 ${this.getSelectedPeriodText()}
+                            기간 : ${this.getSelectedPeriodText()}
                         </div>
                         <div style="
                             background: rgba(255,255,255,0.15); 
-                            padding: 6px 12px; 
-                            border-radius: 20px;
+                            padding: 8px 16px; 
+                            border-radius: 25px;
                             border: 1px solid rgba(255,255,255,0.2);
+                            font-size: 0.9rem;
+                            font-weight: 600;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            min-height: 40px;
                         ">
-                            👥 총 ${total}명
+                            대상자 : ${total}명
                         </div>
                     </div>
                 </div>
@@ -552,7 +576,7 @@ const ReportModule = {
                         ">🎯</div>
                         <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 8px;">입과율</div>
                         <div style="font-size: 1.8rem; font-weight: 700; color: #f59e0b; margin-bottom: 4px;">${joinRate}%</div>
-                        <div style="color: #64748b; font-size: 0.8rem;">${Math.round(total * joinRate / 100)}명 입과</div>
+                        <div style="color: #64748b; font-size: 0.8rem;">${joined}명 입과</div>
                     </div>
                     
                     <div style="
@@ -624,7 +648,7 @@ const ReportModule = {
                                 </div>
                                 <div>
                                     <div style="font-size: 0.9rem; color: #64748b;">합격 → 입과</div>
-                                    <div style="font-size: 1.4rem; font-weight: 700; color: #f59e0b;">${(joinRate / passRate * 100).toFixed(0)}%</div>
+                                    <div style="font-size: 1.4rem; font-weight: 700; color: #f59e0b;">${passed > 0 ? ((joined / passed) * 100).toFixed(0) : 0}%</div>
                                 </div>
                             </div>
                         </div>
@@ -666,29 +690,13 @@ const ReportModule = {
                         <tbody>
                             ${Object.entries(routeStats).map((route, index) => {
                                 const routeData = data.filter(item => item.지원루트 === route[0]);
-                                // 더 넓은 범위의 합격 상태 포함
+                                // 면접결과가 '합격'인 데이터 카운트
                                 const routePassed = routeData.filter(item => 
-                                    item.진행상황 && (
-                                        item.진행상황.includes('합격') || 
-                                        item.진행상황.includes('통과') || 
-                                        item.진행상황.includes('선발') ||
-                                        item.진행상황.includes('입과') ||
-                                        item.진행상황 === '최종합격' ||
-                                        item.진행상황 === '1차합격' ||
-                                        item.진행상황 === '2차합격' ||
-                                        item.진행상황 === '면접합격'
-                                    )
+                                    item.면접결과 && item.면접결과.trim() === '합격'
                                 ).length;
-                                // 입과 관련 상태들
+                                // 입과일이 있는 데이터 카운트 (빈 값이 아닌 경우)
                                 const routeJoined = routeData.filter(item => 
-                                    item.진행상황 && (
-                                        item.진행상황.includes('입과') ||
-                                        item.진행상황.includes('수료') ||
-                                        item.진행상황 === '입과확정' ||
-                                        item.진행상황 === '입과완료' ||
-                                        item.진행상황 === '교육중' ||
-                                        item.진행상황 === '교육완료'
-                                    )
+                                    item.입과일 && item.입과일.trim() !== '' && item.입과일.trim() !== '-'
                                 ).length;
                                 const routePassRate = route[1] > 0 ? ((routePassed / route[1]) * 100).toFixed(1) : 0;
                                 const routeJoinRate = route[1] > 0 ? ((routeJoined / route[1]) * 100).toFixed(1) : 0;
