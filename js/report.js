@@ -2577,116 +2577,166 @@ const ReportModule = {
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>${template.name} - CFC 채용 리포트</title>
+    <title>CFC 채용 리포트</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <style>
         @page {
             size: A4;
-            margin: 10mm; /* 여백을 줄여서 더 많은 공간 확보 */
+            margin: 15mm; /* 적당한 여백으로 복원 */
+            /* 헤더와 푸터 제거 */
+            @top-left { content: ""; }
+            @top-center { content: ""; }
+            @top-right { content: ""; }
+            @bottom-left { content: ""; }
+            @bottom-center { content: ""; }
+            @bottom-right { content: ""; }
+        }
+        
+        /* 배경색 강제 출력 설정 */
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
         }
         
         body { 
             font-family: 'Noto Sans KR', sans-serif; 
             margin: 0; 
             padding: 0; 
-            font-size: 9pt; /* 폰트 크기를 줄여서 더 많은 내용 수용 */
-            line-height: 1.3; 
+            font-size: 11pt; /* 자연스러운 크기로 복원 */
+            line-height: 1.4; 
             color: #1a1a1a;
             background: white;
-            width: 190mm; /* A4 폭에서 여백 제외한 실제 인쇄 가능 영역 */
-            max-width: 190mm;
-            overflow: hidden;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
         
-        /* 원본 색상 유지하되 인쇄에 적합하게 조정 */
+        /* 헤더 스타일 - 원본 그라데이션 유지 */
         .report-header {
             background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
             color: white !important;
             text-align: center;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 12px;
             page-break-after: avoid;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
         
         .report-title, .report-header h1 {
             color: white !important;
-            font-size: 14pt !important;
+            font-size: 16pt !important;
             font-weight: bold;
-            margin: 0 0 8px 0;
+            margin: 0 0 10px 0;
         }
         
         .report-header .report-meta {
             color: white !important;
-            font-size: 8pt;
+            font-size: 9pt;
         }
         
         .report-header .report-meta span {
             background: rgba(255, 255, 255, 0.2) !important;
-            padding: 4px 8px;
-            border-radius: 12px;
+            padding: 6px 12px;
+            border-radius: 20px;
             margin: 0 5px;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
         
-        /* 섹션 스타일 - 원본 색상 유지 */
+        /* 섹션 스타일 */
         section {
             page-break-inside: avoid;
-            margin-bottom: 12px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            padding: 12px;
+            margin-bottom: 18px; /* 자연스러운 간격 */
+            background: white !important;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px; /* 자연스러운 패딩 */
             border: 1px solid #e5e7eb;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
         
-        h2, h3 {
+        h1, h2, h3 {
             color: #0B4F6C !important;
             font-weight: 600;
-            margin: 0 0 8px 0;
-            font-size: 11pt;
+            margin: 0 0 12px 0;
             page-break-after: avoid;
         }
         
-        h1 {
-            font-size: 13pt;
-            color: #0B4F6C !important;
-        }
+        h1 { font-size: 14pt; }
+        h2 { font-size: 12pt; }
+        h3 { font-size: 11pt; }
         
-        /* KPI 카드 색상 유지 */
-        div[style*="background: #F0F9FF"] {
+        /* KPI 카드 배경색 강제 출력 */
+        div[style*="background: #F0F9FF"],
+        *[style*="background: #F0F9FF"] {
             background: #F0F9FF !important;
-            border: 1px solid #0ea5e9;
+            border: 1px solid #0ea5e9 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
         
-        div[style*="background: #ECFDF5"] {
+        div[style*="background: #ECFDF5"],
+        *[style*="background: #ECFDF5"] {
             background: #ECFDF5 !important;
-            border: 1px solid #10b981;
+            border: 1px solid #10b981 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
         
-        div[style*="background: #FEF3C7"] {
+        div[style*="background: #FEF3C7"],
+        *[style*="background: #FEF3C7"] {
             background: #FEF3C7 !important;
-            border: 1px solid #f59e0b;
+            border: 1px solid #f59e0b !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
         
-        div[style*="background: #DBEAFE"] {
+        div[style*="background: #DBEAFE"],
+        *[style*="background: #DBEAFE"] {
             background: #DBEAFE !important;
-            border: 1px solid #3b82f6;
+            border: 1px solid #3b82f6 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
         
-        div[style*="background: #F3E8FF"] {
+        div[style*="background: #F3E8FF"],
+        *[style*="background: #F3E8FF"] {
             background: #F3E8FF !important;
-            border: 1px solid #8b5cf6;
+            border: 1px solid #8b5cf6 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
         
-        div[style*="background: #F4F4F4"] {
+        div[style*="background: #F4F4F4"],
+        *[style*="background: #F4F4F4"] {
             background: #F4F4F4 !important;
-            border: 1px solid #d1d5db;
+            border: 1px solid #d1d5db !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
         
-        /* 그리드 레이아웃 최적화 */
+        div[style*="background: #FEF2F2"],
+        *[style*="background: #FEF2F2"] {
+            background: #FEF2F2 !important;
+            border: 1px solid #fca5a5 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        
+        /* 그라데이션 배경 강제 출력 */
+        *[style*="rgba(1, 186, 239, 0.1)"] {
+            background: rgba(1, 186, 239, 0.1) !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        
+        /* 그리드 레이아웃 */
         div[style*="display: grid"] {
             display: grid !important;
-            gap: 8px !important; /* 간격을 줄여서 공간 절약 */
+            gap: 15px !important; /* 자연스러운 간격 */
         }
         
         div[style*="grid-template-columns: 1fr 1fr"] {
@@ -2694,11 +2744,6 @@ const ReportModule = {
         }
         
         /* 텍스트 색상 유지 */
-        .report-content * {
-            color: inherit !important;
-        }
-        
-        /* 특정 색상 클래스 유지 */
         *[style*="color: #0B4F6C"] { color: #0B4F6C !important; }
         *[style*="color: #01BAEF"] { color: #01BAEF !important; }
         *[style*="color: #374151"] { color: #374151 !important; }
@@ -2709,19 +2754,20 @@ const ReportModule = {
         *[style*="color: #3b82f6"] { color: #3b82f6 !important; }
         *[style*="color: #8b5cf6"] { color: #8b5cf6 !important; }
         *[style*="color: #FF6B6B"] { color: #FF6B6B !important; }
+        *[style*="color: white"] { color: white !important; }
         
         /* 테이블 스타일 */
         table {
             width: 100%;
             border-collapse: collapse;
             page-break-inside: avoid;
-            font-size: 8pt;
-            margin: 10px 0;
+            font-size: 10pt;
+            margin: 15px 0;
         }
         
         th, td {
             border: 1px solid #d1d5db;
-            padding: 6px;
+            padding: 8px;
             text-align: center;
         }
         
@@ -2729,52 +2775,35 @@ const ReportModule = {
             background: #f8fafc !important;
             font-weight: bold;
             color: #374151 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
         
         /* 차트 영역 */
         .chart-container, canvas {
             page-break-inside: avoid;
-            max-height: 120px !important; /* 차트 높이 제한 */
+            max-height: 200px !important; /* 자연스러운 차트 크기 */
             width: 100% !important;
         }
         
-        /* 공간 최적화 */
+        /* 자연스러운 간격 */
         p {
-            margin: 6px 0;
-            line-height: 1.3;
-        }
-        
-        /* 패딩과 마진 최적화 */
-        * {
-            box-sizing: border-box;
+            margin: 8px 0;
+            line-height: 1.4;
         }
         
         .main-analysis-grid,
         .force-grid-2col {
             display: grid !important;
             grid-template-columns: 1fr 1fr !important;
-            gap: 8px !important;
-            margin-bottom: 10px !important;
+            gap: 15px !important;
+            margin-bottom: 20px !important;
         }
         
-        /* 내용이 넘치지 않도록 제한 */
         .improvement-proposal-section {
             clear: both !important;
             width: 100% !important;
-            margin-top: 10px !important;
-        }
-        
-        /* 폰트 크기 세부 조정 */
-        h1 { font-size: 13pt !important; }
-        h2 { font-size: 11pt !important; }
-        h3 { font-size: 10pt !important; }
-        p, div, span { font-size: 9pt !important; }
-        small, .report-meta { font-size: 7pt !important; }
-        
-        /* 큰 숫자 스타일 유지하되 크기 조정 */
-        *[style*="font-size: 1.5rem"], *[style*="font-size: 2rem"] {
-            font-size: 12pt !important;
-            font-weight: bold;
+            margin-top: 20px !important;
         }
         
         /* 페이지 브레이크 제어 */
@@ -2782,12 +2811,9 @@ const ReportModule = {
             page-break-after: avoid;
         }
         
-        .main-analysis-grid {
-            page-break-inside: avoid;
-        }
-        
-        .improvement-proposal-section {
-            page-break-before: avoid;
+        /* 브라우저별 헤더/푸터 숨기기 시도 */
+        @media print {
+            @page { margin: 15mm; }
         }
     </style>
 </head>
