@@ -1255,6 +1255,23 @@ html body #report .template-gallery {
     backdrop-filter: blur(5px);
     animation: fadeIn 0.3s ease;
 }
+
+/* 모달 애니메이션 */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes modalSlideIn {
+    from { 
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to { 
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
 .report-modal-content {
     background-color: #ffffff; /* 인쇄를 위해 흰색 배경 강제 */
     margin: 30px auto;
@@ -1262,7 +1279,8 @@ html body #report .template-gallery {
     border-radius: 8px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     width: 90%;
-    max-width: 800px; /* A4 용지 비율과 유사하게 */
+    max-width: 210mm; /* A4 폭에 맞게 조정 */
+    min-height: 297mm; /* A4 높이에 맞게 조정 */
     animation: modalSlideIn 0.3s ease;
 }
 .report-modal-header {
@@ -1271,11 +1289,61 @@ html body #report .template-gallery {
     align-items: center;
     padding: 15px 25px;
     border-bottom: 1px solid #e5e7eb;
-    background-color: #f9fafb;
+    background-color: #4f46e5; /* 보라색 배경으로 변경 */
     border-radius: 8px 8px 0 0;
 }
-.report-modal-title { font-size: 1.2rem; color: #111827; }
-.report-modal-actions { display: flex; gap: 15px; }
+.report-modal-title { 
+    font-size: 1.2rem; 
+    color: white !important; /* 흰색 텍스트로 변경 */
+    font-weight: 600;
+}
+.report-modal-actions { 
+    display: flex; 
+    gap: 15px; 
+}
+
+/* 리포트 모달 버튼 스타일 */
+.report-modal-actions .btn {
+    padding: 8px 16px;
+    border: 2px solid white;
+    background-color: transparent;
+    color: white !important;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.report-modal-actions .btn:hover {
+    background-color: white;
+    color: #4f46e5 !important;
+    transform: translateY(-1px);
+}
+
+.report-modal-actions .close-btn {
+    background: none;
+    border: none;
+    color: white !important;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.report-modal-actions .close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
 .report-modal-body {
     padding: 30px;
     color: #111827; /* 인쇄를 위해 검은색 텍스트 강제 */
@@ -1311,7 +1379,7 @@ html body #report .template-gallery {
 .report-table th { background-color: #f9fafb; font-weight: 600; }
 .report-table.mini td strong { color: #059669; }
 
-/* 인쇄용 스타일 */
+/* 인쇄용 스타일 - A4 최적화 */
 @media print {
     body * { visibility: hidden; }
     .report-modal-body, .report-modal-body * { visibility: visible; }
@@ -1327,6 +1395,48 @@ html body #report .template-gallery {
         border-radius: 0;
     }
     .report-modal-header { display: none; }
+    
+    /* A4 용지 설정 */
+    @page {
+        size: A4;
+        margin: 1cm; /* 1cm 여백 */
+    }
+    
+    /* 리포트 본문 인쇄 최적화 */
+    .report-modal-body {
+        padding: 0 !important;
+        font-size: 11pt; /* 인쇄용 폰트 크기 */
+        line-height: 1.4;
+        color: black !important;
+    }
+    
+    /* 제목 인쇄 스타일 */
+    .report-title, .report-header h1 {
+        font-size: 16pt !important;
+        color: black !important;
+        background: none !important;
+        margin-bottom: 20pt;
+    }
+    
+    /* 섹션 제목 인쇄 스타일 */
+    .report-subtitle {
+        font-size: 14pt !important;
+        color: black !important;
+        page-break-after: avoid;
+    }
+    
+    /* 테이블 인쇄 최적화 */
+    .report-table {
+        font-size: 9pt;
+        page-break-inside: avoid;
+    }
+    
+    /* 차트 영역 인쇄 최적화 */
+    .report-chart-container {
+        page-break-inside: avoid;
+        height: auto !important;
+        max-height: 200px;
+    }
 }
     font-size: 1.1em;
 }
