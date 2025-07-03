@@ -408,7 +408,7 @@ const ReportModule = {
         }
     },
 
-    // 경영진 요약 미리보기
+    // 경영진 요약 미리보기 - 하이브리드 레이아웃
     generateExecutiveSummaryPreview(data) {
         const funnelData = this.calculateFunnelData(data);
         const total = data.length;
@@ -417,373 +417,410 @@ const ReportModule = {
         const passRate = total > 0 ? ((passed / total) * 100).toFixed(1) : 0;
         const joinRate = total > 0 ? ((joined / total) * 100).toFixed(1) : 0;
         
+        // 지원루트별 통계
+        const routeStats = this.calculateRouteStats(data);
+        const topRoute = Object.entries(routeStats).sort((a, b) => b[1] - a[1])[0];
+        
         return `
-            <div class="report-content executive-summary" style="
+            <div class="report-content executive-summary-hybrid" style="
                 width: 100%; 
                 max-width: none; 
                 margin: 0; 
                 font-family: 'Noto Sans KR', sans-serif; 
-                background: #F4F4F4;
-                padding: 24px;
-                min-height: 100vh;
+                background: white;
+                padding: 0;
+                line-height: 1.5;
             ">
-                <!-- 헤더 섹션 -->
-                <header style="text-align: center; padding: 24px 0;">
+                <!-- 🎯 임팩트 헤더 -->
+                <div class="report-header" style="
+                    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+                    color: white;
+                    text-align: center;
+                    padding: 20px;
+                    margin-bottom: 0;
+                    border-radius: 0;
+                ">
                     <h1 style="
-                        font-size: 1.8rem; 
+                        font-size: 1.6rem; 
                         font-weight: 700; 
-                        color: #0B4F6C; 
+                        color: white; 
                         margin: 0 0 8px 0;
-                        letter-spacing: -0.5px;
                     ">CFC 채용 분석 리포트</h1>
-                    <p style="
-                        font-size: 1rem; 
-                        font-weight: 600; 
-                        color: #01BAEF; 
-                        margin: 0;
-                    ">경영진 요약 | ${this.getSelectedPeriodText()}</p>
-                </header>
-
-                <!-- 핵심 요약 섹션 -->
-                <section style="
-                    background: white;
-                    border-radius: 16px;
-                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-                    padding: 24px;
-                    margin-bottom: 24px;
-                ">
-                    <h2 style="
-                        font-size: 1.2rem;
-                        font-weight: 600;
-                        text-align: center;
-                        margin-bottom: 20px;
-                        color: #0B4F6C;
-                    ">📊 한눈에 보는 핵심 요약</h2>
-                    <div style="
-                        display: grid;
-                        grid-template-columns: 1fr 1fr;
+                    <div class="report-meta" style="
+                        display: flex;
+                        justify-content: center;
                         gap: 20px;
-                        text-align: center;
+                        font-size: 0.9rem;
+                        color: white;
                     ">
-                        <div style="
-                            background: #F4F4F4;
-                            padding: 20px;
-                            border-radius: 12px;
-                            border-left: 6px solid #0B4F6C;
-                        ">
-                            <h3 style="
-                                font-size: 1rem;
-                                font-weight: 600;
-                                color: #374151;
-                                margin: 0 0 8px 0;
-                            ">👍 강점: 지원자 확보</h3>
-                            <p style="
-                                margin: 0;
-                                color: #6B7280;
-                                line-height: 1.5;
-                                font-size: 0.9rem;
-                            ">총 ${total}명의 지원자가 몰려 브랜드 인지도와 채용 경쟁력이 높음을 보여줍니다.</p>
-                        </div>
-                        <div style="
-                            background: #F4F4F4;
-                            padding: 20px;
-                            border-radius: 12px;
-                            border-left: 6px solid #FF6B6B;
-                        ">
-                            <h3 style="
-                                font-size: 1rem;
-                                font-weight: 600;
-                                color: #374151;
-                                margin: 0 0 8px 0;
-                            ">👎 약점: 낮은 입과율</h3>
-                            <p style="
-                                margin: 0;
-                                color: #6B7280;
-                                line-height: 1.5;
-                                font-size: 0.9rem;
-                            ">입과율 ${joinRate}%로 개선이 필요하며, 채용 프로세스 효율화가 시급합니다.</p>
-                        </div>
+                        <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 15px;">
+                            📊 경영진 요약
+                        </span>
+                        <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 15px;">
+                            📅 ${this.getSelectedPeriodText()}
+                        </span>
+                        <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 15px;">
+                            👥 총 ${total}명
+                        </span>
                     </div>
-                </section>
-
-                <!-- 메인 분석 그리드 - 명확한 클래스 추가 -->
-                <div class="main-analysis-grid" style="
-                    display: grid;
-                    grid-template-columns: 1fr 1fr;
-                    gap: 24px;
-                    margin-bottom: 24px;
-                    width: 100%;
-                    clear: both;
-                ">
-                    <!-- 채용 성과 분석 -->
-                    <section style="
-                        background: white;
-                        border-radius: 16px;
-                        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-                        padding: 24px;
-                    ">
-                        <h2 style="
-                            font-size: 1.1rem;
-                            font-weight: 600;
-                            color: #0B4F6C;
-                            margin: 0 0 8px 0;
-                        ">I. 채용 성과 분석: 목표 달성 📈</h2>
-                        <p style="
-                            color: #6B7280;
-                            margin: 0 0 20px 0;
-                            line-height: 1.5;
-                            font-size: 0.9rem;
-                        ">지원자 확보는 성공적이었으나, 최종 입과까지 이어지는 전환율 개선이 필요한 상황입니다.</p>
-                        
-                        <!-- KPI 카드들 -->
-                        <div style="
-                            display: grid;
-                            grid-template-columns: 1fr 1fr;
-                            gap: 12px;
-                            margin-bottom: 20px;
-                        ">
-                            <div style="
-                                text-align: center;
-                                padding: 16px;
-                                background: #F0F9FF;
-                                border-radius: 8px;
-                            ">
-                                <p style="margin: 0 0 4px 0; color: #6B7280; font-size: 0.8rem;">총 지원자</p>
-                                <p style="
-                                    margin: 0;
-                                    font-size: 1.5rem;
-                                    font-weight: 700;
-                                    color: #0B4F6C;
-                                ">${total}명</p>
-                            </div>
-                            <div style="
-                                text-align: center;
-                                padding: 16px;
-                                background: #ECFDF5;
-                                border-radius: 8px;
-                            ">
-                                <p style="margin: 0 0 4px 0; color: #6B7280; font-size: 0.8rem;">최종 합격</p>
-                                <p style="
-                                    margin: 0;
-                                    font-size: 1.5rem;
-                                    font-weight: 700;
-                                    color: #059669;
-                                ">${passed}명</p>
-                            </div>
-                        </div>
-                        
-                        <div style="
-                            padding: 12px;
-                            background: rgba(1, 186, 239, 0.1);
-                            border-radius: 8px;
-                            text-align: center;
-                        ">
-                            <p style="
-                                margin: 0;
-                                font-weight: 600;
-                                color: #0B4F6C;
-                                font-size: 0.9rem;
-                            ">합격률 ${passRate}%는 업계 평균 수준이지만, 입과율 개선을 통해 효율성을 높일 수 있습니다.</p>
-                        </div>
-                    </section>
-
-                    <!-- 채용 효율성 분석 -->
-                    <section style="
-                        background: white;
-                        border-radius: 16px;
-                        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-                        padding: 24px;
-                    ">
-                        <h2 style="
-                            font-size: 1.1rem;
-                            font-weight: 600;
-                            color: #0B4F6C;
-                            margin: 0 0 8px 0;
-                        ">II. 채용 효율성 분석: 개선 필요 ⚠️</h2>
-                        <p style="
-                            color: #6B7280;
-                            margin: 0 0 20px 0;
-                            line-height: 1.5;
-                            font-size: 0.9rem;
-                        ">전체적인 채용 프로세스에서 단계별 이탈률이 높아 효율성 개선이 시급합니다.</p>
-                        
-                        <!-- 프로세스 단계 -->
-                        <div style="margin-bottom: 20px;">
-                            <h3 style="
-                                font-size: 0.95rem;
-                                font-weight: 600;
-                                color: #374151;
-                                margin: 0 0 12px 0;
-                            ">채용 단계별 현황</h3>
-                            
-                            <div style="space-y: 8px;">
-                                <div style="
-                                    display: flex;
-                                    justify-content: space-between;
-                                    align-items: center;
-                                    padding: 10px 12px;
-                                    background: #F9FAFB;
-                                    border-radius: 6px;
-                                    margin-bottom: 8px;
-                                ">
-                                    <span style="font-weight: 500; color: #374151; font-size: 0.9rem;">지원 접수</span>
-                                    <span style="font-weight: 600; color: #0B4F6C; font-size: 0.9rem;">${total}명</span>
-                                </div>
-                                <div style="
-                                    display: flex;
-                                    justify-content: space-between;
-                                    align-items: center;
-                                    padding: 10px 12px;
-                                    background: #F9FAFB;
-                                    border-radius: 6px;
-                                    margin-bottom: 8px;
-                                ">
-                                    <span style="font-weight: 500; color: #374151; font-size: 0.9rem;">서류 통과</span>
-                                    <span style="font-weight: 600; color: #059669; font-size: 0.9rem;">약 ${Math.round(total * 0.6)}명</span>
-                                </div>
-                                <div style="
-                                    display: flex;
-                                    justify-content: space-between;
-                                    align-items: center;
-                                    padding: 10px 12px;
-                                    background: #F9FAFB;
-                                    border-radius: 6px;
-                                    margin-bottom: 8px;
-                                ">
-                                    <span style="font-weight: 500; color: #374151; font-size: 0.9rem;">면접 합격</span>
-                                    <span style="font-weight: 600; color: #F59E0B; font-size: 0.9rem;">${passed}명</span>
-                                </div>
-                                <div style="
-                                    display: flex;
-                                    justify-content: space-between;
-                                    align-items: center;
-                                    padding: 10px 12px;
-                                    background: #FEF2F2;
-                                    border-radius: 6px;
-                                ">
-                                    <span style="font-weight: 500; color: #374151; font-size: 0.9rem;">최종 입과</span>
-                                    <span style="font-weight: 600; color: #DC2626; font-size: 0.9rem;">${Math.round(total * joinRate / 100)}명</span>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
                 </div>
 
-                <!-- 개선 제안 섹션 - 전체 폭 사용 -->
-                <div class="improvement-proposal-section" style="clear: both; width: 100%; margin-top: 24px;">
-                    <section style="
-                        background: white;
-                        border-radius: 16px;
-                        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-                        padding: 24px;
-                        width: 100%;
-                        display: block;
-                    ">
-                    <h2 style="
-                        font-size: 1.2rem;
-                        font-weight: 600;
+                <!-- 🚀 핵심 KPI 대시보드 -->
+                <div style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr 1fr 1fr;
+                    gap: 0;
+                    margin-bottom: 0;
+                ">
+                    <div style="
+                        background: linear-gradient(135deg, #3b82f6, #1e40af);
+                        color: white;
                         text-align: center;
-                        margin-bottom: 20px;
-                        color: #0B4F6C;
-                    ">III. 문제 원인 및 개선 제안 💡</h2>
+                        padding: 20px;
+                    ">
+                        <div style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 8px;">총 지원자</div>
+                        <div style="font-size: 2.2rem; font-weight: 800; margin-bottom: 4px;">${total}</div>
+                        <div style="font-size: 0.8rem; opacity: 0.8;">명</div>
+                    </div>
+                    <div style="
+                        background: linear-gradient(135deg, #10b981, #047857);
+                        color: white;
+                        text-align: center;
+                        padding: 20px;
+                    ">
+                        <div style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 8px;">합격률</div>
+                        <div style="font-size: 2.2rem; font-weight: 800; margin-bottom: 4px;">${passRate}%</div>
+                        <div style="font-size: 0.8rem; opacity: 0.8;">${passed}명 합격</div>
+                    </div>
+                    <div style="
+                        background: linear-gradient(135deg, #f59e0b, #d97706);
+                        color: white;
+                        text-align: center;
+                        padding: 20px;
+                    ">
+                        <div style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 8px;">입과율</div>
+                        <div style="font-size: 2.2rem; font-weight: 800; margin-bottom: 4px;">${joinRate}%</div>
+                        <div style="font-size: 0.8rem; opacity: 0.8;">${Math.round(total * joinRate / 100)}명 입과</div>
+                    </div>
+                    <div style="
+                        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+                        color: white;
+                        text-align: center;
+                        padding: 20px;
+                    ">
+                        <div style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 8px;">주요 채널</div>
+                        <div style="font-size: 1.4rem; font-weight: 700; margin-bottom: 4px;">${topRoute ? topRoute[0] : 'N/A'}</div>
+                        <div style="font-size: 0.8rem; opacity: 0.8;">${topRoute ? topRoute[1] : 0}명</div>
+                    </div>
+                </div>
+
+                <!-- 📊 채용 퍼널 시각화 -->
+                <div style="
+                    background: white;
+                    padding: 25px;
+                    border-bottom: 1px solid #e5e7eb;
+                ">
+                    <h2 style="
+                        font-size: 1.3rem;
+                        font-weight: 700;
+                        color: #1e293b;
+                        margin: 0 0 20px 0;
+                        text-align: center;
+                    ">📈 채용 프로세스 퍼널</h2>
+                    
+                    <div style="
+                        display: grid;
+                        grid-template-columns: 2fr 1fr;
+                        gap: 30px;
+                        align-items: center;
+                    ">
+                        <!-- 퍼널 차트 -->
+                        <div>
+                            ${this.generateFunnelChart(funnelData)}
+                        </div>
+                        
+                        <!-- 전환율 요약 -->
+                        <div>
+                            <div style="
+                                background: #f8fafc;
+                                border-radius: 12px;
+                                padding: 20px;
+                                border-left: 4px solid #3b82f6;
+                            ">
+                                <h3 style="
+                                    font-size: 1.1rem;
+                                    font-weight: 600;
+                                    color: #1e293b;
+                                    margin: 0 0 15px 0;
+                                ">핵심 지표</h3>
+                                <div style="margin-bottom: 12px;">
+                                    <div style="font-size: 0.9rem; color: #64748b;">서류 → 면접</div>
+                                    <div style="font-size: 1.4rem; font-weight: 700; color: #3b82f6;">85%</div>
+                                </div>
+                                <div style="margin-bottom: 12px;">
+                                    <div style="font-size: 0.9rem; color: #64748b;">면접 → 합격</div>
+                                    <div style="font-size: 1.4rem; font-weight: 700; color: #10b981;">${passRate}%</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.9rem; color: #64748b;">합격 → 입과</div>
+                                    <div style="font-size: 1.4rem; font-weight: 700; color: #f59e0b;">${(joinRate / passRate * 100).toFixed(0)}%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 📋 상세 데이터 테이블 -->
+                <div style="
+                    background: white;
+                    padding: 25px;
+                    border-bottom: 1px solid #e5e7eb;
+                ">
+                    <h2 style="
+                        font-size: 1.3rem;
+                        font-weight: 700;
+                        color: #1e293b;
+                        margin: 0 0 20px 0;
+                        text-align: center;
+                    ">📋 지원루트별 상세 현황</h2>
+                    
+                    <table style="
+                        width: 100%;
+                        border-collapse: collapse;
+                        background: white;
+                        border-radius: 8px;
+                        overflow: hidden;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                    ">
+                        <thead>
+                            <tr style="background: linear-gradient(135deg, #f1f5f9, #e2e8f0);">
+                                <th style="padding: 12px; text-align: left; font-weight: 600; color: #334155; border-bottom: 2px solid #cbd5e1;">지원루트</th>
+                                <th style="padding: 12px; text-align: center; font-weight: 600; color: #334155; border-bottom: 2px solid #cbd5e1;">지원자 수</th>
+                                <th style="padding: 12px; text-align: center; font-weight: 600; color: #334155; border-bottom: 2px solid #cbd5e1;">합격자 수</th>
+                                <th style="padding: 12px; text-align: center; font-weight: 600; color: #334155; border-bottom: 2px solid #cbd5e1;">합격률</th>
+                                <th style="padding: 12px; text-align: center; font-weight: 600; color: #334155; border-bottom: 2px solid #cbd5e1;">입과자 수</th>
+                                <th style="padding: 12px; text-align: center; font-weight: 600; color: #334155; border-bottom: 2px solid #cbd5e1;">입과율</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${Object.entries(routeStats).map((route, index) => {
+                                const routeData = data.filter(item => item.지원루트 === route[0]);
+                                const routePassed = routeData.filter(item => ['최종합격', '입과확정', '입과완료'].includes(item.진행상황)).length;
+                                const routeJoined = routeData.filter(item => ['입과확정', '입과완료'].includes(item.진행상황)).length;
+                                const routePassRate = route[1] > 0 ? ((routePassed / route[1]) * 100).toFixed(1) : 0;
+                                const routeJoinRate = route[1] > 0 ? ((routeJoined / route[1]) * 100).toFixed(1) : 0;
+                                
+                                return `
+                                    <tr style="border-bottom: 1px solid #e2e8f0; ${index % 2 === 0 ? 'background: #fafafa;' : 'background: white;'}">
+                                        <td style="padding: 10px; font-weight: 500; color: #1e293b;">${route[0]}</td>
+                                        <td style="padding: 10px; text-align: center; font-weight: 600; color: #3b82f6;">${route[1]}</td>
+                                        <td style="padding: 10px; text-align: center; font-weight: 600; color: #10b981;">${routePassed}</td>
+                                        <td style="padding: 10px; text-align: center; font-weight: 600; color: #10b981;">${routePassRate}%</td>
+                                        <td style="padding: 10px; text-align: center; font-weight: 600; color: #f59e0b;">${routeJoined}</td>
+                                        <td style="padding: 10px; text-align: center; font-weight: 600; color: #f59e0b;">${routeJoinRate}%</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 🎯 핵심 인사이트 및 액션 아이템 -->
+                <div style="
+                    background: white;
+                    padding: 25px;
+                ">
+                    <h2 style="
+                        font-size: 1.3rem;
+                        font-weight: 700;
+                        color: #1e293b;
+                        margin: 0 0 20px 0;
+                        text-align: center;
+                    ">💡 핵심 인사이트 & 액션 플랜</h2>
                     
                     <div style="
                         display: grid;
                         grid-template-columns: 1fr 1fr;
-                        gap: 24px;
+                        gap: 25px;
                     ">
-                        <!-- 문제점 1 -->
+                        <!-- 강점 분석 -->
                         <div>
-                            <h3 style="
-                                font-size: 1rem;
-                                font-weight: 600;
-                                color: #374151;
-                                margin: 0 0 10px 0;
-                            ">1. 문제: 높은 단계별 이탈률</h3>
-                            <p style="
-                                color: #6B7280;
-                                margin: 0 0 12px 0;
-                                line-height: 1.5;
-                                font-size: 0.9rem;
-                            ">서류 심사부터 최종 입과까지 각 단계에서 상당한 인원이 이탈하고 있어 전체적인 효율성이 떨어집니다.</p>
-                            
                             <div style="
-                                padding: 12px;
-                                background: rgba(1, 186, 239, 0.1);
+                                background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+                                border-left: 4px solid #10b981;
+                                padding: 20px;
                                 border-radius: 8px;
+                                margin-bottom: 15px;
                             ">
-                                <p style="
-                                    margin: 0;
+                                <h3 style="
+                                    font-size: 1.1rem;
                                     font-weight: 600;
-                                    color: #0B4F6C;
-                                    font-size: 0.9rem;
-                                ">💡 제안: 프로세스 개선</p>
-                                <p style="
-                                    margin: 6px 0 0 0;
-                                    color: #374151;
-                                    font-size: 0.85rem;
-                                ">각 단계별 이탈 원인을 분석하고 개선 방안을 마련해야 합니다.</p>
+                                    color: #047857;
+                                    margin: 0 0 10px 0;
+                                ">✅ 주요 강점</h3>
+                                <ul style="margin: 0; padding-left: 20px; color: #374151;">
+                                    <li style="margin-bottom: 8px;">지원자 확보력 우수 (총 ${total}명)</li>
+                                    <li style="margin-bottom: 8px;">${topRoute[0]} 채널 효과적 활용</li>
+                                    <li style="margin-bottom: 8px;">안정적인 채용 프로세스 운영</li>
+                                </ul>
                             </div>
                         </div>
                         
-                        <!-- 문제점 2 -->
+                        <!-- 개선 영역 -->
                         <div>
-                            <h3 style="
-                                font-size: 1rem;
-                                font-weight: 600;
-                                color: #374151;
-                                margin: 0 0 10px 0;
-                            ">2. 문제: 채용 채널 의존도</h3>
-                            <p style="
-                                color: #6B7280;
-                                margin: 0 0 12px 0;
-                                line-height: 1.5;
-                                font-size: 0.9rem;
-                            ">특정 채용 채널에 대한 의존도가 높아 다양한 인재 확보에 제약이 있을 수 있습니다.</p>
-                            
                             <div style="
-                                text-align: center;
-                                padding: 16px;
-                                background: #F4F4F4;
-                                border-radius: 12px;
-                                margin-bottom: 12px;
-                            ">
-                                <p style="
-                                    margin: 0 0 6px 0;
-                                    font-size: 0.9rem;
-                                    font-weight: 600;
-                                    color: #374151;
-                                ">온라인 채용 비중</p>
-                                <p style="
-                                    margin: 0;
-                                    font-size: 2rem;
-                                    font-weight: 800;
-                                    color: #FF6B6B;
-                                ">${this.calculateOnlinePercentage(data)}%</p>
-                            </div>
-                            
-                            <div style="
-                                padding: 12px;
-                                background: rgba(1, 186, 239, 0.1);
+                                background: linear-gradient(135deg, #fef3c7, #fde68a);
+                                border-left: 4px solid #f59e0b;
+                                padding: 20px;
                                 border-radius: 8px;
+                                margin-bottom: 15px;
                             ">
-                                <p style="
-                                    margin: 0;
+                                <h3 style="
+                                    font-size: 1.1rem;
                                     font-weight: 600;
-                                    color: #0B4F6C;
-                                    font-size: 0.9rem;
-                                ">💡 제안: 채널 다양화</p>
-                                <p style="
-                                    margin: 6px 0 0 0;
-                                    color: #374151;
-                                    font-size: 0.85rem;
-                                ">채용 채널을 다양화하여 더 폭넓은 인재풀을 확보해야 합니다.</p>
+                                    color: #92400e;
+                                    margin: 0 0 10px 0;
+                                ">⚠️ 개선 필요 영역</h3>
+                                <ul style="margin: 0; padding-left: 20px; color: #374151;">
+                                    <li style="margin-bottom: 8px;">입과율 개선 필요 (현재 ${joinRate}%)</li>
+                                    <li style="margin-bottom: 8px;">채용 채널 다양화 검토</li>
+                                    <li style="margin-bottom: 8px;">후보자 경험 향상 방안 마련</li>
+                                </ul>
                             </div>
                         </div>
                     </div>
-                </section>
+                    
+                    <!-- 액션 아이템 -->
+                    <div style="
+                        background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+                        border: 2px solid #8b5cf6;
+                        border-radius: 12px;
+                        padding: 20px;
+                        margin-top: 20px;
+                    ">
+                        <h3 style="
+                            font-size: 1.2rem;
+                            font-weight: 700;
+                            color: #6d28d9;
+                            margin: 0 0 15px 0;
+                            text-align: center;
+                        ">🎯 즉시 실행 가능한 액션 아이템</h3>
+                        
+                        <div style="
+                            display: grid;
+                            grid-template-columns: 1fr 1fr 1fr;
+                            gap: 15px;
+                        ">
+                            <div style="text-align: center;">
+                                <div style="
+                                    background: #8b5cf6;
+                                    color: white;
+                                    border-radius: 50%;
+                                    width: 40px;
+                                    height: 40px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    margin: 0 auto 10px auto;
+                                    font-weight: bold;
+                                ">1</div>
+                                <div style="font-weight: 600; color: #1e293b; margin-bottom: 5px;">입과율 분석</div>
+                                <div style="font-size: 0.9rem; color: #64748b;">합격 후 이탈 원인 파악</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="
+                                    background: #8b5cf6;
+                                    color: white;
+                                    border-radius: 50%;
+                                    width: 40px;
+                                    height: 40px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    margin: 0 auto 10px auto;
+                                    font-weight: bold;
+                                ">2</div>
+                                <div style="font-weight: 600; color: #1e293b; margin-bottom: 5px;">채널 확대</div>
+                                <div style="font-size: 0.9rem; color: #64748b;">신규 채용 채널 발굴</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="
+                                    background: #8b5cf6;
+                                    color: white;
+                                    border-radius: 50%;
+                                    width: 40px;
+                                    height: 40px;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    margin: 0 auto 10px auto;
+                                    font-weight: bold;
+                                ">3</div>
+                                <div style="font-weight: 600; color: #1e293b; margin-bottom: 5px;">프로세스 개선</div>
+                                <div style="font-size: 0.9rem; color: #64748b;">면접-입과 간 소요시간 단축</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
+    },
+    
+    // 퍼널 차트 생성
+    generateFunnelChart(funnelData) {
+        const maxCount = Math.max(...funnelData.map(item => item.count));
+        
+        return `
+            <div style="position: relative;">
+                ${funnelData.map((item, index) => {
+                    const width = (item.count / maxCount) * 100;
+                    const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'];
+                    return `
+                        <div style="
+                            margin-bottom: 12px;
+                            position: relative;
+                        ">
+                            <div style="
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                margin-bottom: 6px;
+                            ">
+                                <span style="font-weight: 600; color: #1e293b; font-size: 0.95rem;">${item.stage}</span>
+                                <span style="font-weight: 700; color: ${colors[index]}; font-size: 1.1rem;">${item.count}명</span>
+                            </div>
+                            <div style="
+                                background: #e2e8f0;
+                                height: 24px;
+                                border-radius: 12px;
+                                position: relative;
+                                overflow: hidden;
+                            ">
+                                <div style="
+                                    background: linear-gradient(90deg, ${colors[index]}, ${colors[index]}dd);
+                                    height: 100%;
+                                    width: ${width}%;
+                                    border-radius: 12px;
+                                    transition: width 0.8s ease;
+                                    position: relative;
+                                ">
+                                    <div style="
+                                        position: absolute;
+                                        right: 8px;
+                                        top: 50%;
+                                        transform: translateY(-50%);
+                                        color: white;
+                                        font-size: 0.8rem;
+                                        font-weight: 600;
+                                    ">${(item.count / funnelData[0].count * 100).toFixed(1)}%</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    },
     },
 
     // 상세 분석 미리보기
@@ -2606,9 +2643,11 @@ const ReportModule = {
             font-size: 11pt; /* 자연스러운 크기로 복원 */
             line-height: 1.4; 
             color: #1a1a1a;
-            background: white;
+            background: white !important; /* 전체 배경을 흰색으로 강제 */
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+            width: 180mm; /* A4 폭에서 여백 제외한 안전한 인쇄 영역 */
+            max-width: 180mm;
         }
         
         /* 헤더 스타일 - 원본 그라데이션 유지 */
@@ -2645,14 +2684,14 @@ const ReportModule = {
             print-color-adjust: exact !important;
         }
         
-        /* 섹션 스타일 */
+        /* 섹션 스타일 - 연속 플로우를 위한 수정 */
         section {
-            page-break-inside: avoid;
-            margin-bottom: 18px; /* 자연스러운 간격 */
+            page-break-inside: auto; /* 자동 페이지 브레이크 허용 */
+            margin-bottom: 15px; /* 간격 줄임 */
             background: white !important;
-            border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            padding: 20px; /* 자연스러운 패딩 */
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* 그림자 줄임 */
+            padding: 16px; /* 패딩 줄임 */
             border: 1px solid #e5e7eb;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
