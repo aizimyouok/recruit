@@ -821,7 +821,6 @@ const ReportModule = {
             </div>
         `;
     },
-    },
 
     // 상세 분석 미리보기
     generateDetailedAnalysisPreview(data) {
