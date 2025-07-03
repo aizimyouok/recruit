@@ -2422,6 +2422,13 @@ const ReportModule = {
             reportContainer.style.setProperty('width', '100%', 'important');
         }
         
+        // 리포트 빌더 최대 넓이 제거
+        const reportBuilder = document.querySelector('#report .report-builder');
+        if (reportBuilder) {
+            reportBuilder.style.setProperty('max-width', 'none', 'important');
+            reportBuilder.style.setProperty('width', '100%', 'important');
+        }
+        
         // 템플릿 갤러리 강제 6열 적용
         const templateGallery = document.querySelector('.template-gallery');
         if (templateGallery) {
@@ -2435,8 +2442,10 @@ const ReportModule = {
         if (filterGrid) {
             filterGrid.style.setProperty('display', 'grid', 'important');
             filterGrid.style.setProperty('grid-template-columns', 'repeat(6, 1fr)', 'important');
-            filterGrid.style.setProperty('gap', '10px 8px', 'important');
+            filterGrid.style.setProperty('gap', '8px 8px', 'important');
             filterGrid.style.setProperty('align-items', 'end', 'important');
+            filterGrid.style.setProperty('max-width', 'none', 'important');
+            filterGrid.style.setProperty('width', '100%', 'important');
         }
         
         console.log('🔥 그리드 레이아웃 및 최대 넓이 제거 강제 적용 완료');
