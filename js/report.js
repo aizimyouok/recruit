@@ -2582,62 +2582,212 @@ const ReportModule = {
     <style>
         @page {
             size: A4;
-            margin: 1cm;
+            margin: 10mm; /* 여백을 줄여서 더 많은 공간 확보 */
         }
+        
         body { 
             font-family: 'Noto Sans KR', sans-serif; 
             margin: 0; 
             padding: 0; 
-            font-size: 11pt; 
-            line-height: 1.4; 
-            color: black !important;
+            font-size: 9pt; /* 폰트 크기를 줄여서 더 많은 내용 수용 */
+            line-height: 1.3; 
+            color: #1a1a1a;
+            background: white;
+            width: 190mm; /* A4 폭에서 여백 제외한 실제 인쇄 가능 영역 */
+            max-width: 190mm;
+            overflow: hidden;
         }
-        * {
-            color: black !important;
-            background: white !important;
-        }
+        
+        /* 원본 색상 유지하되 인쇄에 적합하게 조정 */
         .report-header {
-            background: white !important;
-            color: black !important;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed) !important;
+            color: white !important;
             text-align: center;
-            padding: 20px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #333;
-        }
-        .report-title, .report-header h1 {
-            color: black !important;
-            font-size: 16pt;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .report-subtitle {
-            font-size: 14pt;
-            color: black !important;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
             page-break-after: avoid;
         }
+        
+        .report-title, .report-header h1 {
+            color: white !important;
+            font-size: 14pt !important;
+            font-weight: bold;
+            margin: 0 0 8px 0;
+        }
+        
+        .report-header .report-meta {
+            color: white !important;
+            font-size: 8pt;
+        }
+        
+        .report-header .report-meta span {
+            background: rgba(255, 255, 255, 0.2) !important;
+            padding: 4px 8px;
+            border-radius: 12px;
+            margin: 0 5px;
+        }
+        
+        /* 섹션 스타일 - 원본 색상 유지 */
+        section {
+            page-break-inside: avoid;
+            margin-bottom: 12px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        h2, h3 {
+            color: #0B4F6C !important;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            font-size: 11pt;
+            page-break-after: avoid;
+        }
+        
+        h1 {
+            font-size: 13pt;
+            color: #0B4F6C !important;
+        }
+        
+        /* KPI 카드 색상 유지 */
+        div[style*="background: #F0F9FF"] {
+            background: #F0F9FF !important;
+            border: 1px solid #0ea5e9;
+        }
+        
+        div[style*="background: #ECFDF5"] {
+            background: #ECFDF5 !important;
+            border: 1px solid #10b981;
+        }
+        
+        div[style*="background: #FEF3C7"] {
+            background: #FEF3C7 !important;
+            border: 1px solid #f59e0b;
+        }
+        
+        div[style*="background: #DBEAFE"] {
+            background: #DBEAFE !important;
+            border: 1px solid #3b82f6;
+        }
+        
+        div[style*="background: #F3E8FF"] {
+            background: #F3E8FF !important;
+            border: 1px solid #8b5cf6;
+        }
+        
+        div[style*="background: #F4F4F4"] {
+            background: #F4F4F4 !important;
+            border: 1px solid #d1d5db;
+        }
+        
+        /* 그리드 레이아웃 최적화 */
+        div[style*="display: grid"] {
+            display: grid !important;
+            gap: 8px !important; /* 간격을 줄여서 공간 절약 */
+        }
+        
+        div[style*="grid-template-columns: 1fr 1fr"] {
+            grid-template-columns: 1fr 1fr !important;
+        }
+        
+        /* 텍스트 색상 유지 */
+        .report-content * {
+            color: inherit !important;
+        }
+        
+        /* 특정 색상 클래스 유지 */
+        *[style*="color: #0B4F6C"] { color: #0B4F6C !important; }
+        *[style*="color: #01BAEF"] { color: #01BAEF !important; }
+        *[style*="color: #374151"] { color: #374151 !important; }
+        *[style*="color: #6B7280"] { color: #6B7280 !important; }
+        *[style*="color: #059669"] { color: #059669 !important; }
+        *[style*="color: #F59E0B"] { color: #F59E0B !important; }
+        *[style*="color: #DC2626"] { color: #DC2626 !important; }
+        *[style*="color: #3b82f6"] { color: #3b82f6 !important; }
+        *[style*="color: #8b5cf6"] { color: #8b5cf6 !important; }
+        *[style*="color: #FF6B6B"] { color: #FF6B6B !important; }
+        
+        /* 테이블 스타일 */
         table {
             width: 100%;
             border-collapse: collapse;
             page-break-inside: avoid;
-            font-size: 9pt;
+            font-size: 8pt;
+            margin: 10px 0;
         }
+        
         th, td {
-            border: 1px solid #333;
-            padding: 8px;
+            border: 1px solid #d1d5db;
+            padding: 6px;
             text-align: center;
         }
+        
         th {
-            background: #f0f0f0 !important;
+            background: #f8fafc !important;
+            font-weight: bold;
+            color: #374151 !important;
+        }
+        
+        /* 차트 영역 */
+        .chart-container, canvas {
+            page-break-inside: avoid;
+            max-height: 120px !important; /* 차트 높이 제한 */
+            width: 100% !important;
+        }
+        
+        /* 공간 최적화 */
+        p {
+            margin: 6px 0;
+            line-height: 1.3;
+        }
+        
+        /* 패딩과 마진 최적화 */
+        * {
+            box-sizing: border-box;
+        }
+        
+        .main-analysis-grid,
+        .force-grid-2col {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 8px !important;
+            margin-bottom: 10px !important;
+        }
+        
+        /* 내용이 넘치지 않도록 제한 */
+        .improvement-proposal-section {
+            clear: both !important;
+            width: 100% !important;
+            margin-top: 10px !important;
+        }
+        
+        /* 폰트 크기 세부 조정 */
+        h1 { font-size: 13pt !important; }
+        h2 { font-size: 11pt !important; }
+        h3 { font-size: 10pt !important; }
+        p, div, span { font-size: 9pt !important; }
+        small, .report-meta { font-size: 7pt !important; }
+        
+        /* 큰 숫자 스타일 유지하되 크기 조정 */
+        *[style*="font-size: 1.5rem"], *[style*="font-size: 2rem"] {
+            font-size: 12pt !important;
             font-weight: bold;
         }
-        .chart-container {
-            page-break-inside: avoid;
-            text-align: center;
-            margin: 20px 0;
+        
+        /* 페이지 브레이크 제어 */
+        .executive-summary > section:first-child {
+            page-break-after: avoid;
         }
-        section {
+        
+        .main-analysis-grid {
             page-break-inside: avoid;
-            margin-bottom: 20px;
+        }
+        
+        .improvement-proposal-section {
+            page-break-before: avoid;
         }
     </style>
 </head>
