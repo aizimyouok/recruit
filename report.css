@@ -176,6 +176,58 @@ html body #report .filter-grid[style] {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px; /* 헤더 아래 여백도 줄임 */
+    position: relative; /* 플로팅 버튼 기준점 */
+}
+
+/* 플로팅 미리보기 버튼 */
+#report .floating-preview-btn {
+    position: sticky;
+    top: 20px; /* 스크롤 시 화면 상단에서 20px 거리 유지 */
+    z-index: 100;
+    
+    background: linear-gradient(135deg, #10b981, #059669); /* 초록색 그라데이션 */
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 50px; /* 완전한 둥근 모서리 */
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 160px;
+    justify-content: center;
+    
+    /* 플로팅 효과 - 강한 그림자 */
+    box-shadow: 
+        0 8px 20px rgba(16, 185, 129, 0.3),
+        0 4px 8px rgba(16, 185, 129, 0.2),
+        0 2px 4px rgba(0, 0, 0, 0.1);
+    
+    /* 미세한 상승 효과 */
+    transform: translateY(-2px);
+}
+
+#report .floating-preview-btn:hover {
+    transform: translateY(-4px) scale(1.02); /* 호버 시 상승하고 살짝 확대 */
+    background: linear-gradient(135deg, #059669, #047857); /* 더 진한 초록 */
+    box-shadow: 
+        0 12px 30px rgba(16, 185, 129, 0.4),
+        0 6px 12px rgba(16, 185, 129, 0.3),
+        0 3px 6px rgba(0, 0, 0, 0.15);
+}
+
+#report .floating-preview-btn:active {
+    transform: translateY(-2px) scale(0.98); /* 클릭 시 살짝 눌리는 효과 */
+    transition: all 0.1s ease;
+}
+
+#report .floating-preview-btn i {
+    font-size: 1rem;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
 }
 
 #report .filter-section h3 {
@@ -357,61 +409,9 @@ html body #report .filter-grid {
     font-weight: 600;
 }
 
-/* 액션 버튼 */
+/* 액션 버튼 (사용 안함 - 플로팅 버튼으로 대체) */
 #report .action-buttons {
-    display: flex;
-    gap: 15px;
-    margin-top: 25px; /* 상단 여백 줄임 */
-    justify-content: center; /* 중앙 정렬 */
-}
-
-/* 플로팅 버튼 스타일 */
-#report .floating-btn {
-    position: relative;
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
-    color: white;
-    border: none;
-    padding: 16px 32px; /* 패딩 증가로 더 큰 버튼 */
-    border-radius: 50px; /* 완전한 둥근 모서리 */
-    font-weight: 700;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    min-width: 200px;
-    
-    /* 플로팅 효과 - 강한 그림자 */
-    box-shadow: 
-        0 10px 25px rgba(79, 70, 229, 0.3),
-        0 6px 12px rgba(79, 70, 229, 0.2),
-        0 2px 4px rgba(0, 0, 0, 0.1);
-    
-    /* 미세한 상승 효과 */
-    transform: translateY(-2px);
-}
-
-#report .floating-btn:hover {
-    transform: translateY(-6px) scale(1.02); /* 더 높이 상승하고 살짝 확대 */
-    box-shadow: 
-        0 20px 40px rgba(79, 70, 229, 0.4),
-        0 12px 24px rgba(79, 70, 229, 0.3),
-        0 4px 8px rgba(0, 0, 0, 0.15);
-    
-    /* 그라데이션 변화 */
-    background: linear-gradient(135deg, #5b52f0, #8b47f5);
-}
-
-#report .floating-btn:active {
-    transform: translateY(-3px) scale(0.98); /* 클릭 시 살짝 눌리는 효과 */
-    transition: all 0.1s ease;
-}
-
-#report .floating-btn i {
-    font-size: 1.2rem;
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+    display: none; /* 더 이상 사용하지 않음 */
 }
 
 #report .btn {

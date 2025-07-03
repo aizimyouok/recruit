@@ -10,8 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet">
-    <link href="styles.css?v=20250702-10" rel="stylesheet">
-    <link href="report.css?v=20250702-10" rel="stylesheet"> 
+    <link href="styles.css?v=20250702-11" rel="stylesheet">
+    <link href="report.css?v=20250702-11" rel="stylesheet"> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -819,9 +819,15 @@
                                     <div class="filter-section">
                                         <div class="filter-section-header">
                                             <h3><i class="fas fa-filter"></i> 데이터 필터링</h3>
-                                            <button class="btn-reset-filters" id="report-reset-filters">
-                                                <i class="fas fa-undo"></i> 초기화
-                                            </button>
+                                            <div class="header-actions">
+                                                <button class="btn-reset-filters" id="report-reset-filters">
+                                                    <i class="fas fa-undo"></i> 초기화
+                                                </button>
+                                                <!-- 플로팅 미리보기 버튼 -->
+                                                <button class="floating-preview-btn" id="generateReportBtn">
+                                                    <i class="fas fa-eye"></i> 리포트 미리보기
+                                                </button>
+                                            </div>
                                         </div>
                                         <div class="filter-grid">
                                             <div class="filter-group">
@@ -936,10 +942,7 @@
                                                 <div class="progress-step"><i class="fas fa-file-pdf"></i> 리포트 생성</div>
                                             </div>
                                         </div>
-                                        
-                                        <div class="action-buttons">
-                                            <button class="btn btn-primary floating-btn" id="generateReportBtn"><i class="fas fa-eye"></i> 리포트 미리보기</button>
-                                        </div>
+
                                 </div>
                             </div>
 
