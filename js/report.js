@@ -410,8 +410,14 @@ const ReportModule = {
 
     // 경영진 요약 미리보기 - 하이브리드 레이아웃
     generateExecutiveSummaryPreview(data) {
-        const funnelData = this.calculateFunnelData(data);
-        const total = data.length;
+        try {
+            console.log('🔍 [경영진 요약] 템플릿 생성 시작...');
+            
+            const funnelData = this.calculateFunnelData(data);
+            const total = data.length;
+            
+            console.log('🔍 [경영진 요약] 퍼널 데이터:', funnelData);
+            console.log('🔍 [경영진 요약] 총 데이터 개수:', total);
         
         // 🔧 강화된 디버깅: 실제 데이터 구조 완전 분석
         console.log('🔍🔍🔍 === 강화된 데이터 구조 분석 시작 ===');
@@ -566,13 +572,24 @@ const ReportModule = {
         
         const passRate = total > 0 ? ((passed / total) * 100).toFixed(1) : 0;
         const joinRate = total > 0 ? ((joined / total) * 100).toFixed(1) : 0;
-        const cancelRate = joined + joinCanceled > 0 ? ((joinCanceled / (joined + joinCanceled)) * 100).toFixed(1) : 0;
+        const cancelRate = (joined + joinCanceled) > 0 ? ((joinCanceled / (joined + joinCanceled)) * 100).toFixed(1) : 0;
+        
+        // 🔧 변수 안전성 확보 (undefined 방지)
+        const safeJoinCanceled = joinCanceled || 0;
+        const safeCancelRate = cancelRate || 0;
+        const safeTopRoute = topRoute || ['미지정', 0];
         
         // 지원루트별 통계
         const routeStats = this.calculateRouteStats(data);
         const topRoute = Object.entries(routeStats).sort((a, b) => b[1] - a[1])[0];
         
-        return `
+        console.log('🔍 [경영진 요약] 계산된 변수들:', {
+            passRate, joinRate, safeCancelRate, 
+            passed, joined, safeJoinCanceled,
+            safeTopRoute
+        });
+        
+        const result = `
             <div class="report-content executive-summary-hybrid" style="
                 width: 100%; 
                 max-width: none; 
@@ -739,8 +756,8 @@ const ReportModule = {
                             margin-bottom: 5px;
                         ">📍</div>
                         <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 8px;">주요 채널</div>
-                        <div style="font-size: 1.4rem; font-weight: 700; color: #8b5cf6; margin-bottom: 4px;">${topRoute ? topRoute[0] : 'N/A'}</div>
-                        <div style="color: #64748b; font-size: 0.8rem;">${topRoute ? topRoute[1] : 0}명</div>
+                        <div style="font-size: 1.4rem; font-weight: 700; color: #8b5cf6; margin-bottom: 4px;">${safeTopRoute[0]}</div>
+                        <div style="color: #64748b; font-size: 0.8rem;">${safeTopRoute[1]}명</div>
                     </div>
                     
                     <div style="
@@ -758,8 +775,8 @@ const ReportModule = {
                             margin-bottom: 5px;
                         ">⚠️</div>
                         <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 8px;">입과 취소율</div>
-                        <div style="font-size: 1.8rem; font-weight: 700; color: #ef4444; margin-bottom: 4px;">${cancelRate}%</div>
-                        <div style="color: #64748b; font-size: 0.8rem;">${joinCanceled}명 취소</div>
+                        <div style="font-size: 1.8rem; font-weight: 700; color: #ef4444; margin-bottom: 4px;">${safeCancelRate}%</div>
+                        <div style="color: #64748b; font-size: 0.8rem;">${safeJoinCanceled}명 취소</div>
                     </div>
                 </div>
 
@@ -816,7 +833,7 @@ const ReportModule = {
                                 </div>
                                 <div>
                                     <div style="font-size: 0.9rem; color: #64748b;">입과 취소율</div>
-                                    <div style="font-size: 1.4rem; font-weight: 700; color: #ef4444;">${cancelRate}%</div>
+                                    <div style="font-size: 1.4rem; font-weight: 700; color: #ef4444;">${safeCancelRate}%</div>
                                 </div>
                             </div>
                         </div>
@@ -992,7 +1009,7 @@ const ReportModule = {
                                 ">✅ 주요 강점</h3>
                                 <ul style="margin: 0; padding-left: 20px; color: #374151;">
                                     <li style="margin-bottom: 8px;">지원자 확보력 우수 (총 ${total}명)</li>
-                                    <li style="margin-bottom: 8px;">${topRoute[0]} 채널 효과적 활용</li>
+                                    <li style="margin-bottom: 8px;">${safeTopRoute[0]} 채널 효과적 활용</li>
                                     <li style="margin-bottom: 8px;">안정적인 채용 프로세스 운영</li>
                                 </ul>
                             </div>
@@ -1015,7 +1032,7 @@ const ReportModule = {
                                 ">⚠️ 개선 필요 영역</h3>
                                 <ul style="margin: 0; padding-left: 20px; color: #374151;">
                                     <li style="margin-bottom: 8px;">입과율 개선 필요 (현재 ${joinRate}%)</li>
-                                    <li style="margin-bottom: 8px;">입과 취소율 관리 필요 (현재 ${cancelRate}%)</li>
+                                    <li style="margin-bottom: 8px;">입과 취소율 관리 필요 (현재 ${safeCancelRate}%)</li>
                                     <li style="margin-bottom: 8px;">채용 채널 다양화 검토</li>
                                     <li style="margin-bottom: 8px;">후보자 경험 향상 방안 마련</li>
                                 </ul>
@@ -1097,6 +1114,23 @@ const ReportModule = {
                 </div>
             </div>
         `;
+        
+        console.log('✅ [경영진 요약] 템플릿 생성 완료');
+        return result;
+        
+        } catch (error) {
+            console.error('❌ [경영진 요약] 템플릿 생성 중 오류 발생:', error);
+            console.error('❌ 오류 스택:', error.stack);
+            
+            // 오류 발생 시 기본 템플릿 반환
+            return `
+                <div style="padding: 40px; text-align: center; color: #ef4444;">
+                    <h2>⚠️ 경영진 요약 템플릿 오류</h2>
+                    <p>템플릿 생성 중 오류가 발생했습니다.</p>
+                    <p style="font-size: 0.9rem; color: #6b7280;">콘솔을 확인해주세요.</p>
+                </div>
+            `;
+        }
     },
     
     // 퍼널 차트 생성
